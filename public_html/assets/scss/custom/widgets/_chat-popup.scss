@@ -1,0 +1,60 @@
+.chat-list {
+  margin: 0px;
+  padding: 0px;
+  .msg_receive,
+  .msg_sent {
+    list-style: none;
+    margin-top: 30px;
+    .chat-img {
+      display: inline-block;
+      width: 45px;
+      vertical-align: top;
+      img {
+        width: 100%;
+        border-radius: 100%;
+      }
+    }
+    .chat-content {
+      width: calc(100% - 50px);
+      display: inline-block;
+      padding-left: 15px;
+      .box {
+        display: inline-block;
+        padding: 10px;
+        margin-bottom: 3px;
+        background: $white;
+      }
+    }
+    .chat-time {
+      display: block;
+      font-size: 10px;
+      color: $text-muted;
+      margin: 5px 0 15px 15px;
+    }
+    &.odd .chat-content {
+      text-align: right;
+      width: calc(100% - 0px);
+      .box {
+        clear: both;
+        color: $white;
+        background: $info;
+      }
+    }
+    &.odd .chat-time,
+    .reverse {
+      text-align: right;
+    }
+    &.odd + .odd {
+      margin-top: 0px;
+    }
+    &.reverse {
+      .chat-content {
+        padding-left: 0px;
+        padding-right: 15px;
+      }
+      .chat-time {
+        text-align: left;
+      }
+    }
+  }
+}

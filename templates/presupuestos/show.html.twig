@@ -1,0 +1,914 @@
+{% extends 'pages.html.twig' %}
+{% form_theme form 'fields.html.twig' %}
+{% block cabecera %} Presupuestos {% endblock %}
+{% block breadcrumb %} <li class="breadcrumb-item active">Presupuestos List</li>{% endblock %}
+{% block title %}Presupuestos List{% endblock %}
+{% block tablas %}
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+                <!-- basic table -->
+                <div class="row">
+                    <div class="col-lg-8">
+
+                        {% if presupuesto.EstadoPe.id > 3 and presupuesto.EstadoPe.id < 8 %}
+                            {% if fotos  %}
+                                    <div class="card">
+                                        <div class="card-body">
+                                            {{ form_start(formestado) }}
+                                                    {{ form_row(formestado._token) }}
+                                                    {% if presupuesto.EstadoPe.id == 4 %}
+                                                    <h4 class="card-title">¿Ya se ha medido e incorporado fotos?</h4>
+                                                    <button type="submit" class="btn btn-rounded btn-outline-success">Medir finalizado </button>
+                                                    {% endif %} 
+                                                    {% if presupuesto.EstadoPe.id == 5 %}
+                                                    <h4 class="card-title">¿Se han escogido los materiales?</h4>
+                                                    <button type="submit" class="btn btn-rounded btn-outline-success">Escoger finalizado </button>
+                                                    {% endif %} 
+                                                    {% if presupuesto.EstadoPe.id == 6 %}
+                                                    <h4 class="card-title">¿Presupuesto finalizado?</h4>
+                                                    <button type="submit" class="btn btn-rounded btn-outline-success">Presupuesto finalizado </button>
+                                                    {% endif %} 
+                                                    {% if presupuesto.EstadoPe.id == 7 %}
+                                                    <h4 class="card-title">¿Presupuesto Entregado?</h4>
+                                                    <button type="submit" class="btn btn-rounded btn-outline-success">Entregar presupuesto</button>
+                                                    
+                                                    {% endif %} 
+                                                    {{ form_row(formestado.manoobraPe | raw, { 'row_attr': {'class': 'd-none'} })  }}
+                                                    {{ form_row(formestado.importetotPe, { 'row_attr': {'class': 'd-none'} }) }}
+                                                    {{ form_row(formestado.descuaetoPe, { 'row_attr': {'class': 'd-none'} }) }}
+                                            {{ form_end(formestado, {'render_rest': false}) }}
+
+                                        </div>
+                                    </div>
+                            {% endif %}   
+                        {% endif %}
+                        {% if presupuesto.EstadoPe.id == 7 %}
+                                    <div class="card">
+                                        <div class="card-body">
+                                                <button id="Checkout" class="btn btn-rounded btn-outline-danger">Generar presupuesto </button>
+                                        </div>
+                                    </div>
+                        {% endif %}
+                        {% if presupuesto.EstadoPe.id == 8 %}
+
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <button id="Aceptar" class="btn btn-rounded btn-outline-success " data-importe="{{presupuesto.importetotPe}}">Aceptar</button>
+                                            <button id="Rechazar" class="btn btn-rounded btn-outline-danger " data-importe="{{presupuesto.importetotPe}}">Rechazar</button>
+                                        </div>
+                                    </div>
+                        {% endif %}
+
+                        {% if presupuesto.EstadoPe.id == 9 %}
+
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <button id="Finalizar" class="btn btn-rounded btn-outline-success " data-importe="{{presupuesto.importetotPe}}">Finalizar</button>
+                                            <a href="/Tickets/{{ presupuesto.ticketsnal.numticketCs }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Ticket señal </a>
+
+                                        </div>
+                                    </div>
+                        {% endif %}
+
+                        {% if presupuesto.EstadoPe.id == 10 %}
+
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <a href="/Tickets/{{ presupuesto.ticketsnal.numticketCs }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Ticket señal </a>
+                                            <a href="/Tickets/{{ presupuesto.ticket.numticketCs }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Ticket final </a>
+                                        </div>
+                                    </div>
+                        {% endif %}
+                        <div class="card" id="idpresu" data-idpresu="{{ presupuesto.id }}">
+                            <div class="card-body">
+                                <h4 class="card-title">Trabajos a realizar</h4>
+                                {% if presupuesto.EstadoPe.id == 7 or presupuesto.EstadoPe.id == 6 %}
+                                <button id="edit" class="btn btn-dark" onclick="edit()" type="button"><i
+                                        class="ti-pencil-alt"></i> Edit</button>
+                                <button id="save" class="btn btn-success" onclick="save()" type="button"><i
+                                        class=" ti-save"></i> Save</button>
+                                <div class="border p-3 mt-3">
+                                    <div class="click2edit">
+
+                                           {{ presupuesto.manoobraPe| raw }}
+                                    </div>
+                                </div>
+                                {% else %}
+                                        {{ presupuesto.manoobraPe| raw }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if presupuesto.EstadoPe.id == 6 %}
+                         <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Productos de la cesta </h4>
+                                <h6 class="card-subtitle"></h6>
+                                <div class="table-responsive">
+                                    <table id="tbprod" class="table table-striped table-bordered text-inputs-searching">
+                                         <thead>
+                                             <tr>
+                                                 <th>Id</th>
+                                                 <th>tipo</th>        
+                                                 <th>Descripcion</th>
+                                                 <th>Precio</th>
+                                                 <th>PVP</th>
+                                                 <th>Stock</th>
+                                             </tr>
+                                         </thead>
+                                         <tbody>
+                                             {% for producto in productos %}
+                                                 <tr>
+                                                     <td>{{ producto.id }}</td>
+                                                     <td>{{ producto.tipoPdId}}</td>
+                                                     <td>{{ producto.descripcionPd }}</td>
+                                                     <td>{{ producto.precioPd }}</td>
+                                                     <td>{{ producto.pvpPd }}</td>
+                                                     <td>{{ producto.stockPd }}</td>
+                                                 </tr>
+                                             {% else %}
+                                                 <tr>
+                                                     <td colspan="8">no records found</td>
+                                                 </tr>
+                                             {% endfor %}
+                                         </tbody>
+                                         <tfoot>
+                                             <tr>
+                                                 <th>Id</th>
+                                                 <th>tipo</th>        
+                                                 <th>Descripcion</th>
+                                                 <th>Precio</th>
+                                                 <th>PVP</th>
+                                                 <th>Stock</th>
+                                             </tr>
+                                         </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+
+                       {% if presupuesto.EstadoPe.id == 7  or presupuesto.EstadoPe.id == 6 %}
+
+                                    <div class="card">
+                                        <div class="card-body">
+                                        {{ form_start(formmanoob) }}
+                                                {{ form_row(formmanoob._token) }}
+
+
+                                            <div class="card-body">
+                                            <h6 class="card-subtitle"></code></h6>
+                                            <div class="action-form">
+                                                <div class="form-group mb-0 text-left">
+                                                    <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Actualizar PVP') }}</button>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                                {{ form_row(formmanoob.estadoPe, { 'row_attr': {'class': 'd-none'} }) }}
+                                                {{ form_row(formmanoob.manoobraPe, { 'row_attr': {'class': 'd-none'} }) }}
+                                                {{ form_row(formmanoob.importetotPe)}}
+                                                {{ form_row(formmanoob.descuaetoPe)}}
+                                        {{ form_end(formmanoob, {'render_rest': false}) }}
+                                        </div>
+                                        </div>
+                                    </div>
+                       {% endif %}
+
+
+
+                        
+                        {% if presupuesto.EstadoPe.id == 4 %}   
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Subir fotos</h4>
+                                    {{ form_start(form) }}
+                                        
+                                            <div class="card-body">
+                                            <h6 class="card-subtitle"></code></h6>
+                                            <div class="action-form">
+                                                <div class="form-group mb-0 text-left">
+                                                    <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Guardar Foto') }}</button>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                    
+                                    {{ form_end(form) }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}  
+
+
+                        {% if presupuesto.EstadoPe.id == 6 %}
+                         
+                            <div class="card">
+                                {{ form_start(formprod) }}
+                                    
+                                        <div class="card-body">
+                                        <h6 class="card-subtitle"></code></h6>
+                                        <div class="action-form">
+                                            <div class="form-group mb-0 text-left">
+                                                <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Save') }}</button>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                
+                                {{ form_end(formprod) }}
+                                    </div>
+                            </div>
+
+                    {% endif %}
+                    {% if presupuesto.EstadoPe.id > 6 %} 
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Movimientos</h4>
+                                <h6 class="card-subtitle"></h6>
+                                <div class="table-responsive">
+                                    <table id="footer" class="table table-striped table-bordered display"
+                                        style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Detalle</th>
+                                                <th>Unidades</th>
+                                                <th>Precio</th>
+                                                <th>PVP</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for detalle in project.getCesta(cestaId).getdetallecesta %}
+                                            <tr>
+                                                <td>{{ detalle.productoDc.descripcionPd }}</td>
+                                                <td>{{ detalle.cantidadDC}}</td>
+                                                <td align="right">{{ detalle.precioDc |number_format(2)}}</td>
+                                                <td align="right">{{ detalle.pvpDc|number_format(2) }}</td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="7">no records found</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="2" style="text-align:right">Total:</th>
+                                                <th style="text-align:right">{{project.getPrecioTot(cestaId)|number_format(2) }}</th>
+                                                <th style="text-align:right">{{project.getImporteTot(cestaId)|number_format(2) }}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    <a href="{{ path('banco_new') }}">Create new</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Ticket Info</h4>
+                            </div>
+                            <div class="card-body bg-light">
+                                <div class="row text-center">
+                                    <div class="col-6 mt-2 mb-2">
+                                        <span class="badge badge-warning">{{ presupuesto.EstadoPe }}</span>
+                                    </div>
+                                    <div class="col-6 mt-2 mb-2">
+                                        {{ presupuesto.timestampModPe ? presupuesto.timestampModPe|date("F jS \\a\\t g:ia")  : '' }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="pt-3">Presupuesto de</h5>
+                                <span>{{ presupuesto.clientePe.nombreCl }} {{ presupuesto.clientePe.apellidosCl }}</span>
+                                <h5 class="mt-4">Direccion</h5>
+                                <span>{{ presupuesto.clientePe.direccionCl }}</span>
+                                <h5 class="mt-4">Telefono</h5>
+                                <span>{{ presupuesto.clientePe.telefono1Cl }} - {{ presupuesto.clientePe.telefono2Cl }}</span>
+                                <br/>
+                            </div>
+                        </div>
+                        <div class="card">
+                                <div class="card-body" id="loop"  data-cesta="{{ presupuesto.ticket.Id }}">
+                                {% if presupuesto.EstadoPe.id < 7  %}
+                                    {% include 'productos/loop.html.twig' %}
+                                {% endif %}
+                                </div>
+                        </div>
+
+
+                        {% if presupuesto.EstadoPe.id >= 5 %}
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Subir fotos</h4>
+                                    {{ form_start(form) }}
+                                        
+                                            <div class="card-body">
+                                            <h6 class="card-subtitle"></code></h6>
+                                            <div class="action-form">
+                                                <div class="form-group mb-0 text-left">
+                                                    <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Guardar Fotos') }}</button>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                        
+                                    {{ form_end(form) }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Cambiar estado presupuesto</h4>
+                                    {{ form_start(formestadopr) }}
+                                        {{ form_row(formestadopr._token) }}
+                                        
+                                <div class="card-body">
+                                            <h6 class="card-subtitle"></code></h6>
+                                            <div class="action-form">
+                                                <div class="form-group mb-0 text-left">
+                                                    <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Cambiar Estado') }}</button>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            {{ form_row(formestadopr.manoobraPe| raw, { 'row_attr': {'class': 'd-none'} }) }}
+                                            {{ form_widget(formestadopr.estadoPe) }}
+                                            {{ form_row(formestadopr.importetotPe, { 'attr': {'class': 'd-none' } ,'row_attr': {'class':'d-none'}} ) }}
+                                            {{ form_row(formestadopr.descuaetoPe, { 'row_attr': {'class': 'd-none'} }) }}
+                                    {{ form_end(formestadopr, {'render_rest': false}) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row el-element-overlay">
+                    {% for foto in fotos %}
+        
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card">
+                            <div class="el-card-item pb-3">
+                                <div class="el-card-avatar mb-3 el-overlay-1 w-100 overflow-hidden position-relative text-center"> <img src="{{ asset('Presupuestos/' ~ presupuesto.clientePe.nombreCl ~ ' ' ~ presupuesto.FechainiPe|date("Y-m-d") ~ '/fotos/' ~ foto) }}" class="d-block position-relative w-100" alt="user" />
+                                    <div class="el-overlay w-100 overflow-hidden">
+                                        <ul class="list-style-none el-info text-white text-uppercase d-inline-block p-0">
+                                            <li class="el-item d-inline-block my-0  mx-1"><a class="btn default btn-outline image-popup-vertical-fit el-link text-white border-white" href="{{ asset('Presupuestos/' ~ presupuesto.clientePe.nombreCl ~ ' ' ~ presupuesto.FechainiPe|date("Y-m-d") ~ '/fotos/' ~ foto)}}"><i class="icon-magnifier"></i></a></li>
+                                            <li class="el-item d-inline-block my-0  mx-1"><a class="btn default btn-outline el-link text-white border-white" href="javascript:void(0);"><i class="icon-link"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="el-card-content text-center">
+                                    <h4 class="mb-0">{{ presupuesto.clientePe.nombreCl }} {{ presupuesto.clientePe.apellidosCl }}</h4> <span class="text-muted">{{ presupuesto.clientePe.direccionCl }}</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    
+                    </div>
+                    {% endfor %}
+                </div>
+
+            <!-- ============================================================== -->
+            <!-- End Container fluid  -->
+            <!-- ============================================================== -->
+
+
+{% endblock %}
+{% block formulario %}{% endblock %}
+
+{% block jscustom %}
+    <!-- ============================================================== -->
+    <!-- All Jquery -->
+    <!-- ============================================================== -->
+    <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}" ></script>
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="{{ asset('assets/libs/popper.js/dist/umd/popper.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <!-- apps -->
+    <script src="{{ asset('dist/js/app.min.js') }}"></script>
+    <script src="{{ asset('dist/js/app.init.js') }}"></script>
+    <script src="{{ asset('dist/js/app-style-switcher.js') }}"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="{{ asset('assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
+    <!--Wave Effects -->
+    <script src="{{ asset('dist/js/waves.js') }}"></script>
+    <!--Menu sidebar -->
+    <script src="{{ asset('dist/js/sidebarmenu.js') }}"></script>
+    <!--Custom JavaScript -->
+    <script src="{{ asset('dist/js/feather.min.js') }}"></script>
+    <script src="{{ asset('dist/js/custom.min.js') }}"></script>
+    <!--This page plugins -->
+    <script src="{{ asset('assets/libs/datatables/media/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/custom-datatable.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/datatable-api.init.js') }}"></script>
+    <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
+
+    <!--This page JavaScript -->
+    <script src="{{ asset('assets/libs/magnific-popup/dist/jquery.magnific-popup.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/magnific-popup/meg.init.js') }}"></script>
+    <script src="{{ asset('assets/libs/summernote/dist/summernote-bs4.min.js') }}"></script>
+
+
+    <script language = "javascript">
+        $(document).ready(function(){   
+
+        //=============================================//
+        //    DOM/jquery events                        //
+        //=============================================//
+        var table = $('#tbprod').DataTable();
+        var selector = document.querySelector("#loop");
+        var cestaId = selector.dataset.cesta
+
+
+
+        /****************************************
+        *      Rechazar presupuesto             *
+        *****************************************/
+
+        $(document).on('click', 'button[id="Rechazar"]' , function(event) {
+
+            location.href = "{{ path('presupuestos_finestado', {id: presupuesto.id, 'estado' : 99}) }}";
+
+        })
+
+        /****************************************
+        *      Finalizar presupuesto             *
+        *****************************************/
+         $(document).on('click', 'button[id="Finalizar"]' , function(event) {
+            const swalWithBootstrapButtons = Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'mr-2 btn btn-danger'
+                },
+                buttonsStyling: false,
+            })
+
+                const importe2 = {{ presupuesto.importetotPe - presupuesto.importesnalPe}}
+                const inputStep = 1
+                const importe3 = {{ presupuesto.importesnalPe }}
+                idpresupuesto = {{ presupuesto.id}}
+
+            swalWithBootstrapButtons.fire({
+                title: 'Importe total',
+                text: "Importe total" ,
+                type: 'warning',
+                html: `
+                    <h2> Cantidad  - {{ presupuesto.importetotPe }} €</h2>
+                    <h2> Señal  - {{ presupuesto.importesnalPe }} € </h2> 
+                    <input type="number" value="${importe2}" step="${inputStep}" class="swal2-input" id="range-value">`,
+                showCancelButton: true,
+                confirmButtonText: 'Tarjeta',
+                cancelButtonText: 'Efectivo',
+                reverseButtons: true
+            }).then((result) => {
+                const inputNumber = Swal.getContent().querySelector('#range-value');
+                importe = inputNumber.value;
+                if (result.value) {
+
+                    ticket_final("Tarjeta", importe2, 'SI', importe3) 
+                    senal_pdf("Tarjeta", importe3, 10, importe2,"Tarjeta"); 
+                } else if (
+                    // Read more about handling dismissals
+                    result.dismiss === Swal.DismissReason.cancel
+                ) {
+                    ticket_final("Efectivo", importe2, 'SI',importe3 ) 
+                    senal_pdf("Efectivo", importe3 , 10, importe2, "Efectivo"); 
+                }
+            })
+
+         })
+
+
+        function ticket_final(tipopago, importe, espresupuesto, importesnal) 
+        {
+
+            $.ajax({  
+                    url:        '{{ path("ticketpdf", {id:presupuesto.ticket.id  }) }}',  
+                    type:       'GET',   
+                    data:        ({tipopago : tipopago, espresu : espresupuesto, importe : importe , importesnal :importesnal}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            ticketfinal_finalizar(tipopago, response.namepdf, response.importe);
+                            abrirNuevoTab('/Tickets/' + response.namepdf);
+ 
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        };  
+
+        function ticketfinal_finalizar(tipopago, numticket, importe) 
+        {
+            
+            $.ajax({             
+                    url:        '{{ path("cestas_finalizar", {id: presupuesto.ticket.id }) }}',  
+                    type:       'GET',   
+                    data:        ({tipopago : tipopago, numticket: numticket, importe:importe}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            
+                         location.reload();   
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        };  
+
+        /****************************************
+        *      Finalizar ticket                 *
+        *****************************************/
+        function abrirNuevoTab(url) {
+            // Abrir nuevo tab
+            var win = window.open(url, '_blank');
+            // Cambiar el foco al nuevo tab (punto opcional)
+            win.focus();
+        }
+        
+         $(document).on('click', 'button[id="Checkout"]' , function(event) {
+
+            var selector = document.querySelector("#idpresu");
+            var idpresupuesto = selector.dataset.idpresu;
+            ticket_pdf(idpresupuesto) ;
+
+         })
+
+        function ticket_pdf(cestaId) 
+        {
+            
+            $.ajax({  
+                    url:        '{{ path("presupuestopdf") }}',  
+                    type:       'GET',   
+                    data:        ({id : cestaId}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+
+                            abrirNuevoTab('../../' + response.namepdf);
+                            
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        }; 
+
+        /****************************************
+        *      Eliminar un producto             *
+        *****************************************/
+
+        $(document).on('click', 'i[name="delete_detalle"]' , function(event) {
+            let id = this.id;
+            delete_line(id);
+        })
+
+
+        function delete_line(id) 
+        {
+            $.ajax({  
+               url:        '{{path("detallecesta_delete")}}',  
+               type:       'GET',   
+               data:        ({id: id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) {  
+                   $('#loop').html(response.template);
+                   document.querySelector("span[name='cantidad']").innerText     =  response.cantidad;
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            }); 
+        };  
+
+        
+        /****************************************
+        *       Insertar un producto      *
+        ****************************************/
+
+        $('#tbprod').on('click', 'tbody tr[role="row"]', function() {
+                var data = table.row(this).data();
+                const inputValue = 1
+                const inputValue2 = data[4]
+                const inputValue3 = data[3]
+                const inputStep = 1
+                const inputStep2 = 1
+
+                Swal.fire({
+                title: 'Cantidad y PVP',
+                html: `
+                    <h2> Cantidad </h2>
+                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">
+                    <h2> PVP </h2>
+                    <input type="number" value="${inputValue2}" step="${inputStep2}" class="swal2-input" id="range-value2">
+                    <h2> Coste </h2>
+                    <input type="number" value="${inputValue3}" step="${inputStep2}" class="swal2-input" id="range-value3">`,
+
+                }).then((result) => {
+                    if (result.value) {
+                        var data = table.row(this).data();
+                        const inputNumber = Swal.getContent().querySelector('#range-value');
+                        cantidad = inputNumber.value;
+                        const inputNumber2 = Swal.getContent().querySelector('#range-value2');
+                        importe = inputNumber2.value;
+                        const inputNumber3 = Swal.getContent().querySelector('#range-value3');
+                        coste = inputNumber3.value;
+                        insert_line(data,cantidad,importe,coste,cestaId);
+                    }
+                })
+
+         })
+
+        function insert_line(producto,cantidad,importe,coste,cesta) 
+        {
+            $.ajax({  
+               url:        '{{path("detallecesta_new") }}',   
+               type:       'GET',   
+               data:        ({producto: producto, cantidad:cantidad, importe:importe, coste:coste, cesta:cesta}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) {  
+                    $('#loop').html(response.template);
+
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            });  
+        };  
+
+        /****************************************
+        *       Presupuesto Aceptado           *
+        *****************************************/
+
+         $(document).on('click', 'button[id="Aceptar"]' , function(event) {
+            const swalWithBootstrapButtons = Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'mr-2 btn btn-danger'
+                },
+                buttonsStyling: false,
+            })
+            var selector = document.querySelector("#idpresu");
+            var idpresupuesto = selector.dataset.idpresu;
+
+            var selector = document.querySelector('button[id="Aceptar"]');
+            var importe = selector.dataset.importe;
+
+                const inputValue = importe * 0.30
+                const importe2 = Number(importe).toFixed(2)
+                const inputStep = 1
+
+            swalWithBootstrapButtons.fire({
+                title: 'Señal',
+                text: "Importe total" ,
+                type: 'warning',
+                html: `
+                    <h2> Cantidad  - ${importe2} €</h2> 
+                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">`,
+                showCancelButton: true,
+                confirmButtonText: 'Tarjeta',
+                cancelButtonText: 'Efectivo',
+                reverseButtons: true
+            }).then((result) => {
+                const inputNumber = Swal.getContent().querySelector('#range-value');
+                importe = inputNumber.value;
+                if (result.value) {
+
+                    
+                    insert_line([268], 1, importe,0,{{ presupuesto.ticketsnal.id }});
+                    ticket_senal("Tarjeta",importe,"SI",0); 
+                    senal_pdf("Tarjeta", importe, 9,0,""); 
+                    
+
+                } else if (
+                    // Read more about handling dismissals
+                    result.dismiss === Swal.DismissReason.cancel
+                ) {
+
+                    insert_line([268], 1, importe,0,{{ presupuesto.ticketsnal.id }});
+                    ticket_senal("Efectivo",importe,"SI",0); 
+                    senal_pdf("Efectivo", importe, 9,0,""); 
+                }
+
+            })
+
+         })
+
+        function senal_pdf(pago, importe, estado, importefinal, pagofinal) 
+        {
+            
+            $.ajax({  
+                    url:        '{{ path("senalpdf", {id:presupuesto.id}) }}',  
+                    type:       'GET',   
+                    data:        ({tipopago: pago, importe:importe, estado:estado, importefinal:importefinal, pagofinal:pagofinal}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                           
+                           console.log(response);
+                          
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        };  
+
+
+        function ticket_senal(tipopago, importe, espresupuesto,cestasnal) 
+        {
+            console.log("ticketsenal" + cestasnal);
+            $.ajax({  
+                    url:        '{{ path("ticketpdf", {id:presupuesto.ticketsnal.id  }) }}',  
+                    type:       'GET',   
+                    data:        ({tipopago : tipopago, espresu : espresupuesto, importe : importe }),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            ticketsnal_finalizar(tipopago, response.namepdf, response.importe, cestasnal);
+                            abrirNuevoTab('/Tickets/' + response.namepdf);
+ 
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        };  
+
+        function ticketsnal_finalizar(tipopago, numticket, importe, cestaidentidad) 
+        {
+            
+            $.ajax({             
+                    url:        '{{ path("cestas_finalizar", {id: presupuesto.ticketsnal.id }) }}',  
+                    type:       'GET',   
+                    data:        ({tipopago : tipopago, numticket: numticket, importe:importe}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            
+                         location.reload();   
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        };  
+
+        
+        /****************************************
+        *       Sumar o restar un producto      *
+        *****************************************/
+
+        $(document).on('click', 'i[name="plus-minus"]' , function(event) {
+            let id = this.id;
+            this.dataset.cantidad
+
+            let cantidad = this.dataset.cantidad;
+
+            if (this.classList.contains("fa-minus-circle")){
+                cantidad--;
+            }else{
+                cantidad++;
+            };
+
+            if (cantidad==0) {
+                delete_line(id);     
+            }else{
+                actualiza_line(id, cantidad);
+            }
+
+        })
+
+
+
+
+        function actualiza_line(id,cantidad) 
+        {
+            $.ajax({  
+               url:        '../detallecesta/plusminus/ajax',  
+               type:       'GET',   
+               data:        ({cantidad: cantidad ,id: id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) {  
+                   $('#loop').html(response.template);
+                   document.querySelector("span[name='cantidad']").innerText     =  response.cantidad;
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            });  
+        };  
+
+
+        function actualiza_cesta(id,imptot,descuento,tipopago) 
+        {
+            $.ajax({  
+               url:        '../cestas/' + id + '/update',  
+               type:       'GET',   
+               data:        ({imptot: imptot ,descuento: descuento, tipopago: tipopago}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) {  
+                   $('#loop').html(response.template);
+                   document.querySelector("span[name='cantidad']").innerText     =  response.cantidad;
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            });  
+        };  
+
+
+      });  
+
+        /************************************/
+        //default editor
+        /************************************/
+        $('.summernote').summernote({
+            height: 350, // set editor height
+            minHeight: null, // set minimum height of editor
+            maxHeight: null, // set maximum height of editor
+            focus: false // set focus to editable area after initializing summernote
+        });
+
+        /************************************/
+        //inline-editor
+        /************************************/
+        $('.inline-editor').summernote({
+            airMode: true
+        });
+
+        /************************************/
+        //edit and save mode
+        /************************************/
+        window.edit = function () {
+            $(".click2edit").summernote()
+        },
+            window.save = function () {
+                $(".click2edit").summernote('destroy');
+            }
+
+        var markupStr = $('#summernote').summernote('code');
+
+        var edit = function () {
+            $('.click2edit').summernote({ focus: true });
+        };
+
+        var save = function () {
+            var markupStr = $('.click2edit').summernote('code');
+            $('.click2edit').summernote('destroy');
+                var selector = document.querySelector("#idpresu");
+                var actualpre = selector.dataset.idpresu;
+
+                $.ajax({  
+                    url:        '../presupuestos/' + actualpre + '/manoobra',  
+                    type:       'GET',   
+                    data:        ({texto : markupStr}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                        console.log(actualpre);
+                        location.reload();                                 
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+        };
+
+        /************************************/
+        //airmode editor
+        /************************************/
+        $('.airmode-summer').summernote({
+            airMode: true
+        });
+
+
+
+
+
+    </script>
+{% endblock %}

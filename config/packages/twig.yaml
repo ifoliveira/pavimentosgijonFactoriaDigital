@@ -1,0 +1,8 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    globals:
+        project: '@project'   
+        ticketsDir: '%kernel.project_dir%/public/Tickets' 
+    form_themes: ['bootstrap_4_horizontal_layout.html.twig','fields.html.twig']
+
+        

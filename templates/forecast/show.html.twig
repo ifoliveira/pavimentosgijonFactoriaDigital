@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Forecast{% endblock %}
+
+{% block body %}
+    <h1>Forecast</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ forecast.id }}</td>
+            </tr>
+            <tr>
+                <th>ConceptoFr</th>
+                <td>{{ forecast.conceptoFr }}</td>
+            </tr>
+            <tr>
+                <th>FechaFr</th>
+                <td>{{ forecast.fechaFr ? forecast.fechaFr|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>ImporteFr</th>
+                <td>{{ forecast.importeFr }}</td>
+            </tr>
+            <tr>
+                <th>EstadoFr</th>
+                <td>{{ forecast.estadoFr }}</td>
+            </tr>
+            <tr>
+                <th>FijovarFr</th>
+                <td>{{ forecast.fijovarFr }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('forecast_index') }}">back to list</a>
+
+    <a href="{{ path('forecast_edit', {'id': forecast.id}) }}">edit</a>
+
+    {{ include('forecast/_delete_form.html.twig') }}
+{% endblock %}

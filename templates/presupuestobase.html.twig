@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+    <head>
+        {% block stylesheets %}
+            <!-- Custom CSS -->
+            <link href="{{ asset('dist/css/style.css') }}" rel="stylesheet">
+
+    <style>
+    @page {
+        size: 21cm 29.7cm;
+        /* change the margins as you want them to be. */
+    }
+
+
+    body {
+        font-family: 'orkneyregular', sans-serif;
+        table-layout:fixed; 
+        width: 100%;
+
+        
+    }
+
+
+    </style>
+        {% endblock %}
+    </head>
+    <body>  
+        {% set modify = '+ 30 day' %}
+
+        <table style="width: 100%;">
+            <tr>    
+                <td style="width: 10%;"></td>
+                <td style="width: 10%;"></td>
+                <td style="width: 10%;"></td>
+                <td style="width: 10%;"></td>
+                <td style="width: 10%;"></td>
+                <td style="width: 10%;"></td>
+                <td style="width: 10%;"></td>
+            </tr>
+            <tr>    
+                <td></td>
+                <td></td>
+                <td></td>
+                <td colspan="2" style="text-align:right">
+                    <b>Nombre           :</b>
+                </td>
+                <td  colspan="2">
+                         {{ presupuesto.clientePe.nombreCl|title  }} {{ presupuesto.clientePe.apellidosCl|title  }}
+                </td>
+            </tr>
+            <tr>    
+                <td></td>
+                <td></td>
+                <td></td>
+                <td colspan="2" style="text-align:right">
+                    <b>Dirección         :</b>
+                </td>
+                <td colspan="2">
+                    {{ presupuesto.clientePe.direccionCl|title  }}
+                </td>
+            </tr>
+            <tr>    
+                <td></td>
+                <td></td>
+                <td></td>
+                <td colspan="2" style="text-align:right">
+                    <b>Fecha presupuesto  :</b>
+                </td>
+                <td  colspan="2">
+                    {{ presupuesto.timestampModPe ? presupuesto.timestampModPe|date("d-m-Y")  : '' }}
+                </td>
+            </tr>
+            <tr>    
+                <td></td>
+                <td></td>
+                <td></td>
+                <td colspan="2" style="text-align:right">
+                    <b>Válido hasta       :</b>
+                </td>
+                <td  colspan="2">
+                   {{ presupuesto.timestampModPe ? presupuesto.timestampModPe| date_modify(modify) |date("d-m-Y")  : '' }}
+                </td>
+            </tr>
+
+            <tr >
+                <td colspan="7">
+                       <p> {{ presupuesto.manoobraPe| raw }} </p>
+                </td>
+            </tr>
+
+            <tr style="font-size: 24px; text-align:center;" >
+                <td colspan="7" >Materiales</td>
+            </tr>
+               
+        {% for detalle in project.getCesta(cestaId).getdetallecesta %}
+            <tr>
+                <td style="text-align:right;">{{ detalle.cantidadDC}} </td>
+                <td colspan="6">{{ detalle.productoDc.descripcionPd }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+  
+            <tr style="text-align:center;">
+                <td colspan="4">  
+                <td colspan="3" style="font-size: 24px;">  
+                    <b>Total :</b> {{presupuesto.importetotPe|number_format(2) }} €</b> 
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

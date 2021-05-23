@@ -1,0 +1,140 @@
+{% extends 'pages.html.twig' %}
+{% form_theme form 'fields.html.twig' %}
+{% block title %}Presupuesto nuevo{% endblock %}
+{% block cabecera %} Presupuesto nuevo {% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path("presupuestos_index") }}">Presupuestos</a></li> 
+<li class="breadcrumb-item active">Nuevo</li>
+{% endblock %}
+{% block tablas %}{% endblock %}
+             {% block formulario %}
+                <!-- ============================================================== -->
+                <!-- End Bread crumb and right sidebar toggle -->
+                <!-- ============================================================== -->
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+                <!-- row -->
+                    <div class="card-body">
+
+                    <div class="col-sm-12 col-lg-12">
+                        <div class="card">
+                           <form action="" method="POST">
+                               {{ form_row(form._token) }}
+                                <div class="card-body">
+                                    <h6 class="card-subtitle"></code></h6>
+                                    <div class="action-form">
+                                        <div class="form-group mb-0 text-left">
+                                            <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Nuevo') }}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                                {# reproduce únicamente los campos task: descripción #}
+                                <div class="card-body">
+                                    <h4 class="card-title">Datos del presupuesto</h4>
+                                    <div class="row">
+                                        <div class="col-sm-12 col-md-4">
+                                            <div id="nombres">
+                                                {{ form_label(form.nombreCl, null, {label_attr: { class: 'control-label col-form-label col-sm-6'}})}}
+                                                {{ form_errors(form.nombreCl) }}
+                                                {{ form_widget(form.nombreCl, {'attr':{'class': 'typeahead form-control', 'placeholder':'Nombre'}} )}}
+                                                {{ form_help(form.nombreCl) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-12 col-md-8">
+                                            <div id="apellidos">
+                                                    {{ form_label(form.apellidosCl, null, {label_attr: { class: 'control-label col-form-label col-sm-6'}})}}
+                                                    {{ form_errors(form.apellidosCl) }}
+                                                    {{ form_widget(form.apellidosCl, {'attr':{'class': 'typeahead form-control', 'placeholder':'Apellidos'}} )}}
+                                                    {{ form_help(form.apellidosCl) }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-sm-12 col-md-8">
+                                            <div id="calles">
+                                                {{ form_label(form.direccionCl, null, {label_attr: { class: 'control-label col-form-label col-sm-6'}})}}
+                                                {{ form_errors(form.direccionCl) }}
+                                                {{ form_widget(form.direccionCl, {'attr':{'class': 'typeahead form-control', 'placeholder':'Dirección'}} )}}
+                                                {{ form_help(form.direccionCl) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-12 col-md-4">
+                                            <div>
+                                                    {{ form_label(form.telefono1Cl, null, {label_attr: { class: 'control-label col-form-label col-sm-6'}})}}
+                                                    {{ form_errors(form.telefono1Cl) }}
+                                                    {{ form_widget(form.telefono1Cl, {'attr':{'class': 'typeahead form-control',  'placeholder':'Telefono'}} )}}
+                                                    {{ form_help(form.telefono1Cl) }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {# itera sobre cada etiqueta existente y reproduce su único campo: name #}
+                                    {% for presupuesto in form.presupuestosCl %}
+                                        {{ form_row(presupuesto.estadoPe) }}
+                                        {{ form_row(presupuesto.manoobraPe) }}
+                                            {{ form_row(presupuesto.importetotPe, { 'row_attr': {'class':'d-none'}} ) }}
+                                            {{ form_row(presupuesto.descuaetoPe, { 'row_attr': {'class': 'd-none'} }) }}
+                                    {% endfor %}
+                                </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End row -->
+{% endblock %}
+
+
+{% block jscustom %}
+
+    <!--Custom JavaScript -->
+    <script src="{{ asset('dist/js/feather.min.js') }}"></script>
+    <script src="{{ asset('dist/js/custom.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/typeahead.js/dist/typeahead.jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/typeahead.js/dist/bloodhound.min.js') }}"></script>
+    
+    <!--Custom JavaScript -->
+    
+    <script language = "javascript">
+
+
+
+        var calles = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        prefetch: '{{ asset('dist/js/pages/datatable/calles2.json') }}'
+        });
+
+        var nombres = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        prefetch: '{{ asset('dist/js/pages/datatable/nombres2.json') }}'
+        });
+
+        var apellidos = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        prefetch: '{{ asset('dist/js/pages/datatable/apellidos.json') }}'
+        });
+
+        // passing in `null` for the `options` arguments will result in the default
+        // options being used
+        $('#calles .typeahead').typeahead(null, {
+        name: 'calles',
+        source: calles
+        });
+
+        $('#nombres .typeahead').typeahead(null, {
+        name: 'nombre',
+        source: nombres
+        });
+
+
+        $('#apellidos .typeahead').typeahead(null, {
+        name: 'apellidos',
+        source: apellidos
+        });
+    
+   </script> 
+{% endblock %}

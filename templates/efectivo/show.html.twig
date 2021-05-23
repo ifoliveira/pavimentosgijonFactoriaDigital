@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Efectivo{% endblock %}
+
+{% block body %}
+    <h1>Efectivo</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ efectivo.id }}</td>
+            </tr>
+            <tr>
+                <th>ConceptoEf</th>
+                <td>{{ efectivo.conceptoEf }}</td>
+            </tr>
+            <tr>
+                <th>FechaEf</th>
+                <td>{{ efectivo.fechaEf ? efectivo.fechaEf|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>ImporteEf</th>
+                <td>{{ efectivo.importeEf }}</td>
+            </tr>
+            <tr>
+                <th>TimestampEf</th>
+                <td>{{ efectivo.timestampEf ? efectivo.timestampEf|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('efectivo_index') }}">back to list</a>
+
+    <a href="{{ path('efectivo_edit', {'id': efectivo.id}) }}">edit</a>
+
+    {{ include('efectivo/_delete_form.html.twig') }}
+{% endblock %}

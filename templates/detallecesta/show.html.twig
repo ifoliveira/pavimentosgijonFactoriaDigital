@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Detallecesta{% endblock %}
+
+{% block body %}
+    <h1>Detallecesta</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ detallecestum.id }}</td>
+            </tr>
+            <tr>
+                <th>CantidadDc</th>
+                <td>{{ detallecestum.cantidadDc }}</td>
+            </tr>
+            <tr>
+                <th>PvpDc</th>
+                <td>{{ detallecestum.pvpDc }}</td>
+            </tr>
+            <tr>
+                <th>DescuentoDc</th>
+                <td>{{ detallecestum.descuentoDc }}</td>
+            </tr>
+            <tr>
+                <th>TimestampDc</th>
+                <td>{{ detallecestum.timestampDc ? detallecestum.timestampDc|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('detallecesta_index') }}">back to list</a>
+
+    <a href="{{ path('detallecesta_edit', {'id': detallecestum.id}) }}">edit</a>
+
+    {{ include('detallecesta/_delete_form.html.twig') }}
+{% endblock %}

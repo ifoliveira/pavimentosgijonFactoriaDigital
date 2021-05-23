@@ -1,0 +1,8 @@
+
+<form method="post" action="{{ path('cestas_delete', {'id': cesta.id}) }}" onsubmit="return confirm('¿Seguro que quieres borrar este ticket?');">
+    <input type="hidden" name="_method" value="DELETE">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ cesta.id) }}">
+    <button class=" btn btn-outline-danger">Borrar</button>
+</form>
+
+

@@ -1,0 +1,54 @@
+{% extends 'pages.html.twig' %}
+{% block cabecera %} Efectivo {% endblock %}
+{% block breadcrumb %} <li class="breadcrumb-item active">Efectivo</li>{% endblock %}
+{% block title %}Efectivo (Caja){% endblock %}
+{% block tablas %}
+    <h1>Clientes index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>NombreCl</th>
+                <th>ApellidosCl</th>
+                <th>CiudadCl</th>
+                <th>DireccionCl</th>
+                <th>Telefono1Cl</th>
+                <th>Telefono2Cl</th>
+                <th>EmailCl</th>
+                <th>TimestampaltaCl</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.id }}</td>
+                <td>{{ cliente.nombreCl }}</td>
+                <td>{{ cliente.apellidosCl }}</td>
+                <td>{{ cliente.ciudadCl }}</td>
+                <td>{{ cliente.direccionCl }}</td>
+                <td>{{ cliente.telefono1Cl }}</td>
+                <td>{{ cliente.telefono2Cl }}</td>
+                <td>{{ cliente.emailCl }}</td>
+                <td>{{ cliente.timestampaltaCl ? cliente.timestampaltaCl|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('clientes_show', {'id': cliente.id}) }}">show</a>
+                    <a href="{{ path('clientes_edit', {'id': cliente.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="10">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('clientes_new') }}">Create new</a>
+{% endblock %}
+{% block formulario %}{% endblock %}
+
+
+{% block jscustom %}
+{% endblock %}

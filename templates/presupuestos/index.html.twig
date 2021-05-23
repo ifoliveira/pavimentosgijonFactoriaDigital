@@ -1,0 +1,179 @@
+{% extends 'pages.html.twig' %}
+{% block cabecera %} Presupuestos {% endblock %}
+{% block breadcrumb %} <li class="breadcrumb-item active">Lista presupuestos</li>{% endblock %}
+{% block title %}Lista presupuestos{% endblock %}
+{% block tablas %}
+            {% set total = 0 %}
+            {% set medir = 0 %}
+            {% set pendientes = 0 %}
+            {% set aceptados = 0 %}
+            {% set entregados = 0 %}
+
+            {% for estado in estados %}
+                    {% if estado.estado > '6' %}
+                        {% set total = total + estado.cantidad %}
+                    {% endif %}
+                    {% if estado.estado == '4' %}
+                            {% set medir = estado.cantidad %}
+                    {% else %}
+                        {% if estado.estado == '5' or estado.estado == '6'  or estado.estado == '7'%}
+                                {% set pendientes = estado.cantidad + pendientes %}
+                        {% else %}
+                            {% if estado.estado == '8' %}
+                                    {% set entregados = estado.cantidad %}
+                            {% else %}
+                                {% if estado.estado == '9' or  estado.estado == '10'%}
+                                        {% set aceptados = estado.cantidad + aceptados%}
+                                {% endif %}     
+                            {% endif %}           
+                        {% endif %}
+                    {% endif %}
+            {% endfor %}
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+                <!-- basic table -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Presupuestos</h4>
+                                <div class="row mt-5">
+                                    <!-- Column -->
+                                    <div class="col-md-6 col-lg-3 col-xlg-3">
+                                        <div class="card card-hover">
+                                            <div class="p-2 rounded bg-primary text-center">
+                                                <h1 class="font-light text-white">{{ medir }}</h1>
+                                                <h6 class="text-white">Medir Pendientes</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Column -->
+                                    <div class="col-md-6 col-lg-3 col-xlg-3">
+                                        <div class="card card-hover">
+                                            <div class="p-2 rounded bg-warning text-center">
+                                                <h1 class="font-light text-white">{{ pendientes }}</h1>
+                                                <h6 class="text-white">Presupuestos Pendientes</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Column -->
+                                    <div class="col-md-6 col-lg-3 col-xlg-3">
+                                        <div class="card card-hover">
+                                            <div class="p-2 rounded bg-success text-center">
+                                                <h1 class="font-light text-white">{{ entregados }}</h1>
+                                                <h6 class="text-white">Presupuestos Entregados</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Column -->
+                                    <div class="col-md-6 col-lg-3 col-xlg-3">
+                                        <div class="card card-hover">
+                                            <div class="p-2 rounded bg-dark text-center">
+                                            {% if total == 0 %}
+                                                <h1 class="font-light text-white">0%</h1>
+                                            {% else %}
+
+                                                <h1 class="font-light text-white">{{ (aceptados * 100 / total)|number_format(2) }} %</h1>
+                                            {% endif %}
+                                                <h6 class="text-white">Presupuestos Aceptados</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Column -->
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="zero_config" class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Estado</th>
+                                                <th>Id</th>
+                                                <th>FechainiPe</th>
+                                                <th>CostetotPe</th>
+                                                <th>ImportetotPe</th>
+                                                <th>TipopagototPE</th>
+                                                <th>ImportesnalPe</th>
+                                                <th>TipopagosnalPe</th>
+                                            </tr>
+                                        </thead>
+                                            <tbody>
+                                            {% for presupuesto in presupuestos %}
+                                                <tr> 
+                                                    {% if presupuesto.EstadoPe.id == 4 %}
+                                                        <td><span class="badge badge-primary">{{ presupuesto.EstadoPe }}</span></td>
+                                                    {% else %}
+                                                        {% if presupuesto.EstadoPe.id == 6 or presupuesto.EstadoPe.id == 5%}
+                                                            <td><span class="badge badge-warning">{{ presupuesto.EstadoPe }}</span></td>
+                                                        {% else %}
+                                                            {% if presupuesto.EstadoPe.id == 7 %}
+                                                                <td><span class="badge badge-warning">{{ presupuesto.EstadoPe }}</span></td>
+                                                            {% else %}
+                                                                {% if presupuesto.EstadoPe.id == 10 %}
+                                                                    <td><span class="badge badge-info">{{ presupuesto.EstadoPe }}</span></td>
+                                                                {% else %}
+                                                                    {% if presupuesto.EstadoPe.id == 99 %}
+                                                                        <td><span class="badge badge-dark">{{ presupuesto.EstadoPe }}</span></td>
+                                                                    {% else %}
+                                                                        {% if presupuesto.EstadoPe.id == 8 %}
+                                                                            <td><span class="badge badge-danger">{{ presupuesto.EstadoPe }}</span></td>
+                                                                        {% else %}
+                                                                            <td><span class="badge badge-success">{{ presupuesto.EstadoPe }}</span></td>
+                                                                        {% endif %}
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                    <td><a href="{{ path ('presupuestos_show', { 'id': presupuesto.id  }) }}" class="font-medium link">{{ presupuesto.id }}</a></td>
+                                                    <td>{{ presupuesto.fechainiPe ? presupuesto.fechainiPe|date('Y-m-d') : '' }}</td>
+                                                    <td>{{ presupuesto.costetotPe }}</td>
+                                                    <td>{{ presupuesto.importetotPe }}</td>
+                                                    <td>{{ presupuesto.tipopagototPE }}</td>
+                                                    <td>{{ presupuesto.importesnalPe }}</td>
+                                                    <td>{{ presupuesto.tipopagosnalPe }}</td>
+                                                </tr>
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="10">no records found</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        
+                                        <tfoot>
+                                            <tr>
+                                                <th>Estado</th>
+                                                <th>Id</th>
+                                                <th>FechainiPe</th>
+                                                <th>CostetotPe</th>
+                                                <th>ImportetotPe</th>
+                                                <th>TipopagototPE</th>
+                                                <th>ImportesnalPe</th>
+                                                <th>TipopagosnalPe</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    <div class="d-flex align-items-center justify-content-end">
+                                        <ul class="pagination">
+                                            <li class="page-item disabled">
+                                                <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                            </li>
+                                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="#">2 <span class="sr-only">(current)</span></a>
+                                            </li>
+                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="#">Next</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    <a href="{{ path('presupuestos_new') }}">Create new</a>
+{% endblock %}
+{% block formulario %}{% endblock %}
+{% block jscustom %}
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'pages.html.twig' %}
+{% block cabecera %} Tickets Apgijon.es {% endblock %}
+{% block breadcrumb %} <li class="breadcrumb-item active">Efectivo</li>{% endblock %}
+{% block title %}T{% endblock %}
+{% block tablas %}
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+                <!-- Footer callback -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Movimientos</h4>
+                                <h6 class="card-subtitle"></h6>
+                                <div class="table-responsive">
+                                    <table id="default_order" class="table table-striped table-bordered display"
+                                        style="width:100%">
+                                            <thead>
+                                                <tr>
+                                                    
+                                                    <th>FechaEf</th>
+                                                    <th>Importe</th>
+                                                    <th>Descuento</th>
+                                                    <th>TipoPago</th>
+                                                    <th>NumTicket</th>
+                                                    
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for cesta in cestas %}
+
+                                                <tr>
+                                                    <td>{{ cesta.Fecha_Fc }}</td>
+                                                    <td align="right">{{ cesta.ImporteTotal_Fc |number_format(2) }}</td>
+                                                    <td align="right">{{ cesta.Descuento_Fc |number_format(2) }}</td>
+                                                    <td>{{ cesta.TipoPago_Fc }}</td>
+                                                    <td>{{ cesta.NumTicket_Fc }}</td>
+
+                                                </tr>
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="6">no records found</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="4" style="text-align:right">Total:</th>
+                                                <th></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    <a href="{{ path('efectivo_new') }}">Create new</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- ============================================================== -->
+                <!-- End PAge Content -->
+                <!-- ============================================================== -->
+                <!-- ============================================================== -->
+                <!-- Right sidebar -->
+                <!-- ============================================================== -->
+                <!-- .right-sidebar -->
+                <!-- ============================================================== -->
+                <!-- End Right sidebar -->
+                <!-- ============================================================== -->
+            </div>
+            <!-- ============================================================== -->
+            <!-- End Container fluid  -->
+            <!-- ============================================================== -->
+{% endblock %}
+
+{% block formulario %}{% endblock %}
+
+{% block jscustom %}
+    <!--Custom JavaScript -->
+    <script src="{{ asset('assets/libs/datatables/media/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/custom-datatable.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/datatable-advanced.init.js') }}"></script>
+    <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
+    
+    <script language = "javascript">
+    $(document).ready(function(){   
+        /****************************************
+        *       Default Order Table           *
+        ****************************************/
+        $('#default_order').DataTable({
+            "order": [
+                [0, "desc"]
+            ]
+        });
+
+        /****************************************
+        *       Default Order Insert       *
+        ****************************************/
+
+        $('#default_order').on('click', 'tr', function() {
+            Swal.fire({
+                title: 'Vas a insertar un ticket?',
+                text: "Aparecerá en tus cestas!",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Si, inserta!'
+            }).then((result) => {
+                if (result.value) {
+                    var data = table.row(this).data();
+                    insert_line(data);
+                }
+            })
+        })
+
+        //=============================================//
+        //    DOM/jquery events                        //
+        //=============================================//
+        var table = $('#default_order').DataTable();
+
+        function insert_line(data) 
+        {
+            
+            cesta = data;
+
+            $.ajax({  
+               url:        'cestas/nuevo/ajax',  
+               type:       'GET',   
+               data:        ({cesta: cesta}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(data, status) {  
+                    Swal.fire(
+                        'Insert!',
+                        'Has insertado un ticket.',
+                        'success'
+                    )
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            });  
+        };  
+      });  
+   </script> 
+{% endblock %}
+
+
+

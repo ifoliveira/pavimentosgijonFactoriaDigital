@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Title of the PDF</title>
+        <style type="text/css">
+            
+        html {
+            width: 400pt;
+            margin-top: 155pt;
+            margin-right: 10pt;
+            margin-bottom: 10pt;
+            margin-left: 10pt;
+        }
+            table {
+                width: 260pt;
+                font-family: "Trebuchet MS", sans-serif;
+                font-size: 10px;
+                font-weight: bold;
+                line-height: 1.4em;
+                font-style: normal;
+                border-collapse:separate;
+                margin: 0 auto;
+            }
+            th{
+                padding:5px;
+                -webkit-border-top-left-radius:5px;
+                -webkit-border-top-right-radius:5px;
+                -moz-border-radius:5px 5px 0px 0px;
+                border-top-left-radius:5px;
+                border-top-right-radius:5px;
+                border-bottom:1px dashed #949494;
+            }
+            
+            td{
+
+               text-align:center;
+               -moz-border-radius:2px;
+               -webkit-border-radius:2px;
+               border-radius:0px;
+               color:#000;
+               text-shadow:1px 1px 1px #fff;
+           }
+            
+        td.iva{
+            color: #000;
+            font-size:10px;
+            text-align:center;
+            border-top:1px dashed #949494;
+        }
+           
+        th.total{
+            color:#000;
+        }
+           
+        p{
+            text-align:center;
+            font-size:12px;
+            margin-bottom: 0px;
+            margin-top: 5px;
+        }
+        
+        a{
+            font-size:11px;
+        }
+        
+        a.fecha{
+        }
+        
+        </style>
+    </head>
+    <body>
+        <p><a class="fecha">{{ "now"|date("m/d/Y") }}  </a>   -   <a class="float: left">  Factura Simplificada</a>  -   <a class="float: left">  {{ tipopago }}</a></p>
+        <hr/>
+        <table class="egt">
+
+          <tr>
+            <th style="text-align: center">Ud.</th>
+            <th  style="text-align: center" >Descripción</th>
+            <th style="text-align: center; width: 15%">Importe</th>
+          </tr>
+        {% set total = 0 %}
+        {% for detalle in project.getCesta(cestaId).getdetallecesta %}
+            {% set total = total + (detalle.pvpDc * detalle.cantidadDC) %}
+          <tr>
+            <td style="width: 10%; text-align: center" id="cantidad">{{ detalle.cantidadDC }}</td>
+            <td style="text-align: left ; padding: 0px 0px 0px 25px">{{ detalle.productoDc.descripcionPd }}</td>
+
+            {% if espresu != 'SI' %}
+                <td style="text-align: right; width: 15%"> {{ (detalle.pvpDc * detalle.cantidadDC)|format_currency('EUR', locale='es') }}</td>
+            {% endif %}
+          </tr>
+         {% endfor %}
+        {% if espresu == 'SI' and  importesnal != 0%}
+            <tr>
+                <td class="iva" style="text-align: right"></td>
+                <td class="iva" style="text-align: right;  width: 45%">Adelanto Reserva:</td>
+                <td class="iva" style="text-align: right;  width: 15%"> - {{ importesnal|format_currency('EUR', locale='de')  }}</td>
+            </tr>
+        {% endif %} 
+            <tr>
+                 <td class="iva" style="text-align: right"></td>
+
+                 <td class="iva" style="text-align: right;  width: 45%">Total(I.V.A. incluido) :</td>
+                 {% if espresu == 'SI' %}
+
+                    <td class="iva" style="text-align: right;  width: 15%">{{ importe|format_currency('EUR', locale='de')  }}</td>
+                 {% else %}
+                     <td class="iva" style="text-align: right;  width: 15%">{{ total|format_currency('EUR', locale='de')  }}</td>
+                 {% endif %}                  
+            </tr>
+        </table>
+        <hr/>    
+        
+        <p >Alejandra Gancedo Muñoz </p>
+        <p style="margin-bottom: 8px;">53543499-M </p>
+        
+        <p>http://www.apgijon.es  -  buzon@apgijon.es</p>
+        <p>*********** GRACIAS POR SU VISITA ***********</p>
+    </body>
+</html>
