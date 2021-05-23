@@ -43,13 +43,13 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "App\\": "src/",
             "App\\MisClases\\": "MiClases/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\Tests\\": "tests/"
+            "App\\Tests\\": "tests/",
             "App\\MisClases\\": "MiClases/"
         }
     },
