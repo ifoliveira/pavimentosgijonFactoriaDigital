@@ -5,7 +5,7 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     c43Dir: "%kernel.project_dir%/public_html/C43"
-    presupuestoDir: "%kernel.project_dir%/Presupuestos"
+    presupuestoDir: "%kernel.project_dir%/public_html/Presupuestos"
     ticketsDir: "%kernel.project_dir%/public_html/Tickets"
 services:
     # default configuration for services in *this* file

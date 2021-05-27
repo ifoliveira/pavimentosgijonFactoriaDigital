@@ -69,7 +69,7 @@ class PresupuestosController extends AbstractController
     public function show(Request $request, Presupuestos $presupuesto, ProductosRepository $productosRepository): Response
     {
 
-        $directorio = '../public/Presupuestos' . '/' . $presupuesto->getClientePe()->getNombreCl() . ' ' . $presupuesto->getFechainiPe()->format('Y-m-d');
+        $directorio = $this->getParameter("presupuestoDir") . '/' . $presupuesto->getClientePe()->getNombreCl() . ' ' . $presupuesto->getFechainiPe()->format('Y-m-d');
 
         $defaultData = array('message' => 'Escribe un mensaje aquí');
 
