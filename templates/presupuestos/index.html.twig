@@ -88,7 +88,7 @@
                                             <tr>
                                                 <th>Estado</th>
                                                 <th>Id</th>
-                                                <th>FechainiPe</th>
+                                                <th>Telefono</th>
                                                 <th>CostetotPe</th>
                                                 <th>ImportetotPe</th>
                                                 <th>TipopagototPE</th>
@@ -124,8 +124,8 @@
                                                             {% endif %}
                                                         {% endif %}
                                                     {% endif %}
-                                                    <td><a href="{{ path ('presupuestos_show', { 'id': presupuesto.id  }) }}" class="font-medium link">{{ presupuesto.id }}</a></td>
-                                                    <td>{{ presupuesto.fechainiPe ? presupuesto.fechainiPe|date('Y-m-d') : '' }}</td>
+                                                    <td><a href="{{ path ('presupuestos_show', { 'id': presupuesto.id  }) }}" class="font-medium link">{{ presupuesto.clientePe.direccionCl}}  ({{presupuesto.clientePe.nombreCl}})</a></td>
+                                                    <td>{{ presupuesto.clientePe.telefono1Cl }}</td>
                                                     <td>{{ presupuesto.costetotPe }}</td>
                                                     <td>{{ presupuesto.importetotPe }}</td>
                                                     <td>{{ presupuesto.tipopagototPE }}</td>
@@ -143,7 +143,7 @@
                                             <tr>
                                                 <th>Estado</th>
                                                 <th>Id</th>
-                                                <th>FechainiPe</th>
+                                                <th>Telefono</th>
                                                 <th>CostetotPe</th>
                                                 <th>ImportetotPe</th>
                                                 <th>TipopagototPE</th>
