@@ -95,7 +95,7 @@
             <tr>
                 <td class="iva" style="text-align: right"></td>
                 <td class="iva" style="text-align: right;  width: 45%">Adelanto Reserva:</td>
-                <td class="iva" style="text-align: right;  width: 15%"> - {{ importesnal|format_currency('EUR', locale='de')  }}</td>
+                <td class="iva" style="text-align: right;  width: 15%"> - {{ importesnal|format_currency('EUR', locale='en')  }}</td>
             </tr>
         {% endif %} 
             <tr>
@@ -104,9 +104,9 @@
                  <td class="iva" style="text-align: right;  width: 45%">Total(I.V.A. incluido) :</td>
                  {% if espresu == 'SI' %}
 
-                    <td class="iva" style="text-align: right;  width: 15%">{{ importe|format_currency('EUR', locale='de')  }}</td>
+                    <td class="iva" style="text-align: right;  width: 15%">{{ importe|format_currency('EUR', locale='en')  }}</td>
                  {% else %}
-                     <td class="iva" style="text-align: right;  width: 15%">{{ total|format_currency('EUR', locale='de')  }}</td>
+                     <td class="iva" style="text-align: right;  width: 15%">{{ total|format_currency('EUR', locale='en')  }}</td>
                  {% endif %}                  
             </tr>
         </table>
