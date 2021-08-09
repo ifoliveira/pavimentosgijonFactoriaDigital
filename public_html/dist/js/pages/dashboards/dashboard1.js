@@ -82,7 +82,7 @@ $(function () {
 			]
 		}, {
 				low: 0
-				, high:10000
+				, high:20000
 				, showArea: true
 				, fullWidth: true
 				, showLine: false
@@ -122,7 +122,7 @@ $(function () {
 						, caja , forecastBank, banco,
 					]}, {
 					low: 0,
-					high: 10000,
+					high: 15000,
 					showArea: true,
 					fullWidth: true,
 					plugins: [
