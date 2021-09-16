@@ -3,17 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\Banco;
+use App\Entity\Efectivo;
 use App\Entity\Tiposmovimiento;
-use app\entity\Detallecesta;
 use App\Form\Banco1Type;
 Use App\MisClases\Banks_N43;
 use App\Repository\BancoRepository;
 use App\Repository\DetallecestaRepository;
-use app\Repository\TiposmovimientoRepository;
-use PhpParser\Node\Expr\Cast\String_;
+use App\Repository\EfectivoRepository;
+use App\Repository\TiposmovimientoRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -142,6 +140,34 @@ class BancoController extends AbstractController
             $entityManager->remove($banco);
             $entityManager->flush();
         }
+
+        return $this->redirectToRoute('banco_index');
+    }
+
+    /**
+     * @Route("/{id}/transferencia", name="banco_transferencia", methods={"GET","POST"})
+     */
+    public function conciliar(Request $request, Banco $banco,  EfectivoRepository $efectivoRepository, TiposmovimientoRepository $tiposmovimientoRepository): Response
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        
+        // Buscamos la descripcion del tipo        
+        $tipo = $entityManager->getRepository(Tiposmovimiento::class)->findOneBy(
+            ['descripcionTm' => 'Transferencia']
+            );
+
+        // Creamos un movimiento en efectivo
+        $efectivo = new Efectivo();
+        $efectivo->setTipoEf($tipo);
+        $efectivo->setConceptoEf("Retirada Cajero");
+        $efectivo->setImporteEf($banco->getImporteBn() * -1);
+        $efectivo->setFechaEf(new \DateTime());    
+
+        $entityManager->persist($efectivo);
+
+        // Si existe la movemos a objeto banco e insertamo solo banco        
+        $banco->setCategoriaBn($tipo);
+        $entityManager->flush();
 
         return $this->redirectToRoute('banco_index');
     }

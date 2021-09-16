@@ -42,6 +42,7 @@
 
 # Build data
 /build/
+/public_html/Tickets/
 
 # Composer PHAR
 /composer.phar

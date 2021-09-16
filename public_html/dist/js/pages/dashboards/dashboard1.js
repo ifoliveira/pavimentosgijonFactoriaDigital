@@ -11,6 +11,7 @@ $(function () {
 		var resta =0;
 		var total = [0,0,0,0,0,0,0,0,0,0,0,0];
 		var fecha = [];
+		var obra = [0,0,0,0,0,0,0,0,0,0,0,0];
 		var forecast = [];
 		var forecastBank = [];
 		var fechaBank =[];
@@ -18,39 +19,55 @@ $(function () {
 		var banco = [];
 		do {
 			var selector = document.querySelector("#datosmes"+i);
-			tarjeta[i-1] = selector.dataset.venta;
-			i++;
+			if (selector !== null) {
+				tarjeta[i-1] = selector.dataset.venta;
+				i++;
+			}else{
+				i=11;
+			}
 		} while (i<11)
 		i = 1;
 		do {
 			var selector = document.querySelector("#efectivo"+i);
-			total[i-1] = parseFloat(selector.dataset.venta) + parseFloat(tarjeta[i-1]);
+			if (selector !== null) {
+				total[i-1] = parseFloat(selector.dataset.venta) + parseFloat(tarjeta[i-1]);
 
-			i++;
+				i++;
+			}else{
+				i=11;
+			}
 		} while (i<11)
 
 		i = 0;
 		do {
 			var selector = document.querySelector("#fechfore"+i);
 
-			if (selector.classList.contains( 'Banco' )){
+			if (selector !== null) {	
+				if (selector.classList.contains( 'Banco' )){
 				fechaBank [i] = selector.dataset.venta;
+				} 
+			
+				fecha[i] = selector.dataset.venta;
+				i++;
+			}else{
+				i=42;
 			}
-
-			fecha[i] = selector.dataset.venta;
-			i++;
 		} while (i<42)
 
 		i = 0;
 		do {
 			var selector = document.querySelector("#forecast"+i);
-			if (selector.classList.contains( 'Banco' )){
-				forecastBank [i] = selector.dataset.venta - resta;
-			} else {
-				resta = resta + (selector.dataset.venta - forecast[i-1]) ;
+			if (selector !== null) {
+				if (selector.classList.contains( 'Banco' )){
+					forecastBank [i] = selector.dataset.venta - resta;
+				} else {
+					resta = resta + (selector.dataset.venta - forecast[i-1]) ;
+				}
+				forecast[i] = selector.dataset.venta;
+				i++;
+			}else{
+				i=42;
 			}
-			forecast[i] = selector.dataset.venta;
-			i++;
 		} while (i<42)
 		var selector = document.querySelector("#cajatotal");
 		i = 0;
@@ -78,6 +95,7 @@ $(function () {
 				, series: [
 				  {meta:"Venta total (€)", data: total }
 				, {meta:"Tarjeta (€)", data: tarjeta}
+				, {meta:"Obra (€)" , data: obra}
 			
 			]
 		}, {

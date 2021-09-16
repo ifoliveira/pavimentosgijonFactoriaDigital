@@ -26,7 +26,7 @@ class AdminProController extends AbstractController
     /**
      * @Route("/admin", name="admin_pro")
      */
-    public function index(BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
+    public function index(TiposmovimientoRepository $tiposmovimientoRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
     {
         $meteo = new Meteo;
         $iconweather = $meteo->icon();
@@ -35,6 +35,9 @@ class AdminProController extends AbstractController
         $ventasmestotal= $bancoRepository->ventamesBanco();
         $ventaefetotal = $cestasRepository->ventaefemes();
         $efectivototal = $efectivoRepository->totalefectivo();
+        $manoobratotal = $tiposmovimientoRepository->findBy(
+            ['descripcionTm' => 'Mano de Obra'],
+        );
         $forecast = $forecastRepository->findBy(
             ['estadoFr' => 'P'],
             ['fechaFr' => 'ASC'],
@@ -53,6 +56,7 @@ class AdminProController extends AbstractController
             'ventaefetotal' => $ventaefetotal,
             'gastos' => $efectivototal,
             'forecast' => $forecast,
+            'manoobratotal' => $manoobratotal,
             'weathericon' => $iconweather 
 
         ]);

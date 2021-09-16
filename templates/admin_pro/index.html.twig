@@ -83,7 +83,15 @@
                                         </div>
                                         {% set totaltar = 0 %}
                                         {% set totalefe = 0 %}
-
+                                        {% set totalmanob = 0 %}
+                                        {% for mano in manoobratotal %}
+                                            {% for bancos in mano.bancos %}
+                                                  {% set totalmanob = totalmanob + bancos.ImporteBn %}   
+                                            {% endfor %}    
+                                            {% for efectivo in mano.efectivo %}
+                                                  {% set totalmanob = totalmanob + efectivo.ImporteEf %}   
+                                            {% endfor %}    
+                                        {% endfor %}    
                                         {% for ventatot in ventastotal %}
                                         <a id="datosmes{{ ventatot['mes'] }}" data-venta="{{ ventatot['sum(importe_bn)'] }}"></a>  
                                             {% set totaltar = totaltar +  ventatot['sum(importe_bn)'] %}
@@ -128,6 +136,14 @@
                                                         <div>
                                                             <h2 class="mb-0">{{ (totaltar + ventaefectivo) |format_currency('EUR', locale='en') }}</h2>
                                                             <h6 class="text-muted">Ventas</h6></div>
+                                                    </div>
+                                                </li>
+                                                <li class="list-inline-item">
+                                                    <div class="d-flex">
+                                                        <i class="fa fa-circle font-10 mr-2 text-primary  mt-2"></i>
+                                                        <div>
+                                                            <h2 class="mb-0">{{ (totalmanob) |format_currency('EUR', locale='en') }}</h2>
+                                                            <h6 class="text-muted">Mano de Obra</h6></div>
                                                     </div>
                                                 </li>
                                             </ul>

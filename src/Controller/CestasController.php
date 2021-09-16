@@ -180,6 +180,8 @@ class CestasController extends AbstractController
         $cestas->setTipopagoCs($tipopago);
         $cestas->setNumticketCs($numticket);
         $cestas->setImporteTotCs($importetot);
+        $cestas->setFechaCs(new \DateTime());
+        $cestas->setTimestampCs(new \DateTime());
         $entityManager->persist($cestas);
         $entityManager->flush();
 
