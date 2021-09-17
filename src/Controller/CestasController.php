@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\MisClases\CestaUser;
 use App\Entity\Cestas;
+use App\Entity\Detallecesta;
 use App\Form\CestasType;
 use App\Repository\CestasRepository;
 use App\Repository\EstadocestasRepository;
@@ -29,6 +30,7 @@ class CestasController extends AbstractController
     {
         return $this->render('cestas/index.html.twig', [
             'cestas' => $cestasRepository->ticketshoy(),
+            'cestasnal'=> $cestasRepository->ticketssnal(),
         ]);
     }
 
@@ -113,7 +115,8 @@ class CestasController extends AbstractController
         // valores de data ajax
         $tipopago = $request->query->get('tipopago');
         $importe = ('SI' == $request->query->get('espresu')) ? $request->query->get('importe') : $cestauser->getImporteTot($cesta->getId());
-        $importesnal = ('SI' == $request->query->get('espresu')) ? $request->query->get('importesnal') : 0;
+        $importesnal = $request->query->get('importesnal');
+        //$importesnal = ('SI' == $request->query->get('espresu')) ? $request->query->get('importesnal') : 0;
         // Configure Dompdf según sus necesidades
         $pdfOptions = new Options();
         $pdfOptions->set(['defaultFont'=>'Arial', 
@@ -156,12 +159,61 @@ class CestasController extends AbstractController
         $response = new JsonResponse();
 
         // Envía una respuesta de texto
-        return $response->setData(['namepdf' => $namepdf.'.pdf', 'importe' => $importe]);
+        return $response->setData(['namepdf' => $namepdf.'.pdf', 'importe' => $importe, 'importesnal' => $importesnal] );
             // display the file contents in the browser instead of downloading it
         //return $this->file($pdfFilepath , 'my_invoice.pdf', ResponseHeaderBag::DISPOSITION_INLINE);
         
        
     }
+
+    /**
+     * @Route("/{id}/senal", name="cesta_senal", methods={"GET","POST"})
+     */
+    public function cestasenal(Request $request, Cestas $cesta, Detallecesta $detallecesta, CestasRepository $cestasRepository): Response
+    {
+ 
+        // Funcion encargada de duplicar la cesta en cuanto a productos para cerrar compra con señal
+        $entityManager = $this->getDoctrine()->getManager();
+
+        
+        // Creamos objeto detalle de cesta, con el usuario conectado y los metodos de CestaUser
+        $user = $this->getUser();
+        $tienecesta = $cestasRepository->findBy(
+            ['userCs' => $user->getId(),
+            'estadoCs' => '1'],
+        );
+
+
+        $detalles = $cesta->getdetallecesta();
+        foreach ($cesta->getdetallecesta() as $detalles){
+           
+            $detcesta = new Detallecesta;
+            $detcesta->setCestaDc($tienecesta[0]);
+            $detcesta->setproductoDc($detalles->getproductoDc());
+            $detcesta->setCantidadDc($detalles->getCantidadDc());
+            $detcesta->setPrecioDc($detalles->getPrecioDc());
+            $detcesta->setpvpDc($detalles->getpvpDc()); 
+            
+            // Insertamos en la tabla el detalle
+            $entityManager->persist($detcesta);
+            
+         }
+
+         $cesta->setEstadoCs(2);
+         $entityManager->persist($cesta);
+
+         $tienecesta[0]->setImporteTotCs($cesta->getDescuentoCs());
+         $tienecesta[0]->setDescuentoCs($cesta->getImporteTotCs());
+         $entityManager->persist($tienecesta[0]);
+
+
+         $entityManager->flush();
+         return $this->redirectToRoute('cestas_show', array ('id' => $tienecesta[0]->getId()));
+
+
+
+
+    }  
 
     /**
      * @Route("/{id}/finalizar", name="cestas_finalizar")
@@ -172,14 +224,22 @@ class CestasController extends AbstractController
         $tipopago = $request->query->get('tipopago');
         $numticket = $request->query->get('numticket'); 
         $importetot = $request->query->get('importe'); 
+        $importesnal = $request->query->get('importesnal'); 
      
         // Cambiamos el estado de la cesta del presupuesto para que sea actual
 
         $entityManager = $this->getDoctrine()->getManager();
+
         $cestas->setEstadoCs(2);
+        $cestas->setImporteTotCs($importetot);
+        if ($importesnal!= 0) {
+            $cestas->setImporteTotCs($importesnal);
+            $cestas->setDescuentoCs($importetot-$importesnal);
+            $cestas->setEstadoCs(9);
+        }
+
         $cestas->setTipopagoCs($tipopago);
         $cestas->setNumticketCs($numticket);
-        $cestas->setImporteTotCs($importetot);
         $cestas->setFechaCs(new \DateTime());
         $cestas->setTimestampCs(new \DateTime());
         $entityManager->persist($cestas);

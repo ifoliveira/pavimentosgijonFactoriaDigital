@@ -46,12 +46,11 @@
                 <td>{{ cesta.timestampCs ? cesta.timestampCs|date('Y-m-d H:i:s') : '' }}</td>
             </tr>
         </tbody>
-                                    </table>
-    <a href="{{ path('cestas_index') }}">back to list</a>
+    </table>
 
-    <a href="{{ path('cestas_edit', {'id': cesta.id}) }}">edit</a>
+            <button class="btn btn-success" id="Checkout">Generar ticket</button>
 
-    {{ include('cestas/_delete_form.html.twig') }}
+
                                 </div>
                             </div>
                         </div>
@@ -61,4 +60,140 @@
 
 {% endblock %}
 {% block formulario %}
+{% endblock %}
+{% block jscustom %}
+    <!-- ============================================================== -->
+    <!-- All Jquery -->
+    <!-- ============================================================== -->
+    <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}" ></script>
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="{{ asset('assets/libs/popper.js/dist/umd/popper.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <!-- apps -->
+    <script src="{{ asset('dist/js/app.min.js') }}"></script>
+    <script src="{{ asset('dist/js/app.init.js') }}"></script>
+    <script src="{{ asset('dist/js/app-style-switcher.js') }}"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="{{ asset('assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
+    <!--Wave Effects -->
+    <script src="{{ asset('dist/js/waves.js') }}"></script>
+    <!--Menu sidebar -->
+    <script src="{{ asset('dist/js/sidebarmenu.js') }}"></script>
+    <!--Custom JavaScript -->
+    <script src="{{ asset('dist/js/feather.min.js') }}"></script>
+    <script src="{{ asset('dist/js/custom.min.js') }}"></script>
+    <!--This page plugins -->
+    <script src="{{ asset('assets/libs/datatables/media/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/custom-datatable.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/datatable-api.init.js') }}"></script>
+    <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
+
+    <script language = "javascript">
+
+
+        $(document).ready(function(){
+        //=============================================//
+        //    DOM/jquery events                        //
+        //=============================================//
+
+
+        /****************************************
+        *      Finalizar ticket                 *
+        *****************************************/
+        function abrirNuevoTab(url) {
+            // Abrir nuevo tab
+            console.log("Abrir" + url);
+
+            var win = window.open(url, '_blank');
+            // Cambiar el foco al nuevo tab (punto opcional)
+            win.focus();
+        }
+
+        $(document).on('click', 'button[id="Checkout"]' , async function(event) {
+
+            // Datos de la fila seleccionada en la lista de productos
+                const inputValue = 1
+                const inputStep = 1
+
+
+            const swalWithBootstrapButtons = await Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'mr-2 btn btn-danger'
+                },
+                buttonsStyling: false,
+            })
+
+            await swalWithBootstrapButtons.fire({
+                title: 'Metodo de pago',
+                text: "Selecciona un método de pago",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Tarjeta',
+                cancelButtonText: 'Efectivo',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.value) {
+                    ticket_pdf("Tarjeta", 0) 
+                } else if (
+                    // Read more about handling dismissals
+                    result.dismiss === Swal.DismissReason.cancel
+                ) {
+                    ticket_pdf("Efectivo", 0) 
+                }
+            })
+
+         })
+        
+        function ticket_pdf(tipopago, importesnal) 
+        {   
+
+           
+            $.ajax({             
+                    url:        '{{ path("ticketpdf", {id: cesta.id}) }}',  
+                    type:       'GET',   
+                    data:        ({tipopago:tipopago, importesnal:importesnal, espresu:'SN'}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            ticket_finalizar(tipopago, response.namepdf, response.importe, response.importesnal);
+                            console.log("Ticket " + + response.namepdf)
+                            abrirNuevoTab('/Tickets/' + response.namepdf);
+
+                            
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        };  
+
+        function ticket_finalizar(tipopago, numticket, importe, importesnal) 
+        {
+
+
+            $.ajax({             
+                    url:        '{{ path("cestas_finalizar", {id: cesta.id}) }}',  
+                    type:       'GET',   
+                    data:        ({tipopago : tipopago, numticket: numticket, importe:importe, importesnal:importesnal}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            
+                         location.reload();   
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        };  
+
+      });  
+   </script> 
 {% endblock %}

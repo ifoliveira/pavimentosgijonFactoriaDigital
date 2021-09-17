@@ -296,8 +296,45 @@
             win.focus();
         }
 
-        $(document).on('click', 'button[id="Checkout"]' , function(event) {
-            const swalWithBootstrapButtons = Swal.mixin({
+        $(document).on('click', 'button[id="Checkout"]' , async function(event) {
+
+            // Datos de la fila seleccionada en la lista de productos
+                var data = table.row(this).data();
+                const inputValue = 1
+                const inputStep = 1
+                var senal = 0
+
+                const { value: accept } =  await Swal.fire({
+                title: 'SEÑAL',
+                input: 'checkbox',
+                inputValue: 0,
+                inputPlaceholder:
+                    '¿Es el pago de una señal?',
+                confirmButtonText:
+                    'Continuar <i class="fa fa-arrow-right"></i>',
+
+                })
+
+                if (accept) {
+            // Pop up con datos del producto
+                     await Swal.fire({
+                    title: 'Cantidad y PVP',
+                    html: `
+                        <h2> Importe Señal </h2>
+                        <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="center">`,
+
+                    }).then((result) => {
+                        if (result.value) {
+                // Llamamos al insert line
+                            const inputNumber = Swal.getContent().querySelector('#range-value');
+                            senal = inputNumber.value;
+
+                        }
+                    })
+
+                } 
+
+            const swalWithBootstrapButtons = await Swal.mixin({
                 customClass: {
                     confirmButton: 'btn btn-success',
                     cancelButton: 'mr-2 btn btn-danger'
@@ -305,7 +342,7 @@
                 buttonsStyling: false,
             })
 
-            swalWithBootstrapButtons.fire({
+            await swalWithBootstrapButtons.fire({
                 title: 'Metodo de pago',
                 text: "Selecciona un método de pago",
                 type: 'warning',
@@ -315,29 +352,29 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.value) {
-                    ticket_pdf("Tarjeta") 
+                    ticket_pdf("Tarjeta", senal) 
                 } else if (
                     // Read more about handling dismissals
                     result.dismiss === Swal.DismissReason.cancel
                 ) {
-                    ticket_pdf("Efectivo") 
+                    ticket_pdf("Efectivo", senal) 
                 }
             })
 
          })
-
-        function ticket_pdf(tipopago) 
+        
+        function ticket_pdf(tipopago, importesnal) 
         {
             
             $.ajax({             
                     url:        '{{ path("ticketpdf", {id: cestaId}) }}',  
                     type:       'GET',   
-                    data:        ({tipopago:tipopago}),
+                    data:        ({tipopago:tipopago, importesnal:importesnal}),
                     dataType:   'json',  
                     async:      true,  
                     
                     success: function(response) {  
-                            ticket_finalizar(tipopago, response.namepdf, response.importe);
+                            ticket_finalizar(tipopago, response.namepdf, response.importe, response.importesnal);
                             console.log("Ticket " + + response.namepdf)
                             abrirNuevoTab('/Tickets/' + response.namepdf);
 
@@ -350,13 +387,13 @@
 
         };  
 
-        function ticket_finalizar(tipopago, numticket, importe) 
+        function ticket_finalizar(tipopago, numticket, importe, importesnal) 
         {
             
             $.ajax({             
                     url:        '{{ path("cestas_finalizar", {id: cestaId}) }}',  
                     type:       'GET',   
-                    data:        ({tipopago : tipopago, numticket: numticket, importe:importe}),
+                    data:        ({tipopago : tipopago, numticket: numticket, importe:importe, importesnal:importesnal}),
                     dataType:   'json',  
                     async:      true,  
                     

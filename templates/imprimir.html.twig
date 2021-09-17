@@ -73,6 +73,17 @@
         <p><a class="fecha">{{ "now"|date("m/d/Y") }}  </a>   -   <a class="float: left">  Factura Simplificada</a>  -   <a class="float: left">  {{ tipopago }}</a></p>
         <hr/>
         <table class="egt">
+        
+
+
+
+        {% if espresu != 'SI' and  importesnal != 0 %}
+            <tr>
+                 <th style="text-align: center"></th>
+                 <th style="text-align: center"> RESERVA #{{ cestaId }}#</th>
+                 <th style="text-align: center"></th>
+            </tr>
+        {% endif %} 
 
           <tr>
             <th style="text-align: center">Ud.</th>
@@ -91,24 +102,56 @@
             {% endif %}
           </tr>
          {% endfor %}
-        {% if espresu == 'SI' and  importesnal != 0%}
+        {% if espresu == 'SN' %}
+            <tr>
+                <td style="width: 10%; text-align: center" id="cantidad"> </td>
+                <td style="text-align: left ; padding: 0px 0px 0px 25px">Adelanto</td>
+                <td style="text-align: right; width: 15%"> {{ (project.getCesta(cestaId).getdescuentoCs * -1)|format_currency('EUR', locale='es') }}</td>
+                
+            </tr>
+
+        {% endif %} 
+
+
+        {% if espresu == 'SI' and  importesnal != 0 %}
             <tr>
                 <td class="iva" style="text-align: right"></td>
                 <td class="iva" style="text-align: right;  width: 45%">Adelanto Reserva:</td>
                 <td class="iva" style="text-align: right;  width: 15%"> - {{ importesnal|format_currency('EUR', locale='en')  }}</td>
             </tr>
-        {% endif %} 
+        {% endif %}
+
+
+
             <tr>
                  <td class="iva" style="text-align: right"></td>
 
                  <td class="iva" style="text-align: right;  width: 45%">Total(I.V.A. incluido) :</td>
                  {% if espresu == 'SI' %}
-
                     <td class="iva" style="text-align: right;  width: 15%">{{ importe|format_currency('EUR', locale='en')  }}</td>
                  {% else %}
-                     <td class="iva" style="text-align: right;  width: 15%">{{ total|format_currency('EUR', locale='en')  }}</td>
+                    {% if espresu == 'SN' %}
+                        <td class="iva" style="text-align: right;  width: 15%">{{ (total - project.getCesta(cestaId).getdescuentoCs)|format_currency('EUR', locale='en')  }}</td>
+                    {% else %}
+                        <td class="iva" style="text-align: right;  width: 15%">{{ total|format_currency('EUR', locale='en')  }}</td>
+                    {% endif %} 
                  {% endif %}                  
             </tr>
+
+        {% if espresu != 'SI' and  importesnal != 0 %}
+            <tr>
+                 <td class="iva" style="text-align: right"></td>
+                 <td class="iva" style="text-align: right;  width: 45%">Adelanto abonado :</td>
+                 <td class="iva" style="text-align: right;  width: 15%">{{ importesnal|format_currency('EUR', locale='en')  }}</td>
+            </tr>
+            <tr>
+                 <td class="iva" style="text-align: right"></td>
+
+                 <td class="iva" style="text-align: right;  width: 45%">Resto :</td>
+                 <td class="iva" style="text-align: right;  width: 15%">{{ (total - importesnal)|format_currency('EUR', locale='en')  }}</td>
+            </tr>
+        {% endif %} 
+
         </table>
         <hr/>    
         

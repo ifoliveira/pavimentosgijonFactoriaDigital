@@ -54,6 +54,24 @@ class CestasRepository extends ServiceEntityRepository
 
     }
 
+
+    /**
+     * @return Cestas[]
+     */
+    public function ticketssnal()
+    {
+        $entityManager = $this->getEntityManager();
+
+        $query = $entityManager->createQuery(
+            'SELECT p
+            FROM App\Entity\Cestas p
+            WHERE p.estadoCs = 9');
+
+        // returns an array of Product objects
+        return $query->getResult();
+
+    }
+
     // /**
     //  * @return Cestas[] Returns an array of Cestas objects
     //  */
