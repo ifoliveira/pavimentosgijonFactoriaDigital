@@ -101,6 +101,31 @@ class CestasController extends AbstractController
         return $this->redirectToRoute('cestas_index');
     }
 
+    /**
+     * @Route("/delete/fila", name="cesta_delete_ajax", methods={"GET","POST"})
+     */
+    public function deleteajax(Request $request): JsonResponse
+    {
+        // Funcion para borrar registro de producto de una cesta determinada
+        // Obtener ID del cesta
+        $datos = $request->query->get('id');
+        // get EntityManager
+        $em = $this->getDoctrine()->getManager();
+        // Obtener cesta
+        $cesta = $em->getRepository('App\Entity\Cestas')->find($datos);
+
+        // Borrado del detalle
+        $em->remove($cesta);
+        $em->flush();
+
+        $response = new JsonResponse();
+
+        return $response;
+
+
+
+    }  
+
 
     //Imprimir el ticket solamente, no cambia el estado del ticket
     /**
@@ -210,10 +235,32 @@ class CestasController extends AbstractController
          $entityManager->flush();
          return $this->redirectToRoute('cestas_show', array ('id' => $tienecesta[0]->getId()));
 
+    }  
 
+    /**
+     * @Route("/{id}/tipopago", name="cesta_tipopago", methods={"GET","POST"})
+     */
+    public function cestatipopago(Request $request, Cestas $cesta,CestasRepository $cestasRepository): Response
+    {
+ 
+        // Funcion encargada de invertir el tipo de pago
+        $entityManager = $this->getDoctrine()->getManager();
 
+        if($cesta->getTipopagoCs() == 'Tarjeta') {
+
+            $cesta->setTipopagoCs('Efectivo');
+        }else{
+
+            $cesta->setTipopagoCs('Tarjeta');
+        }
+
+         $entityManager->persist($cesta);
+         $entityManager->flush();
+
+         return $this->redirectToRoute('cestas_index');
 
     }  
+
 
     /**
      * @Route("/{id}/finalizar", name="cestas_finalizar")

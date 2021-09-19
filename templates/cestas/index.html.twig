@@ -23,7 +23,7 @@
                                                     <th>TipopagoCs</th>
                                                     <th>NumticketCs</th>
                                                     <th>TimestampCs</th>
-                                                    <th>actions</th>
+                                                    <th>Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -41,10 +41,14 @@
                                                     </td>
                                                     <td>{{ cestar.timestampCs ? cestar.timestampCs|date('Y-m-d H:i:s') : '' }}</td>
                                                     <td>
-                                                            <a href="{{ path('cesta_senal', {'id': cestar.id}) }}" class="text-inverse pr-2"
+                                                        <a href="{{ path('cesta_senal', {'id': cestar.id}) }}" class="text-inverse pr-2"
                                                                 data-toggle="tooltip" title="Cerrar señal">
                                                                 <i class="ti-link"></i>
-                                                            </a> 
+                                                        </a> 
+                                                        <a href="{{ path('cesta_tipopago', {'id': cesta.id}) }}" class="text-inverse pr-2"
+                                                                data-toggle="tooltip" title="Cambiar tipo pago">
+                                                                <i class="ti-exchange-vertical"></i>
+                                                        </a> 
                                                     </td>
                                                 </tr>
                                             {% endfor %}
@@ -101,7 +105,13 @@
                                                     <td>{{ cesta.timestampCs ? cesta.timestampCs|date('Y-m-d H:i:s') : '' }}</td>
                                                     <td>
 
-                                                        {{ include('cestas/_delete_form.html.twig') }}
+                                                        <a href="{{ path('cesta_tipopago', {'id': cesta.id}) }}" class="text-inverse pr-2"
+                                                                data-toggle="tooltip" title="Cambiar tipo pago">
+                                                                <i class="ti-exchange-vertical"></i>
+                                                        </a> 
+                                                        <i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar cesta" name="delete_detalle" id="{{ cesta.id }}">
+                                                                <i class="ti-trash"></i>
+                                                        </i> 
 
                                                     </td>
                                                 </tr>
@@ -189,6 +199,77 @@
                 [2, "desc"],[0,"desc"]
             ]
         });
+
+        /****************************************
+        *      Eliminar un cesta                *
+        *****************************************/
+
+        $(document).on('click', 'i[name="delete_detalle"]' , async function(event) {
+            let id = this.id;
+                console.log (id);
+
+            const swalWithBootstrapButtons = await Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'mr-2 btn btn-danger'
+                },
+                buttonsStyling: false,
+            })
+
+            await swalWithBootstrapButtons.fire({
+                title: 'Borrado de tickets',
+                text: "Se va a borrar el ticket " + id + " ",
+                type: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Adelante',
+                cancelButtonText: 'Noooo',
+                reverseButtons: true
+            }).then((result) => {
+                
+                if (result.value) {
+
+                    delete_line(id);
+                }
+            })
+
+            
+        })
+        
+
+        function delete_line(id) 
+        {
+            $.ajax({  
+               url:        '{{path("cesta_delete_ajax")}}',  
+               type:       'GET',   
+               data:        ({id: id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) { 
+                    let timerInterval
+                    Swal.fire({
+                    type: 'success',
+                    title: 'Se ha borrado correctamente!',
+                    html: 'Se cerrara en breve',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    willClose: () => {
+                        clearInterval(timerInterval)
+                    }
+                    }).then((result) => {
+                    /* Read more about handling dismissals below */
+                    if (result.dismiss === Swal.DismissReason.timer) {
+                        location.reload();
+                    }
+                    })
+                   
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            }); 
+        };  
 
       });  
    </script> 

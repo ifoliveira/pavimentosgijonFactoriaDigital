@@ -117,7 +117,7 @@
             <tr>
                 <td class="iva" style="text-align: right"></td>
                 <td class="iva" style="text-align: right;  width: 45%">Adelanto Reserva:</td>
-                <td class="iva" style="text-align: right;  width: 15%"> - {{ importesnal|format_currency('EUR', locale='en')  }}</td>
+                <td class="iva" style="text-align: right;  width: 15%"> - {{ importesnal|format_currency('EUR', locale='es')  }}</td>
             </tr>
         {% endif %}
 
@@ -128,12 +128,12 @@
 
                  <td class="iva" style="text-align: right;  width: 45%">Total(I.V.A. incluido) :</td>
                  {% if espresu == 'SI' %}
-                    <td class="iva" style="text-align: right;  width: 15%">{{ importe|format_currency('EUR', locale='en')  }}</td>
+                    <td class="iva" style="text-align: right;  width: 15%">{{ importe|format_currency('EUR', locale='es')  }}</td>
                  {% else %}
                     {% if espresu == 'SN' %}
                         <td class="iva" style="text-align: right;  width: 15%">{{ (total - project.getCesta(cestaId).getdescuentoCs)|format_currency('EUR', locale='en')  }}</td>
                     {% else %}
-                        <td class="iva" style="text-align: right;  width: 15%">{{ total|format_currency('EUR', locale='en')  }}</td>
+                        <td class="iva" style="text-align: right;  width: 15%">{{ total|format_currency('EUR', locale='es')  }}</td>
                     {% endif %} 
                  {% endif %}                  
             </tr>
@@ -142,13 +142,13 @@
             <tr>
                  <td class="iva" style="text-align: right"></td>
                  <td class="iva" style="text-align: right;  width: 45%">Adelanto abonado :</td>
-                 <td class="iva" style="text-align: right;  width: 15%">{{ importesnal|format_currency('EUR', locale='en')  }}</td>
+                 <td class="iva" style="text-align: right;  width: 15%">{{ importesnal|format_currency('EUR', locale='es')  }}</td>
             </tr>
             <tr>
                  <td class="iva" style="text-align: right"></td>
 
                  <td class="iva" style="text-align: right;  width: 45%">Resto :</td>
-                 <td class="iva" style="text-align: right;  width: 15%">{{ (total - importesnal)|format_currency('EUR', locale='en')  }}</td>
+                 <td class="iva" style="text-align: right;  width: 15%">{{ (total - importesnal)|format_currency('EUR', locale='es')  }}</td>
             </tr>
         {% endif %} 
 
