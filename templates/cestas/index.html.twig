@@ -4,7 +4,7 @@
 {% block title %}Tickets{% endblock %}
 {% block tablas %}
 
-<div class="col-12">
+                    <div class="col-12">
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title">Tickets</h4>
@@ -45,7 +45,7 @@
                                                                 data-toggle="tooltip" title="Cerrar señal">
                                                                 <i class="ti-link"></i>
                                                         </a> 
-                                                        <a href="{{ path('cesta_tipopago', {'id': cesta.id}) }}" class="text-inverse pr-2"
+                                                        <a href="{{ path('cesta_tipopago', {'id': cestar.id}) }}" class="text-inverse pr-2"
                                                                 data-toggle="tooltip" title="Cambiar tipo pago">
                                                                 <i class="ti-exchange-vertical"></i>
                                                         </a> 
@@ -57,19 +57,12 @@
 
                                          <a href="{{ path('cestas_new') }}">Create new</a>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
+
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
                 <!-- Footer callback -->
 
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
                                 <h4 class="card-title">Tickets</h4>
                                 <h6 class="card-subtitle"></h6>
                                 <div class="table-responsive">

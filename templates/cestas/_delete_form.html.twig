@@ -1,7 +1,5 @@
 
-<i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar cesta" name="delete_detalle" id="{{ cesta.id }}">
-                                                                <i class="ti-trash"></i>
-                                                        </i> 
+
 
 
 <form method="post" action="{{ path('cestas_delete', {'id': cesta.id}) }}" onsubmit="return confirm('¿Seguro que quieres borrar este ticket?');">

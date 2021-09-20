@@ -6,6 +6,7 @@ use App\Entity\Detallecesta;
 use App\Form\DetallecestaType;
 use App\MisClases\CestaUser;
 use App\Repository\DetallecestaRepository;
+use Symfony\Bridge\Twig\Node\FormThemeNode;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -140,7 +141,12 @@ class DetallecestaController extends AbstractController
         $importe = $request->query->get('importe');
         $coste = $request->query->get('coste');
         $cestaId = $request->query->get('cesta');
+        $texto = $request->query->get('texto');
 
+        if ($texto=="") {
+            $texto = NULL;
+
+        }
         
         // Creamos objeto detalle de cesta, con el usuario conectado y los metodos de CestaUser
         $user = $this->getUser();
@@ -151,6 +157,7 @@ class DetallecestaController extends AbstractController
         $detcesta->setproductoDc($this->getDoctrine()->getRepository('App\Entity\Productos')->find($producto[0]));
         $detcesta->setCantidadDc($cantidad);
         $detcesta->setPrecioDc($coste);
+        $detcesta->setTextoDc($texto);
        // $detcesta->setpvpDc($producto[4]);
         if ($importe != 0){
             $detcesta->setpvpDc($importe); 

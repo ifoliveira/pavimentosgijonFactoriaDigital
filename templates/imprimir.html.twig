@@ -95,7 +95,7 @@
             {% set total = total + (detalle.pvpDc * detalle.cantidadDC) %}
           <tr>
             <td style="width: 10%; text-align: center" id="cantidad">{{ detalle.cantidadDC }}</td>
-            <td style="text-align: left ; padding: 0px 0px 0px 25px">{{ detalle.productoDc.descripcionPd }}</td>
+            <td style="text-align: left ; padding: 0px 0px 0px 25px">{{ detalle.productoDc.descripcionPd }} {{ detalle.textoDc }}</td>
 
             {% if espresu != 'SI' %}
                 <td style="text-align: right; width: 15%"> {{ (detalle.pvpDc * detalle.cantidadDC)|format_currency('EUR', locale='es') }}</td>

@@ -54,6 +54,11 @@ class Detallecesta
      */
     private $precioDc;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $textoDc;
+
     public function __construct()
     {
         $this->setTimestampDc(new \DateTime());
@@ -147,6 +152,18 @@ class Detallecesta
     public function setPrecioDc(?float $precioDc): self
     {
         $this->precioDc = $precioDc;
+
+        return $this;
+    }
+
+    public function getTextoDc(): ?string
+    {
+        return $this->textoDc;
+    }
+
+    public function setTextoDc(?string $textoDc): self
+    {
+        $this->textoDc = $textoDc;
 
         return $this;
     }

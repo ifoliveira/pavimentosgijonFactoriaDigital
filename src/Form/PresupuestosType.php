@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Presupuestos;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -17,9 +18,15 @@ class PresupuestosType extends AbstractType
         $builder
             ->add('estadoPe',null ,  array(
                 'label' => 'Estado del presupuesto' ))
-            ->add('manoobraPe',null ,  array(
-                  'label' => 'Descripción del presupuesto' ,
-                  'attr' => ['placeholder' => 'Bañera por plato / Baño Completo / Mueble ....']))
+            ->add('manoobraPe',ChoiceType::class ,  array(
+                  'choices' => [ 'Plato de ducha' => 'Plato de ducha',
+                                 'Baño completo' => 'Baño completo',
+                                 'Mueble' => 'Mueble',
+                                 'Mampara' => 'Mampara',
+                                 'Otros' => 'Otros'
+            ],
+            'label' => 'Presupuesto para ...',
+                  ))
             ->add('importetotPe', MoneyType::class ,  array(
                    'label' => 'Importe Total' ))
             ->add('descuaetoPe', PercentType::class ,  array(
@@ -40,3 +47,7 @@ class PresupuestosType extends AbstractType
     }
 
 }
+
+//            ->add('manoobraPe',null ,  array(
+//    'label' => 'Descripción del presupuesto' ,
+//    'attr' => ['placeholder' => 'Bañera por plato / Baño Completo / Mueble ....']))

@@ -17,7 +17,10 @@
 {% endblock %}
 
 {%- block form_row -%}
-    {%- set widget_attr = {attr: {class: 'form-control'}} -%}
+    {%- if compound is defined and compound -%}
+        {%- set element = 'fieldset' -%}
+    {%- endif -%}
+    {%- set widget_attr = {} -%}
     {%- if help is not empty -%}
         {%- set widget_attr = {attr: {'aria-describedby': id ~"_help"}} -%}
     {%- endif -%}

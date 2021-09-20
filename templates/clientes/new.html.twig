@@ -71,12 +71,12 @@
                                         </div>
                                     </div>
 
-                                    {# itera sobre cada etiqueta existente y reproduce su único campo: name #}
+
                                     {% for presupuesto in form.presupuestosCl %}
-                                        {{ form_row(presupuesto.estadoPe) }}
+                                        {{ form_row(presupuesto.estadoPe, { 'row_attr': {'class':'d-none'}} ) }}
                                         {{ form_row(presupuesto.manoobraPe) }}
-                                            {{ form_row(presupuesto.importetotPe, { 'row_attr': {'class':'d-none'}} ) }}
-                                            {{ form_row(presupuesto.descuaetoPe, { 'row_attr': {'class': 'd-none'} }) }}
+                                        {{ form_row(presupuesto.importetotPe, { 'row_attr': {'class':'d-none'}} ) }}
+                                        {{ form_row(presupuesto.descuaetoPe, { 'row_attr': {'class': 'd-none'} }) }}
                                     {% endfor %}
                                 </div>
                         </div>

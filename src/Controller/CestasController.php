@@ -194,7 +194,7 @@ class CestasController extends AbstractController
     /**
      * @Route("/{id}/senal", name="cesta_senal", methods={"GET","POST"})
      */
-    public function cestasenal(Request $request, Cestas $cesta, Detallecesta $detallecesta, CestasRepository $cestasRepository): Response
+    public function cestasenal(Request $request, Cestas $cesta, CestasRepository $cestasRepository): Response
     {
  
         // Funcion encargada de duplicar la cesta en cuanto a productos para cerrar compra con señal

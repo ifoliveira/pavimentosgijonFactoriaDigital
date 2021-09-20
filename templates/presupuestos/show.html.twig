@@ -604,10 +604,12 @@
                 const inputValue3 = data[3]
                 const inputStep = 1
                 const inputStep2 = 1
+                const inputText = ""
 
                 Swal.fire({
                 title: 'Cantidad y PVP',
                 html: `
+                    <input type="text" value="${inputText}" class="swal2-input" id="range-value0" text-align="center">
                     <h2> Cantidad </h2>
                     <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">
                     <h2> PVP </h2>
@@ -618,24 +620,26 @@
                 }).then((result) => {
                     if (result.value) {
                         var data = table.row(this).data();
+                        const inputText = Swal.getContent().querySelector('#range-value0');
+                        texto = inputText.value;
                         const inputNumber = Swal.getContent().querySelector('#range-value');
                         cantidad = inputNumber.value;
                         const inputNumber2 = Swal.getContent().querySelector('#range-value2');
                         importe = inputNumber2.value;
                         const inputNumber3 = Swal.getContent().querySelector('#range-value3');
                         coste = inputNumber3.value;
-                        insert_line(data,cantidad,importe,coste,cestaId);
+                        insert_line(data,cantidad,importe,coste,cestaId,texto);
                     }
                 })
 
          })
 
-        function insert_line(producto,cantidad,importe,coste,cesta) 
+        function insert_line(producto,cantidad,importe,coste,cesta,texto) 
         {
             $.ajax({  
                url:        '{{path("detallecesta_new") }}',   
                type:       'GET',   
-               data:        ({producto: producto, cantidad:cantidad, importe:importe, coste:coste, cesta:cesta}),
+               data:        ({producto: producto, cantidad:cantidad, importe:importe, coste:coste, cesta:cesta, texto:texto}),
                dataType:   'json',  
                async:      true,  
                
