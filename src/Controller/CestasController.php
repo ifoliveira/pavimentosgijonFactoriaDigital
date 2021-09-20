@@ -218,6 +218,7 @@ class CestasController extends AbstractController
             $detcesta->setCantidadDc($detalles->getCantidadDc());
             $detcesta->setPrecioDc($detalles->getPrecioDc());
             $detcesta->setpvpDc($detalles->getpvpDc()); 
+            $detcesta->setTextoDc($detalles->getTextoDc()); 
             
             // Insertamos en la tabla el detalle
             $entityManager->persist($detcesta);
