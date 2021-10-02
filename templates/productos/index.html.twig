@@ -99,6 +99,7 @@
     <script src="{{ asset('dist/js/app.min.js') }}"></script>
     <script src="{{ asset('dist/js/app.init.js') }}"></script>
     <script src="{{ asset('dist/js/app-style-switcher.js') }}"></script>
+    <script src="{{ asset('dist/js/ConectorPlugin.js') }}"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
     <script src="{{ asset('assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js') }}"></script>
     <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
@@ -359,12 +360,12 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.value) {
-                    ticket_pdf("Tarjeta", senal) 
+                    ticket_script("Tarjeta", senal) 
                 } else if (
                     // Read more about handling dismissals
                     result.dismiss === Swal.DismissReason.cancel
                 ) {
-                    ticket_pdf("Efectivo", senal) 
+                    ticket_script("Efectivo", senal) 
                 }
             })
 
@@ -390,6 +391,49 @@
                     error : function(xhr, textStatus, errorThrown) {  
                         alert(textStatus);  
                     }  
+                    });
+
+        };  
+
+        const $estado = document.querySelector("#estado"),
+        $listaDeImpresoras = document.querySelector("#listaDeImpresoras"),
+        $btnLimpiarLog = document.querySelector("#btnLimpiarLog"),
+        $btnImprimir = document.querySelector("#btnImprimir");
+
+
+        function ticket_script(tipopago, importesnal) 
+        {
+            
+                let nombreImpresora = "EPSONTicket";
+                let conector = new ConectorPlugin();
+                conector.establecerTamanioFuente(1, 1);
+                conector.establecerEnfatizado(0);
+                conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+                conector.imagenDesdeUrl("https://github.com/parzibyte.png");
+                conector.feed(1);
+                conector.texto("Parzibyte's blog\n");
+                conector.texto("Blog de un programador\n");
+                conector.texto("Telefono: 123456789\n");
+                conector.texto("Fecha/Hora: 2021-02-08 16:57:55\n");
+                conector.texto("--------------------------------\n");
+                conector.texto("Venta de plugin para impresora\n");
+                conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
+                conector.texto("25 USD\n");
+                conector.texto("--------------------------------\n");
+                conector.texto("TOTAL: 25 USD\n");
+                conector.texto("--------------------------------\n");
+                conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+                conector.texto("***Gracias por su compra***");
+                conector.feed(4);
+                conector.cortar();
+                conector.cortarParcialmente();
+                conector.imprimirEn(nombreImpresora)
+                    .then(respuestaAlImprimir => {
+                        if (respuestaAlImprimir === true) {
+                            loguear("Impreso correctamente");
+                        } else {
+                            loguear("Error. La respuesta es: " + respuestaAlImprimir);
+                        }
                     });
 
         };  
