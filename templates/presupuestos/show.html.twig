@@ -605,10 +605,12 @@
                 const inputStep = 1
                 const inputStep2 = 1
                 const inputText = ""
+                const inputValue0 = data[2]
 
                 Swal.fire({
                 title: 'Cantidad y PVP',
                 html: `
+                     <h1> "${inputValue0}" </h1>
                     <input type="text" value="${inputText}" class="swal2-input" id="range-value0" text-align="center">
                     <h2> Cantidad </h2>
                     <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">

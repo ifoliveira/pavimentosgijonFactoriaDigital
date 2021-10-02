@@ -347,7 +347,7 @@ class PresupuestosController extends AbstractController
         setlocale(LC_ALL, 'es_ES');   
         $namepdf = strftime("%y%j%H%M%S");              
         // En este caso, queremos escribir el archivo en el directorio público.
-        $publicDirectory =  $presupuesto->getClientePe()->getNombreCl() . ' ' . $presupuesto->getFechainiPe()->format('Y-m-d') .'/presupuestos';
+        $publicDirectory = $presupuesto->getClientePe()->getNombreCl() . ' ' . $presupuesto->getFechainiPe()->format('Y-m-d') .'/presupuestos';
 
 
         if (!file_exists($publicDirectory)) {

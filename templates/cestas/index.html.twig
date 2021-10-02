@@ -16,13 +16,12 @@
                                                 <tr>
                                                     <th>Id</th>
                                                     <th>Estado</th>
-                                                    <th>UserCs</th>
                                                     <th>FechaCs</th>
-                                                    <th>ImporteTotCs</th>
-                                                    <th>DescuentoCs</th>
-                                                    <th>TipopagoCs</th>
-                                                    <th>NumticketCs</th>
-                                                    <th>TimestampCs</th>
+                                                    <th>Importe Total</th>
+                                                    <th>Pendiente </th>
+                                                    <th>Tipo Pago</th>
+                                                    <th>Ticket</th>
+                                                    <th>Fecha y hora</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
@@ -31,10 +30,9 @@
                                                 <tr>
                                                     <td>{{ cestar.id }}</td>
                                                     <td>{{ cestar.estadoCs }}</td>
-                                                    <td>{{ cestar.userCs }}</td>
                                                     <td>{{ cestar.fechaCs ? cestar.fechaCs|date('Y-m-d') : '' }}</td>
-                                                    <td align="right">{{ cestar.importeTotCs|format_currency('EUR', locale='en')  }}</td>
-                                                    <td>{{ cestar.descuentoCs }}</td>
+                                                    <td align="right">{{ cestar.importeTotCs|format_currency('EUR', locale='es')  }}</td>
+                                                    <td align="right">{{ cestar.descuentoCs |format_currency('EUR', locale='es')   }}</td>
                                                     <td>{{ cestar.tipopagoCs }}</td>
                                                     <td> 
                                                         <a href ="/Tickets/{{ cestar.numticketCs }}" target="_blank" >{{ cestar.numticketCs }}</a>
@@ -43,12 +41,25 @@
                                                     <td>
                                                         <a href="{{ path('cesta_senal', {'id': cestar.id}) }}" class="text-inverse pr-2"
                                                                 data-toggle="tooltip" title="Cerrar señal">
-                                                                <i class="ti-link"></i>
+                                                                <i class="ti-lock"></i>
                                                         </a> 
                                                         <a href="{{ path('cesta_tipopago', {'id': cestar.id}) }}" class="text-inverse pr-2"
                                                                 data-toggle="tooltip" title="Cambiar tipo pago">
                                                                 <i class="ti-exchange-vertical"></i>
                                                         </a> 
+                                                        <i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar cesta" name="delete_detalle" id="{{ cestar.id }}">
+                                                                <i class="ti-trash"></i>
+                                                        </i> 
+                                                        {% for detalle in cestar.getdetallecesta|slice(0, 1) %}
+                                                            <a href="{{ path('detallecesta_show', {'id': detalle.getId}) }}" class="text-inverse pr-2"
+                                                                    data-toggle="tooltip" title="Ver ticket">
+                                                                    <i class="ti-eye"></i>
+                                                            </a> 
+                                                        {% endfor %}
+
+                                                        <i class="text-inverse pr-2" data-toggle="tooltip" title="Imprimir ticket" name="imprimirticket" id="{{ path('impepson', {'id': cestar.id}) }}">
+                                                                <i class="ti-printer"></i>
+                                                        </i> 
                                                     </td>
                                                 </tr>
                                             {% endfor %}
@@ -72,14 +83,13 @@
                                                 <tr>
                                                     <th>Id</th>
                                                     <th>Estado</th>
-                                                    <th>UserCs</th>
                                                     <th>FechaCs</th>
-                                                    <th>ImporteTotCs</th>
-                                                    <th>DescuentoCs</th>
-                                                    <th>TipopagoCs</th>
-                                                    <th>NumticketCs</th>
-                                                    <th>TimestampCs</th>
-                                                    <th>actions</th>
+                                                    <th>Importe Total</th>
+                                                    <th>Adelanto </th>
+                                                    <th>Tipo Pago</th>
+                                                    <th>Ticket</th>
+                                                    <th>Fecha y hora</th>
+                                                    <th>Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -87,10 +97,9 @@
                                                 <tr>
                                                     <td>{{ cesta.id }}</td>
                                                     <td>{{ cesta.estadoCs }}</td>
-                                                    <td>{{ cesta.userCs }}</td>
                                                     <td>{{ cesta.fechaCs ? cesta.fechaCs|date('Y-m-d') : '' }}</td>
-                                                    <td align="right">{{ cesta.importeTotCs|format_currency('EUR', locale='en')  }}</td>
-                                                    <td>{{ cesta.descuentoCs }}</td>
+                                                    <td align="right">{{ cesta.importeTotCs|format_currency('EUR', locale='es')  }}</td>
+                                                    <td align="right">{{ cesta.descuentoCs |format_currency('EUR', locale='es')  }}</td>
                                                     <td>{{ cesta.tipopagoCs }}</td>
                                                     <td> 
                                                         <a href ="/Tickets/{{ cesta.numticketCs }}" target="_blank" >{{ cesta.numticketCs }}</a>
@@ -105,6 +114,17 @@
                                                         <i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar cesta" name="delete_detalle" id="{{ cesta.id }}">
                                                                 <i class="ti-trash"></i>
                                                         </i> 
+                                                        {% for detalle in cesta.getdetallecesta|slice(0, 1) %}
+                                                            <a href="{{ path('detallecesta_show', {'id': detalle.getId}) }}" class="text-inverse pr-2"
+                                                                    data-toggle="tooltip" title="Ver ticket">
+                                                                    <i class="ti-eye"></i>
+                                                            </a> 
+                                                        {% endfor %}
+
+                                                        <i class="text-inverse pr-2" data-toggle="tooltip" title="Imprimir ticket" name="imprimirticket" id="{{ path('impepson', {'id': cesta.id}) }}">
+                                                                <i class="ti-printer"></i>
+                                                        </i> 
+
 
                                                     </td>
                                                 </tr>
@@ -224,7 +244,27 @@
                     delete_line(id);
                 }
             })
+        })
 
+        $(document).on('click', 'i[name="imprimirticket"]' , function(event) {
+            let path = this.id;
+            console.log(path);
+            
+            $.ajax({             
+                    url:        path,  
+                    type:       'GET',   
+                    data:        ({tipopago:"copia", importesnal:0}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            console.log("Ticket " + + response.namepdf)
+                            
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
             
         })
         
@@ -262,6 +302,87 @@
                   alert(textStatus);  
                }  
             }); 
+        };  
+        $(document).on('click', 'i[name="cerrarsenal"]' ,async function(event) {
+            let path2 = this.getAttribute('path'); 
+            let path = this.id;
+
+            console.log(path);
+            console.log(path2);
+
+            // Datos de la fila seleccionada en la lista de productos
+                const inputValue = 1
+                const inputStep = 1
+
+
+            const swalWithBootstrapButtons = await Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'mr-2 btn btn-danger'
+                },
+                buttonsStyling: false,
+            })
+
+            await swalWithBootstrapButtons.fire({
+                title: 'Metodo de pago',
+                text: "Selecciona un método de pago",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Tarjeta',
+                cancelButtonText: 'Efectivo',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.value) {
+                    ticket_pdf("Tarjeta", 0, path, path2) 
+                } else if (
+                    // Read more about handling dismissals
+                    result.dismiss === Swal.DismissReason.cancel
+                ) {
+                    ticket_pdf("Efectivo", 0, path, path2) 
+                }
+            })
+
+         }) 
+        
+        function ticket_pdf(tipopago, importesnal, path, path2) 
+        {   
+            $.ajax({             
+                    url:        path,  
+                    type:       'GET',   
+                    data:        ({tipopago:tipopago, importesnal:importesnal, espresu:'SN'}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            ticket_finalizar(tipopago, response.namepdf, response.importe, response.importesnal, path2);
+                           
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        };  
+
+        function ticket_finalizar(tipopago, numticket, importe, importesnal, path) 
+        {
+
+
+            $.ajax({             
+                    url:        path,  
+                    type:       'GET',   
+                    data:        ({tipopago : tipopago, numticket: numticket, importe:importe, importesnal:importesnal}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                         location.reload();   
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
         };  
 
       });  

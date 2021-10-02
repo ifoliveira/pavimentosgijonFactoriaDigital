@@ -38,48 +38,38 @@
                 <td style="width: 10%;"></td>
             </tr>
             <tr>    
-                <td></td>
-                <td></td>
-                <td></td>
-                <td colspan="2" style="text-align:right">
-                    <b>Nombre           :</b>
-                </td>
-                <td  colspan="2">
+                <td colspan="1"><b>Nombre    :</b></td>
+                <td colspan="5">
                          {{ presupuesto.clientePe.nombreCl|title  }} {{ presupuesto.clientePe.apellidosCl|title  }}
                 </td>
+                <td></td>
             </tr>
             <tr>    
-                <td></td>
-                <td></td>
-                <td></td>
-                <td colspan="2" style="text-align:right">
-                    <b>Dirección         :</b>
+                <td colspan="1">
+                    <b>Dirección :</b>
                 </td>
-                <td colspan="2">
+                <td colspan="5">
                     {{ presupuesto.clientePe.direccionCl|title  }}
                 </td>
+                <td></td>
             </tr>
             <tr>    
-                <td></td>
-                <td></td>
-                <td></td>
-                <td colspan="2" style="text-align:right">
-                    <b>Fecha presupuesto  :</b>
+                <td colspan="1">
+                    <b>Fecha     :</b>
                 </td>
-                <td  colspan="2">
+                <td colspan="5">
                     {{ presupuesto.timestampModPe ? presupuesto.timestampModPe|date("d-m-Y")  : '' }}
                 </td>
+                <td></td>
             </tr>
             <tr>    
-                <td></td>
-                <td></td>
-                <td></td>
-                <td colspan="2" style="text-align:right">
-                    <b>Válido hasta       :</b>
+                <td colspan="1">
+                    <b>Válido    :</b>
                 </td>
-                <td  colspan="2">
+                <td  colspan="5">
                    {{ presupuesto.timestampModPe ? presupuesto.timestampModPe| date_modify(modify) |date("d-m-Y")  : '' }}
                 </td>
+                <td></td>
             </tr>
 
             <tr >
@@ -89,7 +79,7 @@
             </tr>
 
             <tr style="font-size: 24px; text-align:center;" >
-                <td colspan="7" >Materiales</td>
+                <td colspan="7" >Detalle</td>
             </tr>
                
         {% for detalle in project.getCesta(cestaId).getdetallecesta %}

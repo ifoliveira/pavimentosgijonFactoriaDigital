@@ -1,38 +1,114 @@
-{% extends 'base.html.twig' %}
+{% extends 'pages.html.twig' %}
+{% block cabecera %} Tickets {% endblock %}
+{% block breadcrumb %} <li class="breadcrumb-item active">Efectivo</li>{% endblock %}
+{% block title %}Tickets{% endblock %}
+{% block tablas %}
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card card-body printableArea">
+                            <h3><b>TICKET</b> <span class="pull-right">#{{detallecestum.cestaDc.getId}}#</span></h3>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="pull-left">
+                                        <address>
+                                            <h3> &nbsp;<b class="text-danger">Pavimentos Gijón</b></h3>
+                                            <p class="text-muted ml-1">Avenida de Schult Nº 28 Bajo ,
+                                                <br/> GIJÓN - 33208
+                                                <br/> 53543499-M
+                                            </p>
+                                        </address>
+                                    </div>
+                               <!-- <div class="pull-right text-right">
+                                        <address>
+                                            <h3>To,</h3>
+                                            <h4 class="font-bold">Gaala & Sons,</h4>
+                                            <p class="text-muted ml-4">E 104, Dharti-2,
+                                                <br/> Nr' Viswakarma Temple,
+                                                <br/> Talaja Road,
+                                                <br/> Bhavnagar - 364002</p>
+                                            <p class="mt-4"><b>Invoice Date :</b> <i class="fa fa-calendar"></i> 23rd Jan 2018</p>
+                                            <p><b>Due Date :</b> <i class="fa fa-calendar"></i> 25th Jan 2018</p>
+                                        </address>
+                                    </div> -->
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="table-responsive mt-5" style="clear: both;">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center">#</th>
+                                                    <th>Descripción</th>
+                                                    <th class="text-right">Cantidad</th>
+                                                    <th class="text-right">Coste unidad</th>
+                                                    <th class="text-right">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% set numero = 0  %}
+                                            {% set total = 0 %}
+                                            {% for detalle in project.getCesta(detallecestum.cestaDc.getId).getdetallecesta %}
+                                                {% set numero = numero + 1  %}
+                                                <tr>
+                                                    <td class="text-center">{{ numero }}</td>
+                                                    <td>{{ detalle.productoDc.getDescripcionPd }}</td>
+                                                    <td class="text-right">{{ detalle.cantidadDc }}</td>
+                                                    <td class="text-right"> {{ detalle.pvpDc }} </td>
+                                                    <td class="text-right"> {{ detalle.pvpDc * detalle.cantidadDc }} </td>
+                                                </tr>
+                                                {% set total = (detalle.pvpDc * detalle.cantidadDc) + total  %}
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="pull-right mt-4 text-right">
+                                      <!--    <p>Sub - Total amount: 0</p>
+                                        <p>vat (10%) : 0 </p>
+                                        <hr>-->
+                                        <h3><b>Total :</b> {{ total }} €</h3>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                    <hr>
 
-{% block title %}Detallecesta{% endblock %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- End PAge Content -->
+                <!-- ============================================================== -->
 
-{% block body %}
-    <h1>Detallecesta</h1>
-
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ detallecestum.id }}</td>
-            </tr>
-            <tr>
-                <th>CantidadDc</th>
-                <td>{{ detallecestum.cantidadDc }}</td>
-            </tr>
-            <tr>
-                <th>PvpDc</th>
-                <td>{{ detallecestum.pvpDc }}</td>
-            </tr>
-            <tr>
-                <th>DescuentoDc</th>
-                <td>{{ detallecestum.descuentoDc }}</td>
-            </tr>
-            <tr>
-                <th>TimestampDc</th>
-                <td>{{ detallecestum.timestampDc ? detallecestum.timestampDc|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <a href="{{ path('detallecesta_index') }}">back to list</a>
-
-    <a href="{{ path('detallecesta_edit', {'id': detallecestum.id}) }}">edit</a>
-
-    {{ include('detallecesta/_delete_form.html.twig') }}
 {% endblock %}
+
+{% block formulario %}{% endblock %}
+
+{% block jscustom %}
+
+    <!--This page plugins -->
+    <script src="../../assets/libs/datatables/media/js/jquery.dataTables.min.js"></script>
+    <script src="../../dist/js/pages/datatable/custom-datatable.js"></script>
+    <script src="{{ asset('dist/js/pages/datatable/datatable-advanced.init.js') }}"></script>
+    
+    <!--Custom JavaScript -->
+    
+    <script language = "javascript">
+    $(document).ready(function(){   
+        /****************************************
+        *       Default Order Table           *
+        ****************************************/
+        $('#default_order').DataTable({
+            "order": [
+                [2, "desc"]
+            ]
+        });
+
+      });  
+   </script> 
+{% endblock %}
+

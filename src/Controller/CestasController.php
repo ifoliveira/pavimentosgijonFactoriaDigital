@@ -8,7 +8,11 @@ use App\Entity\Detallecesta;
 use App\Form\CestasType;
 use App\Repository\CestasRepository;
 use App\Repository\EstadocestasRepository;
-
+use Mike42\Escpos\Printer;
+use Mike42\Escpos\EscposImage;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\PrintConnectors\FilePrintConnector;
+use App\MisClases\item;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -126,6 +130,139 @@ class CestasController extends AbstractController
 
     }  
 
+   /**
+     * @Route("/ticketpdf/{id}/epson", name="impepson", methods={"GET","POST"})
+     */
+
+    public function epsonimp(Request $request, Cestas $cesta): jsonResponse
+    {
+   
+        /* Fill in your own connector here */
+
+	// Enter the share name for your USB printer here
+	    $connector = new WindowsPrintConnector("EPSONTicket");
+
+       // $connector = new FilePrintConnector("/dev/usb/lp1");
+        $items = array();
+        $totaln = 0;
+        $tipopago = $request->query->get('tipopago');
+        $importesnal = $request->query->get('importesnal');
+        $id = $cesta->getId();
+        $cierre = $request->query->get('espresu');
+        $adelanto = $cesta->getDescuentoCs();
+
+        foreach ($cesta->getdetallecesta() as $detallecesta) {
+        array_push($items, new item($detallecesta->getCantidadDc(), $detallecesta->getproductoDc()->getdescripcionPd() ,number_format(($detallecesta->getCantidadDc() * $detallecesta->getPvpDc()),2,',','.')));
+            $totaln = $totaln + ($detallecesta->getCantidadDc() * $detallecesta->getPvpDc());
+        };
+
+        $senal = new item('','Senal', number_format(($importesnal*-1),2,',','.'));
+
+        
+        /* Date is kept the same for testing */
+        $date = date('l jS \of F Y h:i:s A');
+        //$date = "Monday 6th of April 2015 02:56:25 PM";
+        
+        /* Start the printer */
+        $logo = EscposImage::load("../vendor/mike42/escpos-php/example/resources/Logo-Pavimentos-Gijon-BN.png", false);
+        $printer = new Printer($connector);
+        
+        /* Print top logo */
+        $printer -> setJustification(Printer::JUSTIFY_CENTER);
+        $printer -> graphics($logo);
+        
+        /* Name of shop */
+        $printer -> selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
+        $printer -> text("Pavimentos Gijón\n");
+        $printer -> selectPrintMode();
+        $printer -> text("53543499M Avenida Schultz Nº 28 Bajo\n");
+        $printer -> text("985-391-326\n");
+
+        $printer -> feed();
+        
+        /* Title of receipt */
+        $printer -> setEmphasis(true);
+        $printer -> text("FACTURA SIMPLIFICADA " . $tipopago . "\n");
+        $printer -> setEmphasis(false);
+        
+        /* RESERVA */
+        if ($importesnal != 0 and $cierre != 'SN') {
+
+            $printer -> setEmphasis(true);
+            $printer -> text("*** RESERVA *** " . $id .  "\n");
+            $printer -> setEmphasis(false);
+            $printer -> feed();
+        
+        }
+        /* Items */
+        $printer -> setJustification(Printer::JUSTIFY_LEFT);
+        $printer -> setEmphasis(true);
+        $printer -> text(new item('', '', '€'));
+        $printer -> setEmphasis(false);
+        foreach ($items as $item) {
+            $printer -> text($item);
+        }
+
+        If ($cierre == 'SN') {
+            $adelantowrite = new item('','Adelanto', number_format($adelanto * -1,2,',','.') );
+            $printer -> text($adelantowrite );
+            $totaln = $totaln - $adelanto ;
+            $importesnal = $adelanto;
+        }
+
+        if ($importesnal != 0 and $cierre != 'SN') {
+
+            
+            $totaln = $totaln - $importesnal;
+            $total = new item('','Pendiente', number_format($totaln,2,',','.'), true);
+
+            $printer -> setEmphasis(true);
+            $printer -> text($senal);
+            $printer -> setEmphasis(false);
+
+        } else {
+
+            $total = new item('','Total', number_format($totaln,2,',','.'), true);
+
+        }
+        /*$printer -> setEmphasis(true);
+        $printer -> text($subtotal);
+        $printer -> setEmphasis(false);
+        $printer -> feed();*/
+        
+        /* Tax and total */
+        /*$printer -> text($tax);*/
+        $printer -> feed();
+        $printer -> selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
+        $printer -> text($total);
+        $printer -> selectPrintMode();
+        
+        /* Footer */
+        $printer -> feed(2);
+        $printer -> setJustification(Printer::JUSTIFY_CENTER);
+        $printer -> text("GRACIAS POR SU COMPRA\n");
+        $printer -> text("Visitanos en pavimentosgijon.es\n");
+        $printer -> feed(2);
+        $printer -> text($date . "\n");
+        
+        /* Cut the receipt and open the cash drawer */
+        $printer -> cut();
+        $printer -> pulse();
+        
+        $printer -> close();
+        $response = new JsonResponse();
+    
+        If ($cierre == 'SN') {
+            $importeres= $totaln;
+        }else{
+            $importeres= $totaln + floatval($importesnal);
+        }
+
+        // Envía una respuesta de texto
+        return $response->setData(['namepdf' => 'ImpresoraTk', 'importe' => $importeres, 'importesnal' => $importesnal] );
+      
+      
+    }
 
     //Imprimir el ticket solamente, no cambia el estado del ticket
     /**
@@ -280,7 +417,7 @@ class CestasController extends AbstractController
 
         $cestas->setEstadoCs(2);
         $cestas->setImporteTotCs($importetot);
-        if ($importesnal!= 0) {
+        if (floatval($importesnal) != 0) {
             $cestas->setImporteTotCs($importesnal);
             $cestas->setDescuentoCs($importetot-$importesnal);
             $cestas->setEstadoCs(9);
@@ -349,5 +486,8 @@ class CestasController extends AbstractController
         return new jsonResponse($jsonData); 
 
     }  
+
+ 
+
 
 }
