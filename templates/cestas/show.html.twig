@@ -152,7 +152,7 @@
 
            
             $.ajax({             
-                    url:        '{{ path("impepson", {id: cesta.id}) }}',  
+                    url:        '{{ path("ticketpdf", {id: cesta.id}) }}',  
                     type:       'GET',   
                     data:        ({tipopago:tipopago, importesnal:importesnal, espresu:'SN'}),
                     dataType:   'json',  
@@ -160,6 +160,7 @@
                     
                     success: function(response) {  
                             ticket_finalizar(tipopago, response.namepdf, response.importe, 0);
+                            abrirNuevoTab('/Tickets/' + response.namepdf);
                             
                     },  
                     error : function(xhr, textStatus, errorThrown) {  

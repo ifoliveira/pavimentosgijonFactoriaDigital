@@ -133,7 +133,6 @@ class CestasController extends AbstractController
    /**
      * @Route("/ticketpdf/{id}/epson", name="impepson", methods={"GET","POST"})
      */
-
     public function epsonimp(Request $request, Cestas $cesta): jsonResponse
     {
    
@@ -263,6 +262,28 @@ class CestasController extends AbstractController
       
       
     }
+
+    //Obtener array de detalle de ticket
+    /**
+     * @Route("/ticket/{id}/detalle", name="ticketdet", methods={"GET","POST"})
+     */
+    public function ticketdet(Request $request, Cestas $cesta): jsonResponse
+    {
+        $salida = array();
+        $response = new JsonResponse();
+        foreach ($cesta->getdetallecesta() as $detalles) {
+            array_push($salida, array ("id" => $detalles->getId(), 
+                                       "producto" => $detalles->getProductoDc()->getDescripcionPd(), 
+                                       "cantidad" => $detalles->getCantidadDc(), 
+                                       "pvp"      => $detalles->getPvpDc(), 
+                                       "descuento" => $detalles->getDescuentoDc()));
+        
+        }
+
+        // Envía una respuesta de texto
+        return $response->setData($salida);
+    }
+
 
     //Imprimir el ticket solamente, no cambia el estado del ticket
     /**

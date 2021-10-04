@@ -360,22 +360,44 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.value) {
-                    ticket_script("Tarjeta", senal) 
+                    ticket_pdf("Tarjeta", senal) 
                 } else if (
                     // Read more about handling dismissals
                     result.dismiss === Swal.DismissReason.cancel
-                ) {
-                    ticket_script("Efectivo", senal) 
+                ){
+                    ticket_pdf("Efectivo", senal) 
                 }
             })
 
          })
+
+        function ticket_script(tipopago, importesnal) 
+        {
+            
+            $.ajax({             
+                    url:        '{{ path("ticketdet", {id: cestaId}) }}',  
+                    type:       'GET',   
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            for( contador=0; contador < response.length; contador++ )
+                            {
+                                console.log(response[contador].cantidad);
+                            }                            
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        };  
         
         function ticket_pdf(tipopago, importesnal) 
         {
             
             $.ajax({             
-                    url:        '{{ path("impepson", {id: cestaId}) }}',  
+                    url:        '{{ path("ticketpdf", {id: cestaId}) }}',  
                     type:       'GET',   
                     data:        ({tipopago:tipopago, importesnal:importesnal}),
                     dataType:   'json',  
@@ -384,7 +406,7 @@
                     success: function(response) {  
                             ticket_finalizar(tipopago, response.namepdf, response.importe, response.importesnal);
                             console.log("Ticket " + + response.namepdf)
-                   //         abrirNuevoTab('/Tickets/' + response.namepdf);
+                            abrirNuevoTab('/Tickets/' + response.namepdf);
 
                             
                     },  
@@ -401,7 +423,7 @@
         $btnImprimir = document.querySelector("#btnImprimir");
 
 
-        function ticket_script(tipopago, importesnal) 
+        function ticket_script2(tipopago, importesnal) 
         {
             
                 let nombreImpresora = "EPSONTicket";
@@ -409,17 +431,18 @@
                 conector.establecerTamanioFuente(1, 1);
                 conector.establecerEnfatizado(0);
                 conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-                conector.imagenDesdeUrl("https://github.com/parzibyte.png");
+                conector.imagenDesdeUrl("../vendor/mike42/escpos-php/example/resources/Logo-Pavimentos-Gijon-BN.png");
                 conector.feed(1);
-                conector.texto("Parzibyte's blog\n");
-                conector.texto("Blog de un programador\n");
-                conector.texto("Telefono: 123456789\n");
-                conector.texto("Fecha/Hora: 2021-02-08 16:57:55\n");
-                conector.texto("--------------------------------\n");
+                conector.texto("Pavimentos Gijón\n");
+                conector.texto("53543499M Avenida Schultz Nº 28 Bajo\n");
+                conector.texto("Telefono: 985-391-326\n");
+                conector.feed(1);
+                conector.texto("FACTURA SIMPLIFICADA\n");
                 conector.texto("Venta de plugin para impresora\n");
+                conector.texto("--------------------------------\n");
                 conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
                 conector.texto("25 USD\n");
-                conector.texto("--------------------------------\n");
+                
                 conector.texto("TOTAL: 25 USD\n");
                 conector.texto("--------------------------------\n");
                 conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
