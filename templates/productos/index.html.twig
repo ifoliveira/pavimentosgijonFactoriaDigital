@@ -559,7 +559,7 @@
                 conector.establecerTamanioFuente(1, 1);
                 conector.establecerEnfatizado(0);
                 conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-             //   conector.imagenDesdeUrl("../vendor/mike42/escpos-php/example/resources/Logo-Pavimentos-Gijon-BN.png");
+             //   conector.imagenLocal("../vendor/mike42/escpos-php/example/resources/Logo-Pavimentos-Gijon-BN.png");
                 conector.feed(1);
                 conector.texto("Pavimentos Gijón\n");
                 conector.texto("53543499M Avenida Schultz Nº 28 Bajo\n");
@@ -567,32 +567,22 @@
                 conector.feed(1);
                 conector.texto("FACTURA SIMPLIFICADA\n");
                 conector.texto("--------------------------------\n");
-                    conector.texto("Venta de plugin para impresora\n");
-                    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
-                    conector.texto("25 USD\n");
-                    conector.texto("--------------------------------\n");
-                    conector.texto("TOTAL: 25 USD\n");
-                    conector.texto("--------------------------------\n");
-                    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-                    conector.texto("***Gracias por su compra***");
-                    conector.feed(4);
+           entryInfoObjects[0].forEach(function(cantidad,index) {
 
-         //  entryInfoObjects[0].forEach(function(cantidad,index) {
+                    cantidad.forEach(function(element,index) {
+                       
+                       parcial = (element.cantidad * element.precio)
+                       total = total + parcial
+                        
+                       $linea = '  ' + element.cantidad + '  ' + element.descripcion.padEnd(31) + ' ' + parcial.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}).padStart(7) + ' EUR"\n"';
+                       conector.texto($linea);
+                    });
 
-         //           cantidad.forEach(function(element,index) {
-         //              
-         //              parcial = (element.cantidad * element.precio)
-         //              total = total + parcial
-         //               
-         //              $linea = '  ' + element.cantidad + '  ' + element.descripcion.padEnd(31) + ' ' + parcial.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}).padStart(7) + ' EUR"\n"';
-         //              conector.texto($linea);
-         //           });
+               });
 
-         //      });
-
-        //conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-        //conector.texto("***Gracias por su compra***");
-        //conector.feed(4);
+        conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+        conector.texto("***Gracias por su compra***");
+        conector.feed(4);
         conector.cortar();
         conector.cortarParcialmente();
             conector.imprimirEn(nombreImpresora)
