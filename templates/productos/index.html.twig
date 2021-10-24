@@ -566,18 +566,18 @@
             conector.feed(1);
             conector.texto("FACTURA SIMPLIFICADA\n");
             conector.texto("--------------------------------\n");
-            entryInfoObjects[0].forEach(function(cantidad,index) {
+         //  entryInfoObjects[0].forEach(function(cantidad,index) {
 
-                     cantidad.forEach(function(element,index) {
-                        
-                        parcial = (element.cantidad * element.precio)
-                        total = total + parcial
-                         
-                        $linea = '  ' + element.cantidad + '  ' + element.descripcion.padEnd(31) + ' ' + parcial.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}).padStart(7) + ' EUR"\n"';
-                        conector.texto($linea);
-                     });
+         //           cantidad.forEach(function(element,index) {
+         //              
+         //              parcial = (element.cantidad * element.precio)
+         //              total = total + parcial
+         //               
+         //              $linea = '  ' + element.cantidad + '  ' + element.descripcion.padEnd(31) + ' ' + parcial.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}).padStart(7) + ' EUR"\n"';
+         //              conector.texto($linea);
+         //           });
 
-                });
+         //      });
 
             conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
             conector.texto("***Gracias por su compra***");
