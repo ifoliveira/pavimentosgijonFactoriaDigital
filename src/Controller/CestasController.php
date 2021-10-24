@@ -136,12 +136,12 @@ class CestasController extends AbstractController
     public function epsonimp(Request $request, Cestas $cesta): jsonResponse
     {
    
-        /* Fill in your own connector here */
+    /* Fill in your own connector here */
 
 	// Enter the share name for your USB printer here
-	    $connector = new WindowsPrintConnector("EPSONTicket");
+	//$connector = new WindowsPrintConnector("EPSONTicket");
 
-       // $connector = new FilePrintConnector("/dev/usb/lp1");
+        $connector = new FilePrintConnector("/dev/usb/lp1");
         $items = array();
         $totaln = 0;
         $tipopago = $request->query->get('tipopago');

@@ -13,3 +13,10 @@
     <small>Total Ticket</small>
     <h1 class="text-right" id="imptotal" data-importe="{{ project.getImporteTot(cestaId)  }}">{{ project.getImporteTot(cestaId) |format_currency('EUR', locale='en') }} </h1>
     <hr>
+      {% set ticket = [project.getCestaArray(cestaId)] %}
+
+    <div data-entry-info='{{ ticket|json_encode|raw }}'>
+    </div>
+    
+
+
