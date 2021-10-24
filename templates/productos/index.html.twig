@@ -410,9 +410,9 @@
                     success: function(response) {  
 
                             ticket_script3(tipopago, importesnal);
-                            ticket_finalizar(tipopago, response.namepdf, response.importe, response.importesnal);
-                            console.log("Ticket " + + response.namepdf);
-                            abrirNuevoTab('/Tickets/' + response.namepdf);
+                            //ticket_finalizar(tipopago, response.namepdf, response.importe, response.importesnal);
+                            //console.log("Ticket " + + response.namepdf);
+                            //abrirNuevoTab('/Tickets/' + response.namepdf);
                             
                     },  
                     error : function(xhr, textStatus, errorThrown) {  
