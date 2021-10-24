@@ -584,7 +584,14 @@
             conector.feed(4);
             conector.cortar();
             conector.cortarParcialmente();
-            conector.imprimirEn(nombreImpresora);
+            conector.imprimirEn(nombreImpresora)
+                .then(respuestaAlImprimir => {
+                    if (respuestaAlImprimir === true) {
+                        loguear("Impreso correctamente");
+                    } else {
+                        loguear("Error. La respuesta es: " + respuestaAlImprimir);
+                    }
+                });
 
         };  
 
