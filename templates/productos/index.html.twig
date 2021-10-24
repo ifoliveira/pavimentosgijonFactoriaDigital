@@ -555,17 +555,19 @@
 
             let nombreImpresora = "EPSONTicket";
             let conector = new ConectorPlugin();
-            conector.establecerTamanioFuente(1, 1);
-            conector.establecerEnfatizado(0);
-            conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-            conector.imagenDesdeUrl("../vendor/mike42/escpos-php/example/resources/Logo-Pavimentos-Gijon-BN.png");
-            conector.feed(1);
-            conector.texto("Pavimentos Gijón\n");
-            conector.texto("53543499M Avenida Schultz Nº 28 Bajo\n");
-            conector.texto("Telefono: 985-391-326\n");
-            conector.feed(1);
-            conector.texto("FACTURA SIMPLIFICADA\n");
-            conector.texto("--------------------------------\n");
+                conector.texto("Hola mundo\n");
+//
+// conector.establecerTamanioFuente(1, 1);
+// conector.establecerEnfatizado(0);
+// conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+// conector.imagenDesdeUrl("../vendor/mike42/escpos-php/example/resources/Logo-Pavimentos-Gijon-BN.png");
+// conector.feed(1);
+// conector.texto("Pavimentos Gijón\n");
+// conector.texto("53543499M Avenida Schultz Nº 28 Bajo\n");
+// conector.texto("Telefono: 985-391-326\n");
+// conector.feed(1);
+// conector.texto("FACTURA SIMPLIFICADA\n");
+// conector.texto("--------------------------------\n");
          //  entryInfoObjects[0].forEach(function(cantidad,index) {
 
          //           cantidad.forEach(function(element,index) {
@@ -579,11 +581,11 @@
 
          //      });
 
-            conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-            conector.texto("***Gracias por su compra***");
-            conector.feed(4);
-            conector.cortar();
-            conector.cortarParcialmente();
+        //conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+        //conector.texto("***Gracias por su compra***");
+        //conector.feed(4);
+        //conector.cortar();
+        //conector.cortarParcialmente();
             conector.imprimirEn(nombreImpresora)
                 .then(respuestaAlImprimir => {
                     if (respuestaAlImprimir === true) {
