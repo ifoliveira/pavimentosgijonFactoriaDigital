@@ -23,9 +23,9 @@ $(function () {
 				tarjeta[i-1] = selector.dataset.venta;
 				i++;
 			}else{
-				i=11;
+				i=13;
 			}
-		} while (i<11)
+		} while (i<13)
 		i = 1;
 		do {
 			var selector = document.querySelector("#efectivo"+i);
@@ -34,9 +34,9 @@ $(function () {
 
 				i++;
 			}else{
-				i=11;
+				i=13;
 			}
-		} while (i<11)
+		} while (i<13)
 
 		i = 0;
 		do {
