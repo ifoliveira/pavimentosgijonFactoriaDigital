@@ -297,6 +297,18 @@ class PresupuestosController extends AbstractController
 
 
     /**
+     * @Route("/{id}/generar", name="presupuestos_generar", methods={"GET","POST"})
+     */
+    public function generar(Request $request, Presupuestos $presupuesto): Response
+    {
+
+        return $this->render('presupuestos/generar.html.twig', [
+            'presupuesto' => $presupuesto,
+        ]);
+    }
+
+
+    /**
      * @Route("/ticketpdf/imprimir", name="presupuestopdf")
      */
     public function imprimir(Request $request): JsonResponse

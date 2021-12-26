@@ -37,7 +37,7 @@ class ClientesController extends AbstractController
     public function new(Request $request, EstadocestasRepository $estadocestasRepository): Response
         {   
 
-        $estadocesta=$estadocestasRepository->findOneBy(['id' => 4]);
+        $estadocesta=$estadocestasRepository->findOneBy(['id' => 6]);
         $cliente = new Clientes();
         $presupuesto = new Presupuestos();
         $presupuesto->setEstadoPe($estadocesta);

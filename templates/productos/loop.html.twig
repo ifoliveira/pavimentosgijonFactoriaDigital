@@ -4,7 +4,7 @@
         <hr>
     {% endif %}
     {% for detalle in project.getCesta(cestaId).getdetallecesta %}
-            <div><small>{{ detalle.cantidadDC }} - {{ detalle.productoDc.descripcionPd }} <i class="fas fa-plus-circle fa-lg op-3 text-dark float-right" name="plus-minus" id="{{ detalle.id }}" data-cantidad="{{ detalle.cantidadDC }}"> </i> <i class="fas fa-minus-circle fa-lg op-3 text-dark float-right px-2" name="plus-minus" id="{{ detalle.id }}" data-cantidad="{{ detalle.cantidadDC }}"></i>  <i class="fas fa-times-circle fa-lg op-3 text-dark float-right" name="delete_detalle" id="{{ detalle.id }}" data-cantidad="{{ detalle.cantidadDC }} data-toggle="tooltip" data-placement="top" title="Borrar""> </i></small></div>
+            <div><small>{{ detalle.cantidadDC }} - {{ detalle.productoDc.descripcionPd }}  <i class="fas fa-plus-circle fa-lg op-3 text-dark float-right" name="plus-minus" id="{{ detalle.id }}" data-cantidad="{{ detalle.cantidadDC }}"> </i> <i class="fas fa-minus-circle fa-lg op-3 text-dark float-right px-2" name="plus-minus" id="{{ detalle.id }}" data-cantidad="{{ detalle.cantidadDC }}"></i>  <i class="fas fa-times-circle fa-lg op-3 text-dark float-right" name="delete_detalle" id="{{ detalle.id }}" data-cantidad="{{ detalle.cantidadDC }} data-toggle="tooltip" data-placement="top" title="Borrar""> </i></small></div>
             <h3 class="text-right {% if detalle.precioDc == 0 %} text-danger {% endif %}">
             {{ (detalle.pvpDc * detalle.cantidadDC)}} </h3>
 

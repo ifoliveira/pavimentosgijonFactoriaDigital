@@ -20,16 +20,19 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\HttpFoundation\Cookie;
+
 
 class AdminProController extends AbstractController
 {
     /**
      * @Route("/admin", name="admin_pro")
      */
-    public function index(TiposmovimientoRepository $tiposmovimientoRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
+    public function index(Request $request, TiposmovimientoRepository $tiposmovimientoRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
     {
         $meteo = new Meteo;
         $iconweather = $meteo->icon();
+        
 
         $bancototal = $bancoRepository->totalBanco();
         $ventasmestotal= $bancoRepository->ventamesBanco();
@@ -48,8 +51,9 @@ class AdminProController extends AbstractController
             ['fechaFr' => 'ASC']
         );
 
+        $cookies = $request->cookies->get('Mensaje');
 
-        return $this->render('admin_pro/index.html.twig', [
+        $response = $this->render('admin_pro/index.html.twig', [
             'controller_name' => 'AdminProController',
             'bancototal' => $bancototal,
             'ventastotal' => $ventasmestotal,
@@ -57,9 +61,14 @@ class AdminProController extends AbstractController
             'gastos' => $efectivototal,
             'forecast' => $forecast,
             'manoobratotal' => $manoobratotal,
-            'weathericon' => $iconweather 
+            'weathericon' => $iconweather,
+            'cookies' => $cookies
 
         ]);
+             
+        $response->headers->setCookie(new Cookie('Mensaje', 'No mostrar', time() + 3600 * 18));
+ 
+        return $response;
     }
 
     /**

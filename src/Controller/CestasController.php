@@ -366,6 +366,17 @@ class CestasController extends AbstractController
             'estadoCs' => '1'],
         );
 
+        if (!$tienecesta){ 
+            $cestaini = new Cestas();
+            $cestaini->setUserCs($user->getId()); 
+            $entityManager->persist($cestaini);
+            $entityManager->flush();
+        };
+
+        $tienecesta = $cestasRepository->findBy(
+            ['userCs' => $user->getId(),
+            'estadoCs' => '1'],
+        );
 
         $detalles = $cesta->getdetallecesta();
         foreach ($cesta->getdetallecesta() as $detalles){
@@ -383,13 +394,14 @@ class CestasController extends AbstractController
             
          }
 
-         $cesta->setEstadoCs(2);
-         $entityManager->persist($cesta);
-
+         var_dump($cesta->getDescuentoCs());
          $tienecesta[0]->setImporteTotCs($cesta->getDescuentoCs());
          $tienecesta[0]->setDescuentoCs($cesta->getImporteTotCs());
          $entityManager->persist($tienecesta[0]);
 
+
+         $cesta->setEstadoCs(2);
+         $entityManager->persist($cesta);
 
          $entityManager->flush();
          return $this->redirectToRoute('cestas_show', array ('id' => $tienecesta[0]->getId()));
@@ -437,7 +449,11 @@ class CestasController extends AbstractController
         $entityManager = $this->getDoctrine()->getManager();
 
         $cestas->setEstadoCs(2);
-        $cestas->setImporteTotCs($importetot);
+
+
+        if (floatval($cestas->getDescuentoCs() == 0)) {
+            $cestas->setImporteTotCs($importetot);
+        }
         if (floatval($importesnal) != 0) {
             $cestas->setImporteTotCs($importesnal);
             $cestas->setDescuentoCs($importetot-$importesnal);
