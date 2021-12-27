@@ -4,47 +4,41 @@
 {% block title %}Lista presupuestos{% endblock %}
 {% block tablas %}
 
+                {% set total = 0 %}
+                {% set numero = 1 %}
+                                                  
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
                 <div class="row">
                     <div class="col-md-12">
                         <div class="card card-body printableArea">
-                            <h3><b>INVOICE</b> <span class="pull-right">{{ presupuesto.ticket.estadoCs}}</span></h3>
-                            <hr>
+
                             <div class="row">
-                                <div class="col-md-12">
-                                    <div class="pull-left">
-                                        <address>
-                                            <h3> &nbsp;<b class="text-danger">Admin Pro Admin</b></h3>
-                                            <p class="text-muted ml-1">E 104, Dharti-2,
-                                                <br/> Nr' Viswakarma Temple,
-                                                <br/> Talaja Road,
-                                                <br/> Bhavnagar - 364002</p>
-                                        </address>
+                                     <div class="pull-left col-md-4">
+                                        <img class="d-block img-fluid" src="{{ asset('img/Cabecera-A4.jpg') }}" alt="Cabecera A4">
                                     </div>
-                                    <div class="pull-right text-right">
-                                        <address>
+                                    <div class="col-md-8 pull-right text-right">
+                                        <address class="pull-right text-right">
                                             <h3>To,</h3>
-                                            <h4 class="font-bold">Gaala & Sons,</h4>
-                                            <p class="text-muted ml-4">E 104, Dharti-2,
-                                                <br/> Nr' Viswakarma Temple,
-                                                <br/> Talaja Road,
-                                                <br/> Bhavnagar - 364002</p>
-                                            <p class="mt-4"><b>Invoice Date :</b> <i class="fa fa-calendar"></i> 23rd Jan 2018</p>
-                                            <p><b>Due Date :</b> <i class="fa fa-calendar"></i> 25th Jan 2018</p>
+                                            <h4 class="font-bold">{{presupuesto.clientePe.nombreCl}} {{presupuesto.clientePe.apellidosCl}}</h4>
+                                            <p class="text-muted ml-4">{{presupuesto.clientePe.direccionCl}}</p>
+                                            <p class="mt-4"><b>Telefono :</b> <i class="fa fa-phone"></i> {{ presupuesto.clientePe.telefono1Cl }}</p>
+                                            <p class="mt-4"><b>Fecha :</b> <i class="fa fa-calendar"></i> {{ "now"|date("m/d/Y") }}</p>
                                         </address>
                                     </div>
-                                </div>
+
+                            </div>
+                            <div class="row">
                                 <div class="col-md-12">
                                     <div class="table-responsive mt-5" style="clear: both;">
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
                                                     <th class="text-center">#</th>
-                                                    <th>Description</th>
-                                                    <th class="text-right">Quantity</th>
-                                                    <th class="text-right">Unit Cost</th>
+                                                    <th>Descripción</th>
+                                                    <th class="text-right">Cantidad</th>
+                                                    <th class="text-right">Coste unidad</th>
                                                     <th class="text-right">Total</th>
                                                 </tr>
                                             </thead>
@@ -52,64 +46,38 @@
                                             <tbody>
                                             {% for detalle in presupuesto.ticket.detallecesta %}
                                                 <tr>
-                                                    <td class="text-center">1</td>
+                                                    <td class="text-center">{{ numero }}</td>
                                                     <td>{{ detalle.productoDc.descripcionPd }}</td>
                                                     <td class="text-right">{{ detalle.cantidadDc }} </td>
-                                                    <td class="text-right"> {{ detalle.precioDc }} </td>
-                                                    <td class="text-right"> {{ detalle.cantidadDc * detalle.precioDc  }} </td>
+                                                    <td class="text-right"> {{ detalle.precioDc  |format_currency('EUR', locale='es')  }} </td>
+                                                    <td class="text-right"> {{ (detalle.cantidadDc * detalle.precioDc ) |format_currency('EUR', locale='es')  }} </td>
+                                                    {% set total = (detalle.cantidadDc * detalle.precioDc) + total %}  
+                                                    {% set numero = numero + 1 %} 
                                                 </tr>
                                              {% else %}
                                                  <tr>
                                                      <td colspan="8">no records found</td>
                                                  </tr>
                                              {% endfor %}
-                                                <tr>
-                                                    <td class="text-center">1</td>
-                                                    <td>Milk Powder</td>
-                                                    <td class="text-right">2 </td>
-                                                    <td class="text-right"> $24 </td>
-                                                    <td class="text-right"> $48 </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="text-center">2</td>
-                                                    <td>Air Conditioner</td>
-                                                    <td class="text-right"> 3 </td>
-                                                    <td class="text-right"> $500 </td>
-                                                    <td class="text-right"> $1500 </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="text-center">3</td>
-                                                    <td>RC Cars</td>
-                                                    <td class="text-right"> 20 </td>
-                                                    <td class="text-right"> %600 </td>
-                                                    <td class="text-right"> $12000 </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="text-center">4</td>
-                                                    <td>Down Coat</td>
-                                                    <td class="text-right"> 60 </td>
-                                                    <td class="text-right">$5 </td>
-                                                    <td class="text-right"> $300 </td>
-                                                </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
                                 <div class="col-md-12">
                                     <div class="pull-right mt-4 text-right">
-                                        <p>Sub - Total amount: $13,848</p>
-                                        <p>vat (10%) : $138 </p>
-                                        <hr>
-                                        <h3><b>Total :</b> $13,986</h3>
+                                        <p>Sub - Total : {{ (total) |format_currency('EUR', locale='es')  }}</p>
+                                         <hr>
+                                        <h1><b>Total :</b> {{ (total) |format_currency('EUR', locale='es')  }}</h1>
                                     </div>
                                     <div class="clearfix"></div>
-                                    <hr>
-                                    <div class="text-right">
-                                        <button class="btn btn-danger" type="submit"> Proceed to payment </button>
-                                        <button id="print" class="btn btn-default btn-outline" type="button"> <span><i class="fa fa-print"></i> Print</span> </button>
-                                    </div>
+
                                 </div>
                             </div>
+                        </div>
+                        <hr>
+                        <div class="text-right">
+                            <button class="btn btn-danger" type="submit"> Proceed to payment </button>
+                            <button id="print" class="btn btn-default btn-outline" type="button"> <span><i class="fa fa-print"></i> Print</span> </button>
                         </div>
                     </div>
                 </div>
@@ -126,4 +94,19 @@
 {% endblock %}
 {% block formulario %}{% endblock %}
 {% block jscustom %}
+    <!-- This Page JS -->
+    <script src="{{ asset('dist/js/pages/samplepages/jquery.PrintArea.js') }}"></script>
+    <script>
+    $(function() {
+        $("#print").click(function() {
+            var mode = 'iframe'; //popup
+            var close = mode == "popup";
+            var options = {
+                mode: mode,
+                popClose: close
+            };
+            $("div.printableArea").printArea(options);
+        });
+    });
+    </script>
 {% endblock %}

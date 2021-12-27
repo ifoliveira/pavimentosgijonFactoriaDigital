@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\PresupuestosRepository;
 use App\Entity\estadocestas;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -93,6 +95,11 @@ class Presupuestos
      */
     private $ticketsnal;
 
+    /**
+     * @ORM\OneToMany(targetEntity=ManoObra::class, mappedBy="presupuestoMo", orphanRemoval=true)
+     */
+    private $manoObra;
+
     public function __construct()
     {
 
@@ -102,6 +109,7 @@ class Presupuestos
         $this->setCostetotPe(0);
         $this->setDescuaetoPe(0);
         $this->setImportetotPe(0);
+        $this->manoObra = new ArrayCollection();
 
     }
 
@@ -274,6 +282,41 @@ class Presupuestos
     public function setTicketsnal(?cestas $ticketsnal): self
     {
         $this->ticketsnal = $ticketsnal;
+
+        return $this;
+    }
+
+    public function __toString()
+    {
+        return $this->getClientePe()->getDireccionCl();
+    }
+
+    /**
+     * @return Collection|ManoObra[]
+     */
+    public function getManoObra(): Collection
+    {
+        return $this->manoObra;
+    }
+
+    public function addManoObra(ManoObra $manoObra): self
+    {
+        if (!$this->manoObra->contains($manoObra)) {
+            $this->manoObra[] = $manoObra;
+            $manoObra->setPresupuestoMo($this);
+        }
+
+        return $this;
+    }
+
+    public function removeManoObra(ManoObra $manoObra): self
+    {
+        if ($this->manoObra->removeElement($manoObra)) {
+            // set the owning side to null (unless already changed)
+            if ($manoObra->getPresupuestoMo() === $this) {
+                $manoObra->setPresupuestoMo(null);
+            }
+        }
 
         return $this;
     }

@@ -12,7 +12,6 @@
                     <div class="col-lg-8">
 
                         {% if presupuesto.EstadoPe.id > 3 and presupuesto.EstadoPe.id < 8 %}
-                            {% if fotos  %}
                                     <div class="card">
                                         <div class="card-body">
                                             {{ form_start(formestado) }}
@@ -41,12 +40,12 @@
 
                                         </div>
                                     </div>
-                            {% endif %}   
+
                         {% endif %}
                         {% if presupuesto.EstadoPe.id == 7 %}
                                     <div class="card">
                                         <div class="card-body">
-                                                <button id="Checkout" class="btn btn-rounded btn-outline-danger">Generar presupuesto </button>
+                                            <button id="Generar" class="btn btn-rounded btn-outline-success" >Generar</button>
                                         </div>
                                     </div>
                         {% endif %}
@@ -80,30 +79,11 @@
                                         </div>
                                     </div>
                         {% endif %}
-                        <div class="card" id="idpresu" data-idpresu="{{ presupuesto.id }}">
-                            <div class="card-body">
-                                <h4 class="card-title">Trabajos a realizar</h4>
-                                {% if presupuesto.EstadoPe.id == 7 or presupuesto.EstadoPe.id == 6 %}
-                                <button id="edit" class="btn btn-dark" onclick="edit()" type="button"><i
-                                        class="ti-pencil-alt"></i> Edit</button>
-                                <button id="save" class="btn btn-success" onclick="save()" type="button"><i
-                                        class=" ti-save"></i> Save</button>
-                                <div class="border p-3 mt-3">
-                                    <div class="click2edit">
-
-                                           {{ presupuesto.manoobraPe| raw }}
-                                    </div>
-                                </div>
-                                {% else %}
-                                        {{ presupuesto.manoobraPe| raw }}
-                                {% endif %}
-                            </div>
-                        </div>
 
                         {% if presupuesto.EstadoPe.id == 6 %}
                          <div class="card">
                             <div class="card-body">
-                                <h4 class="card-title">Productos de la cesta </h4>
+                                <h3 class="card-title">PRODUCTOS</h3>
                                 <h6 class="card-subtitle"></h6>
                                 <div class="table-responsive">
                                     <table id="tbprod" class="table table-striped table-bordered text-inputs-searching">
@@ -223,16 +203,16 @@
                     {% if presupuesto.EstadoPe.id > 6 %} 
                         <div class="card">
                             <div class="card-body">
-                                <h4 class="card-title">Movimientos</h4>
+                                <h4 class="card-title">Presupuesto Actual</h4>
                                 <h6 class="card-subtitle"></h6>
                                 <div class="table-responsive">
                                     <table id="footer" class="table table-striped table-bordered display"
                                         style="width:100%">
                                         <thead>
-                                            <tr>
+                                            <tr align="center"> 
                                                 <th>Detalle</th>
-                                                <th>Unidades</th>
                                                 <th>Precio</th>
+                                                <th>Unidades</th>
                                                 <th>PVP</th>
                                             </tr>
                                         </thead>
@@ -240,9 +220,10 @@
                                         {% for detalle in project.getCesta(cestaId).getdetallecesta %}
                                             <tr>
                                                 <td>{{ detalle.productoDc.descripcionPd }}</td>
-                                                <td>{{ detalle.cantidadDC}}</td>
-                                                <td align="right">{{ detalle.precioDc |number_format(2)}}</td>
-                                                <td align="right">{{ detalle.pvpDc|number_format(2) }}</td>
+                                                <td align="right">{{ detalle.precioDc |format_currency('EUR', locale='es') }}</td>
+                                                <td align="center">{{ detalle.cantidadDC}}</td>
+                                                
+                                                <td align="right">{{ detalle.pvpDc|format_currency('EUR', locale='es') }}</td>
                                             </tr>
                                         {% else %}
                                             <tr>
@@ -252,9 +233,8 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <th colspan="2" style="text-align:right">Total:</th>
-                                                <th style="text-align:right">{{project.getPrecioTot(cestaId)|number_format(2) }}</th>
-                                                <th style="text-align:right">{{project.getImporteTot(cestaId)|number_format(2) }}</th>
+                                                <th colspan="3" style="text-align:right">Total:</th>
+                                                <th style="text-align:right">{{project.getImporteTot(cestaId)|format_currency('EUR', locale='es')  }}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -420,6 +400,15 @@
         var selector = document.querySelector("#loop");
         var cestaId = selector.dataset.cesta
 
+        /****************************************
+        *      Rechazar presupuesto             *
+        *****************************************/
+
+        $(document).on('click', 'button[id="Generar"]' , function(event) {
+
+            location.href = "{{ path('presupuestos_generar', {id: presupuesto.id}) }}";
+
+        })
 
 
         /****************************************
