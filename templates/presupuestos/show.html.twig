@@ -220,10 +220,10 @@
                                         {% for detalle in project.getCesta(cestaId).getdetallecesta %}
                                             <tr>
                                                 <td>{{ detalle.productoDc.descripcionPd }}</td>
-                                                <td align="right">{{ detalle.precioDc |format_currency('EUR', locale='es') }}</td>
+                                                <td align="right">{{ detalle.pvpDc |format_currency('EUR', locale='es') }}</td>
                                                 <td align="center">{{ detalle.cantidadDC}}</td>
                                                 
-                                                <td align="right">{{ detalle.pvpDc|format_currency('EUR', locale='es') }}</td>
+                                                <td align="right">{{ (detalle.cantidadDC * detalle.pvpDc)|format_currency('EUR', locale='es') }}</td>
                                             </tr>
                                         {% else %}
                                             <tr>
@@ -432,12 +432,37 @@
         var cestaId = selector.dataset.cesta
 
         /****************************************
-        *      Rechazar presupuesto             *
+        *      Generar presupuesto             *
         *****************************************/
 
-        $(document).on('click', 'button[id="Generar"]' , function(event) {
+        $(document).on('click', 'button[id="Generar"]' , async function(event) {
 
-            location.href = "{{ path('presupuestos_generar', {id: presupuesto.id}) }}";
+           // Datos de la fila seleccionada en la lista de productos
+                var data = table.row(this).data();
+                var precios  = 'N'
+                const inputValue = 1
+                const inputStep = 1
+                var senal = 0
+
+                const { value: accept } =  await Swal.fire({
+                title: 'SEÑAL',
+                input: 'checkbox',
+                inputValue: 0,
+                inputPlaceholder:
+                    '¿Quieres que salgan los precios?',
+                confirmButtonText:
+                    'Continuar <i class="fa fa-arrow-right"></i>',
+
+                })
+
+                if (accept) {
+            // Pop up con datos del producto
+                   location.href = "{{ path('presupuestos_generar', {id: presupuesto.id, 'precios' : 'S' }) }}";
+                   return;
+                    
+                } 
+                location.href = "{{ path('presupuestos_generar', {id: presupuesto.id, 'precios' : 'N' }) }}";
+
 
         })
 

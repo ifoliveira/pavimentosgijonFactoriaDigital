@@ -29,9 +29,8 @@
 
                                     </div>
 
-                                    <div class="col-md-6 pull-right text-right">
+                                    <div class="col-md-8 pull-right text-right">
                                         <address class="pull-right text-right">
-                                            <h3>To,</h3>
                                             <h4 class="font-bold">{{presupuesto.clientePe.nombreCl}} {{presupuesto.clientePe.apellidosCl}}</h4>
                                             <p class="text-muted ml-4">{{presupuesto.clientePe.direccionCl}}</p>
                                             <p class="mt-4"><b>Telefono :</b> <i class="fa fa-phone"></i> {{ presupuesto.clientePe.telefono1Cl }}</p>
@@ -52,9 +51,11 @@
                                                 <tr>
                                                     <th class="text-center">#</th>
                                                     <th>Descripción</th>
+                                                
                                                     <th class="text-right">Cantidad</th>
-                                                    <th class="text-right">Coste unidad</th>
-                                                    <th class="text-right">Total</th>
+                                                
+                                                    <th class="text-right">{% if precios == 'S' %}Coste unidad {% endif %}</th>
+                                                    <th class="text-right">{% if precios == 'S' %}Total{% endif %}</th>
                                                 </tr>
                                             </thead>
 
@@ -64,9 +65,10 @@
                                                     <td class="text-center">{{ numero }}</td>
                                                     <td>{{ detalle.productoDc.descripcionPd }}</td>
                                                     <td class="text-right">{{ detalle.cantidadDc }} </td>
-                                                    <td class="text-right"> {{ detalle.precioDc  |format_currency('EUR', locale='es')  }} </td>
-                                                    <td class="text-right"> {{ (detalle.cantidadDc * detalle.precioDc ) |format_currency('EUR', locale='es')  }} </td>
-                                                    {% set total = (detalle.cantidadDc * detalle.precioDc) + total %}  
+                                                    <td class="text-right"> {% if precios == 'S' %}{{ detalle.pvpDc  |format_currency('EUR', locale='es')  }}{% endif %} </td>
+                                                    <td class="text-right"> {% if precios == 'S' %}{{ (detalle.cantidadDc * detalle.pvpDc ) |format_currency('EUR', locale='es')  }}{% endif %}</td>
+
+                                                    {% set total = (detalle.cantidadDc * detalle.pvpDc) + total %}  
                                                     {% set numero = numero + 1 %} 
                                                 </tr>
                                              {% else %}

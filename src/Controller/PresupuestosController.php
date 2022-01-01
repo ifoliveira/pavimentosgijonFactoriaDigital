@@ -247,7 +247,7 @@ class PresupuestosController extends AbstractController
     /**
      * @Route("/{id}/{estado}/finestado", name="presupuestos_finestado", methods={"GET","POST"})
      */
-    public function finestado(Request $request, Presupuestos $presupuesto, int $estado, EstadocestasRepository $estadocestasRepository): Response
+    public function finestado(Request $request, Presupuestos $presupuesto, int $estado, string $precios, EstadocestasRepository $estadocestasRepository): Response
     {
      
         $estadocesta = $estadocestasRepository->findOneBy(
@@ -261,7 +261,7 @@ class PresupuestosController extends AbstractController
         $entityManager->flush();
 
                                                                                             
-        return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId() ));
+        return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId(), 'precios' => $precios ));
     }
 
 
@@ -297,13 +297,14 @@ class PresupuestosController extends AbstractController
 
 
     /**
-     * @Route("/{id}/generar", name="presupuestos_generar", methods={"GET","POST"})
+     * @Route("/{id}/{precios}/generar", name="presupuestos_generar", methods={"GET","POST"})
      */
-    public function generar(Request $request, Presupuestos $presupuesto): Response
+    public function generar(Request $request, string $precios, Presupuestos $presupuesto): Response
     {
 
         return $this->render('presupuestos/generar.html.twig', [
             'presupuesto' => $presupuesto,
+            'precios' => $precios,
         ]);
     }
 
