@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TextoManoObra index{% endblock %}
+
+{% block body %}
+    <h1>TextoManoObra index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>DescripcionXo</th>
+                <th>ResumenXo</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for texto_mano_obra in texto_mano_obras %}
+            <tr>
+                <td>{{ texto_mano_obra.id }}</td>
+                <td>{{ texto_mano_obra.descripcionXo }}</td>
+                <td>{{ texto_mano_obra.resumenXo }}</td>
+                <td>
+                    <a href="{{ path('texto_mano_obra_show', {'id': texto_mano_obra.id}) }}">show</a>
+                    <a href="{{ path('texto_mano_obra_edit', {'id': texto_mano_obra.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('texto_mano_obra_new') }}">Create new</a>
+{% endblock %}

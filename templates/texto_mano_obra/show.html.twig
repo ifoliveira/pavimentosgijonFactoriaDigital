@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TextoManoObra{% endblock %}
+
+{% block body %}
+    <h1>TextoManoObra</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ texto_mano_obra.id }}</td>
+            </tr>
+            <tr>
+                <th>DescripcionXo</th>
+                <td>{{ texto_mano_obra.descripcionXo }}</td>
+            </tr>
+            <tr>
+                <th>ResumenXo</th>
+                <td>{{ texto_mano_obra.resumenXo }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('texto_mano_obra_index') }}">back to list</a>
+
+    <a href="{{ path('texto_mano_obra_edit', {'id': texto_mano_obra.id}) }}">edit</a>
+
+    {{ include('texto_mano_obra/_delete_form.html.twig') }}
+{% endblock %}

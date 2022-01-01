@@ -14,21 +14,36 @@
                     <div class="col-md-12">
                         <div class="card card-body printableArea">
 
+
+                            <div class="row">
+                                     <div class="pull-left col-md-12">
+                                        <h1 align="center">PRESUPUESTO</h1>
+                                    </div>
+
+
+                            </div>
                             <div class="row">
                                      <div class="pull-left col-md-4">
                                         <img class="d-block img-fluid" src="{{ asset('img/Cabecera-A4.jpg') }}" alt="Cabecera A4">
+                                        <br/>
+
                                     </div>
-                                    <div class="col-md-8 pull-right text-right">
+
+                                    <div class="col-md-6 pull-right text-right">
                                         <address class="pull-right text-right">
                                             <h3>To,</h3>
                                             <h4 class="font-bold">{{presupuesto.clientePe.nombreCl}} {{presupuesto.clientePe.apellidosCl}}</h4>
                                             <p class="text-muted ml-4">{{presupuesto.clientePe.direccionCl}}</p>
                                             <p class="mt-4"><b>Telefono :</b> <i class="fa fa-phone"></i> {{ presupuesto.clientePe.telefono1Cl }}</p>
                                             <p class="mt-4"><b>Fecha :</b> <i class="fa fa-calendar"></i> {{ "now"|date("m/d/Y") }}</p>
+                                            <p class="font-bold">
+                                            <h2>Total  {{ presupuesto.importetotPe|format_currency('EUR', locale='es')  }}</h2>
+                                            </p>
                                         </address>
                                     </div>
 
                             </div>
+
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="table-responsive mt-5" style="clear: both;">
@@ -65,14 +80,50 @@
                                 </div>
                                 <div class="col-md-12">
                                     <div class="pull-right mt-4 text-right">
-                                        <p>Sub - Total : {{ (total) |format_currency('EUR', locale='es')  }}</p>
-                                         <hr>
-                                        <h1><b>Total :</b> {{ (total) |format_currency('EUR', locale='es')  }}</h1>
+                                        <!-- <p>Sub - Total : {{ (total) |format_currency('EUR', locale='es')  }}</p>
+                                         <hr>-->
+                                        <p><h2><b>Materiales</b> I.V.A. Incluido : {{ (total) |format_currency('EUR', locale='es')  }}</h2>
                                     </div>
                                     <div class="clearfix"></div>
 
                                 </div>
                             </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="table-responsive mt-5" style="clear: both;">
+                                    <h2 class="fs-1 fw-bold"><i class="fa fa-wrench fs-1"></i>&nbsp;&nbsp;   Mano de obra</h2>
+                                        <ul>
+                                        {% set anterior = "" %}
+                                        {% for manodeobra in presupuesto.manoObra %}
+                                            {% if manodeobra.categoriaMo.TipoTm != anterior %}
+                                                {% if not loop.first %}  
+
+                                                    </ul>
+                                                </li>
+                                                <br/>
+                                                {% endif %}
+                                                <li scope="col"><h3>{{ manodeobra.categoriaMo.TipoTm}}</h3>
+                                                    <ul>
+                                                        <li align="left">{{ manodeobra.textoMo}}</li>
+                                                                
+                                            {% else %}
+                                                        <li align="left">{{ manodeobra.textoMo}}</li>
+                                            {% endif %}
+
+                                            {% if  loop.last %}     
+                                                    </ul>
+                                                </li>
+                                            {% endif %}
+
+                                            {% set anterior = manodeobra.categoriaMo.TipoTm %}
+                                        {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+
+                            </div>
+                            
                         </div>
                         <hr>
                         <div class="text-right">

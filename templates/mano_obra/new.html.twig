@@ -1,11 +1,9 @@
-{% extends 'base.html.twig' %}
-
-{% block title %}New ManoObra{% endblock %}
-
-{% block body %}
-    <h1>Create new ManoObra</h1>
-
-    {{ include('mano_obra/_form.html.twig') }}
-
-    <a href="{{ path('mano_obra_index') }}">back to list</a>
+{% extends 'pages.html.twig' %}
+{% form_theme form 'fields.html.twig' %}
+{% block title %}Nueva mano de obra{% endblock %}
+{% block cabecera %} Mano de obra {% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item">Mano de obra</li> 
+<li class="breadcrumb-item active">Nuevo</li>
 {% endblock %}
+{% block tablas %}{% endblock %}

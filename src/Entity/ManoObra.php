@@ -33,6 +33,11 @@ class ManoObra
      */
     private $presupuestoMo;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=TipoManoObra::class, inversedBy="manoObras")
+     */
+    private $categoriaMo;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -70,6 +75,18 @@ class ManoObra
     public function setPresupuestoMo(?presupuestos $presupuestoMo): self
     {
         $this->presupuestoMo = $presupuestoMo;
+
+        return $this;
+    }
+
+    public function getCategoriaMo(): ?TipoManoObra
+    {
+        return $this->categoriaMo;
+    }
+
+    public function setCategoriaMo(?TipoManoObra $categoriaMo): self
+    {
+        $this->categoriaMo = $categoriaMo;
 
         return $this;
     }

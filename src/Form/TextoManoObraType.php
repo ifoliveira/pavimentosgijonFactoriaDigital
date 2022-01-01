@@ -2,28 +2,26 @@
 
 namespace App\Form;
 
-use App\Entity\ManoObra;
+use App\Entity\TextoManoObra;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class ManoObraType extends AbstractType
+class TextoManoObraType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('presupuestoMo')
-            ->add('categoriaMo')
-            ->add('tipoMo')
-            ->add('textoMo')
-
+            ->add('descripcionXo')
+            ->add('resumenXo')
+            ->add('tipoXo')
         ;
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => ManoObra::class,
+            'data_class' => TextoManoObra::class,
         ]);
     }
 }
