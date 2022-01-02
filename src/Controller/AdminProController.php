@@ -38,6 +38,7 @@ class AdminProController extends AbstractController
         $bancototal = $bancoRepository->totalBanco();
         $ventasmestotal= $bancoRepository->ventamesBanco();
         $ventaefetotal = $cestasRepository->ventaefemes();
+        $ventahistefect = $cestasRepository->ventaefetotal()["ventatotalef"];
         $efectivototal = $efectivoRepository->totalefectivo();
         $manoobratotal = intval($efectivoRepository->manoobraEfectivo()["sum(importe_ef)"]) + intval($bancoRepository->manoobraBanco()["importe"]) ;
 
@@ -57,6 +58,7 @@ class AdminProController extends AbstractController
             'controller_name' => 'AdminProController',
             'bancototal' => $bancototal,
             'ventastotal' => $ventasmestotal,
+            'ventahistefect' => $ventahistefect,
             'ventaefetotal' => $ventaefetotal,
             'gastos' => $efectivototal,
             'forecast' => $forecast,

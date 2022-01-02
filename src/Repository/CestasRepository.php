@@ -37,6 +37,24 @@ class CestasRepository extends ServiceEntityRepository
 
     }
 
+
+    public function ventaefetotal()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT sum(importe_tot_cs) as ventatotalef FROM cestas p
+        WHERE tipopago_cs = "Efectivo";
+            ';
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+
+        // returns an array of arrays (i.e. a raw data set)
+        return $stmt->fetch();
+
+    }
+
+
     /**
      * @return Cestas[]
      */
