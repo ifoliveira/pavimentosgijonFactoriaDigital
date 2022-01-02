@@ -44,15 +44,34 @@ class BancoRepository extends ServiceEntityRepository
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = '
-        SELECT sum(importe_bn), month(fecha_bn) as mes FROM banco p
+        SELECT sum(importe_bn), year(fecha_bn), month(fecha_bn) as mes FROM banco p
         WHERE categoria_bn = 3
-        GROUP BY MONTH (fecha_bn);
+          AND YEAR(fecha_bn) = YEAR(CURDATE())
+        GROUP BY YEAR(fecha_bn) , MONTH(fecha_bn);
             ';
         $stmt = $conn->prepare($sql);
         $stmt->execute();
 
         // returns an array of arrays (i.e. a raw data set)
         return $stmt->fetchAllAssociative();
+
+    }
+
+
+    public function manoobraBanco()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT sum(importe_bn) as importe FROM banco p
+        WHERE categoria_bn = 1
+          AND YEAR(fecha_bn) = YEAR(CURDATE());
+            ';
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+
+        // returns an array of arrays (i.e. a raw data set)
+        return $stmt->fetch();
 
     }
 

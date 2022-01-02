@@ -26,6 +26,7 @@ class CestasRepository extends ServiceEntityRepository
         $sql = '
         SELECT sum(importe_tot_cs), month(fecha_cs) as mes FROM cestas p
         WHERE tipopago_cs = "Efectivo"
+        AND YEAR(fecha_cs) = YEAR(CURDATE())
         GROUP BY MONTH (fecha_cs);
             ';
         $stmt = $conn->prepare($sql);

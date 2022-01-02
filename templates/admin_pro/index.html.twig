@@ -87,14 +87,8 @@
                                         {% set totaltar = 0 %}
                                         {% set totalefe = 0 %}
                                         {% set totalmanob = 0 %}
-                                        {% for mano in manoobratotal %}
-                                            {% for bancos in mano.bancos %}
-                                                  {% set totalmanob = totalmanob + bancos.ImporteBn %}   
-                                            {% endfor %}    
-                                            {% for efectivo in mano.efectivo %}
-                                                  {% set totalmanob = totalmanob + efectivo.ImporteEf %}   
-                                            {% endfor %}    
-                                        {% endfor %}    
+                                        {% set totalmanob = manoobratotal %}   
+
                                         {% for ventatot in ventastotal %}
                                         <a id="datosmes{{ ventatot['mes'] }}" data-venta="{{ ventatot['sum(importe_bn)'] }}"></a>  
                                             {% set totaltar = totaltar +  ventatot['sum(importe_bn)'] %}

@@ -13,6 +13,7 @@ use App\Repository\CestasRepository;
 use App\Repository\EfectivoRepository;
 use App\Repository\ForecastRepository;
 use App\Repository\TiposmovimientoRepository;
+use Doctrine\DBAL\Types\FloatType;
 use Doctrine\ORM\Mapping\Id;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,9 +39,8 @@ class AdminProController extends AbstractController
         $ventasmestotal= $bancoRepository->ventamesBanco();
         $ventaefetotal = $cestasRepository->ventaefemes();
         $efectivototal = $efectivoRepository->totalefectivo();
-        $manoobratotal = $tiposmovimientoRepository->findBy(
-            ['descripcionTm' => 'Mano de Obra'],
-        );
+        $manoobratotal = intval($efectivoRepository->manoobraEfectivo()["sum(importe_ef)"]) + intval($bancoRepository->manoobraBanco()["importe"]) ;
+
         $forecast = $forecastRepository->findBy(
             ['estadoFr' => 'P'],
             ['fechaFr' => 'ASC'],

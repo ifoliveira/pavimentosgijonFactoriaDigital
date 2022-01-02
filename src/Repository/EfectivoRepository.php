@@ -35,6 +35,23 @@ class EfectivoRepository extends ServiceEntityRepository
 
     }
 
+    public function manoobraEfectivo()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT sum(importe_ef)   FROM efectivo p
+        WHERE tipoEf = 1
+          AND YEAR(fecha_ef) = YEAR(CURDATE());
+            ';
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+
+        // returns an array of arrays (i.e. a raw data set)
+        return $stmt->fetch();
+
+    }
+
     // /**
     //  * @return Efectivo[] Returns an array of Efectivo objects
     //  */
