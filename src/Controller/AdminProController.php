@@ -79,6 +79,9 @@ class AdminProController extends AbstractController
     public function contactAction(Request $request , DetallecestaRepository $detallecestaRepository)
     {
         $directorio = $this->getParameter("c43Dir");
+        $contador = 0;
+
+        $ficheros  =  sprintf("%02d", (count(scandir($directorio, 1)) - 2));
 
         $defaultData = array('message' => 'Escribe un mensaje aquí');
 
@@ -93,32 +96,35 @@ class AdminProController extends AbstractController
             $data = $form->getData();
 
                 try {
-                              $data['fichero_C43']->move($directorio, "C43.txt");
+                              $data['fichero_C43']->move($directorio, "C43" . $ficheros . ".txt");
                           } catch (FileException $e) {
                             // unable to upload the photo, give up
                          }
             return $this->redirectToRoute('insert_C43');
         }
 
-        $nombrefic = $directorio . '/C43.txt';
+        do {
+            $nombrefic = $directorio . '/C43' . sprintf("%02d",$contador) . '.txt';
 
-        if (file_exists($nombrefic)) {
-            $fichero = file_get_contents($nombrefic);
-       
-            // informamos cabeceara del ficheor csv 
-            $datosC43 = new Banks_N43();
+            if (file_exists($nombrefic)) {
+                
+                $fichero = file_get_contents($nombrefic);
         
-            $datosC43->parse($fichero);
+                // informamos cabeceara del ficheor csv 
+                $datosC43 = new Banks_N43();
+            
+                $datosC43->parse($fichero);
 
-            foreach ($datosC43->accounts as $cuentas){
-                foreach ($cuentas->entries as $valor){
-                    $bancos[] = $valor->banco;
-                    } 
+                foreach ($datosC43->accounts as $cuentas){
+                    foreach ($cuentas->entries as $valor){
+                        $bancos[] = $valor->banco;
+                        }}
+                } else {
+
+                    $bancos = new Banco();
                 }
-            } else {
-
-                $bancos = new Banco();
-            }
+                 $contador++;
+            }while($contador < $ficheros);
             
         return $this->render('banco/new.html.twig', [
            'bancos' => $bancos,

@@ -61,38 +61,46 @@ class BancoController extends AbstractController
     public function N43(BancoRepository $bancoRepository, DetallecestaRepository $detallecestaRepository): Response
     {
         $directorio = $this->getParameter("c43Dir");
-        $fichero = file_get_contents($directorio .'/C43.txt');
-       
-        // informamos cabeceara del ficheor csv 
-        $datosC43 = new Banks_N43();
+        $contador = 0;
 
-        $datosC43->parse($fichero);
+        $ficheros  =  sprintf("%02d", (count(scandir($directorio, 1)) - 2));
+        do {
+            $nombrefic = '/C43' . sprintf("%02d",$contador) . '.txt';
 
-        foreach ($datosC43->accounts as $cuentas){
-            foreach ($cuentas->entries as $valor){
-        // Buscamos la descripcion del tipo        
-                 $entityManager = $this->getDoctrine()->getManager();
-                 $tipo = $entityManager->getRepository(Tiposmovimiento::class)->findOneBy(
-                    ['descripcionTm' => $valor->banco->getCategoriaBn()->getdescripcionTm()]
-                );
+            $fichero = file_get_contents($directorio .'/'.$nombrefic);
+        
+            // informamos cabeceara del ficheor csv 
+            $datosC43 = new Banks_N43();
 
-        // Si existe la movemos a objeto banco e insertamo solo banco        
-                if ($tipo) {
-                    $valor->banco->setCategoriaBn($tipo);
-                }else{
-        // Si no existe la insertamos tambien en el tipo            
-                   $entityManager->persist($valor->banco->getCategoriaBn());
-                }
+            $datosC43->parse($fichero);
 
-                 $entityManager->persist($valor->banco);
-                 $entityManager->flush();
-            } 
-        }
+            foreach ($datosC43->accounts as $cuentas){
+                foreach ($cuentas->entries as $valor){
+            // Buscamos la descripcion del tipo        
+                    $entityManager = $this->getDoctrine()->getManager();
+                    $tipo = $entityManager->getRepository(Tiposmovimiento::class)->findOneBy(
+                        ['descripcionTm' => $valor->banco->getCategoriaBn()->getdescripcionTm()]
+                    );
 
+            // Si existe la movemos a objeto banco e insertamo solo banco        
+                    if ($tipo) {
+                        $valor->banco->setCategoriaBn($tipo);
+                    }else{
+            // Si no existe la insertamos tambien en el tipo            
+                    $entityManager->persist($valor->banco->getCategoriaBn());
+                    }
+
+                    $entityManager->persist($valor->banco);
+                    $entityManager->flush();
+                } 
+            }
+            unlink($directorio .'/'. $nombrefic);
+            $contador++;
+        }while($contador < $ficheros);
         
 
         // Borra el fichero
-            unlink($directorio .'/C43.txt');
+        //   unlink($directorio .'/C43.txt');
 
        return $this->render('banco/index.html.twig', [
         'bancos' => $bancoRepository->findAll(),
