@@ -4,11 +4,15 @@ namespace App\Controller;
 
 use App\Entity\ManoObra;
 use App\Form\ManoObraType;
+use App\Form\PresupuestosManoObraType;
 use App\Repository\ManoObraRepository;
+use App\Repository\PresupuestosRepository;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+
 
 /**
  * @Route("/admin/mano/obra")
@@ -26,25 +30,47 @@ class ManoObraController extends AbstractController
     }
 
     /**
-     * @Route("/new", name="mano_obra_new", methods={"GET","POST"})
+     * @Route("/{presu}/new", name="mano_obra_new", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function new(Request $request, int $presu, PresupuestosRepository $presupuestosRepository): Response
     {
         $manoObra = new ManoObra();
-        $form = $this->createForm(ManoObraType::class, $manoObra);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $presupuesto = $presupuestosRepository->findBy(
+            ['id' => $presu,
+            ],
+        );
+
+        $presupuesto[0]->addManoObra($manoObra);
+        $form = $this->createForm(PresupuestosManoObraType::class, $presupuesto[0]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
+           
             $entityManager->persist($manoObra);
             $entityManager->flush();
-
-            return $this->redirectToRoute('mano_obra_index');
+            $manoObranew = new ManoObra();
+            $presupuestonew = $presupuestosRepository->findBy(
+                ['id' => $presu,
+                ],
+            );
+            $presupuestonew[0]->addManoObra($manoObranew);
+            $form = $this->createForm(PresupuestosManoObraType::class, $presupuestonew[0]);
+            $form->handleRequest($request);
+            return $this->render('mano_obra/new.html.twig', [
+                'mano_obra' => $manoObranew,
+                'presupuesto' => $presupuestonew,
+                'form' => $form->createView(),
+    
+            ]);
         }
 
         return $this->render('mano_obra/new.html.twig', [
             'mano_obra' => $manoObra,
+            'presupuesto' => $presupuesto,
             'form' => $form->createView(),
+
         ]);
     }
 

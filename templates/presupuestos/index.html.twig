@@ -89,11 +89,9 @@
                                                 <th>Estado</th>
                                                 <th>Id</th>
                                                 <th>Telefono</th>
-                                                <th>CostetotPe</th>
-                                                <th>ImportetotPe</th>
-                                                <th>TipopagototPE</th>
-                                                <th>ImportesnalPe</th>
-                                                <th>TipopagosnalPe</th>
+                                                <th>Importe total</th>
+                                                <th>Importe abonado</th>
+                                                <th>% - Importe</th>
                                             </tr>
                                         </thead>
                                             <tbody>
@@ -126,11 +124,17 @@
                                                     {% endif %}
                                                     <td><a href="{{ path ('presupuestos_show', { 'id': presupuesto.id  }) }}" class="font-medium link">{{ presupuesto.clientePe.direccionCl}}  ({{presupuesto.clientePe.nombreCl}})</a></td>
                                                     <td>{{ presupuesto.clientePe.telefono1Cl }}</td>
-                                                    <td>{{ presupuesto.costetotPe }}</td>
-                                                    <td>{{ presupuesto.importetotPe }}</td>
-                                                    <td>{{ presupuesto.tipopagototPE }}</td>
-                                                    <td>{{ presupuesto.importesnalPe }}</td>
-                                                    <td>{{ presupuesto.tipopagosnalPe }}</td>
+                                                    <td>{{ (presupuesto.importetotPe + presupuesto.importemanoobra)  |format_currency('EUR', locale='es')  }}</td>
+                                                    <td>{{ presupuesto.importesnalPe  |format_currency('EUR', locale='es')  }}</td>
+                                                    {% set beneficio = presupuesto.importetotPe + presupuesto.importemanoobra - presupuesto.costetotPe %}
+                                                    {% set coste_total = presupuesto.importemanoobra + presupuesto.importetotPe %}
+
+                                                    {% if coste_total == 0 %}
+                                                        <td>Division entre 0</td>
+                                                    {% else %}
+
+                                                        <td>{{ ((beneficio / coste_total)|format_number(style='percent')) }} - {{ beneficio |format_currency('EUR', locale='es') }}</td>
+                                                    {% endif %}
                                                 </tr>
                                             {% else %}
                                                 <tr>
@@ -139,18 +143,6 @@
                                             {% endfor %}
                                             </tbody>
                                         
-                                        <tfoot>
-                                            <tr>
-                                                <th>Estado</th>
-                                                <th>Id</th>
-                                                <th>Telefono</th>
-                                                <th>CostetotPe</th>
-                                                <th>ImportetotPe</th>
-                                                <th>TipopagototPE</th>
-                                                <th>ImportesnalPe</th>
-                                                <th>TipopagosnalPe</th>
-                                            </tr>
-                                        </tfoot>
                                     </table>
                                     <div class="d-flex align-items-center justify-content-end">
                                         <ul class="pagination">

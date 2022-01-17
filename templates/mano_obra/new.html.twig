@@ -3,7 +3,77 @@
 {% block title %}Nueva mano de obra{% endblock %}
 {% block cabecera %} Mano de obra {% endblock %}
 {% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path("presupuestos_show" , {'id': presupuesto[0].id}) }}">Presupuesto</a></li> 
 <li class="breadcrumb-item">Mano de obra</li> 
 <li class="breadcrumb-item active">Nuevo</li>
 {% endblock %}
-{% block tablas %}{% endblock %}
+{% block tablas %}
+{% endblock %}
+{% block formulario %}
+                <!-- ============================================================== -->
+                <!-- End Bread crumb and right sidebar toggle -->
+                <!-- ============================================================== -->
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+                <!-- row -->
+                    <div class="card-body">
+
+                    <div class="col-sm-6 col-lg-6">
+                        <div class="card">
+                           <form action="" method="POST">
+                               {{ form_row(form._token) }}
+                                <div class="card-body">
+                                    <h6 class="card-subtitle"></code></h6>
+                                    <div class="action-form">
+                                        <div class="form-group mb-0 text-left">
+                                            <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Nuevo') }}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                                {# reproduce únicamente los campos task: descripción #}
+                                <div class="card-body">
+
+                                                {% for mano in form.manoObra|reverse %}
+                                                 {{ form_row(mano.presupuestoMo, { 'row_attr': {'class': 'd-none'} }) }}
+
+                                                <div class="row">
+
+                                                   
+
+                                                    <div class="col-sm-12 col-md-2">
+                                                        <div>
+                                                            {{ form_label(mano.categoriaMo, 'Categoria', {label_attr: { class: 'control-label col-form-label col-sm-12'}})}}
+                                                            {{ form_errors(mano.categoriaMo) }}
+                                                            {{ form_widget(mano.categoriaMo, {'attr':{'class': 'typeahead form-control',  'placeholder':'Texto'}} )}}
+                                                            {{ form_help(mano.categoriaMo) }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-12 col-md-2">
+                                                        <div>
+                                                            {{ form_label(mano.tipoMo, 'Descripcion', {label_attr: { class: 'control-label col-form-label col-sm-12'}})}}
+                                                            {{ form_errors(mano.tipoMo) }}
+                                                            {{ form_widget(mano.tipoMo, {'attr':{'class': 'typeahead form-control',  'placeholder':'Texto'}} )}}
+                                                            {{ form_help(mano.tipoMo) }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-12 col-md-8">
+                                                        <div>
+                                                            {{ form_label(mano.textoMo, 'Descripción larga', {label_attr: { class: 'control-label col-form-label col-sm-12'}})}}
+                                                            {{ form_errors(mano.textoMo) }}
+                                                            {{ form_widget(mano.textoMo, {'attr':{'class': 'typeahead form-control',  'placeholder':'Texto'}} )}}
+                                                            {{ form_help(mano.textoMo) }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {% endfor %}
+                                </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End row -->
+{% endblock %}
+
+

@@ -28,7 +28,7 @@ class ManoObra
     private $textoMo;
 
     /**
-     * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="manoObra")
+     * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="manoObra", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      */
     private $presupuestoMo;
@@ -37,6 +37,12 @@ class ManoObra
      * @ORM\ManyToOne(targetEntity=TipoManoObra::class, inversedBy="manoObras")
      */
     private $categoriaMo;
+
+    public function __toString()
+    {
+        return $this->getPresupuestoMo()->getClientePe()->getDireccionCl();
+    }
+
 
     public function getId(): ?int
     {

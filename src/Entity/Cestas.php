@@ -64,6 +64,16 @@ class Cestas
      */
     private $detallecesta;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="cestas")
+     */
+    private $prespuestoCs;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $importePagoCs;
+
     public function __construct()
     {
         $this->detallecesta = new ArrayCollection();
@@ -210,6 +220,30 @@ class Cestas
                 $detallecesta->setCestaDc(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPrespuestoCs(): ?presupuestos
+    {
+        return $this->prespuestoCs;
+    }
+
+    public function setPrespuestoCs(?presupuestos $prespuestoCs): self
+    {
+        $this->prespuestoCs = $prespuestoCs;
+
+        return $this;
+    }
+
+    public function getImportePagoCs(): ?float
+    {
+        return $this->importePagoCs;
+    }
+
+    public function setImportePagoCs(?float $importePagoCs): self
+    {
+        $this->importePagoCs = $importePagoCs;
 
         return $this;
     }

@@ -58,12 +58,8 @@ class ClientesController extends AbstractController
             $cesta = new Cestas();
             $cesta->setUserCs($user->getId());
             $cesta->setEstadoCs(11);
-            $cestasn = new Cestas();
-            $cestasn->setUserCs($user->getId());
-            $cestasn->setEstadoCs(11);
             $entityManager->persist($cesta);
             $presupuesto->setTicket($cesta);
-            $presupuesto->setTicketsnal($cestasn);
             $entityManager->persist($presupuesto);
             $entityManager->flush();
     

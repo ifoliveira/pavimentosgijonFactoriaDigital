@@ -90,15 +90,20 @@ class Presupuestos
     private $timestampModPe;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\Cestas", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $ticketsnal;
-
-    /**
-     * @ORM\OneToMany(targetEntity=ManoObra::class, mappedBy="presupuestoMo", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=ManoObra::class, mappedBy="presupuestoMo", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OrderBy({"presupuestoMo" = "ASC","categoriaMo" = "ASC"})
      */
     private $manoObra;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $importemanoobra;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Cestas::class, mappedBy="prespuestoCs")
+     */
+    private $cestas;
 
     public function __construct()
     {
@@ -110,6 +115,7 @@ class Presupuestos
         $this->setDescuaetoPe(0);
         $this->setImportetotPe(0);
         $this->manoObra = new ArrayCollection();
+        $this->cestas = new ArrayCollection();
 
     }
 
@@ -274,18 +280,6 @@ class Presupuestos
         return $this;
     }
 
-    public function getTicketsnal(): ?cestas
-    {
-        return $this->ticketsnal;
-    }
-
-    public function setTicketsnal(?cestas $ticketsnal): self
-    {
-        $this->ticketsnal = $ticketsnal;
-
-        return $this;
-    }
-
     public function __toString()
     {
         return $this->getClientePe()->getDireccionCl();
@@ -315,6 +309,48 @@ class Presupuestos
             // set the owning side to null (unless already changed)
             if ($manoObra->getPresupuestoMo() === $this) {
                 $manoObra->setPresupuestoMo(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getImportemanoobra(): ?float
+    {
+        return $this->importemanoobra;
+    }
+
+    public function setImportemanoobra(?float $importemanoobra): self
+    {
+        $this->importemanoobra = $importemanoobra;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Cestas[]
+     */
+    public function getCestas(): Collection
+    {
+        return $this->cestas;
+    }
+
+    public function addCesta(Cestas $cesta): self
+    {
+        if (!$this->cestas->contains($cesta)) {
+            $this->cestas[] = $cesta;
+            $cesta->setPrespuestoCs($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCesta(Cestas $cesta): self
+    {
+        if ($this->cestas->removeElement($cesta)) {
+            // set the owning side to null (unless already changed)
+            if ($cesta->getPrespuestoCs() === $this) {
+                $cesta->setPrespuestoCs(null);
             }
         }
 

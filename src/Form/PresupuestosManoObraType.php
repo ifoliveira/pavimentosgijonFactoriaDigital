@@ -3,6 +3,8 @@
 namespace App\Form;
 
 use App\Entity\Presupuestos;
+use App\Form\ManoObraType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -11,29 +13,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\PercentType;
 
-class PresupuestosType extends AbstractType
+class PresupuestosManoObraType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder
-            ->add('estadoPe',null ,  array(
-                'label' => 'Estado del presupuesto' ))
-            ->add('manoobraPe',ChoiceType::class ,  array(
-                  'choices' => [ 'Plato de ducha' => 'Plato de ducha',
-                                 'Baño completo' => 'Baño completo',
-                                 'Mueble' => 'Mueble',
-                                 'Mampara' => 'Mampara',
-                                 'Otros' => 'Otros'
-            ],
-            'label' => 'Presupuesto para ...',
-                  ))
-            ->add('importetotPe', MoneyType::class ,  array(
-                   'label' => 'Importe Total' ))
-            ->add('importemanoobra', MoneyType::class ,  array(
-                    'label' => 'Importe Mano Obra' ))
-            ->add('descuaetoPe', PercentType::class ,  array(
-                    'label' => 'Descuento' ))
-        ;
+        $builder->add('manoObra', CollectionType::class, ['entry_type' => ManoObraType::class,]);
     }
 
     public function configureOptions(OptionsResolver $resolver)

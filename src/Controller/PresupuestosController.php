@@ -4,13 +4,17 @@ namespace App\Controller;
 
 use App\Entity\Presupuestos;
 use App\Entity\Productos;
+use App\Entity\manoObra;
 use App\Form\PresupuestosType;
+use App\Form\CollectionType;
+use App\Form\PresupuestosManoObraType;
 use App\Form\ProductosType;
 use App\Repository\CestasRepository;
 use App\Entity\Cestas;
 use App\Repository\EstadocestasRepository;
 use App\Repository\PresupuestosRepository;
 use App\Repository\ProductosRepository;
+use App\Repository\DetallecestaRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -102,6 +106,7 @@ class PresupuestosController extends AbstractController
         $formmanoob = $this->createForm(PresupuestosType::class, $presupuesto);
 
         $formmanoob->handleRequest($request);
+     
 
         if ($formmanoob->isSubmitted() && $formmanoob->isValid()) {
             $this->getDoctrine()->getManager()->flush();
@@ -155,6 +160,8 @@ class PresupuestosController extends AbstractController
             return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId() ));
         }
 
+
+
         return $this->render('presupuestos/show.html.twig', [
             'presupuesto' => $presupuesto,
             'form' => $form->createView(),
@@ -191,7 +198,7 @@ class PresupuestosController extends AbstractController
     /**
      * @Route("/{id}/{estado}/estado", name="presupuestos_estado", methods={"GET","POST"})
      */
-    public function editestado(Request $request, Presupuestos $presupuesto, int $estado, EstadocestasRepository $estadocestasRepository): Response
+    public function editestado(Request $request, Presupuestos $presupuesto, int $estado, EstadocestasRepository $estadocestasRepository, DetallecestaRepository $detallecestaRepository): Response
     {
         $formestado = $this->createForm(PresupuestosType::class, $presupuesto);
         $formestado->handleRequest($request);
@@ -201,6 +208,11 @@ class PresupuestosController extends AbstractController
             $estadocesta = $estadocestasRepository->findOneBy(
                 ['id' => $estado],
             );
+
+            if ($estado == 7 ) {
+
+                $presupuesto->setImportetotPe($detallecestaRepository->imptotalCesta($presupuesto->getTicket()->getId()));
+            }
 
             $presupuesto->setEstadoPe($estadocesta);
             $entityManager = $this->getDoctrine()->getManager();
@@ -297,14 +309,15 @@ class PresupuestosController extends AbstractController
 
 
     /**
-     * @Route("/{id}/{precios}/generar", name="presupuestos_generar", methods={"GET","POST"})
+     * @Route("/{id}/{precios}/{tipo}/generar", name="presupuestos_generar", methods={"GET","POST"})
      */
-    public function generar(Request $request, string $precios, Presupuestos $presupuesto): Response
+    public function generar(Request $request, string $precios, Presupuestos $presupuesto, string $tipo): Response
     {
 
         return $this->render('presupuestos/generar.html.twig', [
             'presupuesto' => $presupuesto,
             'precios' => $precios,
+            'tipo' => $tipo
         ]);
     }
 
@@ -405,6 +418,35 @@ class PresupuestosController extends AbstractController
 
         // Envía una respuesta de texto
         return $response->setData(['cestaid' =>$presupuesto->getTicket()->getId()]);
+        
+       
+    }
+
+    /**
+     * @Route("/aceptarpresu/{id}", name="aceptarpresu")
+     */
+    public function aceptarpresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository): JsonResponse
+    {
+        $tipopago  = $request->query->get('tipopago');
+        $importesenal   = $request->query->get('importesenal');
+        $entityManager = $this->getDoctrine()->getManager();
+        $estadocesta = $estadocestasRepository->findOneBy(
+            ['descripcionEc' => 'Aceptado'],
+        );
+
+        $presupuesto->setImporteSnalPe($importesenal);
+        $presupuesto->setTipopagoSnalPe($tipopago);
+        $presupuesto->setEstadoPe($estadocesta);
+        $presupuesto->getTicket()->setEstadoCs(2);
+        $presupuesto->getTicket()->setImportePagoCs($importesenal);
+        $presupuesto->getTicket()->setImporteTotCs($detallecestaRepository->imptotalCesta($presupuesto->getTicket()));
+
+        $entityManager->flush();
+
+        $response = new JsonResponse();
+
+        // Envía una respuesta de texto
+        return $response->setData(['respuesta' =>'presupuesto actualizado']);
         
        
     }
