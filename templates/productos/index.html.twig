@@ -549,37 +549,39 @@
                         item => JSON.parse(item.dataset.entryInfo)
                     );
                 let total = 0;
-		let iva = 0;
-		let descripcion='';
-                let now = new Date();
-                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                const loguear = texto => $estado.textContent += (new Date()).toLocaleString() + " " + texto + "\n";
+
+		        let iva = 0;
+		    let descripcion='';
+            let now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const loguear = texto => $estado.textContent += (new Date()).toLocaleString() + " " + texto + "\n";
 
             let nombreImpresora = "EPSONTicket";
             let conector = new ConectorPlugin();
 
-                conector.establecerTamanioFuente(1, 1);
-                conector.establecerEnfatizado(0);
-                conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-             //   conector.imagenLocal("../vendor/mike42/escpos-php/example/resources/Logo-Pavimentos-Gijon-BN.png");
-                conector.feed(1);
+
+            conector.establecerTamanioFuente(1, 1);
+            conector.establecerEnfatizado(0);
+            conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+            //   conector.imagenLocal("../vendor/mike42/escpos-php/example/resources/Logo-Pavimentos-Gijon-BN.png");
+            conector.feed(1);
         	conector.cortar();
         	conector.cortarParcialmente();
-		conector.feed(2);
-                conector.texto("P A V I M E N T O S    G I J Ó N\n");
-		conector.feed(1);
-                conector.texto("C.I.F. 53543499-M \n");
-		conector.feed(1);
-		conector.texto("Avenida Schultz Nº 28 Bajo\n");
-		conector.feed(1);
-                conector.texto("Teléfono: 985-391-326\n");
-		conector.texto("Whatsapp: 684-608-811\n");
-		conector.texto("También en https://www.pavimentosgijon.es   \n");
-                conector.feed(1);
-                conector.texto("-----------------------------------------------\n");
-                conector.texto("FACTURA SIMPLIFICADA\n");
-                conector.texto("-----------------------------------------------\n");
-           entryInfoObjects[0].forEach(function(cantidad,index) {
+		    conector.feed(2);
+            conector.texto("P A V I M E N T O S    G I J Ó N\n");
+		    conector.feed(1);
+            conector.texto("C.I.F. 53543499-M \n");
+		    conector.feed(1);
+		    conector.texto("Avenida Schultz Nº 28 Bajo\n");
+		    conector.feed(1);
+            conector.texto("Teléfono: 985-391-326\n");
+		    conector.texto("Whatsapp: 684-608-811\n");
+		    conector.texto("También en https://www.pavimentosgijon.es   \n");
+            conector.feed(1);
+            conector.texto("-----------------------------------------------\n");
+            conector.texto("FACTURA SIMPLIFICADA\n");
+            conector.texto("-----------------------------------------------\n");
+            entryInfoObjects[0].forEach(function(cantidad,index) {
 
                     cantidad.forEach(function(element,index) {
                        
@@ -591,7 +593,10 @@
                        $linea = '  ' + cantidad + '  ' + descripcion.padEnd(28) + ' ' + parcial.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}).padStart(9) + ' EUR' + "\n";
                        conector.texto($linea);
                     });
-			iva = (total * 0.21 )/1,21
+
+			
+            iva = (total * 0.21 )/1,21
+
 			conector.texto("-----------------------------------------------\n");
 			$linea = '  IVA 21%:                         ' + iva.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}).padStart(9) + ' EUR' + "\n";	
 			conector.texto($linea);
@@ -599,18 +604,19 @@
 			$linea = '  TOTAL :                          ' + total.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}).padStart(9) + ' EUR' + "\n";	
 			conector.texto($linea);
 			conector.establecerEnfatizado(0);
-               });
 
-        conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+            });
+            
+            conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+            conector.texto("-----------------------------------------------\n");
+	        conector.feed(1);
+            conector.qr("https://www.pavimentosgijon.es")
+	        conector.feed(1);
+            conector.texto("***Gracias por su compra***");
+            conector.feed(4);
+            conector.cortar();
+            conector.cortarParcialmente();
 
-        conector.texto("-----------------------------------------------\n");
-	conector.feed(1);
-        conector.qr("https://www.pavimentosgijon.es")
-	conector.feed(1);
-        conector.texto("***Gracias por su compra***");
-        conector.feed(4);
-        conector.cortar();
-        conector.cortarParcialmente();
             conector.imprimirEn(nombreImpresora)
                 .then(respuestaAlImprimir => {
                     if (respuestaAlImprimir === true) {
