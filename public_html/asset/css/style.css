@@ -88,7 +88,7 @@ h6 {
   top: calc(50% - 30px);
   left: calc(50% - 30px);
   border: 6px solid #f2f2f2;
-  border-top: 6px solid #1bb1dc;
+  border-top: 6px solid #45bedc;
   border-radius: 50%;
   width: 60px;
   height: 60px;
@@ -199,8 +199,11 @@ h6 {
 #header .logo img {
   padding: 0;
   margin: 7px 0;
-  max-height: 26px;
+  max-height: 35px;
 }
+
+
+
 
 .main-pages {
   margin-top: 60px;
@@ -248,6 +251,23 @@ h6 {
 #intro .intro-info .btn-get-started:hover,
 #intro .intro-info .btn-services:hover {
   background: #0a98c0;
+}
+
+#intro .header-top input[type="email"] {
+  border: 0;
+  padding: 6px 8px;
+  width: 35%;
+  border: 1px solid #d9dde6;
+}
+
+#intro .header-top input[type="submit"] {
+  background: #1bb1dc;
+  border: 1px solid #1bb1dc;
+  width: 65%;
+  padding: 6px 0;
+  text-align: center;
+  color: #fff;
+  transition: 0.3s;
 }
 
 /*--------------------------------------------------------------

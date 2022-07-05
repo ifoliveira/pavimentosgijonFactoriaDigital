@@ -46,6 +46,8 @@
 
 # Composer PHAR
 /composer.phar
+/*.lock
+/public_html/.*
 
 # Backup entities generated with doctrine:generate:entities command
 **/Entity/*~
