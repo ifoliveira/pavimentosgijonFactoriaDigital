@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Logs index{% endblock %}
+
+{% block body %}
+    <h1>Logs index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Id_Log</th>
+                <th>Fecha</th>
+                <th>Descripcion</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for log in logs %}
+            <tr>
+                <td>{{ log.id }}</td>
+                <td>{{ log.IdLog }}</td>
+                <td>{{ log.Fecha ? log.Fecha|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ log.Descripcion }}</td>
+                <td>
+                    <a href="{{ path('logs_show', {'id': log.id}) }}">show</a>
+                    <a href="{{ path('logs_edit', {'id': log.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('logs_new') }}">Create new</a>
+{% endblock %}

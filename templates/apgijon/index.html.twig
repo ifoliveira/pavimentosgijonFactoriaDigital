@@ -13,6 +13,7 @@
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,500,600,700,700i|Montserrat:300,400,500,600,700" rel="stylesheet">
+{% form_theme form 'fields.html.twig' %}
 {% block stylesheets %}
   <!-- Bootstrap CSS File -->
    <link href="{{ asset('asset/lib/bootstrap/css/bootstrap.min.css') }}" type="text/css" rel="stylesheet" />
@@ -39,6 +40,7 @@
   Header
   ============================-->
   <header id="header">
+{% form_theme form 'fields.html.twig' %}
 {% block header %}
     <div id="topbar">
       <div class="container">
@@ -106,9 +108,13 @@
           <div class="col-md-10 header-top">
                     <h4></h4>
                     <p></p>
-                    <form action="" method="post">
-                      <input type="email" name="email" placeholder="*Email"><input type="submit"  value="DESCÁRGATE GRATIS COMO HACERLO">
-                    </form>
+                    {{ form_start(form) }}
+                        <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default("Descárgate como hacerlo") }}</button>
+                    {{ form_end(form) }}
+
+                  <!--  <form action="" method="post">
+                      <input type="email" name="email" placeholder="*Email"><input target="_blank" action="https://pavimentosgijon.es/logo.png" type="submit"  value="DESCÁRGATE GRATIS COMO HACERLO">
+                    </form>-->
           </div>
         </div>
 
