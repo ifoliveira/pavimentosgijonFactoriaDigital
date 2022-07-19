@@ -43,12 +43,17 @@ class ApgijonController extends AbstractController
             $entityManager->flush();
             // ... perform some action, such as saving the task to the database
 
-            return $this->redirectToRoute('homepage');
+            return $this->render('apgijon/index.html.twig', [
+                'controller_name' => 'ApgijonController',
+                'form' => $form->createView(),
+                'cookies'=> 'Mostrar'
+            ]);
         }
         
         return $this->render('apgijon/index.html.twig', [
             'controller_name' => 'ApgijonController',
             'form' => $form->createView(),
+            'cookies'=> 'No mostrar'
         ]);
     }
 

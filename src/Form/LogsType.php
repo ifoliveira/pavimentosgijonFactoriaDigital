@@ -13,7 +13,8 @@ class LogsType extends AbstractType
     {
         $builder
             ->add('Descripcion',null ,  array(
-                'label' => ' ' ))
+                'data' => 'mail@mail.com',
+                'label' => ' '))
         ;
     }
 
