@@ -1,7 +1,5 @@
 {% extends 'base.html.twig' %}
-
 {% block title %}Hello AdminProController!{% endblock %}
-
 {% block body %}
             <!-- ============================================================== -->
             <!-- Page wrapper  -->
@@ -161,8 +159,8 @@
                                             <div class="d-flex">
                                                 <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/income.png" alt="Income" /></div>
                                                 <div class="align-self-center">
-                                                    <h6 class="text-muted mt-2 mb-0">Banco a {{ bancototal['max(fecha_bn)'] |date("d/m/Y") }}</h6>
-                                                    <h2 id="bancototal" data-banco="{{ bancototal['sum(importe_bn)'] }}">{{ bancototal['sum(importe_bn)'] |format_currency('EUR', locale='es') }}</h2></div>
+                                                 <h6 class="text-muted mt-2 mb-0">Banco a {{ bancototal['max(fecha_bn)'] |date("d/m/Y") }}</h6>
+                                                 <h2 id="bancototal" data-banco="{{ bancototal['sum(importe_bn)'] }}">{{ bancototal['sum(importe_bn)'] |format_currency('EUR', locale='es') }}</h2></div>
                                             </div>
                                         </div>
                                     </div>
@@ -271,7 +269,8 @@
     <script src="{{ asset('dist/js/pages/datatable/datatable-api.init.js') }}"></script>
     <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
     <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
-    
+        <!-- Chart JS -->
+    <script src="{{ asset('dist/js/pages/dashboards/dashboard1.js') }}"></script>
     <!--Custom JavaScript -->
     
     <script language = "javascript">

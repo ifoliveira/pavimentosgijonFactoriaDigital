@@ -9,6 +9,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * @Route("/admin/logs")
@@ -20,10 +22,16 @@ class LogsController extends AbstractController
      */
     public function index(LogsRepository $logsRepository): Response
     {
+
+
         return $this->render('logs/index.html.twig', [
             'logs' => $logsRepository->findAll(),
+            
         ]);
     }
+
+
+
 
     /**
      * @Route("/new", name="logs_new", methods={"GET","POST"})

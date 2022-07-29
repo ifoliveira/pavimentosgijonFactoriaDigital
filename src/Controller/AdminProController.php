@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\BancoRepository;
 Use App\MisClases\Banks_N43;
+use App\MisClases\nordigen;
 use App\Entity\Banco;
 use App\Entity\Cestas;
 use App\MisClases\Importar_Ticket;
@@ -52,6 +53,26 @@ class AdminProController extends AbstractController
             ['fechaFr' => 'ASC']
         );
 
+        // Referencia banco
+ 
+        $directorio = $this->getParameter("nordigen");
+        $nombrefic = 'bancos.json';
+        $data = file_get_contents($directorio .'/'.$nombrefic);
+        $bancos = json_decode($data, true);
+ 
+        foreach ($bancos as $value) {
+              if ($value['id']== 'ING_INGDESMM') {
+                
+                 foreach ($value['Cuentas'] as $cuenta) {
+                    $apibank = new nordigen("application/json", $this->getParameter("nordigen"));
+                    $referencia = $cuenta['Referencia'];
+                    // Llamada obtener balance de banco
+                    $decode_json = json_decode($apibank->getAccountBalance($referencia), true);
+                    break;
+                 }
+              }
+            }
+
         $cookies = $request->cookies->get('Mensaje');
 
         $response = $this->render('admin_pro/index.html.twig', [
@@ -64,7 +85,8 @@ class AdminProController extends AbstractController
             'forecast' => $forecast,
             'manoobratotal' => $manoobratotal,
             'weathericon' => $iconweather,
-            'cookies' => $cookies
+            'cookies' => $cookies,
+            'bankJSON' => $decode_json,
 
         ]);
              
@@ -119,10 +141,10 @@ class AdminProController extends AbstractController
                     foreach ($cuentas->entries as $valor){
                         $bancos[] = $valor->banco;
                         }}
-                } else {
+            } else {
 
                     $bancos = new Banco();
-                }
+            }
                  $contador++;
             }while($contador < $ficheros);
             

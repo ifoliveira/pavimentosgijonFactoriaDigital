@@ -75,6 +75,21 @@ class BancoRepository extends ServiceEntityRepository
 
     }
 
+    public function fechamaxima()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT date_add(MAX(fecha_bn), interval 1 day) as fechamaxima FROM banco p
+         ';
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+
+        // returns an array of arrays (i.e. a raw data set)
+        return $stmt->fetch();
+
+    }
+
     // /**
     //  * @return Banco[] Returns an array of Banco objects
     //  */
