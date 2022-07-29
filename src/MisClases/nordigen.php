@@ -47,7 +47,7 @@ class nordigen
 
         }
         
-        public function sendAuth($bancoid, $authorization)
+        public function sendAuth($bancoid)
         {
             $client = HttpClient::create();    
 
