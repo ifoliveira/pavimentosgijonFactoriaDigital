@@ -236,7 +236,7 @@ class BancoController extends AbstractController
                                 }
                                 else
                                 {
-                                    $banco->setConceptoBn(substr($stg, $pos + 6 ));
+                                    $banco->setConceptoBn(substr($stg, $pos + 5 ));
                                 }
 
                                 $bancosarray[] = $banco;
