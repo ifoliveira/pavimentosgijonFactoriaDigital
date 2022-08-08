@@ -59,11 +59,11 @@ $(function () {
 			var selector = document.querySelector("#forecast"+i);
 			if (selector !== null) {
 				if (selector.classList.contains( 'Banco' )){
-					forecastBank [i] = selector.dataset.venta - resta;
+					forecastBank [i] = parseFloat(selector.dataset.venta - resta).toFixed(2);
 				} else {
 					resta = resta + (selector.dataset.venta - forecast[i-1]) ;
 				}
-				forecast[i] = selector.dataset.venta;
+				forecast[i] = parseFloat(selector.dataset.venta).toFixed(2);
 				i++;
 			}else{
 				i=42;
@@ -72,7 +72,7 @@ $(function () {
 		var selector = document.querySelector("#cajatotal");
 		i = 0;
 		do {
-			caja[i] = selector.dataset.caja;
+			caja[i] = parseFloat(selector.dataset.caja).toFixed(2);
 			i++;
 		} while (i<42)
 
