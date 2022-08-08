@@ -65,11 +65,11 @@
                                             <li class="sidebar-item"><a href="{{ path('efectivo_index') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu">Consultar</span></a></li>
                                         </ul>
                                     </li>
-                                    <li class="sidebar-item">
-                                        <a href="{{ path('forecast_new') }}" class="sidebar-link">
-                                            <i class="mdi mdi-weather-partlycloudy"></i>
-                                            <span class="hide-menu">Forecast</span>
-                                        </a>
+                                    <li class="sidebar-item"><a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-cash-multiple"></i><span class="hide-menu">Forecast</span></a>
+                                        <ul aria-expanded="false" class="collapse second-level">
+                                            <li class="sidebar-item"><a href="{{ path('forecast_new') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Insertar</span></a></li>
+                                            <li class="sidebar-item"><a href="{{ path('forecast_consulta') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu">Consultar</span></a></li>
+                                        </ul>
                                     </li>
                                   </ul>
                             </li>

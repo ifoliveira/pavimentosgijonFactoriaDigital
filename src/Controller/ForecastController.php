@@ -29,6 +29,17 @@ class ForecastController extends AbstractController
     }
 
     /**
+     * @Route("/consulta", name="forecast_consulta", methods={"GET"})
+     */
+    public function consulta(ForecastRepository $forecastRepository, DetallecestaRepository $detallecestaRepository): Response
+    {
+        return $this->render('forecast/consulta.html.twig', [
+            'forecasts' => $forecastRepository->findByEstadoFr("P"),
+        ]);
+    }
+
+
+    /**
      * @Route("/new", name="forecast_new", methods={"GET","POST"})
      */
     public function new(Request $request , DetallecestaRepository $detallecestaRepository): Response
