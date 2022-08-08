@@ -197,7 +197,7 @@ class nordigen
             $concepto = explode(" ", $line);
             $gastofijo = array("GIJONESAS,", "COTIZACION", "TELECABLE", "LOBO", "Aguas", "IMPUESTOS","COREEDP", "Coffe");
             $ventas= array("TPV", "ORDENANTE");
-            $proveedor=array("CORECOMERCIAL", "COREGME", "CORECAMACHO","COREMEDITERRANEA","COREL.","COREEUROMUEBLES","CORE1y1", "COREMOGAR", "KASSANDRA");
+            $proveedor=array("COMERCIAL", "GME", "CAMACHO","MEDITERRANEA","COREL.","    EUROMUEBLES","CORE1y1", "COREMOGAR", "KASSANDRA", "DUPLACH", "SARIEGO");
             $comision = array ("COMISION", "COMISIONES");
             $otros = array("5540XXXXXXXX5018");
     

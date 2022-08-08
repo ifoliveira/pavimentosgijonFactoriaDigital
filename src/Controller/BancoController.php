@@ -226,8 +226,18 @@ class BancoController extends AbstractController
                                  $tipo = $entityManager->getRepository(Tiposmovimiento::class)->findOneBy(
                                     ['descripcionTm' => $apibank->concepto($movimiento->remittanceInformationUnstructured)->getDescripcionTm()]
                                 );
+
                                 $banco->setcategoriaBn($tipo);
-                                $banco->setConceptoBn(($movimiento->remittanceInformationUnstructured));
+                                $stg = $movimiento->remittanceInformationUnstructured;
+                                $pos =  strpos($stg,"/TXT/");
+                                
+                                if ($pos === false) {
+                                    $banco->setConceptoBn($stg);
+                                }
+                                else
+                                {
+                                    $banco->setConceptoBn(substr($stg, $pos + 6 ));
+                                }
 
                                 $bancosarray[] = $banco;
 
