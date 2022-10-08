@@ -99,7 +99,7 @@
     <script src="{{ asset('dist/js/app.min.js') }}"></script>
     <script src="{{ asset('dist/js/app.init.js') }}"></script>
     <script src="{{ asset('dist/js/app-style-switcher.js') }}"></script>
-    <script src="{{ asset('dist/js/ConectorPlugin.js') }}"></script>
+    <script src="{{ asset('dist/js/ConectorJavaScript.js') }}"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
     <script src="{{ asset('assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js') }}"></script>
     <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
@@ -116,7 +116,6 @@
     <script src="{{ asset('dist/js/pages/datatable/datatable-api.init.js') }}"></script>
     <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
     <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
-    <script src="https://parzibyte.github.io/plugin-ticket-js/Impresora.js"></script>
 
     <script language = "javascript">
 
@@ -428,115 +427,11 @@
         $btnImprimir = document.querySelector("#btnImprimir");
 
 
-        function ticket_script2(tipopago, importesnal) 
-        {   
-                const Price = new Intl.NumberFormat('de-DE',
-                        {minimumFractionDigits: 2 });
-                // Select elements by their data attribute
-                const entryInfoElements =
-                    document.querySelectorAll('[data-entry-info]');
-
-                // Map over each element and extract the data value
-                const entryInfoObjects =
-                        Array.from(entryInfoElements).map(
-                        item => JSON.parse(item.dataset.entryInfo)
-                    );
-                let total = 0;
-                let now = new Date();
-                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                const loguear = texto => $estado.textContent += (new Date()).toLocaleString() + " " + texto + "\n";
-                entryInfoObjects[0].forEach(element => console.log(element));
-
-                let nombreImpresora = "lp0",
-                mensaje = "Hola mundo";
-                let impresora = new Impresora();
-                impresora.feed(5);
-                impresora.cutPartial(); 
-                impresora.feed(4);
-                impresora.setFontSize(1, 1);
-                impresora.setEmphasize(1);
-                impresora.setAlign("center");
-                impresora.write("------------------------------------------------\n");
-                impresora.write("FACTURA SIMPLIFICADA \n");
-                impresora.write("------------------------------------------------\n");
-                impresora.feed(2);
-                impresora.write("Pavimentos Gijon\n");
-                impresora.write("53543499M Avenida Schultz N 28 Bajo\n");
-                impresora.write("Telefono: 985-391-326\n");
-                impresora.feed(1);
-                impresora.write("Fecha: " + now.toLocaleDateString(undefined, options) + "\n");
-                impresora.setEmphasize(0);
-                impresora.write("------------------------------------------------\n");
-                entryInfoObjects[0].forEach(function(cantidad,index) {
-
-                     cantidad.forEach(function(element,index) {
-                        
-                        parcial = (element.cantidad * element.precio)
-                        total = total + parcial
-                         
-                        $linea = '  ' + element.cantidad + '  ' + element.descripcion.padEnd(31) + ' ' + parcial.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}).padStart(7) + ' EUR';
-                        impresora.setAlign("left");
-                        impresora.write($linea);
-
-                        impresora.write ("\n");
-                     });
-
-                });
-                impresora.setAlign("right");
-                impresora.write("------------------------------------------------\n");
-                impresora.write("TOTAL : " + total.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " EUR\n");
-                impresora.write("------------------------------------------------\n");
-                impresora.setAlign("right");
-                impresora.setAlign("center");
-                impresora.feed(1);
-                impresora.write("***Gracias por su compra***");
-                impresora.feed(2);
-                impresora.qr("https://www.pavimentosgijon.es");
-                impresora.feed(5);
-                impresora.cutPartial(); // Pongo este y también cut porque en ocasiones no funciona con cut, solo con cutPartial
-                impresora.imprimirEnImpresora(nombreImpresora);
-
-                //let nombreImpresora = "lp1";
-                //let conector = new ConectorPlugin();
-                //conector.establecerTamanioFuente(1, 1);
-                //conector.establecerEnfatizado(0);
-                //conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-                //conector.imagenDesdeUrl("../vendor/mike42/escpos-php/example/resources/Logo-Pavimentos-Gijon-BN.png");
-                //conector.feed(1);
-                //conector.texto("Pavimentos Gijón\n");
-                //conector.texto("53543499M Avenida Schultz Nº 28 Bajo\n");
-                //conector.texto("Telefono: 985-391-326\n");
-                //conector.feed(1);
-                //conector.texto("FACTURA SIMPLIFICADA\n");
-                //conector.texto("--------------------------------\n");
-
-               // entryInfoObjects[0].forEach(function(cantidad,index) {
-               //     cantidad.forEach(element => conector.texto(element.cantidad));
-               //     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
-               //     conector.texto("25 USD\n");
-               // });
-
-                
-               // conector.texto("TOTAL: 25 USD\n");
-               // conector.texto("--------------------------------\n");
-               // conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-               // conector.texto("***Gracias por su compra***");
-               // conector.feed(4);
-               // conector.cortar();
-               // conector.cortarParcialmente();
-               // conector.imprimirEn(nombreImpresora)
-                //    .then(respuestaAlImprimir => {
-                 //       if (respuestaAlImprimir === true) {
-                 //           loguear("Impreso correctamente");
-                 //       } else {
-                  //          loguear("Error. La respuesta es: " + respuestaAlImprimir);
-                  //      }
-                  //  });
-
-        };  
-
+        
         function ticket_script3(tipopago, importesnal) 
         {   
+	
+		const URLPlugin = "http://localhost:8000";
                 const Price = new Intl.NumberFormat('de-DE',
                         {minimumFractionDigits: 2 });
                 // Select elements by their data attribute
@@ -557,9 +452,86 @@
             const loguear = texto => $estado.textContent += (new Date()).toLocaleString() + " " + texto + "\n";
 
             let nombreImpresora = "EPSONTicket";
-            let conector = new ConectorPlugin();
+            const conector = new ConectorPluginV3(URLPlugin);
 
+       const demostrarCapacidades = async (nombreImpresora) => {
+            const conector = new ConectorPluginV3(URLPlugin);
+            const respuesta = await conector
+                .Iniciar()
+                .DeshabilitarElModoDeCaracteresChinos()
+                .EstablecerAlineacion(ConectorPluginV3.ALINEACION_CENTRO)
+                .DescargarImagenDeInternetEImprimir("http://assets.stickpng.com/thumbs/587e32259686194a55adab73.png", 0, 216)
+                .Feed(1)
+                .EscribirTexto("Parzibyte's blog\n")
+                .EscribirTexto("Blog de un programador\n")
+                .TextoSegunPaginaDeCodigos(2, "cp850", "Teléfono: 123456798\n")
+                .EscribirTexto("Fecha y hora: " + (new Intl.DateTimeFormat("es-MX").format(new Date())))
+                .Feed(1)
+                .EstablecerAlineacion(ConectorPluginV3.ALINEACION_IZQUIERDA)
+                .EscribirTexto("____________________\n")
+                .TextoSegunPaginaDeCodigos(2, "cp850", "Venta de plugin para impresoras versión 3\n")
+                .EstablecerAlineacion(ConectorPluginV3.ALINEACION_DERECHA)
+                .EscribirTexto("$25\n")
+                .EscribirTexto("____________________\n")
+                .EscribirTexto("TOTAL: $25\n")
+                .EscribirTexto("____________________\n")
+                .EstablecerAlineacion(ConectorPluginV3.ALINEACION_CENTRO)
+                .HabilitarCaracteresPersonalizados()
+                .DefinirCaracterPersonalizado("$", amongUsComoCadena)
+                .EscribirTexto("En lugar del simbolo de pesos debe aparecer un among us\n")
+                .EscribirTexto("TOTAL: $25\n")
+                .EstablecerEnfatizado(true)
+                .EstablecerTamañoFuente(1, 1)
+                .TextoSegunPaginaDeCodigos(2, "cp850", "¡Gracias por su compra!\n")
+                .Feed(1)
+                .ImprimirCodigoQr("https://parzibyte.me/blog", 160, ConectorPluginV3.RECUPERACION_QR_MEJOR, ConectorPluginV3.TAMAÑO_IMAGEN_NORMAL)
+                .Feed(1)
+                .ImprimirCodigoDeBarrasCode128("parzibyte.me", 80, 192, ConectorPluginV3.TAMAÑO_IMAGEN_NORMAL)
+                .Feed(1)
+                .EstablecerTamañoFuente(1, 1)
+                .EscribirTexto("parzibyte.me\n")
+                .Feed(3)
+                .Corte(1)
+                .Pulso(48, 60, 120)
+                .imprimirEn(nombreImpresora);
+            if (respuesta === true) {
+                alert("Impreso correctamente");
+            } else {
+                alert("Error: " + respuesta);
+            }
+        }
+        init();
 
+        };  
+
+function ticket_script4(tipopago, importesnal) 
+        {   
+	
+		const URLPlugin = "http://localhost:8000";
+                const Price = new Intl.NumberFormat('de-DE',
+                        {minimumFractionDigits: 2 });
+                // Select elements by their data attribute
+                const entryInfoElements =
+                    document.querySelectorAll('[data-entry-info]');
+
+                // Map over each element and extract the data value
+                const entryInfoObjects =
+                        Array.from(entryInfoElements).map(
+                        item => JSON.parse(item.dataset.entryInfo)
+                    );
+                let total = 0;
+
+		        let iva = 0;
+		    let descripcion='';
+            let now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const loguear = texto => $estado.textContent += (new Date()).toLocaleString() + " " + texto + "\n";
+
+            let nombreImpresora = "EPSONTicket";
+            const conector = new ConectorPluginV3(URLPlugin);
+
+            conector.Iniciar()
+            conector.DeshabilitarElModoDeCaracteresChinos()
             conector.establecerTamanioFuente(1, 1);
             conector.establecerEnfatizado(0);
             conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
@@ -627,7 +599,6 @@
                 });
 
         };  
-
 
         function ticket_finalizar(tipopago, numticket, importe, importesnal) 
         {
