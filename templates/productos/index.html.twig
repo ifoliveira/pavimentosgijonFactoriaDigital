@@ -431,76 +431,13 @@
         function ticket_script3(tipopago, importesnal) 
         {   
 	
-		const URLPlugin = "http://localhost:8000";
-                const Price = new Intl.NumberFormat('de-DE',
-                        {minimumFractionDigits: 2 });
-                // Select elements by their data attribute
-                const entryInfoElements =
-                    document.querySelectorAll('[data-entry-info]');
-
-                // Map over each element and extract the data value
-                const entryInfoObjects =
-                        Array.from(entryInfoElements).map(
-                        item => JSON.parse(item.dataset.entryInfo)
-                    );
-                let total = 0;
-
-		        let iva = 0;
-		    let descripcion='';
-            let now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const loguear = texto => $estado.textContent += (new Date()).toLocaleString() + " " + texto + "\n";
-
-            let nombreImpresora = "EPSONTicket";
-            const conector = new ConectorPluginV3(URLPlugin);
-
-       const demostrarCapacidades = async (nombreImpresora) => {
-            const conector = new ConectorPluginV3(URLPlugin);
-            const respuesta = await conector
-                .Iniciar()
-                .DeshabilitarElModoDeCaracteresChinos()
-                .EstablecerAlineacion(ConectorPluginV3.ALINEACION_CENTRO)
-                .DescargarImagenDeInternetEImprimir("http://assets.stickpng.com/thumbs/587e32259686194a55adab73.png", 0, 216)
-                .Feed(1)
-                .EscribirTexto("Parzibyte's blog\n")
-                .EscribirTexto("Blog de un programador\n")
-                .TextoSegunPaginaDeCodigos(2, "cp850", "Teléfono: 123456798\n")
-                .EscribirTexto("Fecha y hora: " + (new Intl.DateTimeFormat("es-MX").format(new Date())))
-                .Feed(1)
-                .EstablecerAlineacion(ConectorPluginV3.ALINEACION_IZQUIERDA)
-                .EscribirTexto("____________________\n")
-                .TextoSegunPaginaDeCodigos(2, "cp850", "Venta de plugin para impresoras versión 3\n")
-                .EstablecerAlineacion(ConectorPluginV3.ALINEACION_DERECHA)
-                .EscribirTexto("$25\n")
-                .EscribirTexto("____________________\n")
-                .EscribirTexto("TOTAL: $25\n")
-                .EscribirTexto("____________________\n")
-                .EstablecerAlineacion(ConectorPluginV3.ALINEACION_CENTRO)
-                .HabilitarCaracteresPersonalizados()
-                .DefinirCaracterPersonalizado("$", amongUsComoCadena)
-                .EscribirTexto("En lugar del simbolo de pesos debe aparecer un among us\n")
-                .EscribirTexto("TOTAL: $25\n")
-                .EstablecerEnfatizado(true)
-                .EstablecerTamañoFuente(1, 1)
-                .TextoSegunPaginaDeCodigos(2, "cp850", "¡Gracias por su compra!\n")
-                .Feed(1)
-                .ImprimirCodigoQr("https://parzibyte.me/blog", 160, ConectorPluginV3.RECUPERACION_QR_MEJOR, ConectorPluginV3.TAMAÑO_IMAGEN_NORMAL)
-                .Feed(1)
-                .ImprimirCodigoDeBarrasCode128("parzibyte.me", 80, 192, ConectorPluginV3.TAMAÑO_IMAGEN_NORMAL)
-                .Feed(1)
-                .EstablecerTamañoFuente(1, 1)
-                .EscribirTexto("parzibyte.me\n")
-                .Feed(3)
-                .Corte(1)
-                .Pulso(48, 60, 120)
-                .imprimirEn(nombreImpresora);
-            if (respuesta === true) {
-                alert("Impreso correctamente");
-            } else {
-                alert("Error: " + respuesta);
-            }
-        }
-
+const nombreImpresora = "EPSONTicket"; // Puede ser obtenida de la lista de impresoras o puedes escribirlo si lo conoces
+const conector = new ConectorPluginV3();
+const respuesta = await conector
+    .Iniciar()
+    .EscribirTexto("Hola mundo")
+    .Feed(1)
+    .imprimirEn(nombreImpresora);
 
         };  
 
