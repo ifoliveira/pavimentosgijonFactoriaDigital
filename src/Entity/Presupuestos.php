@@ -66,8 +66,8 @@ class Presupuestos
      * @ORM\Column(type="string", length=20)
      */
     private $tipopagosnalPe;
-	
-    /**
+   
+     /**
      * @ORM\Column(type="string", length=20)
      */
     private $ticketsnalId;

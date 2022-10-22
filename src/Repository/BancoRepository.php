@@ -31,8 +31,7 @@ class BancoRepository extends ServiceEntityRepository
         $sql = '
             SELECT sum(importe_bn), max(fecha_bn) FROM banco p
             ';
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
+        $stmt = $conn->prepare($sql)->executeQuery();
 
         // returns an array of arrays (i.e. a raw data set)
         return $stmt->fetchAssociative();
@@ -49,11 +48,10 @@ class BancoRepository extends ServiceEntityRepository
           AND YEAR(fecha_bn) = YEAR(CURDATE())
         GROUP BY YEAR(fecha_bn) , MONTH(fecha_bn);
             ';
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
+        $stmt = $conn->prepare($sql)->executeQuery();
 
         // returns an array of arrays (i.e. a raw data set)
-        return $stmt->fetchAllAssociative();
+        return $stmt->fetchAssociative();
 
     }
 
@@ -67,8 +65,8 @@ class BancoRepository extends ServiceEntityRepository
         WHERE categoria_bn = 1
           AND YEAR(fecha_bn) = YEAR(CURDATE());
             ';
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
+        $stmt = $conn->prepare($sql)->executeQuery();
+
 
         // returns an array of arrays (i.e. a raw data set)
         return $stmt->fetch();
