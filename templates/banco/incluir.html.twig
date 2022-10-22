@@ -1,0 +1,167 @@
+{% extends 'base.html.twig' %}
+{% block title %}Hello AdminProController!{% endblock %}
+{% block stylesheets %}
+            <!-- This page plugin CSS -->
+            <link href="{{ asset('assets/libs/c3/c3.min.css') }}" rel="stylesheet">
+            <!-- Custom CSS -->
+            <link href="{{ asset('dist/css/style.css') }}" rel="stylesheet">
+{% endblock %}
+{% block body %}
+        <!-- ============================================================== -->
+        <!-- Page wrapper  -->
+        <!-- ============================================================== -->
+        <div class="page-wrapper">
+            <!-- ============================================================== -->
+            <!-- Container fluid  -->
+            <!-- ============================================================== -->
+            <div class="container-fluid">
+                <!-- ============================================================== -->
+                <!-- Bread crumb and right sidebar toggle -->
+                <!-- ============================================================== -->
+                <div class="row page-titles">
+                    <div class="col-md-5 col-12 align-self-center">
+                        <h3 class="text-themecolor mb-0">Bancos Activos</h3>
+                    </div>
+                    <div class="col-md-7 col-12 align-self-center d-none d-md-flex justify-content-end">
+                        <ol class="breadcrumb mb-0 p-0 bg-transparent">
+                            <li class="breadcrumb-item"><a href="{{ path('admin_pro')}}">Home</a></li>
+                            <li class="breadcrumb-item active">Banco</li>
+                        </ol>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- End Bread crumb and right sidebar toggle -->
+                <!-- ============================================================== -->
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+                <!-- Footer callback -->
+
+                <div class="row">
+
+                    {% for bank in bancosJSON %}
+                        {% if bank.Disponible == "Si" and bank.Activo == "Si"%}
+                        <div class="col-md-6 col-lg-4 col-xl-3 d-flex align-items-stretch">
+                        <div class="card w-100">
+                            <div class="p-3 d-flex align-items-stretch h-100">
+                            <div class="row">
+                            <div class="col-12 col-xl-12 col-md-12 d-flex align-items-center">
+                                <a  href="#" id="Aceptar"  data-banco="{{ bank.id }}" data-index="x">
+                                    <img width="300" height="300" src="{{ bank.logo }}"class="rounded img-fluid"/>
+                                </a>
+                            </div>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                  
+                 </div>
+                <div class="row page-titles">
+                    <div class="col-md-5 col-12 align-self-center">
+                        <h3 class="text-themecolor mb-0">Bancos Inactivos</h3>
+                    </div>
+                </div>
+                <div class="row">
+
+                    {% for bank in bancosJSON %}
+                        {% if bank.Disponible == "Si" and bank.Activo == "No"%}
+                        <div class="col-md-6 col-lg-4 col-xl-3 d-flex align-items-stretch">
+                        <div class="card w-100">
+                            <div class="p-3 d-flex align-items-stretch h-100">
+                            <div class="row">
+                            <div class="col-12 col-xl-12 col-md-12 d-flex align-items-center">
+                                <a  href="#" id="Aceptar"  data-banco="{{ bank.id }}" data-index="x">
+                                    <img width="300" height="300" src="{{ bank.logo }}"class="rounded img-fluid"/>
+                                </a>
+                            </div>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                  
+                 </div>
+                </div>
+
+                </div>
+
+
+
+          <!-- 6. end advertise card -->
+    
+                <!-- ============================================================== -->
+                <!-- End PAge Content -->
+                <!-- ============================================================== -->
+                <!-- ============================================================== -->
+                <!-- Right sidebar -->
+                <!-- ============================================================== -->
+                <!-- .right-sidebar -->
+                <!-- ============================================================== -->
+                <!-- End Right sidebar -->
+                <!-- ============================================================== -->
+            </div>
+            <!-- ============================================================== -->
+            <!-- End Container fluid  -->
+            <!-- ============================================================== -->
+            <!-- ============================================================== -->
+            <!-- footer -->
+            <!-- ============================================================== -->
+            <footer class="footer">
+                © 2020 Admin Pro Admin by wrappixel.com
+            </footer>
+            <!-- ============================================================== -->
+            <!-- End footer -->
+            <!-- ============================================================== -->
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Page wrapper  -->
+        <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Wrapper -->
+    <!-- ============================================================== -->
+{% endblock %}
+
+{% block jscustom %}
+    <!--This page plugins -->
+    <script src="{{ asset('assets/libs/datatables/media/js/jquery.dataTables.min.js') }}"</script>
+    <script src="{{ asset('dist/js/pages/datatable/custom-datatable.js') }}"></script>
+    <script language = "javascript">
+
+
+        $(document).ready(function(){
+
+        $(document).on('click', 'a[id="Aceptar"]' , function(event) {
+            var data = $(this).data();
+            var banco = data['banco'];
+            var indice = data['index'];
+
+            $.ajax({  
+                    url:        '{{ path("requisitosbanco") }}',  
+                    type:       'GET',   
+                    data:        ({banco: banco, indice: indice}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                        exit = JSON.parse(response.salida);
+                        window.location.href=exit.link;
+                          
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+         });
+
+       });
+
+
+   </script> 
+
+
+{% endblock %}

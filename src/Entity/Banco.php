@@ -21,7 +21,7 @@ class Banco
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Tiposmovimiento", inversedBy="bancos")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Tiposmovimiento", inversedBy="bancos",cascade={"persist"})
      * @ORM\JoinColumn(name="categoria_bn", referencedColumnName="id")
      */
     private $categoria_Bn;

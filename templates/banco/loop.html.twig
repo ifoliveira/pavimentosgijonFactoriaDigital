@@ -1,0 +1,55 @@
+           <table id="footer_callback" class="table table-striped table-bordered display"
+                                        style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Id_Bn</th>
+                                                <th>Categoria_Bn</th>
+                                                <th>Concepto_Bn</th>
+                                                <th>Fecha_Bn</th>
+                                                <th>Importe_Bn</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="loop">
+                                        {% if movimientos is defined %}
+
+                                            {% for movimiento in movimientos %}
+                                            <tr>
+                                                    <td>id</td>
+                                                    <td>{{ movimiento.categoriaBn }}</td>
+                                                    <td>{{ movimiento.conceptoBn }}</td>
+                                                    <td align="center">{{ movimiento.fechaBn ? movimiento.fechaBn|date('Y-m-d') : '' }}</td>
+                                                    <td align="right">{{ movimiento.importeBn|number_format(2) }}</td>
+                                                </tr>
+                                            {% else %}
+                                
+                                                <tr>
+                                                    <td colspan="7">
+                                                        <div  class="spinner d-flex align-items-center" style="display: none">
+                                                            <strong class = "spinner" style="display: none">Loading...</strong>
+                                                            <div class="spinner spinner-border ms-auto" role="status" aria-hidden="true" style="display: none"></div>
+                                                        </div>                                            
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="7">Ni un movimiento</td>
+                                                        <div  class="spinner d-flex align-items-center" style="display: none">
+                                                            <strong class = "spinner" style="display: none">Loading...</strong>
+                                                            <div class="spinner spinner-border ms-auto" role="status" aria-hidden="true" style="display: none"></div>
+                                                        </div> 
+                                            </tr>
+                                        
+                                        {% endif %}
+                                        </tbody>
+                                        
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="4" style="text-align:right">Total:</th>
+                                                <th></th>
+                                            </tr>
+                                        </tfoot>
+                        </table>
+           
+
+

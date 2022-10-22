@@ -43,6 +43,7 @@
 # Build data
 /build/
 /public_html/Tickets/
+/public_html/Nordigen
 
 # Composer PHAR
 /composer.phar
@@ -69,3 +70,13 @@ error*
 /ssl/
 /tmp/
 www
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
