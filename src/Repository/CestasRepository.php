@@ -29,8 +29,8 @@ class CestasRepository extends ServiceEntityRepository
         AND YEAR(fecha_cs) = YEAR(CURDATE())
         GROUP BY MONTH (fecha_cs);
             ';
-        $stmt = $conn->prepare($sql)->executeQuery();
-
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
 
         // returns an array of arrays (i.e. a raw data set)
         return $stmt->fetchAllAssociative();
@@ -46,7 +46,8 @@ class CestasRepository extends ServiceEntityRepository
         SELECT sum(importe_tot_cs) as ventatotalef FROM cestas p
         WHERE tipopago_cs = "Efectivo";
             ';
-        $stmt = $conn->prepare($sql)->executeQuery();
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
 
         // returns an array of arrays (i.e. a raw data set)
         return $stmt->fetch();

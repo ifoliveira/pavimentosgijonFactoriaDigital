@@ -27,7 +27,8 @@ class EfectivoRepository extends ServiceEntityRepository
         $sql = '
             SELECT sum(importe_ef) as efectivototal  FROM efectivo p
             ';
-        $stmt = $conn->prepare($sql)->executeQuery();
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
 
         // returns an array of arrays (i.e. a raw data set)
         return $stmt->fetchAssociative();
@@ -43,7 +44,8 @@ class EfectivoRepository extends ServiceEntityRepository
         WHERE tipoEf = 1
           AND YEAR(fecha_ef) = YEAR(CURDATE());
             ';
-        $stmt = $conn->prepare($sql)->executeQuery();
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
 
         // returns an array of arrays (i.e. a raw data set)
         return $stmt->fetch();
