@@ -70,7 +70,7 @@ class Presupuestos
      /**
      * @ORM\Column(type="string", length=20)
      */
-    private $ticketsnal_id;
+    private $ticketsnalId;
 
     /**
      * @ORM\OneToOne(targetEntity="App\Entity\Cestas", cascade={"persist", "remove"})
