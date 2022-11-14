@@ -67,18 +67,10 @@ class Presupuestos
      */
     private $tipopagosnalPe;
 
-
-
-
-
-
-
-   
      /**
      * @ORM\Column(type="string", length=20)
      */
-    private $ticketsnal;
-
+    private $ticketsnal_id;
 
     /**
      * @ORM\OneToOne(targetEntity="App\Entity\Cestas", cascade={"persist", "remove"})
