@@ -1,0 +1,122 @@
+{% extends 'pages.html.twig' %}
+{% block stylesheets %}
+            <!-- This page plugin CSS -->
+            <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css') }}" rel="stylesheet">
+            <!-- Custom CSS -->
+            <link href="{{ asset('dist/css/style.min.css') }}" rel="stylesheet">
+            <!-- This page CSS -->
+            <link href="{{ asset('assets/libs/jquery-steps/jquery.steps.css') }}" rel="stylesheet">
+            <link href="{{ asset('assets/libs/jquery-steps/steps.css') }}" rel="stylesheet">
+            <!-- Popup CSS -->
+            <link href="{{ asset('assets/libs/magnific-popup/dist/magnific-popup.css') }}" rel="stylesheet">
+            <!-- This Page CSS -->
+                <link rel="stylesheet" type="text/css" href="{{ asset('assets/libs/summernote/dist/summernote-bs4.css') }}">
+{% endblock %}
+{% block cabecera %} Financiación {% endblock %}
+{% block breadcrumb %} <li class="breadcrumb-item active">Financiación</li>{% endblock %}
+{% block title %}Financiación{% endblock %}
+{% block tablas %}{% endblock %}
+{% block formulario %}
+
+{{ form_start(form) }}
+                                        <div class="form-group mb-0 text-left">
+                                            <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Nuevo') }}</button>
+                                        </div>
+{{ form_end(form) }}
+
+{% for i in 2..4 %}
+    
+    {% if coste[i] > totalabonar[i] %}
+        <h4 class="card-title mt-5 mb-3">{{tipo[i]}} </h4> <h6> nº N/A</h6>
+    {% else %}
+        <h4 class="card-title mt-5 mb-3">{{tipo[i]}} </h4> <h6> nº {{ coste[i] |number_format(2, '.', ',')}}</h6>
+    {% endif %}
+              <!-- Row -->
+              <div class="row">
+                <!-- Column -->
+                <div class="col-sm-12 col-md-6 col-xl-3">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex flex-row">
+                        <div class="round align-self-center round-success">
+                          <i data-feather="credit-card" class="feather-sm"></i>
+                        </div>
+                        <div class="ms-3 align-self-center">
+                        {% if coste[i] > totalabonar[i] or mensualidad[i] == 9999%}                        
+                          <h4 class="mb-0">N/A</h4>
+                          <span class="text-muted">Importe mensual</span>
+                        </div>
+                        <div class="ms-auto align-self-center">
+                          <h2 class="font-weight-medium mb-0">N/A</h2>
+                        {% else %}
+                          <h4 class="mb-0">{{meses }} meses</h4>
+                          <span class="text-muted">Importe mensual</span>
+                        </div>
+                        <div class="ms-auto align-self-center">
+                          <h2 class="font-weight-medium mb-0">{{ mensualidad[i] |format_currency('EUR', locale='es')}}</h2>
+                        {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Column -->
+                <!-- Column -->
+                <div class="col-sm-12 col-md-6 col-xl-3">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex flex-row">
+                        <div class="round align-self-center round-info">
+                          <i data-feather="users" class="feather-sm"></i>
+                        </div>
+                        <div class="ms-3 align-self-center">
+                          <h4 class="mb-0">Total</h4>
+                          <span class="text-muted">Total abonado</span>
+                        </div>
+                        <div class="ms-auto align-self-center">
+                         {% if coste[i] > totalabonar[i] or mensualidad[i] == 9999%} 
+                           <h2 class="font-weight-medium mb-0">N/A</h2>
+                         {% else %}
+                          <h2 class="font-weight-medium mb-0">{{ totalabonar[i] |format_currency('EUR', locale='es')}}</h2>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+             
+              <!-- Row -->
+{% endfor %}
+{% endblock %}
+{% block jscustom %}
+
+    <!--This page plugins -->
+    <script src="../../assets/libs/datatables/media/js/jquery.dataTables.min.js"></script>
+    <script src="../../dist/js/pages/datatable/custom-datatable.js"></script>
+    <script src="{{ asset('dist/js/pages/datatable/datatable-advanced.init.js') }}"></script>
+
+    <!--Custom JavaScript -->
+    
+    <script language = "javascript">
+    $(document).ready(function(){   
+        /****************************************
+        *       Default Order Table           *
+        ****************************************/
+        $('#default_order').DataTable({
+            "order": [
+                [2, "asc"]
+            ]
+        });
+        /****************************************
+        *       Default Order Table           *
+        ****************************************/
+        $('#default_order2').DataTable({
+            "order": [
+                [2, "desc"]
+            ]
+        });
+
+      });  
+   </script> 
+{% endblock %}
