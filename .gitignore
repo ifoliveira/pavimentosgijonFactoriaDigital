@@ -44,6 +44,7 @@
 /build/
 /public_html/Tickets/.*
 /public_html/Nordigen/.*
+/public_html/Tickets/
 
 # Composer PHAR
 /composer.phar
