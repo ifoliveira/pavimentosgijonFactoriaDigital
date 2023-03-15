@@ -89,6 +89,7 @@
         "symfony": {
             "allow-contrib": false,
             "require": "5.0.*"
-        }
+        },
+        "symfony-web-dir": "public_html"
     }
 }
