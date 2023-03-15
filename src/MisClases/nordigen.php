@@ -160,7 +160,7 @@ class nordigen
             ]); 
             $contentType = $response->getHeaders(false)['content-type'][0];
 
-            switch ($response->getStatusCodei) {
+            switch ($response->getStatusCode()) {
                 case 401:
                     unset($response);
                     return $this->newToken($secret_id, $secret_key);

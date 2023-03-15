@@ -43,6 +43,10 @@ class ManoObra
         return $this->getPresupuestoMo()->getClientePe()->getDireccionCl();
     }
 
+    public function getIdPresu()
+    {
+        return $this->getPresupuestoMo()->getId();
+    }    
 
     public function getId(): ?int
     {

@@ -18,62 +18,105 @@
                 <!-- ============================================================== -->
                 <!-- row -->
                     <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-6 col-lg-6">
+                                <div class="card">
+                                    <form action="" method="POST">
+                                    {{ form_row(form._token) }}
+                                        <div class="card-body">
+                                            <h6 class="card-subtitle"></code></h6>
+                                          <div class="card-body">
+                                                    
+                                                 </div>
+                                            <div class="action-form">
+                                                <div class="form-group mb-0 text-left">
+                                                    <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Nuevo') }}</button>
+                                                    <a href="{{ path("presupuestos_show" , {'id': presupuesto[0].id}) }}" target=""  class="btn btn-rounded btn-outline-danger "> Volver a presupuesto</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        {# reproduce únicamente los campos task: descripción #}
+                                        <div class="card-body">
 
-                    <div class="col-sm-6 col-lg-6">
-                        <div class="card">
-                           <form action="" method="POST">
-                               {{ form_row(form._token) }}
-                                <div class="card-body">
-                                    <h6 class="card-subtitle"></code></h6>
-                                    <div class="action-form">
-                                        <div class="form-group mb-0 text-left">
-                                            <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Nuevo') }}</button>
+                                                        {% for mano in form.manoObra|reverse %}
+                                                            {{ form_row(mano.presupuestoMo, { 'row_attr': {'class': 'd-none'} }) }}
+
+                                                            <div class="row">
+                                                                <div class="col-sm-12 col-md-2">
+                                                                    <div>
+                                                                        {{ form_label(mano.categoriaMo, 'Categoria', {label_attr: { class: 'control-label col-form-label col-sm-12'}})}}
+                                                                        {{ form_errors(mano.categoriaMo) }}
+                                                                        {{ form_widget(mano.categoriaMo, {'attr':{'class': 'typeahead form-control',  'placeholder':'Texto'}} )}}
+                                                                        {{ form_help(mano.categoriaMo) }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-sm-12 col-md-2">
+                                                                    <div>
+                                                                        {{ form_label(mano.tipoMo, 'Descripcion', {label_attr: { class: 'control-label col-form-label col-sm-12'}})}}
+                                                                        {{ form_errors(mano.tipoMo) }}
+                                                                        {{ form_widget(mano.tipoMo, {'attr':{'class': 'typeahead form-control',  'placeholder':'Texto'}} )}}
+                                                                        {{ form_help(mano.tipoMo) }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-sm-12 col-md-8">
+                                                                    <div>
+                                                                        {{ form_label(mano.textoMo, 'Descripción larga', {label_attr: { class: 'control-label col-form-label col-sm-12'}})}}
+                                                                        {{ form_errors(mano.textoMo) }}
+                                                                        {{ form_widget(mano.textoMo, {'attr':{'class': 'typeahead form-control',  'placeholder':'Texto'}} )}}
+                                                                        {{ form_help(mano.textoMo) }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                        {% endfor %}
+                                            </div>
+                                        </form>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-6">
+                        
+                                <div class="card">  
+                                    <div class="card-body"> 
+                                    <div class="row mt-3"> 
+                                        <div class="col-md-3">                     
+                                            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                                                <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">Albañilería</a>
+                                                <a class="nav-link" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="false">Profile</a>
+                                                <a class="nav-link" id="v-pills-messages-tab" data-toggle="pill" href="#v-pills-messages" role="tab" aria-controls="v-pills-messages" aria-selected="false">Messages</a>
+                                                <a class="nav-link" id="v-pills-settings-tab" data-toggle="pill" href="#v-pills-settings" role="tab" aria-controls="v-pills-settings" aria-selected="false">Carpintería</a>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <div class="tab-content" id="v-pills-tabContent">
+                                                <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+                                                    <ul>
+                                                        <li>Desmontar muebles de cocina ,eliminar azulejos  y retirada de los escombros.</li>
+                                                        <li>Preparar paredes para azulejar, colocar materiales</li>
+                                                        <li>Cambiar  suelo de terraza</li>
+                                                        <li>Desescombrar</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">..2</div>
+                                                <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab">..3</div>
+                                                <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">
+                                                <ul>
+                                                    <li>Colocación de muebles de cocina</li>
+                                                    <li>Fontanería</li>
+                                                    <li>Nueva tubería con desagues para fregadero , lavadora </li>
+                                                    <li>Nueva toma para lavaddora</li>
+                                                </ul>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                    </div>
                                 </div>
-                                <hr>
-                                {# reproduce únicamente los campos task: descripción #}
-                                <div class="card-body">
-
-                                                {% for mano in form.manoObra|reverse %}
-                                                 {{ form_row(mano.presupuestoMo, { 'row_attr': {'class': 'd-none'} }) }}
-
-                                                <div class="row">
-
-                                                   
-
-                                                    <div class="col-sm-12 col-md-2">
-                                                        <div>
-                                                            {{ form_label(mano.categoriaMo, 'Categoria', {label_attr: { class: 'control-label col-form-label col-sm-12'}})}}
-                                                            {{ form_errors(mano.categoriaMo) }}
-                                                            {{ form_widget(mano.categoriaMo, {'attr':{'class': 'typeahead form-control',  'placeholder':'Texto'}} )}}
-                                                            {{ form_help(mano.categoriaMo) }}
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-sm-12 col-md-2">
-                                                        <div>
-                                                            {{ form_label(mano.tipoMo, 'Descripcion', {label_attr: { class: 'control-label col-form-label col-sm-12'}})}}
-                                                            {{ form_errors(mano.tipoMo) }}
-                                                            {{ form_widget(mano.tipoMo, {'attr':{'class': 'typeahead form-control',  'placeholder':'Texto'}} )}}
-                                                            {{ form_help(mano.tipoMo) }}
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-sm-12 col-md-8">
-                                                        <div>
-                                                            {{ form_label(mano.textoMo, 'Descripción larga', {label_attr: { class: 'control-label col-form-label col-sm-12'}})}}
-                                                            {{ form_errors(mano.textoMo) }}
-                                                            {{ form_widget(mano.textoMo, {'attr':{'class': 'typeahead form-control',  'placeholder':'Texto'}} )}}
-                                                            {{ form_help(mano.textoMo) }}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {% endfor %}
-                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
                 <!-- End row -->
 {% endblock %}
+
 
 

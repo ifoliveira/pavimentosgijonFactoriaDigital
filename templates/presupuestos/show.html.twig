@@ -276,6 +276,7 @@
                                             <tr align="center"> 
                                                 <th>Tipo</th>
                                                 <th>Detalle</th>
+                                                <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -283,6 +284,15 @@
                                             <tr>
                                                 <td>{{ manodeobra.categoriaMo.TipoTm}}</td>
                                                 <td align="left">{{ manodeobra.textoMo}}</td>
+                                                <td>
+                                                        <a href="{{ path('mano_obra_edit', {'id': manodeobra.id}) }}" class="text-inverse pr-2"
+                                                                data-toggle="tooltip" title="Modificar">
+                                                                <i class="ti-reload"></i>
+                                                        </a>                                                         
+                                                        <i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar mano de obra" name="delete_detallemo" id="{{ manodeobra.id }}">
+                                                                <i class="ti-trash"></i>
+                                                        </i> 
+                                                </td>
                                             </tr>
                                         {% else %}
                                             <tr>
@@ -545,6 +555,109 @@
 
          })
 
+       /*********************************************************
+        *      Eliminar un detalle manod de obra                *
+        ********************************************************/
+
+        $(document).on('click', 'i[name="delete_detallemo"]' , async function(event) {
+            let id = this.id;
+                console.log (id);
+
+            const swalWithBootstrapButtons = await Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'mr-2 btn btn-danger'
+                },
+                buttonsStyling: false,
+            })
+
+            await swalWithBootstrapButtons.fire({
+                title: 'Borrado de mano de obra',
+                text: "Se va a borrar la moano de obra " + id + " ",
+                type: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Adelante',
+                cancelButtonText: 'Noooo',
+                reverseButtons: true
+            }).then((result) => {
+                
+                if (result.value) {
+
+                    delete_line(id);
+                }
+            })
+        })
+
+        function delete_line(id) 
+        {
+            $.ajax({  
+               url:        '{{path("manoobra_delete_ajax")}}',  
+               type:       'GET',   
+               data:        ({id: id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) { 
+                    let timerInterval
+                    Swal.fire({
+                    type: 'success',
+                    title: 'Se ha borrado correctamente!',
+                    html: 'Se cerrara en breve',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    willClose: () => {
+                        clearInterval(timerInterval)
+                    }
+                    }).then((result) => {
+                    /* Read more about handling dismissals below */
+                    if (result.dismiss === Swal.DismissReason.timer) {
+                        location.reload();
+                    }
+                    })
+                   
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            }); 
+        };          
+       /*********************************************************
+        *                      FIN                              *
+        ********************************************************/
+
+       /****************************************
+        *      Eliminar un producto             *
+        *****************************************/
+
+        $(document).on('click', 'i[name="delete_detalle"]' , function(event) {
+            let id = this.id;
+            delete_line(id);
+        })
+        
+
+        function delete_line(id) 
+        {
+            $.ajax({  
+               url:        '{{path("detallecesta_delete")}}',  
+               type:       'GET',   
+               data:        ({id: id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) {  
+                   $('#loop').html(response.template);
+                   document.querySelector("span[name='cantidad']").innerText     =  response.cantidad;
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            }); 
+        };  
+
+       /*********************************************************
+        *                      FIN                              *
+        ********************************************************/        
 
         function ticket_final(tipopago, importe, espresupuesto, importesnal) 
         {
@@ -629,36 +742,7 @@
 
         }; 
 
-        /****************************************
-        *      Eliminar un producto             *
-        *****************************************/
-
-        $(document).on('click', 'i[name="delete_detalle"]' , function(event) {
-            let id = this.id;
-            delete_line(id);
-        })
-
-
-        function delete_line(id) 
-        {
-            $.ajax({  
-               url:        '{{path("detallecesta_delete")}}',  
-               type:       'GET',   
-               data:        ({id: id}),
-               dataType:   'json',  
-               async:      true,  
-               
-               success: function(response) {  
-                   $('#loop').html(response.template);
-                   document.querySelector("span[name='cantidad']").innerText     =  response.cantidad;
-               },  
-               error : function(xhr, textStatus, errorThrown) {  
-                  alert(textStatus);  
-               }  
-            }); 
-        };  
-
-        
+           
         /****************************************
         *       Insertar un producto      *
         ****************************************/

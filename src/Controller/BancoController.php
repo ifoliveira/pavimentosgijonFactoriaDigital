@@ -334,10 +334,9 @@ class BancoController extends AbstractController
         $data = file_get_contents($directorio .'/'.$nombrefic);
         $credenciales = json_decode($data, true);
 
-
         // Si no tenemos credenciales de acceso las creamos nuevas
-        if ($credenciales['acceso'] = " ") {
-            
+        if ($credenciales['acceso'] == " ") {
+
             $apibank = new nordigen("application/json", $this->getParameter("nordigen"));
             // Llamada a nuevo token
             $decoded_json = $apibank->newToken($credenciales['secret_id'], $credenciales['secret_key']  );
@@ -352,12 +351,14 @@ class BancoController extends AbstractController
         // Si las tenemos, las restauramos para asegurarnos que las consultas funcionen
             $apibank = new nordigen("application/json", $this->getParameter("nordigen"));
             // Llamada a nuevo token
+        
             $decoded_json = $apibank->restoreToken($credenciales['restaurar'], $credenciales['secret_id'], $credenciales['secret_key']  );
             $credenciales['acceso'] = $decoded_json->access;           
             if ( true === ($decoded_json->refresh ?? null ) ) {
                 $credenciales['restaurar'] = $decoded_json->refresh;    
             } 
         }
+
 
         $newJsonString = json_encode($credenciales);
         file_put_contents($directorio .'/'.$nombrefic . '', $newJsonString);            
@@ -366,6 +367,32 @@ class BancoController extends AbstractController
             'bancosJSON' => $bancos,
         ]);
     }
+
+    /**
+     * @Route("/refrescar/cuentas", name="refreshcuentas", methods={"GET","POST"})
+     */
+    public function ajasxrefrescta(Request $request): Response
+    {   
+        $entityManager = $this->getDoctrine()->getManager();
+
+        $directorio = $this->getParameter("nordigen");
+        $nombrefic = 'bancos.json';
+        $data = file_get_contents($directorio .'/'.$nombrefic);
+        $bancos = json_decode($data, true);
+
+        // Actualizamos JSON credencias
+        $credenciales['acceso'] = $decoded_json->access;           
+        $credenciales['restaurar'] = $decoded_json->refresh;
+        $newJsonString = json_encode($credenciales);
+        file_put_contents($directorio .'/'.$nombrefic . '', $newJsonString);        
+
+        return $this->render('banco/incluir.cuenta.html.twig', [
+            'bancosJSON' => $bancos,
+            'movimientos' => "sin movimientos",
+        ]);
+
+    } 
+
 
 
     /**
