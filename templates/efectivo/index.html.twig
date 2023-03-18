@@ -36,6 +36,8 @@
                                                     <td align="right">{{ efectivo.importeEf |number_format(2) }}</td>
                                                     <td>
                                                         <a href="{{ path('efectivo_edit', {'id': efectivo.id}) }}">edit</a>
+                                                        <i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar efectivo" name="delete_detalle" id="{{ efectivo.id }}">
+                                                                <i class="ti-trash"></i>
                                                     </td>
                                                 </tr>
                                             {% else %}
@@ -84,6 +86,9 @@
     <script src="../../assets/libs/datatables/media/js/jquery.dataTables.min.js"></script>
     <script src="../../dist/js/pages/datatable/custom-datatable.js"></script>
     <script src="{{ asset('dist/js/pages/datatable/datatable-advanced.init.js') }}"></script>
+    <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
+    
 
     <!--Custom JavaScript -->
     
@@ -127,5 +132,73 @@
                     );
                 }
             });
+
+        /****************************************
+        *      Eliminar un efectivo                *
+        *****************************************/
+
+        $(document).on('click', 'i[name="delete_detalle"]' , async function(event) {
+            let id = this.id;
+                console.log (id);
+
+            const swalWithBootstrapButtons = await Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'mr-2 btn btn-danger'
+                },
+                buttonsStyling: false,
+            })
+
+            await swalWithBootstrapButtons.fire({
+                title: 'Borrar efectivo',
+                text: "Se va a borrar el efectivo " + id + " ",
+                type: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Adelante',
+                cancelButtonText: 'Noooo',
+                reverseButtons: true
+            }).then((result) => {
+                
+                if (result.value) {
+
+                    delete_line(id);
+                }
+            })
+        })
+
+        function delete_line(id) 
+        {
+            $.ajax({  
+               url:        '{{path("efectivo_delete_ajax")}}',  
+               type:       'GET',   
+               data:        ({id: id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) { 
+                    let timerInterval
+                    Swal.fire({
+                    type: 'success',
+                    title: 'Se ha borrado correctamente!',
+                    html: 'Se cerrara en breve',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    willClose: () => {
+                        clearInterval(timerInterval)
+                    }
+                    }).then((result) => {
+                    /* Read more about handling dismissals below */
+                    if (result.dismiss === Swal.DismissReason.timer) {
+                        location.reload();
+                    }
+                    })
+                   
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            }); 
+        };              
    </script> 
 {% endblock %}
