@@ -11,10 +11,12 @@ use App\Form\PresupuestosManoObraType;
 use App\Form\ProductosType;
 use App\Repository\CestasRepository;
 use App\Entity\Cestas;
+Use App\MisClases\EconomicoPresu;
 use App\Repository\EstadocestasRepository;
 use App\Repository\PresupuestosRepository;
 use App\Repository\ProductosRepository;
 use App\Repository\DetallecestaRepository;
+use App\Repository\EconomicpresuRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -70,7 +72,7 @@ class PresupuestosController extends AbstractController
     /**
      * @Route("/{id}", name="presupuestos_show",  methods={"GET","POST"})
      */
-    public function show(Request $request, Presupuestos $presupuesto, ProductosRepository $productosRepository): Response
+    public function show(Request $request, Presupuestos $presupuesto, ProductosRepository $productosRepository, EconomicpresuRepository $economicpresu): Response
     {
 
         $directorio = $this->getParameter("presupuestoDir") . '/' . $presupuesto->getClientePe()->getNombreCl() . ' ' . $presupuesto->getFechainiPe()->format('Y-m-d');
@@ -135,26 +137,23 @@ class PresupuestosController extends AbstractController
 
 
         switch ($presupuesto->getEstadoPe()->getId()) {
-  //          case 4:
-  //              $productos = $productosRepository->findAllgenericos();
-  //              break;
-  //          case 5:
-  //              $productos = $productosRepository->findAllgenericos();
-  //              break;
-            case 6:
+            case $presupuesto->getEstadoPe()->getId() >= 6:
                 $productos = $productosRepository->findAll();
-                break;
+                  break;
             default:
                 $productos = new Productos;
         }
 
+        $economic = $presupuesto->getEconomicpresus();
+
+        
         $producto = new Productos;
         $formprod = $this->createForm(ProductosType::class, $producto);
         $formprod->handleRequest($request);
 
         if ($formprod->isSubmitted() && $formprod->isValid()) {
             $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($producto);
+            $entityManager->persist($producto);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
             $entityManager->flush();
 
             return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId() ));
@@ -164,6 +163,7 @@ class PresupuestosController extends AbstractController
 
         return $this->render('presupuestos/show.html.twig', [
             'presupuesto' => $presupuesto,
+            'economic' => $economic,
             'form' => $form->createView(),
             'formprod' => $formprod->createView(),
             'formestado' => $formestado->createView(),
@@ -437,11 +437,17 @@ class PresupuestosController extends AbstractController
         $presupuesto->setImporteSnalPe($importesenal);
         $presupuesto->setTipopagoSnalPe($tipopago);
         $presupuesto->setEstadoPe($estadocesta);
+        $presupuesto->getTicket()->setPrespuestoCs($presupuesto);
         $presupuesto->getTicket()->setEstadoCs(2);
         $presupuesto->getTicket()->setImportePagoCs($importesenal);
-        $presupuesto->getTicket()->setImporteTotCs($detallecestaRepository->imptotalCesta($presupuesto->getTicket()));
+        $presupuesto->getTicket()->setImporteTotCs($importesenal);
+        $presupuesto->getTicket()->setDescuentoCs($detallecestaRepository->imptotalCesta($presupuesto->getTicket())-$importesenal);
 
         $entityManager->flush();
+
+        $economic = new EconomicoPresu($entityManager);
+
+        $economic->iniciarPresu($presupuesto->getimportemanoobra(),$presupuesto->getTicket()->getDescuentoCs(),$presupuesto);
 
         $response = new JsonResponse();
 
@@ -450,6 +456,40 @@ class PresupuestosController extends AbstractController
         
        
     }
+
+    /**
+     * @Route("/modificarpresu/{id}", name="modificarpresu")
+     */
+    public function modificarpresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository): JsonResponse
+    {
+        $tipopago  = $request->query->get('tipopago');
+        $importesenal   = $request->query->get('importesenal');
+        $entityManager = $this->getDoctrine()->getManager();
+        $estadocesta = $estadocestasRepository->findOneBy(
+            ['descripcionEc' => 'Aceptado'],
+        );
+
+        $presupuesto->setImporteSnalPe($importesenal);
+        $presupuesto->setTipopagoSnalPe($tipopago);
+        $presupuesto->setEstadoPe($estadocesta);
+        $presupuesto->getTicket()->setPrespuestoCs($presupuesto);
+        $presupuesto->getTicket()->setEstadoCs(2);
+        $presupuesto->getTicket()->setImportePagoCs($importesenal);
+        $presupuesto->getTicket()->setImporteTotCs($importesenal);
+        $presupuesto->getTicket()->setDescuentoCs($detallecestaRepository->imptotalCesta($presupuesto->getTicket())-$importesenal);
+
+        $entityManager->flush();
+
+        $economic = new EconomicoPresu($entityManager);
+        $economic->actualizaResto($detallecestaRepository->imptotalCesta($presupuesto->getTicket())-$importesenal,$presupuesto);
+        $response = new JsonResponse();
+
+        // Envía una respuesta de texto
+        return $response->setData(['respuesta' =>'presupuesto actualizado']);
+        
+       
+    }
+
 
 
 

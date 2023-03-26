@@ -67,11 +67,6 @@ class Presupuestos
      */
     private $tipopagosnalPe;
 
-     /**
-     * @ORM\Column(type="string", length=20)
-     */
-    private $ticketsnalId;
-
     /**
      * @ORM\OneToOne(targetEntity="App\Entity\Cestas", cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
@@ -110,6 +105,12 @@ class Presupuestos
      */
     private $cestas;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Economicpresu::class, mappedBy="idpresuEco", orphanRemoval=true)
+     * @ORM\OrderBy({"estadoEco" = "ASC"})
+     */
+    private $economicpresus;
+
     public function __construct()
     {
 
@@ -121,6 +122,7 @@ class Presupuestos
         $this->setImportetotPe(0);
         $this->manoObra = new ArrayCollection();
         $this->cestas = new ArrayCollection();
+        $this->economicpresus = new ArrayCollection();
 
     }
 
@@ -356,6 +358,36 @@ class Presupuestos
             // set the owning side to null (unless already changed)
             if ($cesta->getPrespuestoCs() === $this) {
                 $cesta->setPrespuestoCs(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Economicpresu>
+     */
+    public function getEconomicpresus(): Collection
+    {
+        return $this->economicpresus;
+    }
+
+    public function addEconomicpresu(Economicpresu $economicpresu): self
+    {
+        if (!$this->economicpresus->contains($economicpresu)) {
+            $this->economicpresus[] = $economicpresu;
+            $economicpresu->setIdpresuEco($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEconomicpresu(Economicpresu $economicpresu): self
+    {
+        if ($this->economicpresus->removeElement($economicpresu)) {
+            // set the owning side to null (unless already changed)
+            if ($economicpresu->getIdpresuEco() === $this) {
+                $economicpresu->setIdpresuEco(null);
             }
         }
 

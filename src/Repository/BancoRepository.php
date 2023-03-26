@@ -25,18 +25,20 @@ class BancoRepository extends ServiceEntityRepository
     */
 
     public function totalBanco()
-    {
+      {
+            
+
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = '
             SELECT sum(importe_bn), max(fecha_bn) FROM banco p
             ';
         $stmt = $conn->prepare($sql);
-        $stmt->execute();
+        $stmt->executeQuery();
 
         // returns an array of arrays (i.e. a raw data set)
-        return $stmt->fetchAssociative();
-
+        return $conn->fetchAssociative('SELECT sum(importe_bn), max(fecha_bn) FROM banco p');
+        
     }
 
     public function ventamesBanco()
@@ -49,11 +51,11 @@ class BancoRepository extends ServiceEntityRepository
           AND YEAR(fecha_bn) = YEAR(CURDATE())
         GROUP BY YEAR(fecha_bn) , MONTH(fecha_bn);
             ';
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
-
+     
+//'        $stmt = $conn->prepare($sql);
+//        $stmt->execute();
         // returns an array of arrays (i.e. a raw data set)
-        return $stmt->fetchAllAssociative();
+        return $conn->fetchAllAssociative($sql);
 
     }
 
@@ -67,11 +69,11 @@ class BancoRepository extends ServiceEntityRepository
         WHERE categoria_bn = 1
           AND YEAR(fecha_bn) = YEAR(CURDATE());
             ';
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
+     //   $stmt = $conn->prepare($sql);
+     //   $stmt->execute();
 
         // returns an array of arrays (i.e. a raw data set)
-        return $stmt->fetch();
+        return $conn->fetchAssociative($sql);
 
     }
 
@@ -82,11 +84,11 @@ class BancoRepository extends ServiceEntityRepository
         $sql = '
         SELECT date_add(MAX(fecha_bn), interval 1 day) as fechamaxima FROM banco p
          ';
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
+     //   $stmt = $conn->prepare($sql);
+     //   $stmt->execute();
 
         // returns an array of arrays (i.e. a raw data set)
-        return $stmt->fetch();
+        return $conn->fetchAssociative($sql);
 
     }
 

@@ -112,8 +112,8 @@
                                                     <th></th>
                                                     <th>{{ "now"|date("m/d/Y") }} *</th>
                                                     <th class="">{{ (presupuesto.importesnalPe) |format_currency('EUR', locale='es')  }}</th>
-                                                    <th class="">{{ (presupuesto.importetotPe + presupuesto.importemanoobra) |format_currency('EUR', locale='es')  }}</th>
-                                                    <th class="">{{ (presupuesto.importetotPe + presupuesto.importemanoobra - presupuesto.importesnalPe ) |format_currency('EUR', locale='es')  }}</th>
+                                                    <th class="">{{ (presupuesto.importetotPe) |format_currency('EUR', locale='es')  }}</th>
+                                                    <th class="">{{ (presupuesto.importetotPe - presupuesto.importesnalPe ) |format_currency('EUR', locale='es')  }}</th>
                                                 </tr>
                                             </tbody>
                                     </table>

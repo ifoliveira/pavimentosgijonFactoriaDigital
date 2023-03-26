@@ -25,9 +25,9 @@ class PresupuestosRepository extends ServiceEntityRepository
         $conn = $this->getEntityManager()->getConnection();
         $sql = 'SELECT estado_pe_id as estado, count(*) as cantidad FROM presupuestos 
                  GROUP BY estado_pe_id';
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAllAssociative();
+        //$stmt = $conn->prepare($sql);
+        //$stmt->execute();
+        return $conn->fetchAllAssociative($sql);
 
 
 

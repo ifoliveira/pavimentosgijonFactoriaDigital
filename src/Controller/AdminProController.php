@@ -43,6 +43,7 @@ class AdminProController extends AbstractController
         $efectivototal = $efectivoRepository->totalefectivo();
         $manoobratotal = intval($efectivoRepository->manoobraEfectivo()["sum(importe_ef)"]) + intval($bancoRepository->manoobraBanco()["importe"]) ;
 
+
         $forecast = $forecastRepository->findBy(
             ['estadoFr' => 'P'],
             ['fechaFr' => 'ASC'],
