@@ -159,14 +159,14 @@ class EconomicpresuController extends AbstractController
         // Generamos movimiento efectivo
         $efectivo = new Efectivo();
         $efectivo->setTipoEf($entityManager->getRepository('App\Entity\Tiposmovimiento')->findOneBy(['descripcionTm'=> 'Mano de Obra']));
-        $efectivo->setImporteEf($importe * -1);
+        $efectivo->setImporteEf($importe);
         $efectivo->setFechaEf(new \DateTime());
         $efectivo->setConceptoEf($actualizar->getConceptoEco() . ' ' . $actualizar->getIdpresuEco()->getClientePe()->getDireccionCl());
         $entityManager->persist($efectivo );
         $entityManager->flush();
 
         //actualizamos la cantidad
-        $actualizar->setimporteEco($importe);
+        $actualizar->setImporteEco($importe * -1);
         $actualizar->setestadoEco("8");
         $entityManager->persist($actualizar);
         $entityManager->flush();

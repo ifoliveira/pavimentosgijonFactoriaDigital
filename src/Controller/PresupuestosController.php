@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Presupuestos;
 use App\Entity\Productos;
 use App\Entity\manoObra;
+
 use App\Form\PresupuestosType;
 use App\Form\CollectionType;
 use App\Form\PresupuestosManoObraType;
@@ -230,10 +231,8 @@ class PresupuestosController extends AbstractController
     /**
      * @Route("/{id}/finalizar", name="presupuestos_finalizar")
      */
-    public function finalizar(Request $request, Presupuestos $presupuesto, CestasRepository $cestasRepository,EstadocestasRepository $estadocestasRepository): Response
+    public function finalizar(Request $request, Presupuestos $presupuesto, EstadocestasRepository $estadocestasRepository): Response
     {   
-
-        $tipopago = $request->query->get('tipopago');
 
         $entityManager = $this->getDoctrine()->getManager();
        
@@ -242,7 +241,6 @@ class PresupuestosController extends AbstractController
         );
 
         $presupuesto->setEstadoPe($estadocesta);
-        $presupuesto->setTipopagototPE($tipopago);
         $entityManager->flush();
 
         $response = new JsonResponse();
@@ -259,7 +257,7 @@ class PresupuestosController extends AbstractController
     /**
      * @Route("/{id}/{estado}/finestado", name="presupuestos_finestado", methods={"GET","POST"})
      */
-    public function finestado(Request $request, Presupuestos $presupuesto, int $estado, string $precios, EstadocestasRepository $estadocestasRepository): Response
+    public function finestado(Request $request, Presupuestos $presupuesto, int $estado, EstadocestasRepository $estadocestasRepository): Response
     {
      
         $estadocesta = $estadocestasRepository->findOneBy(
@@ -267,13 +265,12 @@ class PresupuestosController extends AbstractController
         );
 
         $presupuesto->setEstadoPe($estadocesta);
-        $presupuesto->getTicket()->setEstadoCs(99);
         $entityManager = $this->getDoctrine()->getManager();
 
         $entityManager->flush();
 
                                                                                             
-        return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId(), 'precios' => $precios ));
+        return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId()));
     }
 
 
@@ -437,12 +434,25 @@ class PresupuestosController extends AbstractController
         $presupuesto->setImporteSnalPe($importesenal);
         $presupuesto->setTipopagoSnalPe($tipopago);
         $presupuesto->setEstadoPe($estadocesta);
+        
+        $cestanueva = new Cestas();
+        $cestanueva = clone $presupuesto->getTicket();        
+
+
         $presupuesto->getTicket()->setPrespuestoCs($presupuesto);
-        $presupuesto->getTicket()->setEstadoCs(2);
         $presupuesto->getTicket()->setImportePagoCs($importesenal);
         $presupuesto->getTicket()->setImporteTotCs($importesenal);
         $presupuesto->getTicket()->setDescuentoCs($detallecestaRepository->imptotalCesta($presupuesto->getTicket())-$importesenal);
+        
 
+        $cestanueva->setPrespuestoCs($presupuesto);
+        $cestanueva->setEstadoCs(2);
+        $cestanueva->setImportePagoCs($importesenal);
+        $cestanueva->setImporteTotCs($importesenal);
+        $cestanueva->setTipopagoCs($tipopago);
+
+ 
+        $entityManager->persist($cestanueva);
         $entityManager->flush();
 
         $economic = new EconomicoPresu($entityManager);
@@ -456,6 +466,45 @@ class PresupuestosController extends AbstractController
         
        
     }
+
+    /**
+     * @Route("/pagomaterialpresu/{id}", name="pagarpresu")
+     */
+    public function pagarpresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository): JsonResponse
+    {
+        $tipopago = $request->query->get('tipopago');
+        $importesenal = $request->query->get('importesenal');
+        $ideconomic = $request->query->get('id');
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $ideconomic]);
+        $actualizar->setImporteEco($actualizar->getImporteEco()-$importesenal);
+
+        if ($actualizar->getImporteEco() == 0) {
+            $actualizar->setEstadoEco(6);
+        };
+
+        $presupuesto->setImporteSnalPe($importesenal + $presupuesto->getImporteSnalPe());
+
+        $cestanueva = new Cestas();
+        $cestanueva = clone $presupuesto->getTicket();
+        $cestanueva->setImportePagoCs($importesenal);
+        $cestanueva->setEstadoCs(2);
+        $cestanueva->setImporteTotCs($importesenal);
+        $cestanueva->setTipopagoCs($tipopago);
+        $cestanueva->setDescuentoCs(0);
+        $cestanueva->setTimestampCs(new \DateTime());
+
+        $entityManager->persist($cestanueva);
+        $entityManager->flush();
+
+        $response = new JsonResponse();
+
+        // Envía una respuesta de texto
+        return $response->setData(['respuesta' =>'presupuesto actualizado']);
+        
+       
+    }    
 
     /**
      * @Route("/modificarpresu/{id}", name="modificarpresu")

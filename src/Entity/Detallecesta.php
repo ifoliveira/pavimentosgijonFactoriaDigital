@@ -59,6 +59,16 @@ class Detallecesta
      */
     private $textoDc;
 
+    /**
+     * __clone
+     * @return void
+     */
+    
+    public function __clone()
+    {
+        $this->id = null;
+    }        
+
     public function __construct()
     {
         $this->setTimestampDc(new \DateTime());

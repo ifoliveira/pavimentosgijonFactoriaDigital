@@ -242,9 +242,13 @@
                                                         <td>Pendiente</td>
                                                         <td>
                                                             {% if economicos.aplicaEco == 'T' %}
-                                                                <i class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="ticket_material" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco}}"><i class="ti-money"></i></i>                                                        
+                                                                <i class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="ticket_material" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco }}" data-mano="N"><i class="ti-money"></i></i>                                                        
                                                             {% else %}
-                                                                <i class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="cambiar_importe" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco}}"><i class="ti-money"></i></i>                                                        
+                                                                {% if economicos.aplicaEco == 'M' %}
+                                                                    <i class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="ticket_material" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco}}" data-mano="S"><i class="ti-money"></i></i>                                                        
+                                                                {% else %}
+                                                                    <i class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="cambiar_importe" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco * -1}}"><i class="ti-money"></i></i>                                                        
+                                                                {% endif %}    
                                                             {% endif %}
                                                             
                                                             <i class="text-inverse pr-2" data-toggle="tooltip" title="Cambiar a no aplica" name="no_aplica" id="{{ economicos.id }}" data-estado= "9"><i class="ti-thumb-down"></i></i>
@@ -256,6 +260,12 @@
                                                     {% elseif economicos.estadoEco == '8' %}
                                                         <td>Pagado</td>
                                                         <td></td>
+                                                    {% elseif economicos.estadoEco == '7' %}
+                                                        <td>Cobrado con tarjeta</td>
+                                                        <td></td>                                                        
+                                                    {% elseif economicos.estadoEco == '6' %}
+                                                        <td>Cobrado</td>
+                                                        <td></td>                                                        
                                                     {% else %}
                                                         <td>{{ economicos.estadoEco}}</td>
                                                         <td></td>
@@ -623,7 +633,7 @@
 
         $(document).on('click', 'button[id="Rechazar"]' , function(event) {
 
-            location.href = "{{ path('presupuestos_finestado', {id: presupuesto.id, 'estado' : 99}) }}";
+            location.href = "{{ path('presupuestos_finestado', {id: presupuesto.id, 'estado' : 12}) }}";
 
         })
 
@@ -631,46 +641,22 @@
         *      Finalizar presupuesto             *
         *****************************************/
          $(document).on('click', 'button[id="Finalizar"]' , function(event) {
-            const swalWithBootstrapButtons = Swal.mixin({
-                customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'mr-2 btn btn-danger'
-                },
-                buttonsStyling: false,
-            })
 
-                const importe2 = {{ presupuesto.importetotPe - presupuesto.importesnalPe}}
-                const inputStep = 1
-                const importe3 = {{ presupuesto.importesnalPe }}
-                idpresupuesto = {{ presupuesto.id}}
+            $.ajax({  
+                    url:        '{{ path("presupuestos_finalizar", {id:presupuesto.id  }) }}',  
+                    type:       'GET',   
+                    data:        ({}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            location.reload();   
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
 
-            swalWithBootstrapButtons.fire({
-                title: 'Importe total',
-                text: "Importe total" ,
-                type: 'warning',
-                html: `
-                    <h2> Cantidad  - {{ presupuesto.importetotPe }} €</h2>
-                    <h2> Señal  - {{ presupuesto.importesnalPe }} € </h2> 
-                    <input type="number" value="${importe2}" step="${inputStep}" class="swal2-input" id="range-value">`,
-                showCancelButton: true,
-                confirmButtonText: 'Tarjeta',
-                cancelButtonText: 'Efectivo',
-                reverseButtons: true
-            }).then((result) => {
-                const inputNumber = Swal.getContent().querySelector('#range-value');
-                importe = inputNumber.value;
-                if (result.value) {
-
-                    ticket_final("Tarjeta", importe2, 'SI', importe3) 
-                    senal_pdf("Tarjeta", importe3, 10, importe2,"Tarjeta"); 
-                } else if (
-                    // Read more about handling dismissals
-                    result.dismiss === Swal.DismissReason.cancel
-                ) {
-                    ticket_final("Efectivo", importe2, 'SI',importe3 ) 
-                    senal_pdf("Efectivo", importe3 , 10, importe2, "Efectivo"); 
-                }
-            })
 
          })
 
@@ -813,9 +799,7 @@
                }  
             }); 
         };          
-       /*********************************************************
-        *                      FIN                              *
-        ********************************************************/
+
 
        /****************************************
         *      Eliminar un producto             *
@@ -846,52 +830,7 @@
             }); 
         };  
 
-       /*********************************************************
-        *                      FIN                              *
-        ********************************************************/        
 
-        function ticket_final(tipopago, importe, espresupuesto, importesnal) 
-        {
-
-            $.ajax({  
-                    url:        '{{ path("ticketpdf", {id:presupuesto.ticket.id  }) }}',  
-                    type:       'GET',   
-                    data:        ({tipopago : tipopago, espresu : espresupuesto, importe : importe , importesnal :importesnal}),
-                    dataType:   'json',  
-                    async:      true,  
-                    
-                    success: function(response) {  
-                            ticketfinal_finalizar(tipopago, response.namepdf, response.importe);
-                            abrirNuevoTab('/Tickets/' + response.namepdf);
- 
-                    },  
-                    error : function(xhr, textStatus, errorThrown) {  
-                        alert(textStatus);  
-                    }  
-                    });
-
-        };  
-
-        function ticketfinal_finalizar(tipopago, numticket, importe) 
-        {
-            
-            $.ajax({             
-                    url:        '{{ path("cestas_finalizar", {id: presupuesto.ticket.id }) }}',  
-                    type:       'GET',   
-                    data:        ({tipopago : tipopago, numticket: numticket, importe:importe}),
-                    dataType:   'json',  
-                    async:      true,  
-                    
-                    success: function(response) {  
-                            
-                         location.reload();   
-                    },  
-                    error : function(xhr, textStatus, errorThrown) {  
-                        alert(textStatus);  
-                    }  
-                    });
-
-        };  
 
         /****************************************
         *      Finalizar ticket                 *
@@ -1048,51 +987,6 @@
 
          })
 
-        function senal_pdf(pago, importe, estado, importefinal, pagofinal) 
-        {
-            
-            $.ajax({  
-                    url:        '{{ path("senalpdf", {id:presupuesto.id}) }}',  
-                    type:       'GET',   
-                    data:        ({tipopago: pago, importe:importe, estado:estado, importefinal:importefinal, pagofinal:pagofinal}),
-                    dataType:   'json',  
-                    async:      true,  
-                    
-                    success: function(response) {  
-                           
-                           console.log(response);
-                          
-                    },  
-                    error : function(xhr, textStatus, errorThrown) {  
-                        alert(textStatus);  
-                    }  
-                    });
-
-        };  
-
-
-        function ticket_senal(tipopago, importe, espresupuesto,cestasnal) 
-        {
-            console.log("ticketsenal" + cestasnal);
-            $.ajax({  
-                    url:        '{{ path("ticketpdf", {id:presupuesto.Ticket  }) }}',  
-                    type:       'GET',   
-                    data:        ({tipopago : tipopago, espresu : espresupuesto, importe : importe }),
-                    dataType:   'json',  
-                    async:      true,  
-                    
-                    success: function(response) {  
-                            ticketsnal_finalizar(tipopago, response.namepdf, response.importe, cestasnal);
-                            abrirNuevoTab('/Tickets/' + response.namepdf);
- 
-                    },  
-                    error : function(xhr, textStatus, errorThrown) {  
-                        alert(textStatus);  
-                    }  
-                    });
-
-        };  
-
 
 
         function aceptar_presu(importesenal, tipopago) 
@@ -1114,26 +1008,7 @@
 
         };  
 
-        function ticketsnal_finalizar(tipopago, numticket, importe, cestaidentidad) 
-        {
-            
-            $.ajax({             
-                    url:        '{{ path("cestas_finalizar", {id: presupuesto.Ticket }) }}',  
-                    type:       'GET',   
-                    data:        ({tipopago : tipopago, numticket: numticket, importe:importe}),
-                    dataType:   'json',  
-                    async:      true,  
-                    
-                    success: function(response) {  
-                            
-                         location.reload();   
-                    },  
-                    error : function(xhr, textStatus, errorThrown) {  
-                        alert(textStatus);  
-                    }  
-                    });
 
-        };  
 
         
         /****************************************
@@ -1182,25 +1057,6 @@
             });  
         };  
 
-
-      /*  function actualiza_cesta(id,imptot,descuento,tipopago) 
-        {
-            $.ajax({  
-               url:        '../cestas/' + id + '/update',  
-               type:       'GET',   
-               data:        ({imptot: imptot ,descuento: descuento, tipopago: tipopago}),
-               dataType:   'json',  
-               async:      true,  
-               
-               success: function(response) {  
-                   $('#loop').html(response.template);
-                   document.querySelector("span[name='cantidad']").innerText     =  response.cantidad;
-               },  
-               error : function(xhr, textStatus, errorThrown) {  
-                  alert(textStatus);  
-               }  
-            });  
-        };  */
 
         /****************************************
         *       ACTUACION SOBRE ECONOMICS       *
@@ -1319,52 +1175,107 @@
 
 
             $(document).on('click', 'i[name="ticket_material"]' , function(event) {
-            const swalWithBootstrapButtons = Swal.mixin({
-                customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'mr-2 btn btn-danger'
-                },
-                buttonsStyling: false,
-            })
-
-            var selector = document.querySelector('button[id="Aceptar"]');
-            var importe = selector.dataset.importe;
+                const swalWithBootstrapButtons = Swal.mixin({
+                    customClass: {
+                        confirmButton: 'btn btn-success',
+                        cancelButton: 'mr-2 btn btn-danger'
+                    },
+                    buttonsStyling: false,
+                })
+                let importe = this.dataset.importe;  
+                let mano = this.dataset.mano;  
+                let id = this.id;        
 
                 const inputValue = Number(importe * 0.30).toFixed(2)
                 const importe2 = Number(importe).toFixed(2)
                 const inputStep = 1
 
-            swalWithBootstrapButtons.fire({
-                title: 'Señal',
-                text: "Importe total" ,
-                type: 'warning',
-                html: `
-                    <h2> Cantidad  - ${importe2} €</h2> 
-                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="right">`,
-                showCancelButton: true,
-                confirmButtonText: 'Tarjeta',
-                cancelButtonText: 'Efectivo',
-                reverseButtons: true
-            }).then((result) => {
-                const inputNumber = Swal.getContent().querySelector('#range-value');
-                importe = inputNumber.value;
-                if (result.value) {
+                swalWithBootstrapButtons.fire({
+                    title: 'Señal',
+                    text: "Importe total" ,
+                    type: 'warning',
+                    html: `
+                        <h2> Cantidad  - ${importe2} €</h2> 
+                        <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="right">`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Tarjeta',
+                    cancelButtonText: 'Efectivo',
+                    reverseButtons: true
+                }).then((result) => {
+                    const inputNumber = Swal.getContent().querySelector('#range-value');
+                    importe = inputNumber.value;
+                    if (result.value) {
 
-                  
-                    //aceptar_presu(importe, "Tarjeta"); 
-                    
+                        if (mano=='N') {
+                             pagar_presu(importe, "Tarjeta",id, mano); 
+                        } else {
+                            $.ajax({  
+                            url:        '../economicpresu/estado/ajax',  
+                            type:       'GET',   
+                            data:        ({estado:'7' ,id:id}),
+                            dataType:   'json',  
+                            async:      true,  
+                            
+                            success: function(response) {  
+                                location.reload();   
+                            },  
+                            error : function(xhr, textStatus, errorThrown) {  
+                                alert(textStatus);  
+                            }  
+                            });  
 
-                } else if (
-                    // Read more about handling dismissals
-                    result.dismiss === Swal.DismissReason.cancel
-                ) {
+                        }
 
-                    //aceptar_presu(importe, "Efectivo"); 
-                }
+                    } else if (
+                        // Read more about handling dismissals
+                        result.dismiss === Swal.DismissReason.cancel
+                    ) {
+                        if (mano=='N') {
+                        pagar_presu(importe, "Efectivo",id, mano);
+                        } else {
+                            pagar_economic(id,importe) 
+
+                            $.ajax({  
+                            url:        '../economicpresu/estado/ajax',  
+                            type:       'GET',   
+                            data:        ({estado:'6' ,id:id}),
+                            dataType:   'json',  
+                            async:      true,  
+                            
+                            success: function(response) {  
+                                location.reload();   
+                            },  
+                            error : function(xhr, textStatus, errorThrown) {  
+                                alert(textStatus);  
+                            }  
+                            });                              
+
+
+                        }
+                    }
 
             })
 
          })
+
+        function pagar_presu(importesenal, tipopago, id, mano) 
+        {
+            $.ajax({  
+                    url:        '{{ path("pagarpresu", {id:presupuesto.id  }) }}',  
+                    type:       'GET',   
+                    data:        ({tipopago : tipopago, importesenal : importesenal, id:id, mano:mano }),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            location.reload();   
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        };           
 
               
        });  
