@@ -152,22 +152,45 @@ class EconomicpresuController extends AbstractController
         
         $id = $request->query->get('id');
         $importe = $request->query->get('importe');
+        $modo = $request->query->get('modo');
+        $aplica = $request->query->get('aplica');
         $entityManager = $this->getDoctrine()->getManager();
         $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $id]);        
+   
 
-
+        if ($modo == "Efectivo") {
+       
         // Generamos movimiento efectivo
         $efectivo = new Efectivo();
         $efectivo->setTipoEf($entityManager->getRepository('App\Entity\Tiposmovimiento')->findOneBy(['descripcionTm'=> 'Mano de Obra']));
         $efectivo->setImporteEf($importe);
         $efectivo->setFechaEf(new \DateTime());
         $efectivo->setConceptoEf($actualizar->getConceptoEco() . ' ' . $actualizar->getIdpresuEco()->getClientePe()->getDireccionCl());
+        $efectivo->setPresupuestoef($actualizar->getIdpresuEco());
         $entityManager->persist($efectivo );
         $entityManager->flush();
 
+        }
         //actualizamos la cantidad
-        $actualizar->setImporteEco($importe * -1);
-        $actualizar->setestadoEco("8");
+
+        $actualizar->setImporteEco($actualizar->getImporteEco()+ ($importe *-1));
+
+        if ($actualizar->getImporteEco() == 0) {
+
+            if ($aplica == "S") {
+               $actualizar->setImporteEco($actualizar->getIdpresuEco()->getImportemanoobra());
+            } else {
+                $actualizar->setImporteEco($importe * -1);
+
+            }
+            if ($modo == "Efectivo") {
+                $actualizar->setEstadoEco(6);
+            } else {
+                $actualizar->setEstadoEco(7);    
+
+            }
+        };
+
         $entityManager->persist($actualizar);
         $entityManager->flush();
 

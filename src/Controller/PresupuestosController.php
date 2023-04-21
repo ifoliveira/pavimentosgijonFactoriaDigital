@@ -482,6 +482,7 @@ class PresupuestosController extends AbstractController
 
         if ($actualizar->getImporteEco() == 0) {
             $actualizar->setEstadoEco(6);
+            $actualizar->setImporteEco($actualizar->getIdpresuEco()->getImportetotPe());
         };
 
         $presupuesto->setImporteSnalPe($importesenal + $presupuesto->getImporteSnalPe());

@@ -45,6 +45,11 @@ class Efectivo
      */
     private $timestampEf;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="efectivos")
+     */
+    private $presupuestoef;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -113,5 +118,17 @@ class Efectivo
     public function __construct()
     {
       $this->timestampEf = new \DateTime();
+    }
+
+    public function getPresupuestoef(): ?presupuestos
+    {
+        return $this->presupuestoef;
+    }
+
+    public function setPresupuestoef(?presupuestos $presupuestoef): self
+    {
+        $this->presupuestoef = $presupuestoef;
+
+        return $this;
     }
 }

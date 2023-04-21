@@ -26,8 +26,9 @@ class EconomicoPresu {
         $this->alta('Pago Pintura', 0, 'D', $presupuesto,'E');
         $this->alta('Pago Escayola', 0, 'D', $presupuesto,'E');
         $this->alta('Pago Electricidad', 0, 'D', $presupuesto,'E');
-        $this->alta('Pago desescombro', 0, 'D', $presupuesto,'E');
+        $this->alta('Pago Desescombro', 0, 'D', $presupuesto,'E');
         $this->alta('Pago Carpintero', 0, 'D', $presupuesto,'E');
+        $this->alta('Pago Colocación', 0, 'D', $presupuesto,'E');
        
     }
 

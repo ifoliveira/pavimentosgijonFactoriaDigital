@@ -111,6 +111,11 @@ class Presupuestos
      */
     private $economicpresus;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Efectivo::class, mappedBy="presupuestoef")
+     */
+    private $efectivos;
+
     public function __construct()
     {
 
@@ -123,6 +128,7 @@ class Presupuestos
         $this->manoObra = new ArrayCollection();
         $this->cestas = new ArrayCollection();
         $this->economicpresus = new ArrayCollection();
+        $this->efectivos = new ArrayCollection();
 
     }
 
@@ -388,6 +394,36 @@ class Presupuestos
             // set the owning side to null (unless already changed)
             if ($economicpresu->getIdpresuEco() === $this) {
                 $economicpresu->setIdpresuEco(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Efectivo>
+     */
+    public function getEfectivos(): Collection
+    {
+        return $this->efectivos;
+    }
+
+    public function addEfectivo(Efectivo $efectivo): self
+    {
+        if (!$this->efectivos->contains($efectivo)) {
+            $this->efectivos[] = $efectivo;
+            $efectivo->setPresupuestoef($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEfectivo(Efectivo $efectivo): self
+    {
+        if ($this->efectivos->removeElement($efectivo)) {
+            // set the owning side to null (unless already changed)
+            if ($efectivo->getPresupuestoef() === $this) {
+                $efectivo->setPresupuestoef(null);
             }
         }
 

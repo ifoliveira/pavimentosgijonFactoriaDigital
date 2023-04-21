@@ -1129,8 +1129,7 @@
                     // Read more about handling dismissals
                     result.dismiss === Swal.DismissReason.cancel
                 ) {
-
-                   pagar_economic(id,importe); 
+                   pagar_economic(id,importe,"Efectivo", "N"); 
                 }
 
             })
@@ -1154,12 +1153,12 @@
                 });
             };
 
-            function pagar_economic(id,importe) 
+            function pagar_economic(id,importe,modo,aplica) 
             {
                 $.ajax({  
                 url:        '../economicpresu/pagar/ajax',  
                 type:       'GET',   
-                data:        ({importe:importe, id:id}),
+                data:        ({importe:importe, id:id, modo:modo, aplica:aplica}),
                 dataType:   'json',  
                 async:      true,  
                 
@@ -1233,24 +1232,7 @@
                         if (mano=='N') {
                         pagar_presu(importe, "Efectivo",id, mano);
                         } else {
-                            pagar_economic(id,importe) 
-
-                            $.ajax({  
-                            url:        '../economicpresu/estado/ajax',  
-                            type:       'GET',   
-                            data:        ({estado:'6' ,id:id}),
-                            dataType:   'json',  
-                            async:      true,  
-                            
-                            success: function(response) {  
-                                location.reload();   
-                            },  
-                            error : function(xhr, textStatus, errorThrown) {  
-                                alert(textStatus);  
-                            }  
-                            });                              
-
-
+                            pagar_economic(id,importe,"Efectivo", "S") 
                         }
                     }
 
