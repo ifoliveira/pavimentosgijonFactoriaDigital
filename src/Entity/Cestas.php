@@ -198,6 +198,18 @@ class Cestas
         return $this;
     }
 
+    public function getPresupuetoId(): ?int
+    {
+        if (is_null($this->getPrespuestoCs())){
+
+            return 0;
+            
+        } else {
+
+           return $this->getPrespuestoCs()->getId();
+        }
+    }
+
     public function __toString()
     {
         return strval($this->id);

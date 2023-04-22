@@ -49,6 +49,16 @@ class Economicpresu
      */
     private $idpresuEco;
 
+    /**
+     * __clone
+     * @return void
+     */
+    
+    public function __clone()
+    {
+        $this->id = null;
+    }    
+
     public function getId(): ?int
     {
         return $this->id;

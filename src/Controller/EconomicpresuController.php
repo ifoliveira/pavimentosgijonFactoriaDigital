@@ -157,39 +157,33 @@ class EconomicpresuController extends AbstractController
         $entityManager = $this->getDoctrine()->getManager();
         $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $id]);        
    
-
-        if ($modo == "Efectivo") {
-       
         // Generamos movimiento efectivo
         $efectivo = new Efectivo();
         $efectivo->setTipoEf($entityManager->getRepository('App\Entity\Tiposmovimiento')->findOneBy(['descripcionTm'=> 'Mano de Obra']));
-        $efectivo->setImporteEf($importe);
+        $efectivo->setImporteEf($importe * -1);
         $efectivo->setFechaEf(new \DateTime());
         $efectivo->setConceptoEf($actualizar->getConceptoEco() . ' ' . $actualizar->getIdpresuEco()->getClientePe()->getDireccionCl());
         $efectivo->setPresupuestoef($actualizar->getIdpresuEco());
         $entityManager->persist($efectivo );
         $entityManager->flush();
 
-        }
         //actualizamos la cantidad
 
-        $actualizar->setImporteEco($actualizar->getImporteEco()+ ($importe *-1));
+        //$actualizar->setImporteEco($actualizar->getImporteEco() + ($importe));
 
-        if ($actualizar->getImporteEco() == 0) {
-
-            if ($aplica == "S") {
-               $actualizar->setImporteEco($actualizar->getIdpresuEco()->getImportemanoobra());
-            } else {
-                $actualizar->setImporteEco($importe * -1);
-
-            }
-            if ($modo == "Efectivo") {
-                $actualizar->setEstadoEco(6);
-            } else {
-                $actualizar->setEstadoEco(7);    
-
-            }
+        if (($actualizar->getImporteEco() - ($importe)) == 0) {
+            $actualizar->setImporteEco($importe);
+            $actualizar->setEstadoEco(8);    
+        } else {
+            $actualizar->setImporteEco($actualizar->getImporteEco() - ($importe));
+            $economicnuevo = new economicpresu();
+            $economicnuevo = clone $actualizar;
+            $economicnuevo->setEstadoEco(8);  
+            $economicnuevo->setImporteEco($importe);  
+            $entityManager->persist($economicnuevo);                   
         };
+
+
 
         $entityManager->persist($actualizar);
         $entityManager->flush();

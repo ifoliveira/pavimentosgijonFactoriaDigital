@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Presupuestos;
 use App\Entity\Productos;
 use App\Entity\manoObra;
+use App\Entity\Efectivo;
+use App\Entity\Economicpresu;
 
 use App\Form\PresupuestosType;
 use App\Form\CollectionType;
@@ -468,9 +470,9 @@ class PresupuestosController extends AbstractController
     }
 
     /**
-     * @Route("/pagomaterialpresu/{id}", name="pagarpresu")
+     * @Route("/cobromaterialpresu/{id}", name="cobrarpresu")
      */
-    public function pagarpresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository): JsonResponse
+    public function cobrarpresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository): JsonResponse
     {
         $tipopago = $request->query->get('tipopago');
         $importesenal = $request->query->get('importesenal');
@@ -478,12 +480,19 @@ class PresupuestosController extends AbstractController
 
         $entityManager = $this->getDoctrine()->getManager();
         $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $ideconomic]);
-        $actualizar->setImporteEco($actualizar->getImporteEco()-$importesenal);
+       // $actualizar->setImporteEco($actualizar->getImporteEco()-$importesenal);
 
-        if ($actualizar->getImporteEco() == 0) {
-            $actualizar->setEstadoEco(6);
-            $actualizar->setImporteEco($actualizar->getIdpresuEco()->getImportetotPe());
-        };
+        if (($actualizar->getImporteEco()-$importesenal) == 0) {
+            $actualizar->setImporteEco($importesenal);
+            $actualizar->setEstadoEco(6);    
+        } else {
+            $actualizar->setImporteEco($actualizar->getImporteEco() - ($importesenal));
+            $economicnuevo = new economicpresu();
+            $economicnuevo = clone $actualizar;
+            $economicnuevo->setEstadoEco(6);  
+            $economicnuevo->setImporteEco($importesenal);  
+            $entityManager->persist($economicnuevo);                   
+        };        
 
         $presupuesto->setImporteSnalPe($importesenal + $presupuesto->getImporteSnalPe());
 
@@ -506,6 +515,60 @@ class PresupuestosController extends AbstractController
         
        
     }    
+
+   /**
+     * @Route("/cobromanopresu/{id}", name="cobrarmanopresu")
+     */
+    public function cobrarmanopresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository): JsonResponse
+    {
+        $tipopago = $request->query->get('tipopago');
+        $importe = $request->query->get('importe');
+        $ideconomic = $request->query->get('id');
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $ideconomic]);
+        //$actualizar->setImporteEco($actualizar->getImporteEco()-$importe);
+
+        if (($actualizar->getImporteEco()-$importe) == 0) {
+            $actualizar->setImporteEco($importe);
+            if ($tipopago == "Efectivo") {           
+            $actualizar->setEstadoEco(6); 
+            } else{
+                $actualizar->setEstadoEco(7); 
+            }   
+
+        } else {
+            $actualizar->setImporteEco($actualizar->getImporteEco() - ($importe));
+            $economicnuevo = new economicpresu();
+            $economicnuevo = clone $actualizar;
+            if ($tipopago == "Efectivo") {                       
+                $economicnuevo->setEstadoEco(6);  
+            } else{
+                $economicnuevo->setEstadoEco(7); 
+            }                   
+            $economicnuevo->setImporteEco($importe);  
+            $entityManager->persist($economicnuevo);                   
+        };        
+
+        if ($tipopago == "Efectivo") {
+        // Generamos movimiento efectivo
+            $efectivo = new Efectivo();
+            $efectivo->setTipoEf($entityManager->getRepository('App\Entity\Tiposmovimiento')->findOneBy(['descripcionTm'=> 'Mano de Obra']));
+            $efectivo->setImporteEf($importe);
+            $efectivo->setFechaEf(new \DateTime());
+            $efectivo->setConceptoEf($actualizar->getConceptoEco() . ' ' . $actualizar->getIdpresuEco()->getClientePe()->getDireccionCl());
+            $efectivo->setPresupuestoef($actualizar->getIdpresuEco());
+            $entityManager->persist($efectivo );
+            
+        }    
+        $entityManager->flush();
+        $response = new JsonResponse();
+
+        // Envía una respuesta de texto
+        return $response->setData(['respuesta' =>'presupuesto actualizado']);
+        
+       
+    }        
 
     /**
      * @Route("/modificarpresu/{id}", name="modificarpresu")

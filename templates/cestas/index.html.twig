@@ -88,6 +88,7 @@
                                                     <th>Adelanto </th>
                                                     <th>Tipo Pago</th>
                                                     <th>Ticket</th>
+                                                    <th>Presupuesto</th>
                                                     <th>Fecha y hora</th>
                                                     <th>Acciones</th>
                                                 </tr>
@@ -104,6 +105,14 @@
                                                     <td> 
                                                         <a href ="/Tickets/{{ cesta.numticketCs }}" target="_blank" >{{ cesta.numticketCs }}</a>
                                                     </td>
+                                                    <td>
+                                                        {% if ( cesta.PresupuetoId != 0 ) %}
+
+                                                            <a href="{{ path('presupuestos_generar', {id: cesta.PresupuetoId, precios: 'S', tipo : 'FACTURA SIMPLIFICADA'}) }}" target="_blank"> {{cesta.PresupuetoId}} </a>
+
+                                                        {% endif %}
+                                                    </td>
+                                                    
                                                     <td>{{ cesta.timestampCs ? cesta.timestampCs|date('Y-m-d H:i:s') : '' }}</td>
                                                     <td>
 

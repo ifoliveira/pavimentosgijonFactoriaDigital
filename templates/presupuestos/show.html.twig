@@ -242,12 +242,12 @@
                                                         <td>Pendiente</td>
                                                         <td>
                                                             {% if economicos.aplicaEco == 'T' %}
-                                                                <i class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="ticket_material" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco }}" data-mano="N"><i class="ti-money"></i></i>                                                        
+                                                                <i class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="ticket_material" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco }}"><i class="ti-money"></i></i>                                                        
                                                             {% else %}
                                                                 {% if economicos.aplicaEco == 'M' %}
-                                                                    <i class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="ticket_material" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco}}" data-mano="S"><i class="ti-money"></i></i>                                                        
+                                                                    <i class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="ticket_mano" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco}}" ><i class="ti-money"></i></i>                                                        
                                                                 {% else %}
-                                                                    <i class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="cambiar_importe" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco * -1}}"><i class="ti-money"></i></i>                                                        
+                                                                    <i class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="cambiar_importe" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco}}"><i class="ti-money"></i></i>                                                        
                                                                 {% endif %}    
                                                             {% endif %}
                                                             
@@ -321,7 +321,8 @@
                                 </div>
                             </div>
                         </div>
-
+                    {% endif %} 
+                    {% if presupuesto.EstadoPe.id > 6 and  presupuesto.EstadoPe.id < 9 %} 
                         <div class="card">
                             <div class="card-body">
   
@@ -1129,7 +1130,7 @@
                     // Read more about handling dismissals
                     result.dismiss === Swal.DismissReason.cancel
                 ) {
-                   pagar_economic(id,importe,"Efectivo", "N"); 
+                   pagar_economic(id,importe,"Efectivo"); 
                 }
 
             })
@@ -1153,12 +1154,12 @@
                 });
             };
 
-            function pagar_economic(id,importe,modo,aplica) 
+            function pagar_economic(id,importe,modo) 
             {
                 $.ajax({  
                 url:        '../economicpresu/pagar/ajax',  
                 type:       'GET',   
-                data:        ({importe:importe, id:id, modo:modo, aplica:aplica}),
+                data:        ({importe:importe, id:id, modo:modo}),
                 dataType:   'json',  
                 async:      true,  
                 
@@ -1182,10 +1183,9 @@
                     buttonsStyling: false,
                 })
                 let importe = this.dataset.importe;  
-                let mano = this.dataset.mano;  
                 let id = this.id;        
 
-                const inputValue = Number(importe * 0.30).toFixed(2)
+                const inputValue = Number(importe).toFixed(2)
                 const importe2 = Number(importe).toFixed(2)
                 const inputStep = 1
 
@@ -1204,48 +1204,26 @@
                     const inputNumber = Swal.getContent().querySelector('#range-value');
                     importe = inputNumber.value;
                     if (result.value) {
-
-                        if (mano=='N') {
-                             pagar_presu(importe, "Tarjeta",id, mano); 
-                        } else {
-                            $.ajax({  
-                            url:        '../economicpresu/estado/ajax',  
-                            type:       'GET',   
-                            data:        ({estado:'7' ,id:id}),
-                            dataType:   'json',  
-                            async:      true,  
-                            
-                            success: function(response) {  
-                                location.reload();   
-                            },  
-                            error : function(xhr, textStatus, errorThrown) {  
-                                alert(textStatus);  
-                            }  
-                            });  
-
-                        }
-
+                        cobrar_presu(importe, "Tarjeta",id); 
                     } else if (
                         // Read more about handling dismissals
                         result.dismiss === Swal.DismissReason.cancel
                     ) {
-                        if (mano=='N') {
-                        pagar_presu(importe, "Efectivo",id, mano);
-                        } else {
-                            pagar_economic(id,importe,"Efectivo", "S") 
-                        }
+                        cobrar_presu(importe, "Efectivo",id);
                     }
 
             })
 
          })
 
-        function pagar_presu(importesenal, tipopago, id, mano) 
+
+
+        function cobrar_presu(importesenal, tipopago, id) 
         {
             $.ajax({  
-                    url:        '{{ path("pagarpresu", {id:presupuesto.id  }) }}',  
+                    url:        '{{ path("cobrarpresu", {id:presupuesto.id  }) }}',  
                     type:       'GET',   
-                    data:        ({tipopago : tipopago, importesenal : importesenal, id:id, mano:mano }),
+                    data:        ({tipopago : tipopago, importesenal : importesenal, id:id}),
                     dataType:   'json',  
                     async:      true,  
                     
@@ -1259,6 +1237,66 @@
 
         };           
 
+            $(document).on('click', 'i[name="ticket_mano"]' , function(event) {
+                const swalWithBootstrapButtons = Swal.mixin({
+                    customClass: {
+                        confirmButton: 'btn btn-success',
+                        cancelButton: 'mr-2 btn btn-danger'
+                    },
+                    buttonsStyling: false,
+                })
+                let importe = this.dataset.importe;  
+                let id = this.id;        
+
+                const inputValue = Number(importe).toFixed(2)
+                const importe2 = Number(importe).toFixed(2)
+                const inputStep = 1
+
+                swalWithBootstrapButtons.fire({
+                    title: 'Señal',
+                    text: "Importe total" ,
+                    type: 'warning',
+                    html: `
+                        <h2> Cantidad  - ${importe2} €</h2> 
+                        <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="right">`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Tarjeta',
+                    cancelButtonText: 'Efectivo',
+                    reverseButtons: true
+                }).then((result) => {
+                    const inputNumber = Swal.getContent().querySelector('#range-value');
+                    importe = inputNumber.value;
+                    if (result.value) {
+                        cobrar_mano(importe, "Tarjeta",id); 
+                    } else if (
+                        // Read more about handling dismissals
+                        result.dismiss === Swal.DismissReason.cancel
+                    ) {
+                        cobrar_mano(importe, "Efectivo",id);
+                    }
+
+            })
+
+         })
+
+        function cobrar_mano(importe, tipopago, id) 
+        {
+            $.ajax({  
+                    url:        '{{ path("cobrarmanopresu", {id:presupuesto.id  }) }}',  
+                    type:       'GET',   
+                    data:        ({tipopago : tipopago, importe : importe, id:id}),
+                    dataType:   'json',  
+                    async:      true,  
+                    
+                    success: function(response) {  
+                            location.reload();   
+                    },  
+                    error : function(xhr, textStatus, errorThrown) {  
+                        alert(textStatus);  
+                    }  
+                    });
+
+        };       
               
        });  
 
