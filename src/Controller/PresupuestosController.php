@@ -603,6 +603,28 @@ class PresupuestosController extends AbstractController
        
     }
 
+        /**
+     * @Route("/delete/fila", name="presupuesto_delete_ajax", methods={"GET","POST"})
+     */
+    public function deletepresuajax(Request $request): JsonResponse
+    {
+        // Funcion para borrar registro de producto de una cesta determinada
+        // Obtener ID del presupuesto
+        $datos = $request->query->get('id');
+        // get EntityManager
+        $em = $this->getDoctrine()->getManager();
+        // Obtener presupuesto
+        $presupuesto = $em->getRepository('App\Entity\Presupuestos')->find($datos);
+
+        // Borrado del detalle
+        $em->remove($presupuesto);
+        $em->flush();
+
+        $response = new JsonResponse();
+
+        return $response;
+
+    } 
 
 
 

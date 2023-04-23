@@ -68,7 +68,7 @@ class Presupuestos
     private $tipopagosnalPe;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\Cestas", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity="App\Entity\Cestas",orphanRemoval=true, cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
      */
     private $ticket;
@@ -79,7 +79,7 @@ class Presupuestos
     private $manoobraPe;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Clientes::class, inversedBy="presupuestosCl")
+     * @ORM\ManyToOne(targetEntity=Clientes::class, inversedBy="presupuestosCl", cascade={"persist","remove"})
      * @ORM\JoinColumn(nullable=false)
      */
     private $clientePe;
@@ -90,7 +90,7 @@ class Presupuestos
     private $timestampModPe;
 
     /**
-     * @ORM\OneToMany(targetEntity=ManoObra::class, mappedBy="presupuestoMo", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=ManoObra::class, mappedBy="presupuestoMo", cascade={"persist","remove"}, orphanRemoval=true)
      * @ORM\OrderBy({"presupuestoMo" = "ASC","categoriaMo" = "ASC"})
      */
     private $manoObra;
@@ -101,18 +101,19 @@ class Presupuestos
     private $importemanoobra;
 
     /**
-     * @ORM\OneToMany(targetEntity=Cestas::class, mappedBy="prespuestoCs")
+     * @ORM\OneToMany(targetEntity=Cestas::class, mappedBy="prespuestoCs", cascade={"persist","remove"}, orphanRemoval=true)
+     * @ORM\JoinColumn(name="ticket_id", referencedColumnName="id", onDelete="SET NULL")
      */
     private $cestas;
 
     /**
-     * @ORM\OneToMany(targetEntity=Economicpresu::class, mappedBy="idpresuEco", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=Economicpresu::class, mappedBy="idpresuEco", orphanRemoval=true, cascade={"persist","remove"})
      * @ORM\OrderBy({"estadoEco" = "ASC"})
      */
     private $economicpresus;
 
     /**
-     * @ORM\OneToMany(targetEntity=Efectivo::class, mappedBy="presupuestoef")
+     * @ORM\OneToMany(targetEntity=Efectivo::class, mappedBy="presupuestoef" , orphanRemoval=true, cascade={"persist","remove"})
      */
     private $efectivos;
 

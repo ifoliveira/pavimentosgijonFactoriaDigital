@@ -46,7 +46,7 @@ class Efectivo
     private $timestampEf;
 
     /**
-     * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="efectivos")
+     * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="efectivos", cascade={"persist","remove"})
      */
     private $presupuestoef;
 

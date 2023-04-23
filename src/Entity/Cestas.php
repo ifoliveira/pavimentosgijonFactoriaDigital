@@ -60,12 +60,13 @@ class Cestas
     private $timestampCs;
 
     /**
-     * @ORM\OneToMany(targetEntity=Detallecesta::class, mappedBy="cestaDc")
+     * @ORM\OneToMany(targetEntity=Detallecesta::class, mappedBy="cestaDc" ,  orphanRemoval=true, cascade={"persist","remove"})
      */
     private $detallecesta;
 
     /**
      * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="cestas")
+     * @ORM\JoinColumn(name="prespuesto_cs_id", referencedColumnName="id", onDelete="SET NULL")
      */
     private $prespuestoCs;
 
