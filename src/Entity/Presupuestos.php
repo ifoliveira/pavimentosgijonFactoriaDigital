@@ -79,7 +79,7 @@ class Presupuestos
     private $manoobraPe;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Clientes::class, inversedBy="presupuestosCl", cascade={"persist","remove"})
+     * @ORM\ManyToOne(targetEntity=Clientes::class, inversedBy="presupuestosCl")
      * @ORM\JoinColumn(nullable=false)
      */
     private $clientePe;

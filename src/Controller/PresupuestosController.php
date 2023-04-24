@@ -52,14 +52,24 @@ class PresupuestosController extends AbstractController
     /**
      * @Route("/new", name="presupuestos_new", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function new(Request $request, EstadocestasRepository $estadocestasRepository): Response
     {
         $presupuesto = new Presupuestos();
         $form = $this->createForm(PresupuestosType::class, $presupuesto);
         $form->handleRequest($request);
 
+        $estadocesta=$estadocestasRepository->findOneBy(['id' => 6]);
+        $presupuesto->setEstadoPe($estadocesta);
+
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager = $this->getDoctrine()->getManager();
+            $user = $this->getUser();
+            $presupuesto->setUserPe($user);
+            $cesta = new Cestas();
+            $cesta->setUserCs($user->getId());
+            $cesta->setEstadoCs(11);
+            $entityManager->persist($cesta);
+            $presupuesto->setTicket($cesta);            
             $entityManager->persist($presupuesto);
             $entityManager->flush();
 

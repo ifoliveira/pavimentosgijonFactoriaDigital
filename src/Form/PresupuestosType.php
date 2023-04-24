@@ -3,9 +3,12 @@
 namespace App\Form;
 
 use App\Entity\Presupuestos;
+use App\Entity\Clientes;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
@@ -18,14 +21,8 @@ class PresupuestosType extends AbstractType
         $builder
             ->add('estadoPe',null ,  array(
                 'label' => 'Estado del presupuesto' ))
-            ->add('manoobraPe',ChoiceType::class ,  array(
-                  'choices' => [ 'Plato de ducha' => 'Plato de ducha',
-                                 'Baño completo' => 'Baño completo',
-                                 'Mueble' => 'Mueble',
-                                 'Mampara' => 'Mampara',
-                                 'Otros' => 'Otros'
-            ],
-            'label' => 'Presupuesto para ...',
+            ->add('manoobraPe',TextType::class ,  array(
+             'label' => 'Descripción  ...',
                   ))
             ->add('importetotPe', MoneyType::class ,  array(
                    'label' => 'Importe Total' ))
@@ -33,6 +30,10 @@ class PresupuestosType extends AbstractType
                     'label' => 'Importe Mano Obra' ))
             ->add('descuaetoPe', PercentType::class ,  array(
                     'label' => 'Descuento' ))
+            ->add('clientePe', EntityType::class ,  array(
+                        'class' => Clientes::class,
+                        'label' => 'Cliente' ))
+
         ;
     }
 

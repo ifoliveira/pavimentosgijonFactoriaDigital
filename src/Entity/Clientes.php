@@ -172,6 +172,10 @@ class Clientes
         return $this;
     }
 
+    public function __toString()
+    {
+        return $this->getNombreCl() . ' ' . $this->getApellidosCl() ;
+    }
     /**
      * @return Collection|presupuestos[]
      */

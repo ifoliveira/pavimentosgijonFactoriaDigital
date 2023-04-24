@@ -1,11 +1,9 @@
-{% extends 'base.html.twig' %}
-
-{% block title %}New Presupuestos{% endblock %}
-
-{% block body %}
-    <h1>Create new Presupuestos</h1>
-
-    {{ include('presupuestos/_form.html.twig') }}
-
-    <a href="{{ path('presupuestos_index') }}">back to list</a>
+{% extends 'pages.html.twig' %}
+{% form_theme form 'fields.html.twig' %}
+{% block title %}New Presupuesto{% endblock %}
+{% block cabecera %} Presupuesto {% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item">Presupuestos</li> 
+<li class="breadcrumb-item active">Nuevo</li>
 {% endblock %}
+{% block tablas %}{% endblock %}
