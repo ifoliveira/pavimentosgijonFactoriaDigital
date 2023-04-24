@@ -122,11 +122,12 @@ class PresupuestosController extends AbstractController
 
         $formmanoob->handleRequest($request);
      
-
         if ($formmanoob->isSubmitted() && $formmanoob->isValid()) {
+
             $this->getDoctrine()->getManager()->flush();
 
             return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId() ));
+
         }
 
         $formestadopr = $this->createForm(PresupuestosType::class, $presupuesto);
