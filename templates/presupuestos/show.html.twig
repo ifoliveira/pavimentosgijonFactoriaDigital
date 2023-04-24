@@ -38,6 +38,7 @@
                                                     {{ form_row(formestado.importetotPe, { 'row_attr': {'class': 'd-none'} }) }}
                                                     {{ form_row(formestado.importemanoobra, { 'row_attr': {'class': 'd-none'} }) }}
                                                     {{ form_row(formestado.descuaetoPe, { 'row_attr': {'class': 'd-none'} }) }}
+                                                    {{ form_row(formestado.clientePe, { 'row_attr': {'class': 'd-none'} }) }}
                                             {{ form_end(formestado, {'render_rest': false}) }}
 
                                         </div>
@@ -507,6 +508,7 @@
                                             </div>
                                             <hr>
                                             {{ form_row(formestadopr.manoobraPe| raw, { 'row_attr': {'class': 'd-none'} }) }}
+                                            {{ form_row(formestadopr.clientePe, { 'row_attr': {'class': 'd-none'} }) }}
                                             {{ form_widget(formestadopr.estadoPe) }}
                                             {{ form_row(formestadopr.importetotPe, { 'attr': {'class': 'd-none' } ,'row_attr': {'class':'d-none'}} ) }}
                                             {{ form_row(formestadopr.descuaetoPe, { 'row_attr': {'class': 'd-none'} }) }}
