@@ -126,4 +126,14 @@ class Banco
       $this->timestamp_Bn = new \DateTime();
     }
 
+    /**
+     * __clone
+     * @return void
+     */
+    
+    public function __clone()
+    {
+        $this->id = null;
+    }        
+
 }

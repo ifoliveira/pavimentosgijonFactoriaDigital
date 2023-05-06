@@ -4,10 +4,12 @@ namespace App\Controller;
 
 use App\MisClases\CestaUser;
 use App\Entity\Cestas;
+use App\Entity\Banco;
 use App\Entity\Detallecesta;
 use App\Form\CestasType;
 use App\Repository\CestasRepository;
 use App\Repository\EstadocestasRepository;
+use App\Repository\BancoRepository;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
@@ -521,6 +523,47 @@ class CestasController extends AbstractController
         return new jsonResponse($jsonData); 
 
     }  
+
+    /**
+     * @Route("/conciliar/{id}", name="conciliar_cesta", methods={"GET"})
+     */
+    public function conciliar(Cestas $cesta, BancoRepository $bancoRepository): Response
+    {
+   
+        return $this->render('cestas/conciliar.html.twig', [
+            'cesta' => $cesta,
+            'bancos' => $bancoRepository->findAll(),
+        ]);
+    }    
+    /**
+     * @Route("/{id}/{idbanco}/conciliar", name="cestas_conciliar", methods={"GET","POST"})
+     */
+    public function conciliar_banco(Cestas $cesta, BancoRepository $bancoRepository, int $idbanco): Response
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $banco = $bancoRepository->findOneBy(array('id' => $idbanco));
+
+        if ($cesta->getImporteTotCs() != $banco->getImporteBn()){
+
+            $banconuevo = clone $banco;  
+            $banconuevo->setImporteBn($cesta->getImporteTotCs());
+            $importenuevo= $banco->getImporteBn() - $cesta->getImporteTotCs();
+            $banco->setImporteBn($importenuevo);
+            $cesta->setBancoCsId($banconuevo);
+
+            $entityManager->persist($banconuevo);
+
+        } else {
+
+            $cesta->setBancoCsId($banco);    
+        }
+
+          
+
+        $entityManager->flush();
+
+        return $this->redirectToRoute('cestas_index');
+    }
 
  
 

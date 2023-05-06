@@ -6,6 +6,7 @@ use App\Repository\CestasRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Banco;
 
 /**
  * @ORM\Entity(repositoryClass=CestasRepository::class)
@@ -74,6 +75,11 @@ class Cestas
      * @ORM\Column(type="float", nullable=true)
      */
     private $importePagoCs;
+
+    /**
+     * @ORM\OneToOne(targetEntity=banco::class, cascade={"persist", "remove"})
+     */
+    private $bancoCsId;
 
     public function __construct()
     {
@@ -267,6 +273,18 @@ class Cestas
     public function setImportePagoCs(?float $importePagoCs): self
     {
         $this->importePagoCs = $importePagoCs;
+
+        return $this;
+    }
+
+    public function getBancoCsId(): ?banco
+    {
+        return $this->bancoCsId;
+    }
+
+    public function setBancoCsId(?banco $bancoCsId): self
+    {
+        $this->bancoCsId = $bancoCsId;
 
         return $this;
     }

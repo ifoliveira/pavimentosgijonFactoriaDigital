@@ -89,6 +89,7 @@
                                                     <th>Tipo Pago</th>
                                                     <th>Ticket</th>
                                                     <th>Presupuesto</th>
+                                                    <th>MovimientoBanco</th>
                                                     <th>Fecha y hora</th>
                                                     <th>Acciones</th>
                                                 </tr>
@@ -112,6 +113,21 @@
 
                                                         {% endif %}
                                                     </td>
+                                                    <td>
+                                                        {% if ( cesta.tipopagoCs == "Tarjeta" ) %}
+                                                            {% if cesta.BancoCsid is null %}
+                                                                <a href="{{ path('conciliar_cesta', {id: cesta.id}) }}"> Buscar Movimiento </a>
+                                                            {% else %}
+
+                                                                {{ cesta.BancoCsid.id}}
+                                                                    
+                                                            {% endif %}
+                                                        {% endif %}                                                            
+
+
+                                                        
+
+                                                    </td>                                                    
                                                     
                                                     <td>{{ cesta.timestampCs ? cesta.timestampCs|date('Y-m-d H:i:s') : '' }}</td>
                                                     <td>
