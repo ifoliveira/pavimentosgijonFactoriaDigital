@@ -19,7 +19,6 @@
                                             <thead>
                                                 <tr>
                                                     <th>Id</th>
-                                                    <th>Fecha</th>
                                                     <th>Importe</th>
                                                     <th>Tipo pago</th>
                                                 </tr>
@@ -28,10 +27,9 @@
                                             
 
                                                     <tr>
-                                                        <td>{{ cesta.id }}</td>
-                                                        <td>{{ cesta.fechaCs ? cesta.fechaCs|date('Y-m-d') : '' }}</td>
-                                                        <td align="right">{{ cesta.importeTotCs|format_currency('EUR', locale='es')  }}</td>
-                                                        <td>{{ cesta.tipopagoCs }}</td>                                                    
+                                                        <td>{{ economicpresu.id }}</td>
+                                                        <td align="right">{{ economicpresu.importeEco|format_currency('EUR', locale='es')  }}</td>
+                                                        <td>{{ economicpresu.estadoEco }}</td>                                                    
                                                     </tr>
 
                                             </tbody>
@@ -67,7 +65,7 @@
                                                 <td align="center">{{ banco.fechaBn ? banco.fechaBn|date('Y-m-d') : '' }}</td>
                                                 <td>{{ banco.categoriaBn }}</td>
                                                 <td align="right">{{ banco.importeBn|number_format(2) }}</td>
-                                                <td><a href="{{ path('cestas_conciliar', {'id': cesta.id , 'idbanco':banco.id}) }}" class="text-inverse" title="Conciliar" data-toggle="tooltip">
+                                                <td><a href="{{ path('economicpresu_conciliar', {'id': economicpresu.id , 'idbanco':banco.id}) }}" class="text-inverse" title="Conciliar" data-toggle="tooltip">
                                                                 <i  class="ti-link"></i>
                                                     </a>
                                                 </td>

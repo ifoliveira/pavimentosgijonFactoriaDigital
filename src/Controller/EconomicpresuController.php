@@ -6,6 +6,7 @@ use App\Entity\Economicpresu;
 use App\Form\EconomicpresuType;
 use App\Entity\Efectivo;
 use App\Repository\EfectivoRepository;
+use App\Repository\BancoRepository;
 use App\Entity\Tiposmovimiento;
 use App\Repository\TiposmovimientoRepository;
 use App\Repository\EconomicpresuRepository;
@@ -194,5 +195,47 @@ class EconomicpresuController extends AbstractController
         return new jsonResponse($jsonData); 
 
     }     
+
+    /**
+     * @Route("/conciliar/{id}", name="conciliar_presu", methods={"GET"})
+     */
+    public function conciliar(economicpresu $economicpresu, BancoRepository $bancoRepository): Response
+    {
+   
+        return $this->render('economicpresu/conciliar.html.twig', [
+            'economicpresu' => $economicpresu,
+            'bancos' => $bancoRepository->findAll(),
+        ]);
+    }       
+
+    /**
+     * @Route("/{id}/{idbanco}/conciliar", name="economicpresu_conciliar", methods={"GET","POST"})
+     */
+    public function conciliar_banco(Economicpresu $economicpresu, BancoRepository $bancoRepository, int $idbanco): Response
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $banco = $bancoRepository->findOneBy(array('id' => $idbanco));
+
+        if ($economicpresu->getImporteEco() != $banco->getImporteBn()){
+
+            $banconuevo = clone $banco;  
+            $banconuevo->setImporteBn($economicpresu->getImporteEco());
+            $importenuevo= $banco->getImporteBn() - $economicpresu->getImporteEco();
+            $banco->setImporteBn($importenuevo);
+            $economicpresu->setBancoEco($banconuevo);
+
+            $entityManager->persist($banconuevo);
+
+        } else {
+
+            $economicpresu->setBancoEco($banco);    
+        }
+
+          
+
+        $entityManager->flush();
+
+        return $this->redirectToRoute('cestas_index');
+    }
 
 }

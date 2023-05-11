@@ -109,7 +109,7 @@
                                                     <td>
                                                         {% if ( cesta.PresupuetoId != 0 ) %}
 
-                                                            <a href="{{ path('presupuestos_generar', {id: cesta.PresupuetoId, precios: 'S', tipo : 'FACTURA SIMPLIFICADA'}) }}" target="_blank"> {{cesta.PresupuetoId}} </a>
+                                                            <a href="{{ path('presupuestos_show', {id: cesta.PresupuetoId}) }}" target="_blank"> {{cesta.prespuestoCs.clientePe.direccionCl}} </a>
 
                                                         {% endif %}
                                                     </td>

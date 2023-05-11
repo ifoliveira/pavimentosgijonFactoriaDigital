@@ -84,8 +84,8 @@
                                     <div class="card">
                                         <div class="card-body">
                                             <button id="Finalizar" class="btn btn-rounded btn-outline-success " data-importe="{{presupuesto.importetotPe}}">Finalizar</button>
-                                            <button id="Modificar" class="btn btn-rounded btn-outline-success " data-importe="{{presupuesto.importetotPe}}">Modificar</button>
-                                            
+                                            <a href="{{ path('presupuestos_modificar', {id: presupuesto.id}) }}"  class="btn btn-rounded btn-outline-success "> Modificar</a>                                            
+                                                                                        
                                         </div>
                                     </div>
                                     <div class="card">
@@ -476,6 +476,97 @@
                         {% if presupuesto.EstadoPe.id >= 5 %}
                             <div class="card">
                                 <div class="card-body">
+                                    <h4 class="card-title">Tickets</h4>
+                                        <table id="footer" class="table table-striped table-bordered display" style="width:100%">                                    
+                                            <thead>
+                                                <tr align="center"> 
+                                                    <th>Movimiento</th>
+                                                    <th>Importe</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>                                    
+                                            {% for cesta in cestas %}
+                                                <tr>
+                                                    {% if cesta.bancoCsId is null %}
+                                                        {% if cesta.tipopagoCs == 'Tarjeta' %}
+                                                            <td> <a href="{{ path('conciliar_cesta', {id: cesta.id}) }}"> Buscar Movimiento </a></td>  
+                                                        {% else %}     
+                                                            <td> {{ cesta.tipopagoCs }} </td> 
+                                                        {% endif %} 
+                                                        <td>{{ cesta.importeTotCs}}</td>                                                      
+                                                    {% else %}                                           
+                                                        <td>{{ cesta.bancoCsId.conceptoBn}}</td>
+                                                        <td>{{ cesta.bancoCsId.importeBn}}</td>
+                                                    {% endif %} 
+                                                </tr>                                                
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="7">no records found</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        <h4 class="card-title">Movimientos Efectivo</h4>
+                                        <table id="footer" class="table table-striped table-bordered display" style="width:100%">                                    
+                                            <thead>
+                                                <tr align="center"> 
+                                                    <th>Movimiento</th>
+                                                    <th>Importe</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>                                    
+                                            {% for efectivo in efectivos %}
+                                                <tr>
+                                         
+                                                        <td>{{ efectivo.conceptoEf}}</td>
+                                                        <td>{{ efectivo.importeEf}}</td>
+
+                                                </tr>                                                
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="7">no records found</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>      
+
+                                        <h4 class="card-title">Movimientos Tarjeta</h4>
+                                        <table id="footer" class="table table-striped table-bordered display" style="width:100%">                                    
+                                            <thead>
+                                                <tr align="center"> 
+                                                    <th>Movimiento</th>
+                                                    <th>Importe</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>                                    
+                                            {% for economictar in economic %}
+
+                                                {% if economictar.estadoEco == '7' %}
+                                                <tr>
+                                                    {% if economictar.bancoEco is null %}
+                                                        <td> <a href="{{ path('conciliar_presu', {id: economictar.id}) }}"> Buscar Movimiento </a></td>  
+                                                        <td>{{ economictar.importeEco}}</td>                                                      
+                                                    {% else %}                                           
+                                                        <td>{{ economictar.bancoEco.conceptoBn}}</td>
+                                                        <td>{{ economictar.bancoEco.importeBn}}</td>
+                                                    {% endif %} 
+                                                </tr>                                                
+                                                {% endif %} 
+                                            {% else %}
+                                                
+                                                <tr>
+                                                    <td colspan="7">no records found</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>                                                                            
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="card">
+                                <div class="card-body">
                                     <h4 class="card-title">Subir fotos</h4>
                                     {{ form_start(form) }}
                                         
@@ -492,6 +583,8 @@
                                     </div>
                                 </div>
                             </div>
+
+
                         {% endif %}
                         <div class="card">
                             <div class="card-body">

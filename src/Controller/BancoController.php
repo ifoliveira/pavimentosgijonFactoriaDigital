@@ -196,6 +196,7 @@ class BancoController extends AbstractController
         $hoy = date('Y-m-d',strtotime("-1 days"));
 
 
+
         if ($hoy>=$fechaini) {
 
             // Referencia banco
@@ -204,7 +205,7 @@ class BancoController extends AbstractController
             $nombrefic = 'bancos.json';
             $data = file_get_contents($directorio .'/'.$nombrefic);
             $bancos = json_decode($data, true);
-
+         
             foreach ($bancos as $value) {
                 if ($value['id']== $bancoid) {
                     $referencia = $value['Referencia'];
@@ -223,7 +224,7 @@ class BancoController extends AbstractController
                                 $date_time = date_create_from_format('Y-m-d\TH:i:sP', $movimiento->bookingDate."T15:52:01+00:00");
                                 $banco->setFechaBn($date_time);
 
-                                 $tipo = $entityManager->getRepository(Tiposmovimiento::class)->findOneBy(
+                                $tipo = $entityManager->getRepository(Tiposmovimiento::class)->findOneBy(
                                     ['descripcionTm' => $apibank->concepto($movimiento->remittanceInformationUnstructured)->getDescripcionTm()]
                                 );
 

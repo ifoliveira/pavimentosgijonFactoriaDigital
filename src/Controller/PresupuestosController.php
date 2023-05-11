@@ -12,11 +12,13 @@ use App\Form\PresupuestosType;
 use App\Form\CollectionType;
 use App\Form\PresupuestosManoObraType;
 use App\Form\ProductosType;
-use App\Repository\CestasRepository;
 use App\Entity\Cestas;
-Use App\MisClases\EconomicoPresu;
+use App\MisClases\EconomicoPresu;
+use App\MisClases\CestaUser;
+use App\Repository\EfectivoRepository;
 use App\Repository\EstadocestasRepository;
 use App\Repository\PresupuestosRepository;
+use App\Repository\CestasRepository;
 use App\Repository\ProductosRepository;
 use App\Repository\DetallecestaRepository;
 use App\Repository\EconomicpresuRepository;
@@ -85,7 +87,7 @@ class PresupuestosController extends AbstractController
     /**
      * @Route("/{id}", name="presupuestos_show",  methods={"GET","POST"})
      */
-    public function show(Request $request, Presupuestos $presupuesto, ProductosRepository $productosRepository, EconomicpresuRepository $economicpresu): Response
+    public function show(Request $request, Presupuestos $presupuesto, EfectivoRepository $efectivoRepository, ProductosRepository $productosRepository, EconomicpresuRepository $economicpresu, CestasRepository $cestasRepository): Response
     {
 
         $directorio = $this->getParameter("presupuestoDir") . '/' . $presupuesto->getClientePe()->getNombreCl() . ' ' . $presupuesto->getFechainiPe()->format('Y-m-d');
@@ -160,6 +162,9 @@ class PresupuestosController extends AbstractController
 
         $economic = $presupuesto->getEconomicpresus();
 
+        $cestas = $cestasRepository->findBy(array('prespuestoCs' => $presupuesto->getId(), 'estadoCs' => '2'));
+        $efectivos = $efectivoRepository->findBy(array('presupuestoef' => $presupuesto->getId()));
+
         
         $producto = new Productos;
         $formprod = $this->createForm(ProductosType::class, $producto);
@@ -186,6 +191,8 @@ class PresupuestosController extends AbstractController
             'fotos' => $ficheros,
             'cestaId'=> $presupuesto->getTicket()->getId(),
             'productos' => $productos,
+            'cestas' => $cestas,
+            'efectivos' => $efectivos,
         ]);
     }
 
@@ -238,6 +245,31 @@ class PresupuestosController extends AbstractController
 
                                                                                             
         return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId() ));
+    }
+
+    /**
+     * @Route("/{id}/modificar", name="presupuestos_modificar")
+     */
+    public function modificar(Request $request, Presupuestos $presupuesto, ProductosRepository $productosRepository, EconomicpresuRepository $economicpresu): Response
+    {
+        $form = $this->createForm(PresupuestosType::class, $presupuesto);
+        $form->handleRequest($request);
+
+        $productos = $productosRepository->findAll();
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->getDoctrine()->getManager()->flush();
+
+            return $this->redirectToRoute('presupuestos_index');
+        }
+
+        return $this->render('presupuestos/modificar.html.twig', [
+            'presupuesto' => $presupuesto,
+            'productos' => $productos,
+            'economic' => $presupuesto->getEconomicpresus(),
+            'cestaId'=> $presupuesto->getTicket()->getId(),
+            'form' => $form->createView(),
+        ]);
     }
 
 
@@ -637,6 +669,32 @@ class PresupuestosController extends AbstractController
 
     } 
 
+ /**
+     * @Route("/actualiza/importe", name="presuactualiza_imp", methods={"GET","POST"})
+     */
+    public function ajaxinscS(Request $request): jsonResponse
+    {
+
+        // Funcion encargada de añadir producto a la cesta
+        $entityManager = $this->getDoctrine()->getManager();
+        $cestauser = new CestaUser($entityManager);
+        // Obtener ID del presupuesto
+        $datos = $request->query->get('id');
+        // Obtener presupuesto
+        $presupuesto = $entityManager->getRepository('App\Entity\Presupuestos')->find($datos);
+        // Producto y cantidad a añadir
+        $importe = $cestauser->getImporteTot($presupuesto->getTicket()->getId());
+
+        $presupuesto->setImportetotPe($importe);
+
+        $entityManager->flush();
+
+        $response = new JsonResponse();
+
+        return $response;
+
+
+    }      
 
 
 }

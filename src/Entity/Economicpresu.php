@@ -50,6 +50,11 @@ class Economicpresu
     private $idpresuEco;
 
     /**
+     * @ORM\OneToOne(targetEntity=Banco::class, cascade={"persist", "remove"})
+     */
+    private $bancoEco;
+
+    /**
      * __clone
      * @return void
      */
@@ -135,4 +140,18 @@ class Economicpresu
 
         return $this;
     }
+
+    public function getBancoEco(): ?Banco
+    {
+        return $this->bancoEco;
+    }
+
+    public function setBancoEco(?Banco $bancoEco): self
+    {
+        $this->bancoEco = $bancoEco;
+
+        return $this;
+    }
+
+ 
 }

@@ -2,7 +2,7 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "php": "^7.2.5",
+        "php": "^8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "composer/package-versions-deprecated": "1.11.99.1",
@@ -24,6 +24,8 @@
         "symfony/form": "5.4.*",
         "symfony/framework-bundle": "5.4.*",
         "symfony/http-client": "5.4.*",
+        "symfony/intl": "5.4.*",
+        "symfony/maker-bundle": "1.43",
         "symfony/monolog-bundle": "^3.6",
         "symfony/proxy-manager-bridge": "5.4.*",
         "symfony/security-bundle": "5.4.*",
@@ -38,7 +40,6 @@
     "require-dev": {
         "easycorp/easy-deploy-bundle": "^1.0",
         "symfony/debug-bundle": "^5.4",
-        "symfony/maker-bundle": "^1.29",
         "symfony/stopwatch": "^5.4",
         "symfony/var-dumper": "^5.4",
         "symfony/web-profiler-bundle": "^5.4"
