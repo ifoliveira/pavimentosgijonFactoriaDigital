@@ -33,7 +33,7 @@
                                                     <td>{{ efectivo.tipoEf }}</td>
                                                     <td>{{ efectivo.conceptoEf }}</td>
                                                     <td>{{ efectivo.fechaEf ? efectivo.fechaEf|date('Y-m-d') : '' }}</td>
-                                                    <td align="right">{{ efectivo.importeEf |number_format(2) }}</td>
+                                                    <td align="right">{{ efectivo.importeEf |format_currency('EUR', locale='sp')}}</td>
                                                     <td>
                                                         <a href="{{ path('efectivo_edit', {'id': efectivo.id}) }}">edit</a>
                                                         <i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar efectivo" name="delete_detalle" id="{{ efectivo.id }}">

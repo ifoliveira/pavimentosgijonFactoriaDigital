@@ -196,7 +196,6 @@ class BancoController extends AbstractController
         $hoy = date('Y-m-d',strtotime("-1 days"));
 
 
-
         if ($hoy>=$fechaini) {
 
             // Referencia banco

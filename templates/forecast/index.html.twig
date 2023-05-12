@@ -78,7 +78,7 @@
                                                 <td>{{ banco.conceptoBn|slice(0, 20)}}</td>
                                                 <td align="center">{{ banco.fechaBn ? banco.fechaBn|date('Y-m-d') : '' }}</td>
                                                 <td>{{ banco.categoriaBn }}</td>
-                                                <td align="right">{{ banco.importeBn|number_format(2) }}</td>
+                                                <td align="right">{{ banco.importeBn|format_currency('EUR', locale='sp') }}</td>
                                             </tr>
                                         {% else %}
                                             <tr>

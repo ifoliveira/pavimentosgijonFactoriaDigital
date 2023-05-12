@@ -71,7 +71,7 @@
                                                 <td>{{ banco.categoriaBn }}</td>
                                                 <td>{{ banco.conceptoBn }}</td>
                                                 <td align="center">{{ banco.fechaBn ? banco.fechaBn|date('Y-m-d') : '' }}</td>
-                                                <td align="right">{{ banco.importeBn|number_format(2) }}</td>
+                                                <td align="right">{{ banco.importeBn|format_currency('EUR', locale='es') }}</td>
                                                 <td>
                                                         <a href="{{ path('banco_edit', {'id': banco.id}) }}">edit</a>
                                                         <a href="{{ path('banco_transferencia', {'id' : banco.id}) }}" class="text-inverse" title="Transferencia" data-toggle="tooltip">

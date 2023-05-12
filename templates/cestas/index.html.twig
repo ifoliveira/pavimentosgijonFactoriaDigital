@@ -15,7 +15,6 @@
                                             <thead>
                                                 <tr>
                                                     <th>Id</th>
-                                                    <th>Estado</th>
                                                     <th>FechaCs</th>
                                                     <th>Importe Total</th>
                                                     <th>Pendiente </th>
@@ -29,7 +28,6 @@
                                             {% for cestar in cestasnal %}
                                                 <tr>
                                                     <td>{{ cestar.id }}</td>
-                                                    <td>{{ cestar.estadoCs }}</td>
                                                     <td>{{ cestar.fechaCs ? cestar.fechaCs|date('Y-m-d') : '' }}</td>
                                                     <td align="right">{{ cestar.importeTotCs|format_currency('EUR', locale='es')  }}</td>
                                                     <td align="right">{{ cestar.descuentoCs |format_currency('EUR', locale='es')   }}</td>
@@ -82,7 +80,6 @@
                                             <thead>
                                                 <tr>
                                                     <th>Id</th>
-                                                    <th>Estado</th>
                                                     <th>FechaCs</th>
                                                     <th>Importe Total</th>
                                                     <th>Adelanto </th>
@@ -98,7 +95,6 @@
                                             {% for cesta in cestas %}
                                                 <tr>
                                                     <td>{{ cesta.id }}</td>
-                                                    <td>{{ cesta.estadoCs }}</td>
                                                     <td>{{ cesta.fechaCs ? cesta.fechaCs|date('Y-m-d') : '' }}</td>
                                                     <td align="right">{{ cesta.importeTotCs|format_currency('EUR', locale='es')  }}</td>
                                                     <td align="right">{{ cesta.descuentoCs |format_currency('EUR', locale='es')  }}</td>
