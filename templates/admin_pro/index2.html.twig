@@ -1,0 +1,293 @@
+{% extends 'base.html.twig' %}
+{% block title %}Hello AdminProController!{% endblock %}
+{% block body %}
+            <!-- ============================================================== -->
+            <!-- Page wrapper  -->
+            <!-- ============================================================== -->
+            <div class="page-wrapper">
+                <!-- ============================================================== -->
+                <!-- Container fluid  -->
+                <!-- ============================================================== -->
+                <div class="container-fluid">
+                    <div class="reverse-mode">
+                        <!-- ============================================================== -->
+                        <!-- Left Part  -->
+                        <!-- ============================================================== -->
+                        <div class="left-part bg-light dashboard-right-part fixed-left-part">
+                            <!-- Mobile toggle button -->
+                            <a class="ti-menu ti-close btn btn-success show-left-part d-block d-md-none" href="javascript:void(0)"></a>
+                            <!-- Mobile toggle button -->
+                            <div class="scrollable position-relative" style="height: calc(100vh - 50px);">
+                                <div class="px-3 pt-3">
+                                    <h5 class="text-muted mb-0">Gijón</h5>
+                                    <h3>{{ "now"|date("F jS \\a\\t g:ia")  }}</h3>
+                                    <div class="d-flex mt-3">
+                                        <div class="display-5 text-info"><i class="{{ weathericon[0][1] }}"></i></div>
+                                        <div class="ml-3">
+                                            <h2 class="mb-0">{{ weathericon[0][0]|round(1, 'floor')  }} ° C</h2>
+                                            <h6>{{ weathericon[0][2] }}</h6>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><i class="{{ weathericon[1][1] }}"></i>  {{ "now" | date_modify("+1 day") | date('l') }}</td>
+                                            <td class="text-right font-weight-medium">{{ (weathericon[1][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="{{ weathericon[2][1] }}"></i> {{ "now" | date_modify("+2 day") | date('l') }}</td>
+                                            <td class="text-right font-weight-medium">{{ (weathericon[2][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="{{ weathericon[3][1] }}"></i> {{ "now" | date_modify("+3 day") | date('l') }}</td>
+                                            <td class="text-right font-weight-medium">{{ (weathericon[3][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
+                                        </tr>
+                                    </table>
+                                    <hr class="mt-0">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- ============================================================== -->
+                        <!-- End Left Part  -->
+                        <!-- ============================================================== -->
+                        <!-- ============================================================== -->
+                        <!-- Right Part  Mail Compose -->
+                        <!-- ============================================================== -->
+                        <div class="right-part overflow-auto dashboard-part" style="height: 100%;">
+                            <!-- ============================================================== -->
+                            <!-- Bread crumb and right sidebar toggle -->
+                            <!-- ============================================================== -->
+                            <div class="row page-titles">
+                                <div class="col-md-5 col-12 align-self-center">
+                                    <h3 class="text-themecolor mb-0">Dashboard 
+                                   
+                                        
+                                    </h3>
+                                </div>
+                                <div class="col-md-7 col-12 align-self-center d-none d-md-flex justify-content-end">
+                                    <ol class="breadcrumb mb-0 p-0 bg-transparent">
+                                        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                                        <li class="breadcrumb-item active">Dashboard</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            <!-- ============================================================== -->
+                            <!-- End Bread crumb and right sidebar toggle -->
+                            <!-- ============================================================== -->
+                            <!-- Sales Overview -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-lg-flex">
+                                        <div>
+                                            <h3 class="card-title"><span class="lstick d-inline-block align-middle"></span>Ventas</h3>
+                                            <h6 class="card-subtitle">Ventas año en curso</h6>
+                                        </div>
+                                        {% set totaltar = 0 %}
+                                        {% set totalefe = 0 %}
+                                        {% set totalmanob = 0 %}
+                                        {% set totalmanob = manoobratotal %}   
+
+                                        {% for ventatot in ventastotal %}
+                                        <a id="datosmes{{ ventatot['mes'] }}" data-venta="{{ ventatot['sum(importe_bn)'] }}"></a>  
+                                            {% set totaltar = totaltar +  ventatot['sum(importe_bn)'] %}
+                                        {% endfor %}    
+
+                                        {% for i in (ventastotal|length + 1) ..12 %}
+                                            <a id="datosmes{{ i }}" data-venta="0"></a>  
+                                        {% endfor %}
+
+                                        {% for efectivo in ventaefetotal %}
+                                        <a id="efectivo{{ efectivo['mes'] }}" data-venta="{{ efectivo['sum(importe_tot_cs)'] }}"></a>  
+                                             {% set totalefe = totalefe + efectivo['sum(importe_tot_cs)'] %}
+                                        {% endfor %}   
+
+                                        {% for i in (ventaefetotal|length + 1) ..12 %}
+                                            <a id="efectivo{{ i }}" data-venta="0"></a>  
+                                        {% endfor %} 
+                                        {% set ventaefectivo = totalefe %}
+                                        {% set totalefe = ventahistefect + gastos['efectivototal'] %}
+
+                                        <div class="ml-auto">
+                                            <ul class="list-inline">
+                                                <li class="list-inline-item">
+                                                    <div class="d-flex">
+                                                        <i class="fa fa-circle font-10 mr-2 text-info mt-2"></i>
+                                                        <div>
+                                                            <h2 class="mb-0">{{ totaltar |format_currency('EUR', locale='es')}}</h2>
+                                                            <h6 class="text-muted">Tarjeta</h6></div>
+                                                    </div>
+                                                </li>
+                                                <li class="list-inline-item">
+                                                    <div class="d-flex">
+                                                        <i class="fa fa-circle font-10 mr-2 text-muted mt-2"></i>
+                                                        <div>
+                                                            <h2 class="mb-0">{{ ventaefectivo |format_currency('EUR', locale='es')}}</h2>
+                                                            <h6 class="text-muted">Efectivo</h6></div>
+                                                    </div>
+                                                </li>
+                                                <li class="list-inline-item">
+                                                    <div class="d-flex">
+                                                        <i class="fa fa-circle font-10 mr-2 text-primary  mt-2"></i>
+                                                        <div>
+                                                            <h2 class="mb-0">{{ (totaltar + ventaefectivo) |format_currency('EUR', locale='es') }}</h2>
+                                                            <h6 class="text-muted">Ventas</h6></div>
+                                                    </div>
+                                                </li>
+                                                <li class="list-inline-item">
+                                                    <div class="d-flex">
+                                                        <i class="fa fa-circle font-10 mr-2 text-primary  mt-2"></i>
+                                                        <div>
+                                                            <h2 class="mb-0">{{ (totalmanob) |format_currency('EUR', locale='es') }}</h2>
+                                                            <h6 class="text-muted">Mano de Obra</h6></div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div id="sales-overview" class="position-relative" style="height:400px;" data-enero=" "></div>
+                                    
+
+
+                                </div>
+                            </div>
+                            <!-- End Sales Overview -->
+                            <!-- Row Cards -->
+                            <div class="row">
+                                <div class="col-lg-4">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="d-flex">
+                                                <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/income.png" alt="Income" /></div>
+                                                <div class="align-self-center">
+                                                 <h6 class="text-muted mt-2 mb-0">Banco a {{ bancototal['max(fecha_bn)'] |date("d/m/Y") }}</h6>
+                                                 <h2 id="bancototal" data-banco="{{ bancototal['sum(importe_bn)'] }}">{{ bancototal['sum(importe_bn)'] |format_currency('EUR', locale='es') }}</h2></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="d-flex">
+                                                <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/expense.png" alt="Income" /></div>
+                                                <div class="align-self-center">
+                                                    <h6 class="text-muted mt-2 mb-0">Total Caja</h6>
+                                                    <h2>{{ totalefe |format_currency('EUR', locale='es') }}</h2></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="d-flex">
+                                                <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" /></div>
+                                                <div class="align-self-center">
+                                                    <h6 class="text-muted mt-2 mb-0">Total</h6>
+                                                    <h2 id="cajatotal" data-caja="{{ bancototal['sum(importe_bn)'] + totalefe }}">{{ (bancototal['sum(importe_bn)'] + totalefe) |format_currency('EUR', locale='es') }}</h2></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End Row Cards -->
+                            <!-- Row Starts -->
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="d-md-flex">
+                                                <h4 class="card-title"><span class="lstick d-inline-block align-middle"></span>Previsión </h4>
+                                                <ul class="list-inline mb-0 ml-auto">
+                                                    <li class="list-inline-item">
+                                                        <h6 class="text-success"><i class="fa fa-circle font-10 mr-2 "></i>Previsión de gastos</h6> </li>
+                                                    <li class="list-inline-item">
+                                                        <h6 class="text-info"><i class="fa fa-circle font-10 mr-2"></i>Caja total</h6> </li>
+                                                </ul>
+                                            </div>
+                                         <!--    <div class="text-center mt-4">
+                                                <div class="btn-group " role="group" aria-label="Basic example">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm font-12">PAGEVIEWS</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm font-12">REFERRALS</button>
+                                                </div>
+                                            </div>-->
+                                            <div class="website-visitor position-relative mt-4" style="height:400px; width:100%;"></div>
+                                            {% set contador = 0 %}
+                                            {% set gasto = 0 %}
+                                            {% for movifore in forecast %}
+
+                                                {% set gasto = gasto +  (movifore.getImporteFr * -1) %}  
+                                                
+                                                 <a id="forecast{{ contador }}" class="{{ movifore.getOrigenFr }}" data-venta="{{ gasto }}"></a>  
+                                                 <a id="fechfore{{ contador }}" class="{{ movifore.getOrigenFr }}" data-venta="{{ movifore.getFechaFr|date('d-m')}}"></a>
+                                                 {% set contador = contador + 1 %}
+                                            {% endfor %}    
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Row ends -->
+                        </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- End Container fluid  -->
+                <!-- ============================================================== -->
+            </div>
+            <!-- ============================================================== -->
+            <!-- End Page wrapper  -->
+            <!-- ============================================================== -->
+        </div>
+
+{% endblock %}
+
+{% block jscustom %}
+
+    <!-- ============================================================== -->
+    <!-- All Jquery -->
+    <!-- ============================================================== -->
+    <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}" ></script>
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="{{ asset('assets/libs/popper.js/dist/umd/popper.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <!-- apps -->
+    <script src="{{ asset('dist/js/app.min.js') }}"></script>
+    <script src="{{ asset('dist/js/app.init.js') }}"></script>
+    <script src="{{ asset('dist/js/app-style-switcher.js') }}"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="{{ asset('assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
+    <!--Wave Effects -->
+    <script src="{{ asset('dist/js/waves.js') }}"></script>
+    <!--Menu sidebar -->
+    <script src="{{ asset('dist/js/sidebarmenu.js') }}"></script>
+    <!--Custom JavaScript -->
+    <script src="{{ asset('dist/js/feather.min.js') }}"></script>
+    <script src="{{ asset('dist/js/custom.min.js') }}"></script>
+    <!--This page plugins -->
+    <script src="{{ asset('assets/libs/datatables/media/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/custom-datatable.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/datatable-api.init.js') }}"></script>
+    <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
+        <!-- Chart JS -->
+    <script src="{{ asset('dist/js/pages/dashboards/dashboard1.js') }}"></script>
+    <!--Custom JavaScript -->
+    
+    <script language = "javascript">
+    $(document).ready(function(){   
+        {% if cookies != 'No mostrar' %}
+        
+            Swal.fire({
+                type: 'error',
+                title: 'A TRABAJAR ALGO',
+                text: 'Te dije que te lo iba a decir...',
+                footer: 'Haz ahí algo con el Instagram'
+            })
+        
+        {% endif %}
+    });  
+
+   </script> 
+{% endblock %}
+
