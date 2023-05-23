@@ -1,8 +1,9 @@
-{% extends 'pages.html.twig' %}
+{% extends 'inicio2.html.twig' %}
+{% block eltiempo %} {% endblock %}
 {% block cabecera %} Presupuestos {% endblock %}
 {% block breadcrumb %} <li class="breadcrumb-item active">Lista presupuestos</li>{% endblock %}
 {% block title %}Lista presupuestos{% endblock %}
-{% block tablas %}
+{% block cardbody1 %}
             {% set total = 0 %}
             {% set medir = 0 %}
             {% set pendientes = 0 %}
@@ -97,32 +98,34 @@
                                         </thead>
                                             <tbody>
                                             {% for presupuesto in presupuestos %}
+
+
                                                 <tr> 
                                                     {% if presupuesto.EstadoPe.id == 4 %}
-                                                        <td><span class="badge badge-primary">{{ presupuesto.EstadoPe }}</span></td>
+                                                        <td><span class="badge bg-primary">{{ presupuesto.EstadoPe }}</span></td>
                                                     {% else %}
                                                         {% if presupuesto.EstadoPe.id == 6 or presupuesto.EstadoPe.id == 5%}
-                                                            <td><span class="badge badge-warning">{{ presupuesto.EstadoPe }}</span></td>
+                                                            <td><span class="badge bg-warning">{{ presupuesto.EstadoPe }}</span></td>
                                                         {% else %}
                                                             {% if presupuesto.EstadoPe.id == 7 %}
-                                                                <td><span class="badge badge-warning">{{ presupuesto.EstadoPe }}</span></td>
+                                                                <td><span class="badge bg-warning">{{ presupuesto.EstadoPe }}</span></td>
                                                             {% else %}
                                                                 {% if presupuesto.EstadoPe.id == 10 %}
-                                                                    <td><span class="badge badge-info">{{ presupuesto.EstadoPe }}</span></td>
+                                                                    <td><span class="badge bg-info">{{ presupuesto.EstadoPe }}</span></td>
                                                                 {% else %}
                                                                     {% if presupuesto.EstadoPe.id == 99 %}
-                                                                        <td><span class="badge badge-dark">{{ presupuesto.EstadoPe }}</span></td>
+                                                                        <td><span class="badge bg-dark">{{ presupuesto.EstadoPe }}</span></td>
                                                                     {% else %}
                                                                         {% if presupuesto.EstadoPe.id == 8 %}
-                                                                            <td><span class="badge badge-danger">{{ presupuesto.EstadoPe }}</span></td>
+                                                                            <td><span class="badge bg-danger">{{ presupuesto.EstadoPe }}</span></td>
                                                                         {% else %}
-                                                                            <td><span class="badge badge-success">{{ presupuesto.EstadoPe }}</span></td>
+                                                                            <td><span class="badge bg-success">{{ presupuesto.EstadoPe }}</span></td>
                                                                         {% endif %}
                                                                     {% endif %}
                                                                 {% endif %}
                                                             {% endif %}
                                                         {% endif %}
-                                                    {% endif %}
+
                                                     <td><a href="{{ path ('presupuestos_show', { 'id': presupuesto.id  }) }}" class="font-medium link">{{ presupuesto.clientePe.direccionCl}}  ( {{presupuesto.clientePe.nombreCl}}  -  {{presupuesto.manoobraPe}} )</a></td>
                                                     <td>{{ presupuesto.clientePe.telefono1Cl }}</td>
                                                     <td>{{ (presupuesto.importetotPe + presupuesto.importemanoobra)  |format_currency('EUR', locale='es')  }}</td>
@@ -136,11 +139,14 @@
 
                                                         <td>{{ ((beneficio / coste_total)|format_number(style='percent')) }} - {{ beneficio |format_currency('EUR', locale='es') }}</td>
                                                     {% endif %}
-                                                    <td>  <i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar cesta" name="delete_detalle" id="{{ presupuesto.id }}">
-                                                                <i class="ti-trash"></i>
+                                                    <td>  
+                                                        <i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar cesta" name="delete_detalle" id="{{ presupuesto.id }}">
+                                                                <i class="ti-trash">  </i>
                                                         </i> 
-                                                        </td>
+                                                                                                          
+                                                    </td>
                                                 </tr>
+                                                {% endif %}
                                             {% else %}
                                                 <tr>
                                                     <td colspan="10">no records found</td>
@@ -149,34 +155,24 @@
                                             </tbody>
                                         
                                     </table>
-                                    <div class="d-flex align-items-center justify-content-end">
-                                        <ul class="pagination">
-                                            <li class="page-item disabled">
-                                                <a class="page-link" href="#" tabindex="-1">Previous</a>
-                                            </li>
-                                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                            <li class="page-item">
-                                                <a class="page-link" href="#">2 <span class="sr-only">(current)</span></a>
-                                            </li>
-                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                            <li class="page-item">
-                                                <a class="page-link" href="#">Next</a>
-                                            </li>
-                                        </ul>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-    <a href="{{ path('presupuestos_new') }}">Create new</a>
 {% endblock %}
-{% block formulario %}{% endblock %}
+
 {% block jscustom %}
+
+    <!-- This Page JS -->
+    <script src="{{asset('assets/extra-libs/prism/prism.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
+
     <!--This page plugins -->
     <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
     <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
-
+        <!-- start - This is for export functionality only -->
+ 
     <script language = "javascript">
     $(document).ready(function(){   
         /****************************************
@@ -251,3 +247,4 @@
     </script> 
 
 {% endblock %}
+{% block formulario %}{% endblock %}

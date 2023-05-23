@@ -45,11 +45,44 @@ class PresupuestosController extends AbstractController
     {
         $estados=$presupuestosRepository->numeroestado();
 
+        $query = $presupuestosRepository->createQueryBuilder('p')
+            ->where('p.estadoPe < :estado')
+            ->setParameter('estado', '10')
+            ->orderBy('p.id', 'DESC')
+            ->getQuery();
+            
+        $products = $query->getResult();
+
         return $this->render('presupuestos/index.html.twig', [
-            'presupuestos' => $presupuestosRepository->findBy([], ['id' => 'DESC']),
+    
+            'presupuestos' => $query->getResult(),
+//            'presupuestos' => $presupuestosRepository->findBy([], ['id' => 'DESC']),
             'estados' => $estados,
         ]);
     }
+
+    /**
+     * @Route("/finalizados", name="presupuestos_finalizados", methods={"GET"})
+     */
+    public function finalizados(PresupuestosRepository $presupuestosRepository): Response
+    {
+        $estados=$presupuestosRepository->numeroestado();
+
+        $query = $presupuestosRepository->createQueryBuilder('p')
+            ->where('p.estadoPe > :estado')
+            ->setParameter('estado', '9')
+            ->orderBy('p.id', 'DESC')
+            ->getQuery();
+            
+        $products = $query->getResult();
+
+        return $this->render('presupuestos/index.html.twig', [
+    
+            'presupuestos' => $query->getResult(),
+//            'presupuestos' => $presupuestosRepository->findBy([], ['id' => 'DESC']),
+            'estados' => $estados,
+        ]);
+    }    
 
     /**
      * @Route("/new", name="presupuestos_new", methods={"GET","POST"})

@@ -27,7 +27,7 @@ $(function () {
   do {
     var selector = document.querySelector("#efectivo"+i);
     if (selector !== null) {
-      total[i-1] = parseFloat(selector.dataset.venta) + parseFloat(tarjeta[i-1]);
+      total[i-1] = parseFloat(selector.dataset.venta);
 
       i++;
     }else{
@@ -88,16 +88,16 @@ $(function () {
   var options_Sales_Overview = {
     series: [
       {
-        name: "Earning ",
+        name: "Efectivo",
         data: [total[0],total[1],total[2],total[3],total[4],total[5],total[6],total[7],total[8],total[9],total[10],total[11]],
       },
       {
-        name: "Expense ",
-        data: [0, 100, 70, 100, 240, 180, 220, 140, 250, 210, 340, 320],
+        name: "Tarjeta",
+        data: [tarjeta[0],tarjeta[1],tarjeta[2],tarjeta[3],tarjeta[4],tarjeta[5],tarjeta[6],tarjeta[7],tarjeta[8],tarjeta[9],tarjeta[10],tarjeta[11]],
       },
       {
         name: "Sales ",
-        data: [0, 50, 30, 60, 180, 120, 180, 80, 190, 150, 240, 240],
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       },
     ],
     chart: {

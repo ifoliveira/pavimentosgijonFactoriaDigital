@@ -1,13 +1,14 @@
-{% extends 'pages.html.twig' %}
+{% extends 'inicio2.html.twig' %}
 {% form_theme form 'fields.html.twig' %}
 {% block title %}Presupuesto nuevo{% endblock %}
 {% block cabecera %} Presupuesto nuevo {% endblock %}
+{% block eltiempo %} {% endblock %}
 {% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{{ path("presupuestos_index") }}">Presupuestos</a></li> 
-<li class="breadcrumb-item active">Nuevo</li>
+    <li class="breadcrumb-item"><a href="{{ path("presupuestos_index") }}">Presupuestos</a></li> 
+    <li class="breadcrumb-item active">Nuevo</li>
 {% endblock %}
 {% block tablas %}{% endblock %}
-             {% block formulario %}
+{% block cardbody1 %}
                 <!-- ============================================================== -->
                 <!-- End Bread crumb and right sidebar toggle -->
                 <!-- ============================================================== -->
@@ -15,8 +16,8 @@
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
                 <!-- row -->
-                    <div class="card-body">
-
+              <div class="card">
+                <div class="card-body">
                     <div class="col-sm-12 col-lg-12">
                         <div class="card">
                            <form action="" method="POST">
@@ -82,6 +83,7 @@
                         </div>
                     </div>
                 </div>
+            </div>
                 <!-- End row -->
 {% endblock %}
 

@@ -16,6 +16,8 @@
     <!-- Custom CSS -->
     {% block stylesheets %}
         <link href="{{ asset('dist/css/style.min.css') }}" rel="stylesheet">
+        <link href="{{ asset('dist/css/style.css') }}" rel="stylesheet">        
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/extra-libs/prism/prism.css') }}">
     {% endblock %}
   </head>
 
@@ -1079,6 +1081,12 @@
                       </a>
                   </li>
                   <li class="sidebar-item">
+                      <a href="{{ path('presupuestos_finalizados')}}" class="sidebar-link">
+                          <i class="mdi  mdi-book-open-page-variant"></i>
+                          <span class="hide-menu">Presupuestos finalizados</span>
+                      </a>
+                  </li>                  
+                  <li class="sidebar-item">
                       <a href="{{ path('app_financiacion')}}" class="sidebar-link">
                           <i class="mdi  mdi-book-open-page-variant"></i>
                           <span class="hide-menu">Simulación Financiación</span>
@@ -1163,6 +1171,7 @@
       <!-- -------------------------------------------------------------- -->
       <!-- End Left Sidebar - style you can find in sidebar.scss  -->
       <!-- -------------------------------------------------------------- -->
+          
       <!-- -------------------------------------------------------------- -->
       <!-- Page wrapper  -->
       <!-- -------------------------------------------------------------- -->
@@ -1173,21 +1182,21 @@
         <div class="container-fluid">
           <div class="reverse-mode">
 
-            
+            {% block leftpart %}  
             <!-- -------------------------------------------------------------- -->
             <!-- Left Part  -->
             <!-- -------------------------------------------------------------- -->
-            {% block leftpart %}
                                   
             <div class="left-part bg-light dashboard-right-part fixed-left-part">
               <!-- Mobile toggle button -->
               <a class="ri-menu-fill ri-close-fill btn btn-success show-left-part d-block d-md-none" href="javascript:void(0)"></a>
               <!-- Mobile toggle button -->
               <div class="scrollable position-relative" style="height: calc(100vh - 50px)">
+              {% block eltiempo %}
                 <div class="px-3 pt-3">
                   <h5 class="text-muted mb-0">Gijón (Asturias)</h5>
                   <hr />
-                  <h3>{{ "now"|format_datetime(locale='sp', timezone='Europe/Madrid')  }}</h3>
+                  <h3>{{ "now"|format_datetime(locale='es', timezone='Europe/Madrid')  }}</h3>
                   <div class="d-flex mt-3">
                     <div class="display-5 text-info">
                       <i class="{{ weathericon[0][1] }}"></i>
@@ -1214,6 +1223,8 @@
                   </table>
                   <hr class="mt-0" />
                 </div>
+               {% endblock %} 
+      
                 {# <div class="p-3">
                   <h3 class="position-relative d-flex">
                     <span class="lstick d-inline-block align-middle"></span>
@@ -1393,9 +1404,11 @@
                 <div class="col-md-7 col-12 align-self-center d-none d-md-flex justify-content-end">
                   <ol class="breadcrumb mb-0 p-0 bg-transparent">
                      <li class="breadcrumb-item"><a href="{{ path("admin_pro") }}">Inicio</a></li>
+                     {% block breadcrumb %}
                      <li class="breadcrumb-item active d-flex align-items-center">
-                        {% block breadcrumb %} Dashboard {% endblock %}
+                         Dashboard 
                      </li>
+                     {% endblock %}
                   </ol>                
                 </div>
               </div>
@@ -1412,7 +1425,7 @@
                       <h3 class="card-title">
                         <span class="lstick d-inline-block align-middle"></span>Ventas 
                       </h3>
-                      <h6 class="card-subtitle">Year 2023</h6>
+                      <h6 class="card-subtitle">Año 2023</h6>
                     </div>
 
                     {% set totaltar = 0 %}
@@ -1455,8 +1468,8 @@
                               "
                             ></i>
                             <div>
-                              <h3 class="mb-0">{{ totaltar }}</h3>
-                              <h6 class="text-muted">Earning</h6>
+                              <h3 class="mb-0">{{ totaltar + totalefe }}</h3>
+                              <h6 class="text-muted">Ventas</h6>
                             </div>
                           </div>
                         </li>
@@ -1473,8 +1486,8 @@
                               "
                             ></i>
                             <div>
-                              <h3 class="mb-0">12659</h3>
-                              <h6 class="text-muted">Expense</h6>
+                              <h3 class="mb-0">{{ totaltar }}</h3>
+                              <h6 class="text-muted">Tarjetas</h6>
                             </div>
                           </div>
                         </li>
@@ -1491,8 +1504,8 @@
                               "
                             ></i>
                             <div>
-                              <h3 class="mb-0">15478</h3>
-                              <h6 class="text-muted">Sales</h6>
+                              <h3 class="mb-0">{{totalefe}}</h3>
+                              <h6 class="text-muted">Efectivo</h6>
                             </div>
                           </div>
                         </li>
@@ -3606,30 +3619,34 @@
     <div class="chat-windows"></div>
 
     {% block jsbl %}
-    <!-- -------------------------------------------------------------- -->
+    <!-- ============================================================== -->
     <!-- All Jquery -->
-    <!-- -------------------------------------------------------------- -->
-        <script src="../../assets/libs/jquery/dist/jquery.min.js"></script>
-        <!-- Bootstrap tether Core JavaScript -->
-        <script src="../../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- apps -->
-        <script src="../../dist/js/app.min.js"></script>
-        <script src="../../dist/js/app.init.js"></script>
-        <script src="../../dist/js/app-style-switcher.js"></script>
-        <!-- slimscrollbar scrollbar JavaScript -->
-        <script src="../../assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-        <script src="../../assets/extra-libs/sparkline/sparkline.js"></script>
-        <!--Wave Effects -->
-        <script src="../../dist/js/waves.js"></script>
-        <!--Menu sidebar -->
-        <script src="../../dist/js/sidebarmenu.js"></script>
-        <!--Custom JavaScript -->
-        <script src="../../dist/js/feather.min.js"></script>
-        <script src="../../dist/js/custom.min.js"></script>
+    <!-- ============================================================== -->
+        <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}"></script>
+    <!-- Bootstrap tether Core JavaScript -->
+        <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js')}}"></script>        
+    <!-- apps -->
+        <script src="{{ asset('dist/js/app.min.js')}}"></script>
+        <script src="{{ asset('dist/js/app.init.js')}}"></script>
+        <script src="{{ asset('dist/js/app-style-switcher.js') }}"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+        <script src="{{ asset('assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js') }}"></script>
+    <!--Menu sidebar -->
+        <script src="{{ asset('dist/js/sidebarmenu.js') }}"></script>
+    <!--Custom JavaScript -->
+        <script src="{{ asset('dist/js/feather.min.js') }}"></script>
+        <script src="{{ asset('dist/js/custom.min.js') }}"></script>
         <!--This page JavaScript -->
-        <script src="../../assets/libs/apexcharts/dist/apexcharts.min.js"></script>
+        <script src="{{ asset('assets/libs/apexcharts/dist/apexcharts.min.js') }}"></script>
+    {% endblock %}
+    {% block jscustom %}
+    
         <!-- Chart JS -->
         <script src="{{ asset('dist/js/pages/dashboards/dashboard.js') }}"></script>
-    {% endblock %}
+        <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
+        <!--Wave Effects -->
+        <script src="{{ asset('dist/js/waves.js') }}"></script>        
+
+    {% endblock %}    
   </body>
 </html>
