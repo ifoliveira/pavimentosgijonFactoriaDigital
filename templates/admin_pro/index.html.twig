@@ -998,89 +998,74 @@
                       </table>
                     </div>
                   </div>
+                </div>#}
+                <div class="row">
+                   <div class="col-lg-4 d-flex align-items-stretch">
+                       <div class="card w-100">
+                           <div class="card-body">
+                               <div class="d-flex">
+                                   <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/income.png" alt="Income" />
+                                   </div>
+                                   <div class="align-self-center">
+                                    <h6 class="text-muted mt-2 mb-0">Banco a {{ bancototal['max(fecha_bn)'] |date("d/m/Y") }}</h6>
+                                    <h2 id="bancototal" data-banco="{{ bancototal['sum(importe_bn)'] }}">{{ bancototal['sum(importe_bn)'] |format_currency('EUR', locale='es') }}</h2>
+                                    </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+                   <div class="col-lg-4 d-flex align-items-stretch">
+                       <div class="card w-100">
+                           <div class="card-body">
+                               <div class="d-flex">
+                                   <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" /></div>
+                                   <div class="align-self-center">
+                                       <h6 class="text-muted mt-2 mb-0">Total</h6>
+                                       <h2 id="cajatotal" data-caja="{{ bancototal['sum(importe_bn)'] + totalefe }}">{{ (bancototal['sum(importe_bn)'] + totalefe) |format_currency('EUR', locale='es') }}</h2></div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
                 </div>
-                <div class="col-lg-8 d-flex align-items-stretch">
+
+                <div class="col-lg-12 d-flex align-items-stretch">
                   <div class="card w-100">
                     <div class="card-body">
                       <div class="d-md-flex">
                         <h4 class="card-title">
-                          <span
-                            class="lstick d-inline-block align-middle"
-                          ></span
-                          >Website Visit
+                          <span class="lstick d-inline-block align-middle"></span>Website Visit
                         </h4>
                         <ul class="list-inline mb-0 ms-auto">
                           <li class="list-inline-item">
                             <h6 class="text-success">
-                              <i
-                                class="
-                                  ri-checkbox-blank-circle-fill
-                                  align-middle
-                                  fs-4
-                                  font-10
-                                  me-2
-                                "
-                              ></i
-                              >Site A view
+                              <i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2"></i>Site A view
                             </h6>
                           </li>
                           <li class="list-inline-item">
                             <h6 class="text-info">
-                              <i
-                                class="
-                                  ri-checkbox-blank-circle-fill
-                                  align-middle
-                                  fs-4
-                                  font-10
-                                  me-2
-                                "
-                              ></i
-                              >Site B view
+                              <i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2"></i>Site B view
                             </h6>
                           </li>
                         </ul>
                       </div>
                       <div class="text-center mt-2">
-                        <div
-                          class="btn-group"
-                          role="group"
-                          aria-label="Basic example"
-                        >
-                          <button
-                            type="button"
-                            class="
-                              btn btn-sm btn-outline-secondary
-                              shadow-sm
-                              me-0
-                              fs-2
-                            "
-                          >
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                          <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm me-0 fs-2">
                             PAGEVIEWS
                           </button>
-                          <button
-                            type="button"
-                            class="
-                              btn btn-sm btn-outline-secondary
-                              shadow-sm
-                              fs-2
-                            "
-                          >
+                          <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm fs-2">
                             REFERRALS
                           </button>
                         </div>
                       </div>
-                      <div
-                        id="Website-Visit"
-                        class="position-relative mt-4"
-                        style="height: 400px; width: 100%"
-                      ></div>
+                      <div id="Website-Visit" class="position-relative mt-4" style="height: 400px; width: 100%"></div>
                     </div>
                   </div>
                 </div>
               </div>
               <!-- Row ends -->
               <!-- Row starts -->
-              <div class="row">
+              {# <div class="row">
                 <div class="col-lg-8 d-flex align-items-stretch">
                   <div class="card w-100">
                     <div class="card-body">
@@ -1465,7 +1450,15 @@
                       </div>
                     </div>
                   </div>
-                </div>
-              </div> #}
+                </div> #}
+              </div>
+                {% set contador = 0 %}
+                {% set gasto = 0 %}
+                {% for movifore in forecast %}
+                  {% set gasto = gasto +  (movifore.getImporteFr * -1) %}  
+                     <a id="forecast{{ contador }}" class="{{ movifore.getOrigenFr }}" data-venta="{{ gasto }}"></a>  
+                     <a id="fechfore{{ contador }}" class="{{ movifore.getOrigenFr }}" data-venta="{{ movifore.getFechaFr|date('d-m')}}"></a>
+                  {% set contador = contador + 1 %}
+                {% endfor %}                 
               <!-- Row ends -->
               {% endblock %}

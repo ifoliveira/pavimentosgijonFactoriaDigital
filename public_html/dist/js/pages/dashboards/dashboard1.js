@@ -269,7 +269,10 @@ $(function () {
       strokeColors: "transparent",
     },
     xaxis: {
-      categories: ["1", "2", "3", "4", "5", "6", "7", "8"],
+      categories: [fecha[0], fecha[1],fecha[2],fecha[3],fecha[4],fecha[5],fecha[6],fecha[7],fecha[8],fecha[9],
+      fecha[10], fecha[11],fecha[12],fecha[13],fecha[14],fecha[15],fecha[16],fecha[17],fecha[18],fecha[19],
+  fecha[20], fecha[21],fecha[22],fecha[23],fecha[24],fecha[25],fecha[26],fecha[27],fecha[28],fecha[29],
+  fecha[30], fecha[31],fecha[32],fecha[33],fecha[34],fecha[35],fecha[36],fecha[37],fecha[38],fecha[39],],
       labels: {
         style: {
           colors: [
