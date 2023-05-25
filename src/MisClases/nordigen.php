@@ -195,11 +195,12 @@ class nordigen
         {
             $tipo = new tiposmovimiento;
             $concepto = explode(" ", $line);
-            $gastofijo = array("GIJONESAS,", "COTIZACION", "TELECABLE", "LOBO", "Aguas", "IMPUESTOS","COREEDP", "Coffe");
-            $ventas= array("TPV", "ORDENANTE");
-            $proveedor=array("COMERCIAL", "GME", "CAMACHO","MEDITERRANEA","COREL.","    EUROMUEBLES","CORE1y1", "COREMOGAR", "KASSANDRA", "DUPLACH", "SARIEGO");
-            $comision = array ("COMISION", "COMISIONES");
+            $gastofijo = array("RCBO.ASESORIAS", "COTIZACION", "RCBO.TGSS", "INTERNET", "3528642972", "BSSG","RCBO.TOTALENERGIES");
+            $ventas= array("TRF.", "ORDENANTE", "FACTURACION");
+            $proveedor=array("TJ-MATERIALES","TJ-ELECTRO", "RCBO.CEMEVISA","RCBO.DUPLACH","RCBO.ROYO","RCBO.DELBA","RCBO.SUMESA","RCBO.COMERCIAL", "RCBO.MAMPARAS", "RCBO.CAMACHO","RCBO.MEDITERRANEA","RCBO.ANTONIO","RCBO.SUMESA","RCBO.INDUSTRIA", "RCBO.ESPACIO", "RCBO.GME");
+            $comision = array ("DESCUENTOS", "COMISIONES");
             $otros = array("5540XXXXXXXX5018");
+
     
             foreach ($gastofijo as &$valor) {
                 if (in_array($valor, $concepto)) {

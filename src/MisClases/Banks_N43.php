@@ -274,8 +274,11 @@ class Banks_N43
         $gastofijo = array("RCBO.ASESORIAS", "COTIZACION", "RCBO.TGSS", "INTERNET", "TRF. PERIODICA 3528642972", "RECIBO BSSG","RCBO.TOTALENERGIES");
         $ventas= array("TRF.", "ORDENANTE", "FACTURACION COMERCIO");
         $proveedor=array("RCBO.DUPLACH","RCBO.ROYO","RCBO.DELBA","RCBO.SUMESA","RCBO.COMERCIAL", "RCBO.MAMPARAS", "RCBO.CAMACHO","RCBO.MEDITERRANEA","RCBO.ANTONIO","RCBO.SUMESA","RCBO.INDUSTRIA", "RCBO.ESPACIO", "RCBO.GME");
-        $comision = array ("DESCUENTOS COMERCIO", "COMISIONES");
+        $comision = array ("DESCUENTOS", "COMISIONES");
         $otros = array("5540XXXXXXXX5018");
+
+        var_dump($concepto);
+        die;
 
         foreach ($gastofijo as &$valor) {
             if (in_array($valor, $concepto)) {

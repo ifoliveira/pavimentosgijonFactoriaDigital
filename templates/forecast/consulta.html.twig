@@ -1,43 +1,14 @@
-{% extends 'base.html.twig' %}
-{% block title %}Hello AdminProController!{% endblock %}
+{% extends 'inicio2.html.twig' %}
+{% block eltiempo %} {% endblock %}
+{% block cabecera %} Forecast {% endblock %}
+{% block breadcrumb %} <li class="breadcrumb-item active">Forecast</li>{% endblock %}
 {% block stylesheets %}
-            <!-- This page plugin CSS -->
-            <link href="../../assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-            <link href="{{ asset('assets/libs/c3/c3.min.css') }}" rel="stylesheet">
-            <!-- Custom CSS -->
-            <link href="{{ asset('dist/css/style.css') }}" rel="stylesheet">
+        {{ parent() }}    
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/extra-libs/prism/prism.css') }}">
+          <!-- This page plugin CSS -->
+        <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css') }}" rel="stylesheet">     
 {% endblock %}
-
-{% block javascripts %}
-            <link href="../../assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-            <link href="../../dist/js/pages/chartist/chartist-init.css" rel="stylesheet">
-            <link href="../../assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.css" rel="stylesheet">
-{% endblock %}
-
-
-{% block body %}
-        <!-- ============================================================== -->
-        <!-- Page wrapper  -->
-        <!-- ============================================================== -->
-        <div class="page-wrapper">
-            <!-- ============================================================== -->
-            <!-- Container fluid  -->
-            <!-- ============================================================== -->
-            <div class="container-fluid">
-                <!-- ============================================================== -->
-                <!-- Bread crumb and right sidebar toggle -->
-                <!-- ============================================================== -->
-                <div class="row page-titles">
-                    <div class="col-md-5 col-12 align-self-center">
-                        <h3 class="text-themecolor mb-0">Banco</h3>
-                    </div>
-                    <div class="col-md-7 col-12 align-self-center d-none d-md-flex justify-content-end">
-                        <ol class="breadcrumb mb-0 p-0 bg-transparent">
-                            <li class="breadcrumb-item"><a href="{{ path('admin_pro')}}">Home</a></li>
-                            <li class="breadcrumb-item active">Banco</li>
-                        </ol>
-                    </div>
-                </div>
+{% block cardbody1 %}
                 <!-- ============================================================== -->
                 <!-- End Bread crumb and right sidebar toggle -->
                 <!-- ============================================================== -->
@@ -122,9 +93,11 @@
 {% endblock %}
 
 {% block jscustom %}
+
     <!--This page plugins -->
-    <script src="../../assets/libs/datatables/media/js/jquery.dataTables.min.js"></script>
-    <script src="../../dist/js/pages/datatable/custom-datatable.js"></script>
+    <script src="{{ asset('assets/extra-libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/datatables.net-bs4/js/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/datatable-basic.init.js') }}"></script>
     <script language = "javascript">
             //=============================================//
             //    Footer callback                          //
