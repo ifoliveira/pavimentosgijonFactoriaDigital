@@ -1,8 +1,15 @@
-{% extends 'pages.html.twig' %}
+{% extends 'inicio2.html.twig' %}
+{% block eltiempo %} {% endblock %}
 {% block cabecera %} Conciliar ticket {% endblock %}
 {% block breadcrumb %} <li class="breadcrumb-item active">Forecast</li>{% endblock %}
 {% block title %}Forecast{% endblock %}
-{% block tablas %}
+{% block stylesheets %}
+        {{ parent() }}    
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/extra-libs/prism/prism.css') }}">
+          <!-- This page plugin CSS -->
+        <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css') }}" rel="stylesheet">        
+{% endblock %}
+{% block cardbody1 %}
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
@@ -113,14 +120,7 @@
     
     <script language = "javascript">
     $(document).ready(function(){   
-        /****************************************
-        *       Default Order Table           *
-        ****************************************/
-        $('#default_order').DataTable({
-            "order": [
-                [2, "asc"]
-            ]
-        });
+
         /****************************************
         *       Default Order Table           *
         ****************************************/

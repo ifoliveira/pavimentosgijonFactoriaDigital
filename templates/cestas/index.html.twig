@@ -2,12 +2,6 @@
 {% block eltiempo %} {% endblock %}
 {% block cabecera %} Tickets {% endblock %}
 {% block breadcrumb %} <li class="breadcrumb-item active">Tickets</li>{% endblock %}
-{% block stylesheets %}
-        {{ parent() }}    
-        <link rel="stylesheet" type="text/css" href="{{ asset('assets/extra-libs/prism/prism.css') }}">
-          <!-- This page plugin CSS -->
-        <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css') }}" rel="stylesheet">        
-{% endblock %}
 {% block title %}Tickets{% endblock %}
 {% block cardbody1 %}
                 <div class="row">
