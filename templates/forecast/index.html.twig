@@ -135,6 +135,16 @@
             ]
         });
 
+        /****************************************
+        *       Default Order Table           *
+        ****************************************/
+        $('#default_order').DataTable({
+            "destroy" :true,
+            "order": [
+                [2, "desc"]
+            ]
+        });        
+
       });  
    </script> 
 {% endblock %}

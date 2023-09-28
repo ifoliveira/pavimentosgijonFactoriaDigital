@@ -15,6 +15,7 @@ use App\Form\ProductosType;
 use App\Entity\Cestas;
 use App\MisClases\EconomicoPresu;
 use App\MisClases\CestaUser;
+use App\MisClases\FinanciacionClass;
 use App\Repository\EfectivoRepository;
 use App\Repository\EstadocestasRepository;
 use App\Repository\PresupuestosRepository;
@@ -31,7 +32,8 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-
+use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
+use Knp\Snappy\Pdf;
 
 /**
  * @Route("/admin/presupuestos")
@@ -388,11 +390,14 @@ class PresupuestosController extends AbstractController
      */
     public function generar(Request $request, string $precios, Presupuestos $presupuesto, string $tipo): Response
     {
+        $total = $presupuesto->getImportetotPe() + $presupuesto->getImportemanoobra();
+        $financiacion = new FinanciacionClass($total, 12);
 
         return $this->render('presupuestos/generar.html.twig', [
             'presupuesto' => $presupuesto,
             'precios' => $precios,
-            'tipo' => $tipo
+            'tipo' => $tipo,
+            'financiacion' => $financiacion
         ]);
     }
 

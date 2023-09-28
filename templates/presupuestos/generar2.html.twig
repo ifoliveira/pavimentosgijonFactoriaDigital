@@ -1,23 +1,5 @@
-{% extends 'inicio2.html.twig' %}
-{% block eltiempo %} 
-{% endblock %}
-{% block stylesheets %}
-        <link href="{{ asset('dist/css/style.min.css') }}" rel="stylesheet">        
-        <link rel="stylesheet" type="text/css" href="{{ asset('assets/extra-libs/prism/prism.css') }}">
-        <link href="{{ asset('dist/css/icons/themify-icons/themify-icons.css') }}" rel="stylesheet">   
-          <!-- This page plugin CSS -->
-        <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css') }}" rel="stylesheet">          
-    <style>
-            .table>tbody>tr>td,
-            .table>tbody>tr>th {
-            border: none;
-            }
-    </style>
-{% endblock %}
-{% block cabecera %} Presupuestos {% endblock %}
-{% block breadcrumb %} <li class="breadcrumb-item active">Lista presupuestos</li>{% endblock %}
-{% block title %}Lista presupuestos{% endblock %}
-{% block cardbody1 %}
+{% extends 'basePresu.html.twig' %}
+{% block body %}
 
                 {% set total = 0 %}
                 {% set numero = 1 %}
@@ -34,41 +16,43 @@
                                         <br/>
                                     </div>
                             </div>
-                            <div class="col-md-12 mt-1">
-                                        <table class="table">
-                                            <thead>
-                                                <tr>
-                                                    <th colspan="3"> <h1 align="center">{{tipo}}</h1> </th>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-center" scope="col">Total</th>
-                                                    <th scope="col" class="text-center" >Fecha</th>
-                                                    <th class="text-center" scope="col">Número</th>
-                                                    <th colspan="2"> </th>
-                                                    <th class="text-left" colspan="2" scope="col" style="padding-left: 100px">{{presupuesto.clientePe.nombreCl}} {{presupuesto.clientePe.apellidosCl}}</th>
-                                                </tr>
-                                            </thead>
+                            <div class="row mt-4">
+                                <div class="pull-left col-6">
+                                    <div class ="row col-6 border-bottom">
+                                        <h1 align="center">{{tipo}}</h1>
+                                    </div>
+                                    <div class ="row col-6  mt-4">
+                                        <div class ="col-lg-4"> 
+                                            <h1 align="center">Total</h1>
+                                            <h2 align="center"> {{ (presupuesto.importetotPe + presupuesto.importemanoobra)|format_currency('EUR', locale='es')  }}</h1>
+                                        </div>
+                                        <div class ="col-lg-4">
+                                        <h1 align="center">Fecha</h1>
+                                        <h2 align="center"> #002300{{ presupuesto.id }}#</h1>
+                                        </div>
+                                        <div class ="col-lg-4">
+                                        <h1 align="center">Número</h1>
+                                        <h2 align="center"> #002300{{ presupuesto.id }}#</h1>
+                                        </div>    
+                                    </div>
+                                </div>
 
-                                            <tbody>
-                                                <tr>
-                                                    <th class="text-center">{{ (presupuesto.importetotPe + presupuesto.importemanoobra)|format_currency('EUR', locale='es')  }}</th>
-                                                    <td class="text-center">{{ "now"|date("d/m/Y") }}</td>
-                                                    <td class="text-center">#002300{{ presupuesto.id }}#</td>
-                                                    <td colspan="2"> </td>
-                                                    <td class="text-left" colspan="2" style="padding-left: 100px">{{presupuesto.clientePe.direccionCl}}</td>
-                                                </tr>
-                                                <tr>
-                                                    {% if tipo == "FACTURA SIMPLIFICADA" %}
-                                                        <th colspan = "5"></th>
-                                                    {% else %}
-                                                        <th colspan = "5"> Financiado a 12 meses  {{(financiacion.obtenermensualidad(2)|format_currency('EUR', locale='es'))}} / mes *</th>
-                                                    {% endif %}
-                                                    <td class="text-left" colspan="2" style="padding-left: 100px"><b>Telefono :</b> <i class="fa fa-phone"></i> {{ presupuesto.clientePe.telefono1Cl }}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
 
-                            </div>    
+                            </div>
+
+                                <div class="col-md-6" >
+                                        <address >
+                                            <h4 class="font-bold d-inline-flex p-2" style="background-color: green">{{presupuesto.clientePe.nombreCl}} {{presupuesto.clientePe.apellidosCl}}</h4>
+                                            <p class="text-muted ml-4">{{presupuesto.clientePe.direccionCl}}</p>
+                                            <p class="mt-4"><b>Telefono :</b> <i class="fa fa-phone"></i> {{ presupuesto.clientePe.telefono1Cl }}</p>
+                                            {% if tipo == "PRESUPUESTO" %}
+                                            <p class="mt-4"><b>Fecha :</b> <i class="fa fa-calendar"></i> {{ "now"|date("m/d/Y") }}</p>
+                                            <p class="font-bold">
+                                            
+                                            {% endif %}
+                                            </p>
+                                        </address>
+                                </div>
 
                             <div class="row">
                                 <div class="col-md-12">
@@ -76,20 +60,20 @@
                                         <table class="table table-sm">
                                             <thead>
                                                 <tr>
-                                                    <th class="text-center" scope="col"></th>
+                                                    <th class="text-center" scope="col">#</th>
                                                     <th scope="col">Descripción</th>
-                                                    <th class="text-center" scope="col">Cantidad</th>
-                                                    <th class="text-center" scope="col">{% if precios == 'S' %}Coste unidad {% endif %}</th>
-                                                    <th class="text-center" scope="col">{% if precios == 'S' %}Total{% endif %}</th>
+                                                    <th class="text-right" scope="col">Cantidad</th>
+                                                    <th class="text-right" scope="col">{% if precios == 'S' %}Coste unidad {% endif %}</th>
+                                                    <th class="text-right" scope="col">{% if precios == 'S' %}Total{% endif %}</th>
                                                 </tr>
                                             </thead>
 
                                             <tbody>
                                             {% for detalle in presupuesto.ticket.detallecesta %}
                                                 <tr stylw='line-height: 10px'>
-                                                    <td class="text-center"></td>
+                                                    <td class="text-center">{{ numero }}</td>
                                                     <td>{{ detalle.productoDc.descripcionPd }}</td>
-                                                    <td class="text-center">{{ detalle.cantidadDc }} </td>
+                                                    <td class="text-right">{{ detalle.cantidadDc }} </td>
                                                     <td class="text-right"> {% if precios == 'S' %}{{ detalle.pvpDc  |format_currency('EUR', locale='es')  }}{% endif %} </td>
                                                     <td class="text-right"> {% if precios == 'S' %}{{ (detalle.cantidadDc * detalle.pvpDc ) |format_currency('EUR', locale='es')  }}{% endif %}</td>
 
@@ -102,18 +86,20 @@
                                                  </tr>
                                              {% endfor %}
                                             </tbody>
-                                            <tfoot>
-                                                <tr>
-                                                    <td  class="text-center" colspan="6"> <h2><b>Materiales</b> I.V.A. Incluido : {{ (total) |format_currency('EUR', locale='es')  }}</h2></td>
-                                                    
-                                                </tr>                                            
-                                            
-                                            </tfoot>
                                         </table>
                                     </div>
                                 </div>
-                            </div>
+                                <div class="col-md-12">
+                                    <div class="pull-right mt-4 text-right">
+                                        <!-- <p>Sub - Total : {{ (total) |format_currency('EUR', locale='es')  }}</p>
+                                         <hr>-->
+                                        <p><h2><b>Materiales</b> I.V.A. Incluido : {{ (total) |format_currency('EUR', locale='es')  }}</h2>
+                                    </div>
 
+                                    <div class="clearfix"></div>
+
+                                </div>
+                            </div>
                             <div class="row">
                                 {% if tipo == "FACTURA SIMPLIFICADA" %}
                 
@@ -146,7 +132,6 @@
                             <hr>
                             <h6> * Este documento rectifica toda aquel con referencia ##002100{{ presupuesto.id }}## y fecha previa 
                                  {% else %}
-                                 
                             </div>
                             <hr>
                                 {% endif %}
@@ -184,41 +169,14 @@
                                 </div>
 
                             </div>
-                            <p>* Sujeto a aprobación por RuralFinance</p>
-                        </div>
-                        <hr>
-                        <div class="text-right">
-                            <button class="btn btn-danger" type="submit"> Proceed to payment </button>
-                            <button id="print" class="btn btn-default btn-outline" type="button"> <span><i class="fa fa-print"></i> Print</span> </button>
+                            
                         </div>
                     </div>
                 </div>
-                <!-- ============================================================== -->
-                <!-- End PAge Content -->
-                <!-- ============================================================== -->
-                <!-- ============================================================== -->
-                <!-- Right sidebar -->
-                <!-- ============================================================== -->
-                <!-- .right-sidebar -->
-                <!-- ============================================================== -->
-                <!-- End Right sidebar -->
-                <!-- ============================================================== -->
+
 {% endblock %}
-{% block formulario %}{% endblock %}
+    {% block jsbl %}
+    {% endblock %}
 {% block jscustom %}
-    <!-- This Page JS -->
-    <script src="{{ asset('dist/js/pages/samplepages/jquery.PrintArea.js') }}"></script>
-    <script>
-    $(function() {
-        $("#print").click(function() {
-            var mode = 'iframe'; //popup
-            var close = mode == "popup";
-            var options = {
-                mode: mode,
-                popClose: close
-            };
-            $("div.printableArea").printArea(options);
-        });
-    });
-    </script>
+
 {% endblock %}
