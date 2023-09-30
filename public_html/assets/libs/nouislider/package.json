@@ -2,7 +2,7 @@
   "_args": [
     [
       "nouislider@13.1.4",
-      "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster"
+      "E:\\bitbucket\\bootstrap\\xtreme-admin"
     ]
   ],
   "_from": "nouislider@13.1.4",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/nouislider/-/nouislider-13.1.4.tgz",
   "_spec": "13.1.4",
-  "_where": "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster",
+  "_where": "E:\\bitbucket\\bootstrap\\xtreme-admin",
   "bugs": {
     "url": "https://github.com/leongersen/noUiSlider/issues"
   },

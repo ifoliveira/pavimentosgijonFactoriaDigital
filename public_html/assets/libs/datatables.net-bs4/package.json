@@ -2,7 +2,7 @@
   "_args": [
     [
       "datatables.net-bs4@1.10.19",
-      "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster"
+      "E:\\bitbucket\\bootstrap\\xtreme-admin"
     ]
   ],
   "_from": "datatables.net-bs4@1.10.19",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/datatables.net-bs4/-/datatables.net-bs4-1.10.19.tgz",
   "_spec": "1.10.19",
-  "_where": "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster",
+  "_where": "E:\\bitbucket\\bootstrap\\xtreme-admin",
   "author": {
     "name": "SpryMedia Ltd",
     "url": "http://datatables.net"

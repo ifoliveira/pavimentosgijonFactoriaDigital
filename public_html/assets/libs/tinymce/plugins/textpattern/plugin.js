@@ -1,6 +1,6 @@
 (function () {
-var textpattern = (function (domGlobals) {
-    'use strict';
+  var textpattern = (function (domGlobals) {
+    "use strict";
 
     var Cell = function (initial) {
       var value = initial;
@@ -16,11 +16,11 @@ var textpattern = (function (domGlobals) {
       return {
         get: get,
         set: set,
-        clone: clone
+        clone: clone,
       };
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global = tinymce.util.Tools.resolve("tinymce.PluginManager");
 
     var constant = function (value) {
       return function () {
@@ -35,7 +35,7 @@ var textpattern = (function (domGlobals) {
     var none = function () {
       return NONE;
     };
-    var NONE = function () {
+    var NONE = (function () {
       var eq = function (o) {
         return o.isNone();
       };
@@ -45,8 +45,7 @@ var textpattern = (function (domGlobals) {
       var id = function (n) {
         return n;
       };
-      var noop = function () {
-      };
+      var noop = function () {};
       var nul = function () {
         return null;
       };
@@ -63,7 +62,7 @@ var textpattern = (function (domGlobals) {
         getOr: id,
         getOrThunk: call,
         getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
+          throw new Error(msg || "error: getOrDie called on none.");
         },
         getOrNull: nul,
         getOrUndefined: undef,
@@ -82,12 +81,11 @@ var textpattern = (function (domGlobals) {
         toArray: function () {
           return [];
         },
-        toString: constant('none()')
+        toString: constant("none()"),
       };
-      if (Object.freeze)
-        Object.freeze(me);
+      if (Object.freeze) Object.freeze(me);
       return me;
-    }();
+    })();
     var some = function (a) {
       var constant_a = function () {
         return a;
@@ -145,8 +143,8 @@ var textpattern = (function (domGlobals) {
           return [a];
         },
         toString: function () {
-          return 'some(' + a + ')';
-        }
+          return "some(" + a + ")";
+        },
       };
       return me;
     };
@@ -156,17 +154,24 @@ var textpattern = (function (domGlobals) {
     var Option = {
       some: some,
       none: none,
-      from: from
+      from: from,
     };
 
     var typeOf = function (x) {
-      if (x === null)
-        return 'null';
+      if (x === null) return "null";
       var t = typeof x;
-      if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array'))
-        return 'array';
-      if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String'))
-        return 'string';
+      if (
+        t === "object" &&
+        (Array.prototype.isPrototypeOf(x) ||
+          (x.constructor && x.constructor.name === "Array"))
+      )
+        return "array";
+      if (
+        t === "object" &&
+        (String.prototype.isPrototypeOf(x) ||
+          (x.constructor && x.constructor.name === "String"))
+      )
+        return "string";
       return t;
     };
     var isType = function (type) {
@@ -174,7 +179,7 @@ var textpattern = (function (domGlobals) {
         return typeOf(value) === type;
       };
     };
-    var isFunction = isType('function');
+    var isFunction = isType("function");
 
     var slice = Array.prototype.slice;
     var filter = function (xs, pred) {
@@ -192,9 +197,11 @@ var textpattern = (function (domGlobals) {
       copy.sort(comparator);
       return copy;
     };
-    var from$1 = isFunction(Array.from) ? Array.from : function (x) {
-      return slice.call(x);
-    };
+    var from$1 = isFunction(Array.from)
+      ? Array.from
+      : function (x) {
+          return slice.call(x);
+        };
 
     var hasOwnProperty = Object.hasOwnProperty;
     var get = function (obj, key) {
@@ -205,13 +212,13 @@ var textpattern = (function (domGlobals) {
     };
 
     var isInlinePattern = function (pattern) {
-      return has(pattern, 'start') && has(pattern, 'end');
+      return has(pattern, "start") && has(pattern, "end");
     };
     var isBlockPattern = function (pattern) {
-      return !has(pattern, 'end') && !has(pattern, 'replacement');
+      return !has(pattern, "end") && !has(pattern, "replacement");
     };
     var isReplacementPattern = function (pattern) {
-      return has(pattern, 'replacement');
+      return has(pattern, "replacement");
     };
     var sortPatterns = function (patterns) {
       return sort(patterns, function (a, b) {
@@ -225,7 +232,7 @@ var textpattern = (function (domGlobals) {
       return {
         inlinePatterns: sortPatterns(filter(patterns, isInlinePattern)),
         blockPatterns: sortPatterns(filter(patterns, isBlockPattern)),
-        replacementPatterns: filter(patterns, isReplacementPattern)
+        replacementPatterns: filter(patterns, isReplacementPattern),
       };
     };
 
@@ -234,83 +241,87 @@ var textpattern = (function (domGlobals) {
         patternsState.set(createPatternSet(newPatterns));
       };
       var getPatterns = function () {
-        return patternsState.get().inlinePatterns.concat(patternsState.get().blockPatterns, patternsState.get().replacementPatterns);
+        return patternsState
+          .get()
+          .inlinePatterns.concat(
+            patternsState.get().blockPatterns,
+            patternsState.get().replacementPatterns
+          );
       };
       return {
         setPatterns: setPatterns,
-        getPatterns: getPatterns
+        getPatterns: getPatterns,
       };
     };
     var Api = { get: get$1 };
 
     var defaultPatterns = [
       {
-        start: '*',
-        end: '*',
-        format: 'italic'
+        start: "*",
+        end: "*",
+        format: "italic",
       },
       {
-        start: '**',
-        end: '**',
-        format: 'bold'
+        start: "**",
+        end: "**",
+        format: "bold",
       },
       {
-        start: '***',
-        end: '***',
-        format: [
-          'bold',
-          'italic'
-        ]
+        start: "***",
+        end: "***",
+        format: ["bold", "italic"],
       },
       {
-        start: '#',
-        format: 'h1'
+        start: "#",
+        format: "h1",
       },
       {
-        start: '##',
-        format: 'h2'
+        start: "##",
+        format: "h2",
       },
       {
-        start: '###',
-        format: 'h3'
+        start: "###",
+        format: "h3",
       },
       {
-        start: '####',
-        format: 'h4'
+        start: "####",
+        format: "h4",
       },
       {
-        start: '#####',
-        format: 'h5'
+        start: "#####",
+        format: "h5",
       },
       {
-        start: '######',
-        format: 'h6'
+        start: "######",
+        format: "h6",
       },
       {
-        start: '1. ',
-        cmd: 'InsertOrderedList'
+        start: "1. ",
+        cmd: "InsertOrderedList",
       },
       {
-        start: '* ',
-        cmd: 'InsertUnorderedList'
+        start: "* ",
+        cmd: "InsertUnorderedList",
       },
       {
-        start: '- ',
-        cmd: 'InsertUnorderedList'
-      }
+        start: "- ",
+        cmd: "InsertUnorderedList",
+      },
     ];
     var getPatternSet = function (editorSettings) {
-      var patterns = get(editorSettings, 'textpattern_patterns').getOr(defaultPatterns);
+      var patterns = get(editorSettings, "textpattern_patterns").getOr(
+        defaultPatterns
+      );
       return createPatternSet(patterns);
     };
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+    var global$1 = tinymce.util.Tools.resolve("tinymce.util.Delay");
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.VK');
+    var global$2 = tinymce.util.Tools.resolve("tinymce.util.VK");
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.dom.TreeWalker');
+    var global$3 = tinymce.util.Tools.resolve("tinymce.dom.TreeWalker");
 
-    var global$4 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global$4 = tinymce.util.Tools.resolve("tinymce.util.Tools");
 
     var findPattern = function (patterns, text) {
       for (var i = 0; i < patterns.length; i++) {
@@ -318,14 +329,20 @@ var textpattern = (function (domGlobals) {
         if (text.indexOf(pattern.start) !== 0) {
           continue;
         }
-        if (pattern.end && text.lastIndexOf(pattern.end) !== text.length - pattern.end.length) {
+        if (
+          pattern.end &&
+          text.lastIndexOf(pattern.end) !== text.length - pattern.end.length
+        ) {
           continue;
         }
         return pattern;
       }
     };
     var isMatchingPattern = function (pattern, text, offset, delta) {
-      var textEnd = text.substr(offset - pattern.end.length - delta, pattern.end.length);
+      var textEnd = text.substr(
+        offset - pattern.end.length - delta,
+        pattern.end.length
+      );
       return textEnd === pattern.end;
     };
     var hasContent = function (offset, delta, pattern) {
@@ -335,7 +352,11 @@ var textpattern = (function (domGlobals) {
       var pattern, i;
       for (i = 0; i < patterns.length; i++) {
         pattern = patterns[i];
-        if (pattern.end !== undefined && isMatchingPattern(pattern, text, offset, delta) && hasContent(offset, delta, pattern)) {
+        if (
+          pattern.end !== undefined &&
+          isMatchingPattern(pattern, text, offset, delta) &&
+          hasContent(offset, delta, pattern)
+        ) {
           return pattern;
         }
       }
@@ -355,8 +376,14 @@ var textpattern = (function (domGlobals) {
         return;
       }
       var endOffset = text.lastIndexOf(endPattern.end, rng.startOffset - delta);
-      var startOffset = text.lastIndexOf(endPattern.start, endOffset - endPattern.end.length);
-      endOffset = text.indexOf(endPattern.end, startOffset + endPattern.start.length);
+      var startOffset = text.lastIndexOf(
+        endPattern.start,
+        endOffset - endPattern.end.length
+      );
+      endOffset = text.indexOf(
+        endPattern.end,
+        startOffset + endPattern.start.length
+      );
       if (startOffset === -1) {
         return;
       }
@@ -364,13 +391,17 @@ var textpattern = (function (domGlobals) {
       patternRng.setStart(container, startOffset);
       patternRng.setEnd(container, endOffset + endPattern.end.length);
       var startPattern = findPattern(patterns, patternRng.toString());
-      if (endPattern === undefined || startPattern !== endPattern || container.data.length <= endPattern.start.length + endPattern.end.length) {
+      if (
+        endPattern === undefined ||
+        startPattern !== endPattern ||
+        container.data.length <= endPattern.start.length + endPattern.end.length
+      ) {
         return;
       }
       return {
         pattern: endPattern,
         startOffset: startOffset,
-        endOffset: endOffset
+        endOffset: endOffset,
       };
     };
     var findReplacementPattern = function (patterns, startSearch, text) {
@@ -379,7 +410,7 @@ var textpattern = (function (domGlobals) {
         if (index !== -1) {
           return Option.some({
             pattern: patterns[i],
-            startOffset: index
+            startOffset: index,
           });
         }
       }
@@ -396,21 +427,32 @@ var textpattern = (function (domGlobals) {
       editor.selection.setRng(newRng);
     };
     var splitContainer = function (container, pattern, endOffset, startOffset) {
-      container = startOffset > 0 ? container.splitText(startOffset) : container;
+      container =
+        startOffset > 0 ? container.splitText(startOffset) : container;
       container.splitText(endOffset - startOffset + pattern.end.length);
       container.deleteData(0, pattern.start.length);
-      container.deleteData(container.data.length - pattern.end.length, pattern.end.length);
+      container.deleteData(
+        container.data.length - pattern.end.length,
+        pattern.end.length
+      );
       return container;
     };
     var splitAndApply = function (editor, container, found, inline) {
-      var formatArray = global$4.isArray(found.pattern.format) ? found.pattern.format : [found.pattern.format];
+      var formatArray = global$4.isArray(found.pattern.format)
+        ? found.pattern.format
+        : [found.pattern.format];
       var validFormats = global$4.grep(formatArray, function (formatName) {
         var format = editor.formatter.get(formatName);
         return format && format[0].inline;
       });
       if (validFormats.length !== 0) {
         editor.undoManager.transact(function () {
-          container = splitContainer(container, found.pattern, found.endOffset, found.startOffset);
+          container = splitContainer(
+            container,
+            found.pattern,
+            found.endOffset,
+            found.startOffset
+          );
           if (inline) {
             editor.selection.setCursorLocation(container.nextSibling, 1);
           }
@@ -423,12 +465,21 @@ var textpattern = (function (domGlobals) {
     };
     var applyInlinePattern = function (editor, patterns, inline) {
       var rng = editor.selection.getRng();
-      return Option.from(findInlinePattern(patterns, rng, inline)).map(function (foundPattern) {
-        return splitAndApply(editor, rng.startContainer, foundPattern, inline);
-      });
+      return Option.from(findInlinePattern(patterns, rng, inline)).map(
+        function (foundPattern) {
+          return splitAndApply(
+            editor,
+            rng.startContainer,
+            foundPattern,
+            inline
+          );
+        }
+      );
     };
     var applyInlinePatternSpace = function (editor, patterns) {
-      applyInlinePattern(editor, patterns, true).each(function (wrappedTextNode) {
+      applyInlinePattern(editor, patterns, true).each(function (
+        wrappedTextNode
+      ) {
         var lastChar = wrappedTextNode.data.slice(-1);
         if (/[\u00a0 ]/.test(lastChar)) {
           wrappedTextNode.deleteData(wrappedTextNode.data.length - 1, 1);
@@ -439,21 +490,33 @@ var textpattern = (function (domGlobals) {
       });
     };
     var applyInlinePatternEnter = function (editor, patterns) {
-      applyInlinePattern(editor, patterns, false).each(function (wrappedTextNode) {
+      applyInlinePattern(editor, patterns, false).each(function (
+        wrappedTextNode
+      ) {
         setSelection(editor, wrappedTextNode, wrappedTextNode.data.length);
       });
     };
     var applyBlockPattern = function (editor, patterns) {
-      var selection, dom, container, firstTextNode, node, format, textBlockElm, pattern, walker, rng, offset;
+      var selection,
+        dom,
+        container,
+        firstTextNode,
+        node,
+        format,
+        textBlockElm,
+        pattern,
+        walker,
+        rng,
+        offset;
       selection = editor.selection;
       dom = editor.dom;
       if (!selection.isCollapsed()) {
         return;
       }
-      textBlockElm = dom.getParent(selection.getStart(), 'p');
+      textBlockElm = dom.getParent(selection.getStart(), "p");
       if (textBlockElm) {
         walker = new global$3(textBlockElm, textBlockElm);
-        while (node = walker.next()) {
+        while ((node = walker.next())) {
           if (isText(node)) {
             firstTextNode = node;
             break;
@@ -470,7 +533,9 @@ var textpattern = (function (domGlobals) {
           if (firstTextNode === container) {
             offset = Math.max(0, offset - pattern.start.length);
           }
-          if (global$4.trim(firstTextNode.data).length === pattern.start.length) {
+          if (
+            global$4.trim(firstTextNode.data).length === pattern.start.length
+          ) {
             return;
           }
           if (pattern.format) {
@@ -508,10 +573,12 @@ var textpattern = (function (domGlobals) {
     var applyReplacement = function (editor, target, match) {
       target.deleteData(match.startOffset, match.pattern.start.length);
       editor.insertContent(match.pattern.replacement);
-      Option.from(target.nextSibling).filter(isText).each(function (nextSibling) {
-        nextSibling.insertData(0, target.data);
-        editor.dom.remove(target);
-      });
+      Option.from(target.nextSibling)
+        .filter(isText)
+        .each(function (nextSibling) {
+          nextSibling.insertData(0, target.data);
+          editor.dom.remove(target);
+        });
     };
     var extractChar = function (node, match) {
       var offset = match.startOffset + match.pattern.start.length;
@@ -523,13 +590,17 @@ var textpattern = (function (domGlobals) {
       var rng = editor.selection.getRng();
       var container = rng.startContainer;
       if (rng.collapsed && isText(container)) {
-        findReplacementPattern(patterns, rng.startOffset, container.data).each(function (match) {
-          var char = inline ? Option.some(extractChar(container, match)) : Option.none();
-          applyReplacement(editor, container, match);
-          char.each(function (ch) {
-            return selectionInsertText(editor, ch);
-          });
-        });
+        findReplacementPattern(patterns, rng.startOffset, container.data).each(
+          function (match) {
+            var char = inline
+              ? Option.some(extractChar(container, match))
+              : Option.none();
+            applyReplacement(editor, container, match);
+            char.each(function (ch) {
+              return selectionInsertText(editor, ch);
+            });
+          }
+        );
       }
     };
     var applyReplacementPatternSpace = function (editor, patterns) {
@@ -557,7 +628,9 @@ var textpattern = (function (domGlobals) {
     };
     var checkKeyCode = function (codes, event) {
       return checkKeyEvent(codes, event, function (code, event) {
-        return code === event.keyCode && global$2.modifierPressed(event) === false;
+        return (
+          code === event.keyCode && global$2.modifierPressed(event) === false
+        );
       });
     };
     var checkCharCode = function (chars, event) {
@@ -569,30 +642,27 @@ var textpattern = (function (domGlobals) {
       handleEnter: handleEnter,
       handleInlineKey: handleInlineKey,
       checkCharCode: checkCharCode,
-      checkKeyCode: checkKeyCode
+      checkKeyCode: checkKeyCode,
     };
 
     var setup = function (editor, patternsState) {
-      var charCodes = [
-        ',',
-        '.',
-        ';',
-        ':',
-        '!',
-        '?'
-      ];
+      var charCodes = [",", ".", ";", ":", "!", "?"];
       var keyCodes = [32];
-      editor.on('keydown', function (e) {
-        if (e.keyCode === 13 && !global$2.modifierPressed(e)) {
-          KeyHandler.handleEnter(editor, patternsState.get());
-        }
-      }, true);
-      editor.on('keyup', function (e) {
+      editor.on(
+        "keydown",
+        function (e) {
+          if (e.keyCode === 13 && !global$2.modifierPressed(e)) {
+            KeyHandler.handleEnter(editor, patternsState.get());
+          }
+        },
+        true
+      );
+      editor.on("keyup", function (e) {
         if (KeyHandler.checkKeyCode(keyCodes, e)) {
           KeyHandler.handleInlineKey(editor, patternsState.get());
         }
       });
-      editor.on('keypress', function (e) {
+      editor.on("keypress", function (e) {
         if (KeyHandler.checkCharCode(charCodes, e)) {
           global$1.setEditorTimeout(editor, function () {
             KeyHandler.handleInlineKey(editor, patternsState.get());
@@ -602,15 +672,13 @@ var textpattern = (function (domGlobals) {
     };
     var Keyboard = { setup: setup };
 
-    global.add('textpattern', function (editor) {
+    global.add("textpattern", function (editor) {
       var patternsState = Cell(getPatternSet(editor.settings));
       Keyboard.setup(editor, patternsState);
       return Api.get(patternsState);
     });
-    function Plugin () {
-    }
+    function Plugin() {}
 
     return Plugin;
-
-}(window));
+  })(window);
 })();

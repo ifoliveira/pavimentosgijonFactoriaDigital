@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManager;
 use App\Entity\Economicpresu;
 
 
+
 class EconomicoPresu {
 
     protected $em;

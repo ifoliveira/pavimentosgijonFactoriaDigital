@@ -1,34 +1,38 @@
 {
-  "_from": "raty-js@^2.8.0",
+  "_args": [
+    [
+      "raty-js@2.9.0",
+      "E:\\bitbucket\\bootstrap\\xtreme-admin"
+    ]
+  ],
+  "_from": "raty-js@2.9.0",
   "_id": "raty-js@2.9.0",
   "_inBundle": false,
   "_integrity": "sha512-sh4w6Zebi3JGmhdc6KEPVXZVkgE75j3F/0aA/CV6uq4I06AS82y8p6Kpiwh1cnmZiWbjeARv/4XQKpio68X8RA==",
   "_location": "/raty-js",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "version",
     "registry": true,
-    "raw": "raty-js@^2.8.0",
+    "raw": "raty-js@2.9.0",
     "name": "raty-js",
     "escapedName": "raty-js",
-    "rawSpec": "^2.8.0",
+    "rawSpec": "2.9.0",
     "saveSpec": null,
-    "fetchSpec": "^2.8.0"
+    "fetchSpec": "2.9.0"
   },
   "_requiredBy": [
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/raty-js/-/raty-js-2.9.0.tgz",
-  "_shasum": "63076c3e17d6d9824d3998fe0a5d4625022db6fb",
-  "_spec": "raty-js@^2.8.0",
-  "_where": "E:\\bitbucket\\bootstrap\\elite-bt4\\dark",
+  "_spec": "2.9.0",
+  "_where": "E:\\bitbucket\\bootstrap\\xtreme-admin",
   "author": {
     "name": "Washington Botelho"
   },
   "bugs": {
     "url": "https://github.com/wbotelhos/raty/issues"
   },
-  "bundleDependencies": false,
   "contributors": [
     {
       "name": "Washington Botelho",
@@ -42,7 +46,6 @@
   "dependencies": {
     "jquery": "^3.3.1"
   },
-  "deprecated": false,
   "description": "jQuery Raty - A Star Rating Plugin",
   "devDependencies": {
     "jasmine-core": "^2.99.1",

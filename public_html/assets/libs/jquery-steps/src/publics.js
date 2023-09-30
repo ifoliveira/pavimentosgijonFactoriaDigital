@@ -7,20 +7,17 @@
  * @param [params=]* {Array} Additional arguments for a method call
  * @chainable
  **/
-$.fn.steps = function (method)
-{
-    if ($.fn.steps[method])
-    {
-        return $.fn.steps[method].apply(this, Array.prototype.slice.call(arguments, 1));
-    }
-    else if (typeof method === "object" || !method)
-    {
-        return initialize.apply(this, arguments);
-    }
-    else
-    {
-        $.error("Method " + method + " does not exist on jQuery.steps");
-    }
+$.fn.steps = function (method) {
+  if ($.fn.steps[method]) {
+    return $.fn.steps[method].apply(
+      this,
+      Array.prototype.slice.call(arguments, 1)
+    );
+  } else if (typeof method === "object" || !method) {
+    return initialize.apply(this, arguments);
+  } else {
+    $.error("Method " + method + " does not exist on jQuery.steps");
+  }
 };
 
 /**
@@ -30,10 +27,9 @@ $.fn.steps = function (method)
  * @param step {Object} The step object to add
  * @chainable
  **/
-$.fn.steps.add = function (step)
-{
-    var state = getState(this);
-    return insertStep(this, getOptions(this), state, state.stepCount, step);
+$.fn.steps.add = function (step) {
+  var state = getState(this);
+  return insertStep(this, getOptions(this), state, state.stepCount, step);
 };
 
 /**
@@ -42,9 +38,8 @@ $.fn.steps.add = function (step)
  * @method destroy
  * @chainable
  **/
-$.fn.steps.destroy = function ()
-{
-    return destroy(this, getOptions(this));
+$.fn.steps.destroy = function () {
+  return destroy(this, getOptions(this));
 };
 
 /**
@@ -52,9 +47,8 @@ $.fn.steps.destroy = function ()
  *
  * @method finish
  **/
-$.fn.steps.finish = function ()
-{
-    finishStep(this, getState(this));
+$.fn.steps.finish = function () {
+  finishStep(this, getState(this));
 };
 
 /**
@@ -64,9 +58,8 @@ $.fn.steps.finish = function ()
  * @return {Integer} The actual step index (zero-based)
  * @for steps
  **/
-$.fn.steps.getCurrentIndex = function ()
-{
-    return getState(this).currentIndex;
+$.fn.steps.getCurrentIndex = function () {
+  return getState(this).currentIndex;
 };
 
 /**
@@ -75,9 +68,8 @@ $.fn.steps.getCurrentIndex = function ()
  * @method getCurrentStep
  * @return {Object} The actual step object
  **/
-$.fn.steps.getCurrentStep = function ()
-{
-    return getStep(this, getState(this).currentIndex);
+$.fn.steps.getCurrentStep = function () {
+  return getStep(this, getState(this).currentIndex);
 };
 
 /**
@@ -87,9 +79,8 @@ $.fn.steps.getCurrentStep = function ()
  * @param index {Integer} An integer that belongs to the position of a step
  * @return {Object} A specific step object
  **/
-$.fn.steps.getStep = function (index)
-{
-    return getStep(this, index);
+$.fn.steps.getStep = function (index) {
+  return getStep(this, index);
 };
 
 /**
@@ -107,9 +98,8 @@ $.fn.steps.getStep = function (index)
  *     });
  * @chainable
  **/
-$.fn.steps.insert = function (index, step)
-{
-    return insertStep(this, getOptions(this), getState(this), index, step);
+$.fn.steps.insert = function (index, step) {
+  return insertStep(this, getOptions(this), getState(this), index, step);
 };
 
 /**
@@ -118,9 +108,8 @@ $.fn.steps.insert = function (index, step)
  * @method next
  * @return {Boolean} Indicates whether the action executed
  **/
-$.fn.steps.next = function ()
-{
-    return goToNextStep(this, getOptions(this), getState(this));
+$.fn.steps.next = function () {
+  return goToNextStep(this, getOptions(this), getState(this));
 };
 
 /**
@@ -129,9 +118,8 @@ $.fn.steps.next = function ()
  * @method previous
  * @return {Boolean} Indicates whether the action executed
  **/
-$.fn.steps.previous = function ()
-{
-    return goToPreviousStep(this, getOptions(this), getState(this));
+$.fn.steps.previous = function () {
+  return goToPreviousStep(this, getOptions(this), getState(this));
 };
 
 /**
@@ -141,9 +129,8 @@ $.fn.steps.previous = function ()
  * @param index {Integer} The position (zero-based) of the step to remove
  * @return Indecates whether the item is removed.
  **/
-$.fn.steps.remove = function (index)
-{
-    return removeStep(this, getOptions(this), getState(this), index);
+$.fn.steps.remove = function (index) {
+  return removeStep(this, getOptions(this), getState(this), index);
 };
 
 /**
@@ -153,9 +140,8 @@ $.fn.steps.remove = function (index)
  * @param index {Integer} An integer that belongs to the position of a step
  * @param step {Object} The step object to change
  **/
-$.fn.steps.setStep = function (index, step)
-{
-    throw new Error("Not yet implemented!");
+$.fn.steps.setStep = function (index, step) {
+  throw new Error("Not yet implemented!");
 };
 
 /**
@@ -165,7 +151,6 @@ $.fn.steps.setStep = function (index, step)
  * @param count {Integer} The amount of steps that should be skipped
  * @return {Boolean} Indicates whether the action executed
  **/
-$.fn.steps.skip = function (count)
-{
-    throw new Error("Not yet implemented!");
+$.fn.steps.skip = function (count) {
+  throw new Error("Not yet implemented!");
 };

@@ -1,33 +1,40 @@
 (function () {
-var autolink = (function () {
-    'use strict';
+  var autolink = (function () {
+    "use strict";
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global = tinymce.util.Tools.resolve("tinymce.PluginManager");
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
+    var global$1 = tinymce.util.Tools.resolve("tinymce.Env");
 
     var getAutoLinkPattern = function (editor) {
-      return editor.getParam('autolink_pattern', /^(https?:\/\/|ssh:\/\/|ftp:\/\/|file:\/|www\.|(?:mailto:)?[A-Z0-9._%+\-]+@)(.+)$/i);
+      return editor.getParam(
+        "autolink_pattern",
+        /^(https?:\/\/|ssh:\/\/|ftp:\/\/|file:\/|www\.|(?:mailto:)?[A-Z0-9._%+\-]+@)(.+)$/i
+      );
     };
     var getDefaultLinkTarget = function (editor) {
-      return editor.getParam('default_link_target', '');
+      return editor.getParam("default_link_target", "");
     };
     var Settings = {
       getAutoLinkPattern: getAutoLinkPattern,
-      getDefaultLinkTarget: getDefaultLinkTarget
+      getDefaultLinkTarget: getDefaultLinkTarget,
     };
 
     var rangeEqualsDelimiterOrSpace = function (rangeString, delimiter) {
-      return rangeString === delimiter || rangeString === ' ' || rangeString.charCodeAt(0) === 160;
+      return (
+        rangeString === delimiter ||
+        rangeString === " " ||
+        rangeString.charCodeAt(0) === 160
+      );
     };
     var handleEclipse = function (editor) {
-      parseCurrentLine(editor, -1, '(');
+      parseCurrentLine(editor, -1, "(");
     };
     var handleSpacebar = function (editor) {
-      parseCurrentLine(editor, 0, '');
+      parseCurrentLine(editor, 0, "");
     };
     var handleEnter = function (editor) {
-      parseCurrentLine(editor, -1, '');
+      parseCurrentLine(editor, -1, "");
     };
     var scopeIndex = function (container, index) {
       if (index < 0) {
@@ -56,17 +63,29 @@ var autolink = (function () {
       }
     };
     var parseCurrentLine = function (editor, endOffset, delimiter) {
-      var rng, end, start, endContainer, bookmark, text, matches, prev, len, rngText;
+      var rng,
+        end,
+        start,
+        endContainer,
+        bookmark,
+        text,
+        matches,
+        prev,
+        len,
+        rngText;
       var autoLinkPattern = Settings.getAutoLinkPattern(editor);
       var defaultLinkTarget = Settings.getDefaultLinkTarget(editor);
-      if (editor.selection.getNode().tagName === 'A') {
+      if (editor.selection.getNode().tagName === "A") {
         return;
       }
       rng = editor.selection.getRng(true).cloneRange();
       if (rng.startOffset < 5) {
         prev = rng.endContainer.previousSibling;
         if (!prev) {
-          if (!rng.endContainer.firstChild || !rng.endContainer.firstChild.nextSibling) {
+          if (
+            !rng.endContainer.firstChild ||
+            !rng.endContainer.firstChild.nextSibling
+          ) {
             return;
           }
           prev = rng.endContainer.firstChild.nextSibling;
@@ -102,7 +121,13 @@ var autolink = (function () {
         setEnd(rng, endContainer, end >= 1 ? end - 1 : 0);
         end -= 1;
         rngText = rng.toString();
-      } while (rngText !== ' ' && rngText !== '' && rngText.charCodeAt(0) !== 160 && end - 2 >= 0 && rngText !== delimiter);
+      } while (
+        rngText !== " " &&
+        rngText !== "" &&
+        rngText.charCodeAt(0) !== 160 &&
+        end - 2 >= 0 &&
+        rngText !== delimiter
+      );
       if (rangeEqualsDelimiterOrSpace(rng.toString(), delimiter)) {
         setStart(rng, endContainer, end);
         setEnd(rng, endContainer, start);
@@ -115,22 +140,26 @@ var autolink = (function () {
         setEnd(rng, endContainer, start);
       }
       text = rng.toString();
-      if (text.charAt(text.length - 1) === '.') {
+      if (text.charAt(text.length - 1) === ".") {
         setEnd(rng, endContainer, start - 1);
       }
       text = rng.toString().trim();
       matches = text.match(autoLinkPattern);
       if (matches) {
-        if (matches[1] === 'www.') {
-          matches[1] = 'http://www.';
+        if (matches[1] === "www.") {
+          matches[1] = "http://www.";
         } else if (/@$/.test(matches[1]) && !/^mailto:/.test(matches[1])) {
-          matches[1] = 'mailto:' + matches[1];
+          matches[1] = "mailto:" + matches[1];
         }
         bookmark = editor.selection.getBookmark();
         editor.selection.setRng(rng);
-        editor.execCommand('createlink', false, matches[1] + matches[2]);
+        editor.execCommand("createlink", false, matches[1] + matches[2]);
         if (defaultLinkTarget) {
-          editor.dom.setAttrib(editor.selection.getNode(), 'target', defaultLinkTarget);
+          editor.dom.setAttrib(
+            editor.selection.getNode(),
+            "target",
+            defaultLinkTarget
+          );
         }
         editor.selection.moveToBookmark(bookmark);
         editor.nodeChanged();
@@ -138,29 +167,28 @@ var autolink = (function () {
     };
     var setup = function (editor) {
       var autoUrlDetectState;
-      editor.on('keydown', function (e) {
+      editor.on("keydown", function (e) {
         if (e.keyCode === 13) {
           return handleEnter(editor);
         }
       });
       if (global$1.ie) {
-        editor.on('focus', function () {
+        editor.on("focus", function () {
           if (!autoUrlDetectState) {
             autoUrlDetectState = true;
             try {
-              editor.execCommand('AutoUrlDetect', false, true);
-            } catch (ex) {
-            }
+              editor.execCommand("AutoUrlDetect", false, true);
+            } catch (ex) {}
           }
         });
         return;
       }
-      editor.on('keypress', function (e) {
+      editor.on("keypress", function (e) {
         if (e.keyCode === 41) {
           return handleEclipse(editor);
         }
       });
-      editor.on('keyup', function (e) {
+      editor.on("keyup", function (e) {
         if (e.keyCode === 32) {
           return handleSpacebar(editor);
         }
@@ -168,13 +196,11 @@ var autolink = (function () {
     };
     var Keys = { setup: setup };
 
-    global.add('autolink', function (editor) {
+    global.add("autolink", function (editor) {
       Keys.setup(editor);
     });
-    function Plugin () {
-    }
+    function Plugin() {}
 
     return Plugin;
-
-}());
+  })();
 })();

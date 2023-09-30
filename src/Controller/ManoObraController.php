@@ -39,8 +39,7 @@ class ManoObraController extends AbstractController
 
         $entityManager = $this->getDoctrine()->getManager();
         $presupuesto = $presupuestosRepository->findBy(
-            ['id' => $presu,
-            ],
+            ['id' => $presu,],
         );
 
         $presupuesto[0]->addManoObra($manoObra);

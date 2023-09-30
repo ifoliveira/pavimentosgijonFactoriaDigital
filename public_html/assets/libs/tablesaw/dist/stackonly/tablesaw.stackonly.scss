@@ -50,7 +50,7 @@
   .tablesaw-stack td .tablesaw-cell-label,
   .tablesaw-stack th .tablesaw-cell-label {
     display: inline-block;
-    padding: 0 .6em 0 0;
+    padding: 0 0.6em 0 0;
     width: 30%;
   }
 
@@ -59,8 +59,8 @@
   .tablesaw-stack th .tablesaw-cell-label-top,
   .tablesaw-stack td .tablesaw-cell-label-top {
     display: block;
-    padding: .4em 0;
-    margin: .4em 0;
+    padding: 0.4em 0;
+    margin: 0.4em 0;
   }
 
   .tablesaw-cell-label {
@@ -130,17 +130,16 @@
 }
 
 $use-respond-mixins: false !default;
-@mixin tablesaw-stack( $breakpoint: 40em ) {
+@mixin tablesaw-stack($breakpoint: 40em) {
   @if $use-respond-mixins {
-    @include respond-max($breakpoint - .0625) {
+    @include respond-max($breakpoint - 0.0625) {
       @include tablesaw-stack-max;
     }
     @include respond-min($breakpoint) {
       @include tablesaw-stack-min;
     }
-  }
-  @else {
-    @media (max-width: ($breakpoint - .0625)) {
+  } @else {
+    @media (max-width: ($breakpoint - 0.0625)) {
       @include tablesaw-stack-max;
     }
     @media (min-width: $breakpoint) {

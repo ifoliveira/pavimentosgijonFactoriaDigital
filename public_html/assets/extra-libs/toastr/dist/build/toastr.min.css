@@ -93,12 +93,14 @@ button.toast-close-button {
     left: 12px
 }
 
-.toast-top-right {
+.toast-top-right .toast {
+    position: fixed;
     top: 12px;
     right: 12px
 }
 
-.toast-bottom-right {
+.toast-bottom-right .toast {
+    position: fixed;
     right: 12px;
     bottom: 12px
 }
@@ -111,7 +113,8 @@ button.toast-close-button {
 .toast-container {
     position: fixed;
     z-index: 999999;
-    pointer-events: none
+    pointer-events: none;
+    width: 100% !important;
 }
 
 .toast-container * {
@@ -182,6 +185,7 @@ button.toast-close-button {
 
 .toast-container.toast-bottom-full-width>div,
 .toast-container.toast-top-full-width>div {
+
     width: 96%;
     margin-left: auto;
     margin-right: auto
@@ -192,13 +196,13 @@ button.toast-close-button {
 }*/
 
 .toast-success {
-  background-color: #00acc1 !important;
+  background-color: #06d79c !important;
 }
 .toast-error {
-  background-color: #fc4b6c !important;
+  background-color: #f64e60 !important;
 }
 .toast-info {
-  background-color: #1e88e5 !important;
+  background-color: #1475f6 !important;
 }
 .toast-warning {
   background-color: #ffb22b !important;

@@ -1,26 +1,26 @@
 (function () {
-var tabfocus = (function (domGlobals) {
-    'use strict';
+  var tabfocus = (function (domGlobals) {
+    "use strict";
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global = tinymce.util.Tools.resolve("tinymce.PluginManager");
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
+    var global$1 = tinymce.util.Tools.resolve("tinymce.dom.DOMUtils");
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.EditorManager');
+    var global$2 = tinymce.util.Tools.resolve("tinymce.EditorManager");
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.Env');
+    var global$3 = tinymce.util.Tools.resolve("tinymce.Env");
 
-    var global$4 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+    var global$4 = tinymce.util.Tools.resolve("tinymce.util.Delay");
 
-    var global$5 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global$5 = tinymce.util.Tools.resolve("tinymce.util.Tools");
 
-    var global$6 = tinymce.util.Tools.resolve('tinymce.util.VK');
+    var global$6 = tinymce.util.Tools.resolve("tinymce.util.VK");
 
     var getTabFocusElements = function (editor) {
-      return editor.getParam('tabfocus_elements', ':prev,:next');
+      return editor.getParam("tabfocus_elements", ":prev,:next");
     };
     var getTabFocus = function (editor) {
-      return editor.getParam('tab_focus', getTabFocusElements(editor));
+      return editor.getParam("tab_focus", getTabFocusElements(editor));
     };
     var Settings = { getTabFocus: getTabFocus };
 
@@ -33,16 +33,33 @@ var tabfocus = (function (domGlobals) {
     var setup = function (editor) {
       function tabHandler(e) {
         var x, el, v, i;
-        if (e.keyCode !== global$6.TAB || e.ctrlKey || e.altKey || e.metaKey || e.isDefaultPrevented()) {
+        if (
+          e.keyCode !== global$6.TAB ||
+          e.ctrlKey ||
+          e.altKey ||
+          e.metaKey ||
+          e.isDefaultPrevented()
+        ) {
           return;
         }
         function find(direction) {
-          el = DOM.select(':input:enabled,*[tabindex]:not(iframe)');
+          el = DOM.select(":input:enabled,*[tabindex]:not(iframe)");
           function canSelectRecursive(e) {
-            return e.nodeName === 'BODY' || e.type !== 'hidden' && e.style.display !== 'none' && e.style.visibility !== 'hidden' && canSelectRecursive(e.parentNode);
+            return (
+              e.nodeName === "BODY" ||
+              (e.type !== "hidden" &&
+                e.style.display !== "none" &&
+                e.style.visibility !== "hidden" &&
+                canSelectRecursive(e.parentNode))
+            );
           }
           function canSelect(el) {
-            return /INPUT|TEXTAREA|BUTTON/.test(el.tagName) && global$2.get(e.id) && el.tabIndex !== -1 && canSelectRecursive(el);
+            return (
+              /INPUT|TEXTAREA|BUTTON/.test(el.tagName) &&
+              global$2.get(e.id) &&
+              el.tabIndex !== -1 &&
+              canSelectRecursive(el)
+            );
           }
           global$5.each(el, function (e, i) {
             if (e.id === editor.id) {
@@ -68,16 +85,16 @@ var tabfocus = (function (domGlobals) {
         v = global$5.explode(Settings.getTabFocus(editor));
         if (v.length === 1) {
           v[1] = v[0];
-          v[0] = ':prev';
+          v[0] = ":prev";
         }
         if (e.shiftKey) {
-          if (v[0] === ':prev') {
+          if (v[0] === ":prev") {
             el = find(-1);
           } else {
             el = DOM.get(v[0]);
           }
         } else {
-          if (v[1] === ':next') {
+          if (v[1] === ":next") {
             el = find(1);
           } else {
             el = DOM.get(v[1]);
@@ -98,27 +115,25 @@ var tabfocus = (function (domGlobals) {
           e.preventDefault();
         }
       }
-      editor.on('init', function () {
+      editor.on("init", function () {
         if (editor.inline) {
-          DOM.setAttrib(editor.getBody(), 'tabIndex', null);
+          DOM.setAttrib(editor.getBody(), "tabIndex", null);
         }
-        editor.on('keyup', tabCancel);
+        editor.on("keyup", tabCancel);
         if (global$3.gecko) {
-          editor.on('keypress keydown', tabHandler);
+          editor.on("keypress keydown", tabHandler);
         } else {
-          editor.on('keydown', tabHandler);
+          editor.on("keydown", tabHandler);
         }
       });
     };
     var Keyboard = { setup: setup };
 
-    global.add('tabfocus', function (editor) {
+    global.add("tabfocus", function (editor) {
       Keyboard.setup(editor);
     });
-    function Plugin () {
-    }
+    function Plugin() {}
 
     return Plugin;
-
-}(window));
+  })(window);
 })();

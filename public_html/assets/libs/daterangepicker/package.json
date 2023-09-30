@@ -2,7 +2,7 @@
   "_args": [
     [
       "daterangepicker@3.0.3",
-      "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster"
+      "E:\\bitbucket\\bootstrap\\xtreme-admin"
     ]
   ],
   "_from": "daterangepicker@3.0.3",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/daterangepicker/-/daterangepicker-3.0.3.tgz",
   "_spec": "3.0.3",
-  "_where": "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster",
+  "_where": "E:\\bitbucket\\bootstrap\\xtreme-admin",
   "author": {
     "name": "Dan Grossman",
     "email": "dan@dangrossman.info",

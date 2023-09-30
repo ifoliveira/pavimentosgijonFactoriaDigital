@@ -11,7 +11,7 @@
  * Please report issues at: https://github.com/rstaib/jquery-steps/issues
  */
 
-/* 
+/*
  * TODOs:
  * - Add tests and styles for loading animation (Spinner)
  * - Add tests for add, insert and remove
@@ -20,7 +20,7 @@
  * Planed Features:
  * - Progress bar
  * - Implement preloadContent for async and iframe content types.
- * - Implement functionality to skip a certain amount of steps 
+ * - Implement functionality to skip a certain amount of steps
  * - Dynamic settings change (setOptions({ enablePagination: false }))
  * - Dynamic step update (setStepContent(0, { title: "", content: "" }))
  * - Jump from any page to a specific step (via uri hash tag test.html#steps-uid-1-3)
@@ -33,5 +33,4 @@
  * @module jQuery.steps
  * @requires jQuery (always required), jQuery.cookie (only required if saveState is `true`)
  */
-;(function ($, undefined)
-{
+(function ($, undefined) {});

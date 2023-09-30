@@ -2,7 +2,7 @@
   "_args": [
     [
       "raphael@2.2.7",
-      "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster"
+      "E:\\bitbucket\\bootstrap\\xtreme-admin"
     ]
   ],
   "_from": "raphael@2.2.7",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/raphael/-/raphael-2.2.7.tgz",
   "_spec": "2.2.7",
-  "_where": "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster",
+  "_where": "E:\\bitbucket\\bootstrap\\xtreme-admin",
   "author": {
     "name": "Dmitry Baranovskiy"
   },

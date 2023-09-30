@@ -14,6 +14,7 @@ use App\Form\PresupuestosManoObraType;
 use App\Form\ProductosType;
 use App\Entity\Cestas;
 use App\MisClases\EconomicoPresu;
+USE App\MisClases\ManoObraClass;
 use App\MisClases\CestaUser;
 use App\MisClases\FinanciacionClass;
 use App\Repository\EfectivoRepository;
@@ -56,9 +57,7 @@ class PresupuestosController extends AbstractController
         $products = $query->getResult();
 
         return $this->render('presupuestos/index.html.twig', [
-    
             'presupuestos' => $query->getResult(),
-//            'presupuestos' => $presupuestosRepository->findBy([], ['id' => 'DESC']),
             'estados' => $estados,
         ]);
     }
@@ -109,6 +108,8 @@ class PresupuestosController extends AbstractController
             $presupuesto->setTicket($cesta);            
             $entityManager->persist($presupuesto);
             $entityManager->flush();
+
+            die;
 
             return $this->redirectToRoute('presupuestos_index');
         }

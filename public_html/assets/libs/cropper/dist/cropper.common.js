@@ -8,62 +8,70 @@
  * Date: 2018-04-01T06:27:27.267Z
  */
 
-'use strict';
+"use strict";
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+function _interopDefault(ex) {
+  return ex && typeof ex === "object" && "default" in ex ? ex["default"] : ex;
+}
 
-var $ = _interopDefault(require('jquery'));
+var $ = _interopDefault(require("jquery"));
 
-var IN_BROWSER = typeof window !== 'undefined';
+var IN_BROWSER = typeof window !== "undefined";
 var WINDOW = IN_BROWSER ? window : {};
-var NAMESPACE = 'cropper';
+var NAMESPACE = "cropper";
 
 // Actions
-var ACTION_ALL = 'all';
-var ACTION_CROP = 'crop';
-var ACTION_MOVE = 'move';
-var ACTION_ZOOM = 'zoom';
-var ACTION_EAST = 'e';
-var ACTION_WEST = 'w';
-var ACTION_SOUTH = 's';
-var ACTION_NORTH = 'n';
-var ACTION_NORTH_EAST = 'ne';
-var ACTION_NORTH_WEST = 'nw';
-var ACTION_SOUTH_EAST = 'se';
-var ACTION_SOUTH_WEST = 'sw';
+var ACTION_ALL = "all";
+var ACTION_CROP = "crop";
+var ACTION_MOVE = "move";
+var ACTION_ZOOM = "zoom";
+var ACTION_EAST = "e";
+var ACTION_WEST = "w";
+var ACTION_SOUTH = "s";
+var ACTION_NORTH = "n";
+var ACTION_NORTH_EAST = "ne";
+var ACTION_NORTH_WEST = "nw";
+var ACTION_SOUTH_EAST = "se";
+var ACTION_SOUTH_WEST = "sw";
 
 // Classes
-var CLASS_CROP = NAMESPACE + '-crop';
-var CLASS_DISABLED = NAMESPACE + '-disabled';
-var CLASS_HIDDEN = NAMESPACE + '-hidden';
-var CLASS_HIDE = NAMESPACE + '-hide';
-var CLASS_INVISIBLE = NAMESPACE + '-invisible';
-var CLASS_MODAL = NAMESPACE + '-modal';
-var CLASS_MOVE = NAMESPACE + '-move';
+var CLASS_CROP = NAMESPACE + "-crop";
+var CLASS_DISABLED = NAMESPACE + "-disabled";
+var CLASS_HIDDEN = NAMESPACE + "-hidden";
+var CLASS_HIDE = NAMESPACE + "-hide";
+var CLASS_INVISIBLE = NAMESPACE + "-invisible";
+var CLASS_MODAL = NAMESPACE + "-modal";
+var CLASS_MOVE = NAMESPACE + "-move";
 
 // Data keys
-var DATA_ACTION = 'action';
-var DATA_PREVIEW = 'preview';
+var DATA_ACTION = "action";
+var DATA_PREVIEW = "preview";
 
 // Drag modes
-var DRAG_MODE_CROP = 'crop';
-var DRAG_MODE_MOVE = 'move';
-var DRAG_MODE_NONE = 'none';
+var DRAG_MODE_CROP = "crop";
+var DRAG_MODE_MOVE = "move";
+var DRAG_MODE_NONE = "none";
 
 // Events
-var EVENT_CROP = 'crop';
-var EVENT_CROP_END = 'cropend';
-var EVENT_CROP_MOVE = 'cropmove';
-var EVENT_CROP_START = 'cropstart';
-var EVENT_DBLCLICK = 'dblclick';
-var EVENT_LOAD = 'load';
-var EVENT_POINTER_DOWN = WINDOW.PointerEvent ? 'pointerdown' : 'touchstart mousedown';
-var EVENT_POINTER_MOVE = WINDOW.PointerEvent ? 'pointermove' : 'touchmove mousemove';
-var EVENT_POINTER_UP = WINDOW.PointerEvent ? 'pointerup pointercancel' : 'touchend touchcancel mouseup';
-var EVENT_READY = 'ready';
-var EVENT_RESIZE = 'resize';
-var EVENT_WHEEL = 'wheel mousewheel DOMMouseScroll';
-var EVENT_ZOOM = 'zoom';
+var EVENT_CROP = "crop";
+var EVENT_CROP_END = "cropend";
+var EVENT_CROP_MOVE = "cropmove";
+var EVENT_CROP_START = "cropstart";
+var EVENT_DBLCLICK = "dblclick";
+var EVENT_LOAD = "load";
+var EVENT_POINTER_DOWN = WINDOW.PointerEvent
+  ? "pointerdown"
+  : "touchstart mousedown";
+var EVENT_POINTER_MOVE = WINDOW.PointerEvent
+  ? "pointermove"
+  : "touchmove mousemove";
+var EVENT_POINTER_UP = WINDOW.PointerEvent
+  ? "pointerup pointercancel"
+  : "touchend touchcancel mouseup";
+var EVENT_READY = "ready";
+var EVENT_RESIZE = "resize";
+var EVENT_WHEEL = "wheel mousewheel DOMMouseScroll";
+var EVENT_ZOOM = "zoom";
 
 // RegExps
 var REGEXP_ACTIONS = /^(?:e|w|s|n|se|sw|ne|nw|all|crop|move|zoom)$/;
@@ -85,7 +93,7 @@ var DEFAULTS = {
   data: null,
 
   // A selector for adding extra containers to preview
-  preview: '',
+  preview: "",
 
   // Re-render the cropper when resize the window
   responsive: true,
@@ -164,16 +172,49 @@ var DEFAULTS = {
   cropmove: null,
   cropend: null,
   crop: null,
-  zoom: null
+  zoom: null,
 };
 
-var TEMPLATE = '<div class="cropper-container" touch-action="none">' + '<div class="cropper-wrap-box">' + '<div class="cropper-canvas"></div>' + '</div>' + '<div class="cropper-drag-box"></div>' + '<div class="cropper-crop-box">' + '<span class="cropper-view-box"></span>' + '<span class="cropper-dashed dashed-h"></span>' + '<span class="cropper-dashed dashed-v"></span>' + '<span class="cropper-center"></span>' + '<span class="cropper-face"></span>' + '<span class="cropper-line line-e" data-action="e"></span>' + '<span class="cropper-line line-n" data-action="n"></span>' + '<span class="cropper-line line-w" data-action="w"></span>' + '<span class="cropper-line line-s" data-action="s"></span>' + '<span class="cropper-point point-e" data-action="e"></span>' + '<span class="cropper-point point-n" data-action="n"></span>' + '<span class="cropper-point point-w" data-action="w"></span>' + '<span class="cropper-point point-s" data-action="s"></span>' + '<span class="cropper-point point-ne" data-action="ne"></span>' + '<span class="cropper-point point-nw" data-action="nw"></span>' + '<span class="cropper-point point-sw" data-action="sw"></span>' + '<span class="cropper-point point-se" data-action="se"></span>' + '</div>' + '</div>';
+var TEMPLATE =
+  '<div class="cropper-container" touch-action="none">' +
+  '<div class="cropper-wrap-box">' +
+  '<div class="cropper-canvas"></div>' +
+  "</div>" +
+  '<div class="cropper-drag-box"></div>' +
+  '<div class="cropper-crop-box">' +
+  '<span class="cropper-view-box"></span>' +
+  '<span class="cropper-dashed dashed-h"></span>' +
+  '<span class="cropper-dashed dashed-v"></span>' +
+  '<span class="cropper-center"></span>' +
+  '<span class="cropper-face"></span>' +
+  '<span class="cropper-line line-e" data-action="e"></span>' +
+  '<span class="cropper-line line-n" data-action="n"></span>' +
+  '<span class="cropper-line line-w" data-action="w"></span>' +
+  '<span class="cropper-line line-s" data-action="s"></span>' +
+  '<span class="cropper-point point-e" data-action="e"></span>' +
+  '<span class="cropper-point point-n" data-action="n"></span>' +
+  '<span class="cropper-point point-w" data-action="w"></span>' +
+  '<span class="cropper-point point-s" data-action="s"></span>' +
+  '<span class="cropper-point point-ne" data-action="ne"></span>' +
+  '<span class="cropper-point point-nw" data-action="nw"></span>' +
+  '<span class="cropper-point point-sw" data-action="sw"></span>' +
+  '<span class="cropper-point point-se" data-action="se"></span>' +
+  "</div>" +
+  "</div>";
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
+var _typeof =
+  typeof Symbol === "function" && typeof Symbol.iterator === "symbol"
+    ? function (obj) {
+        return typeof obj;
+      }
+    : function (obj) {
+        return obj &&
+          typeof Symbol === "function" &&
+          obj.constructor === Symbol &&
+          obj !== Symbol.prototype
+          ? "symbol"
+          : typeof obj;
+      };
 
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -181,7 +222,7 @@ var classCallCheck = function (instance, Constructor) {
   }
 };
 
-var createClass = function () {
+var createClass = (function () {
   function defineProperties(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
@@ -197,11 +238,12 @@ var createClass = function () {
     if (staticProps) defineProperties(Constructor, staticProps);
     return Constructor;
   };
-}();
+})();
 
 var toConsumableArray = function (arr) {
   if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++)
+      arr2[i] = arr[i];
 
     return arr2;
   } else {
@@ -220,7 +262,7 @@ var isNaN = Number.isNaN || WINDOW.isNaN;
  * @returns {boolean} Returns `true` if the given value is a number, else `false`.
  */
 function isNumber(value) {
-  return typeof value === 'number' && !isNaN(value);
+  return typeof value === "number" && !isNaN(value);
 }
 
 /**
@@ -229,7 +271,7 @@ function isNumber(value) {
  * @returns {boolean} Returns `true` if the given value is undefined, else `false`.
  */
 function isUndefined(value) {
-  return typeof value === 'undefined';
+  return typeof value === "undefined";
 }
 
 /**
@@ -238,7 +280,10 @@ function isUndefined(value) {
  * @returns {boolean} Returns `true` if the given value is an object, else `false`.
  */
 function isObject(value) {
-  return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value !== null;
+  return (
+    (typeof value === "undefined" ? "undefined" : _typeof(value)) ===
+      "object" && value !== null
+  );
 }
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -258,8 +303,11 @@ function isPlainObject(value) {
     var _constructor = value.constructor;
     var prototype = _constructor.prototype;
 
-
-    return _constructor && prototype && hasOwnProperty.call(prototype, 'isPrototypeOf');
+    return (
+      _constructor &&
+      prototype &&
+      hasOwnProperty.call(prototype, "isPrototypeOf")
+    );
   } catch (e) {
     return false;
   }
@@ -271,7 +319,7 @@ function isPlainObject(value) {
  * @returns {boolean} Returns `true` if the given value is a function, else `false`.
  */
 function isFunction(value) {
-  return typeof value === 'function';
+  return typeof value === "function";
 }
 
 /**
@@ -283,16 +331,16 @@ function isFunction(value) {
 function forEach(data, callback) {
   if (data && isFunction(callback)) {
     if (Array.isArray(data) || isNumber(data.length) /* array-like */) {
-        var length = data.length;
+      var length = data.length;
 
-        var i = void 0;
+      var i = void 0;
 
-        for (i = 0; i < length; i += 1) {
-          if (callback.call(data, data[i], i, data) === false) {
-            break;
-          }
+      for (i = 0; i < length; i += 1) {
+        if (callback.call(data, data[i], i, data) === false) {
+          break;
         }
-      } else if (isObject(data)) {
+      }
+    } else if (isObject(data)) {
       Object.keys(data).forEach(function (key) {
         callback.call(data, data[key], key, data);
       });
@@ -308,23 +356,31 @@ function forEach(data, callback) {
  * @param {*} args - The rest objects which will be merged to the first object.
  * @returns {Object} The extended object.
  */
-var assign = Object.assign || function assign(obj) {
-  for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    args[_key - 1] = arguments[_key];
-  }
+var assign =
+  Object.assign ||
+  function assign(obj) {
+    for (
+      var _len = arguments.length,
+        args = Array(_len > 1 ? _len - 1 : 0),
+        _key = 1;
+      _key < _len;
+      _key++
+    ) {
+      args[_key - 1] = arguments[_key];
+    }
 
-  if (isObject(obj) && args.length > 0) {
-    args.forEach(function (arg) {
-      if (isObject(arg)) {
-        Object.keys(arg).forEach(function (key) {
-          obj[key] = arg[key];
-        });
-      }
-    });
-  }
+    if (isObject(obj) && args.length > 0) {
+      args.forEach(function (arg) {
+        if (isObject(arg)) {
+          Object.keys(arg).forEach(function (key) {
+            obj[key] = arg[key];
+          });
+        }
+      });
+    }
 
-  return obj;
-};
+    return obj;
+  };
 
 var REGEXP_DECIMALS = /\.\d*(?:0|9){12}\d*$/i;
 
@@ -336,9 +392,14 @@ var REGEXP_DECIMALS = /\.\d*(?:0|9){12}\d*$/i;
  * @returns {number} Returns the normalized number.
  */
 function normalizeDecimalNumber(value) {
-  var times = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 100000000000;
+  var times =
+    arguments.length > 1 && arguments[1] !== undefined
+      ? arguments[1]
+      : 100000000000;
 
-  return REGEXP_DECIMALS.test(value) ? Math.round(value * times) / times : value;
+  return REGEXP_DECIMALS.test(value)
+    ? Math.round(value * times) / times
+    : value;
 }
 
 var REGEXP_SUFFIX = /^(?:width|height|left|top|marginLeft|marginTop)$/;
@@ -351,10 +412,9 @@ var REGEXP_SUFFIX = /^(?:width|height|left|top|marginLeft|marginTop)$/;
 function setStyle(element, styles) {
   var style = element.style;
 
-
   forEach(styles, function (value, property) {
     if (REGEXP_SUFFIX.test(property) && isNumber(value)) {
-      value += 'px';
+      value += "px";
     }
 
     style[property] = value;
@@ -368,7 +428,9 @@ function setStyle(element, styles) {
  * @returns {boolean} Returns `true` if the special class was found.
  */
 function hasClass(element, value) {
-  return element.classList ? element.classList.contains(value) : element.className.indexOf(value) > -1;
+  return element.classList
+    ? element.classList.contains(value)
+    : element.className.indexOf(value) > -1;
 }
 
 /**
@@ -398,7 +460,7 @@ function addClass(element, value) {
   if (!className) {
     element.className = value;
   } else if (className.indexOf(value) < 0) {
-    element.className = className + ' ' + value;
+    element.className = className + " " + value;
   }
 }
 
@@ -425,7 +487,7 @@ function removeClass(element, value) {
   }
 
   if (element.className.indexOf(value) >= 0) {
-    element.className = element.className.replace(value, '');
+    element.className = element.className.replace(value, "");
   }
 }
 
@@ -463,7 +525,7 @@ var REGEXP_HYPHENATE = /([a-z\d])([A-Z])/g;
  * @returns {string} The transformed value.
  */
 function hyphenate(value) {
-  return value.replace(REGEXP_HYPHENATE, '$1-$2').toLowerCase();
+  return value.replace(REGEXP_HYPHENATE, "$1-$2").toLowerCase();
 }
 
 /**
@@ -479,7 +541,7 @@ function getData(element, name) {
     return element.dataset[name];
   }
 
-  return element.getAttribute('data-' + hyphenate(name));
+  return element.getAttribute("data-" + hyphenate(name));
 }
 
 /**
@@ -494,7 +556,7 @@ function setData(element, name, data) {
   } else if (element.dataset) {
     element.dataset[name] = data;
   } else {
-    element.setAttribute('data-' + hyphenate(name), data);
+    element.setAttribute("data-" + hyphenate(name), data);
   }
 }
 
@@ -518,23 +580,22 @@ function removeData(element, name) {
       element.dataset[name] = undefined;
     }
   } else {
-    element.removeAttribute('data-' + hyphenate(name));
+    element.removeAttribute("data-" + hyphenate(name));
   }
 }
 
 var REGEXP_SPACES = /\s\s*/;
-var onceSupported = function () {
+var onceSupported = (function () {
   var supported = false;
 
   if (IN_BROWSER) {
     var once = false;
     var listener = function listener() {};
-    var options = Object.defineProperty({}, 'once', {
+    var options = Object.defineProperty({}, "once", {
       get: function get$$1() {
         supported = true;
         return once;
       },
-
 
       /**
        * This setter can fix a `TypeError` in strict mode
@@ -543,15 +604,15 @@ var onceSupported = function () {
        */
       set: function set$$1(value) {
         once = value;
-      }
+      },
     });
 
-    WINDOW.addEventListener('test', listener, options);
-    WINDOW.removeEventListener('test', listener, options);
+    WINDOW.addEventListener("test", listener, options);
+    WINDOW.removeEventListener("test", listener, options);
   }
 
   return supported;
-}();
+})();
 
 /**
  * Remove event listener from the target element.
@@ -561,31 +622,34 @@ var onceSupported = function () {
  * @param {Object} options - The event options.
  */
 function removeListener(element, type, listener) {
-  var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+  var options =
+    arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
   var handler = listener;
 
-  type.trim().split(REGEXP_SPACES).forEach(function (event) {
-    if (!onceSupported) {
-      var listeners = element.listeners;
+  type
+    .trim()
+    .split(REGEXP_SPACES)
+    .forEach(function (event) {
+      if (!onceSupported) {
+        var listeners = element.listeners;
 
+        if (listeners && listeners[event] && listeners[event][listener]) {
+          handler = listeners[event][listener];
+          delete listeners[event][listener];
 
-      if (listeners && listeners[event] && listeners[event][listener]) {
-        handler = listeners[event][listener];
-        delete listeners[event][listener];
+          if (Object.keys(listeners[event]).length === 0) {
+            delete listeners[event];
+          }
 
-        if (Object.keys(listeners[event]).length === 0) {
-          delete listeners[event];
-        }
-
-        if (Object.keys(listeners).length === 0) {
-          delete element.listeners;
+          if (Object.keys(listeners).length === 0) {
+            delete element.listeners;
+          }
         }
       }
-    }
 
-    element.removeEventListener(event, handler, options);
-  });
+      element.removeEventListener(event, handler, options);
+    });
 }
 
 /**
@@ -596,40 +660,52 @@ function removeListener(element, type, listener) {
  * @param {Object} options - The event options.
  */
 function addListener(element, type, listener) {
-  var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+  var options =
+    arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
   var _handler = listener;
 
-  type.trim().split(REGEXP_SPACES).forEach(function (event) {
-    if (options.once && !onceSupported) {
-      var _element$listeners = element.listeners,
-          listeners = _element$listeners === undefined ? {} : _element$listeners;
+  type
+    .trim()
+    .split(REGEXP_SPACES)
+    .forEach(function (event) {
+      if (options.once && !onceSupported) {
+        var _element$listeners = element.listeners,
+          listeners =
+            _element$listeners === undefined ? {} : _element$listeners;
 
+        _handler = function handler() {
+          for (
+            var _len2 = arguments.length, args = Array(_len2), _key2 = 0;
+            _key2 < _len2;
+            _key2++
+          ) {
+            args[_key2] = arguments[_key2];
+          }
 
-      _handler = function handler() {
-        for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-          args[_key2] = arguments[_key2];
+          delete listeners[event][listener];
+          element.removeEventListener(event, _handler, options);
+          listener.apply(element, args);
+        };
+
+        if (!listeners[event]) {
+          listeners[event] = {};
         }
 
-        delete listeners[event][listener];
-        element.removeEventListener(event, _handler, options);
-        listener.apply(element, args);
-      };
+        if (listeners[event][listener]) {
+          element.removeEventListener(
+            event,
+            listeners[event][listener],
+            options
+          );
+        }
 
-      if (!listeners[event]) {
-        listeners[event] = {};
+        listeners[event][listener] = _handler;
+        element.listeners = listeners;
       }
 
-      if (listeners[event][listener]) {
-        element.removeEventListener(event, listeners[event][listener], options);
-      }
-
-      listeners[event][listener] = _handler;
-      element.listeners = listeners;
-    }
-
-    element.addEventListener(event, _handler, options);
-  });
+      element.addEventListener(event, _handler, options);
+    });
 }
 
 /**
@@ -647,10 +723,10 @@ function dispatchEvent(element, type, data) {
     event = new CustomEvent(type, {
       detail: data,
       bubbles: true,
-      cancelable: true
+      cancelable: true,
     });
   } else {
-    event = document.createEvent('CustomEvent');
+    event = document.createEvent("CustomEvent");
     event.initCustomEvent(type, true, true, data);
   }
 
@@ -667,7 +743,7 @@ function getOffset(element) {
 
   return {
     left: box.left + (window.pageXOffset - document.documentElement.clientLeft),
-    top: box.top + (window.pageYOffset - document.documentElement.clientTop)
+    top: box.top + (window.pageYOffset - document.documentElement.clientTop),
   };
 }
 
@@ -683,7 +759,12 @@ var REGEXP_ORIGINS = /^(https?:)\/\/([^:/?#]+):?(\d*)/i;
 function isCrossOriginURL(url) {
   var parts = url.match(REGEXP_ORIGINS);
 
-  return parts && (parts[1] !== location.protocol || parts[2] !== location.hostname || parts[3] !== location.port);
+  return (
+    parts &&
+    (parts[1] !== location.protocol ||
+      parts[2] !== location.hostname ||
+      parts[3] !== location.port)
+  );
 }
 
 /**
@@ -692,9 +773,9 @@ function isCrossOriginURL(url) {
  * @returns {string} The result URL.
  */
 function addTimestamp(url) {
-  var timestamp = 'timestamp=' + new Date().getTime();
+  var timestamp = "timestamp=" + new Date().getTime();
 
-  return url + (url.indexOf('?') === -1 ? '?' : '&') + timestamp;
+  return url + (url.indexOf("?") === -1 ? "?" : "&") + timestamp;
 }
 
 /**
@@ -704,40 +785,40 @@ function addTimestamp(url) {
  */
 function getTransforms(_ref) {
   var rotate = _ref.rotate,
-      scaleX = _ref.scaleX,
-      scaleY = _ref.scaleY,
-      translateX = _ref.translateX,
-      translateY = _ref.translateY;
+    scaleX = _ref.scaleX,
+    scaleY = _ref.scaleY,
+    translateX = _ref.translateX,
+    translateY = _ref.translateY;
 
   var values = [];
 
   if (isNumber(translateX) && translateX !== 0) {
-    values.push('translateX(' + translateX + 'px)');
+    values.push("translateX(" + translateX + "px)");
   }
 
   if (isNumber(translateY) && translateY !== 0) {
-    values.push('translateY(' + translateY + 'px)');
+    values.push("translateY(" + translateY + "px)");
   }
 
   // Rotate should come first before scale to match orientation transform
   if (isNumber(rotate) && rotate !== 0) {
-    values.push('rotate(' + rotate + 'deg)');
+    values.push("rotate(" + rotate + "deg)");
   }
 
   if (isNumber(scaleX) && scaleX !== 1) {
-    values.push('scaleX(' + scaleX + ')');
+    values.push("scaleX(" + scaleX + ")");
   }
 
   if (isNumber(scaleY) && scaleY !== 1) {
-    values.push('scaleY(' + scaleY + ')');
+    values.push("scaleY(" + scaleY + ")");
   }
 
-  var transform = values.length ? values.join(' ') : 'none';
+  var transform = values.length ? values.join(" ") : "none";
 
   return {
     WebkitTransform: transform,
     msTransform: transform,
-    transform: transform
+    transform: transform,
   };
 }
 
@@ -781,17 +862,22 @@ function getMaxZoomRatio(pointers) {
  */
 function getPointer(_ref2, endOnly) {
   var pageX = _ref2.pageX,
-      pageY = _ref2.pageY;
+    pageY = _ref2.pageY;
 
   var end = {
     endX: pageX,
-    endY: pageY
+    endY: pageY,
   };
 
-  return endOnly ? end : assign({
-    startX: pageX,
-    startY: pageY
-  }, end);
+  return endOnly
+    ? end
+    : assign(
+        {
+          startX: pageX,
+          startY: pageY,
+        },
+        end
+      );
 }
 
 /**
@@ -806,7 +892,7 @@ function getPointersCenter(pointers) {
 
   forEach(pointers, function (_ref3) {
     var startX = _ref3.startX,
-        startY = _ref3.startY;
+      startY = _ref3.startY;
 
     pageX += startX;
     pageY += startY;
@@ -818,7 +904,7 @@ function getPointersCenter(pointers) {
 
   return {
     pageX: pageX,
-    pageY: pageY
+    pageY: pageY,
   };
 }
 
@@ -833,12 +919,15 @@ var isFinite = Number.isFinite || WINDOW.isFinite;
  * @param {string} [type='contain'] - The adjust type.
  * @returns {Object} The result sizes.
  */
-function getAdjustedSizes(_ref4) // or 'cover'
-{
+function getAdjustedSizes(_ref4) {
+  // or 'cover'
   var aspectRatio = _ref4.aspectRatio,
-      height = _ref4.height,
-      width = _ref4.width;
-  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'contain';
+    height = _ref4.height,
+    width = _ref4.width;
+  var type =
+    arguments.length > 1 && arguments[1] !== undefined
+      ? arguments[1]
+      : "contain";
 
   var isValidNumber = function isValidNumber(value) {
     return isFinite(value) && value > 0;
@@ -847,7 +936,10 @@ function getAdjustedSizes(_ref4) // or 'cover'
   if (isValidNumber(width) && isValidNumber(height)) {
     var adjustedWidth = height * aspectRatio;
 
-    if (type === 'contain' && adjustedWidth > width || type === 'cover' && adjustedWidth < width) {
+    if (
+      (type === "contain" && adjustedWidth > width) ||
+      (type === "cover" && adjustedWidth < width)
+    ) {
       height = width / aspectRatio;
     } else {
       width = height * aspectRatio;
@@ -860,7 +952,7 @@ function getAdjustedSizes(_ref4) // or 'cover'
 
   return {
     width: width,
-    height: height
+    height: height,
   };
 }
 
@@ -871,31 +963,33 @@ function getAdjustedSizes(_ref4) // or 'cover'
  */
 function getRotatedSizes(_ref5) {
   var width = _ref5.width,
-      height = _ref5.height,
-      degree = _ref5.degree;
+    height = _ref5.height,
+    degree = _ref5.degree;
 
   degree = Math.abs(degree) % 180;
 
   if (degree === 90) {
     return {
       width: height,
-      height: width
+      height: width,
     };
   }
 
-  var arc = degree % 90 * Math.PI / 180;
+  var arc = ((degree % 90) * Math.PI) / 180;
   var sinArc = Math.sin(arc);
   var cosArc = Math.cos(arc);
   var newWidth = width * cosArc + height * sinArc;
   var newHeight = width * sinArc + height * cosArc;
 
-  return degree > 90 ? {
-    width: newHeight,
-    height: newWidth
-  } : {
-    width: newWidth,
-    height: newHeight
-  };
+  return degree > 90
+    ? {
+        width: newHeight,
+        height: newWidth,
+      }
+    : {
+        width: newWidth,
+        height: newHeight,
+      };
 }
 
 /**
@@ -908,61 +1002,78 @@ function getRotatedSizes(_ref5) {
  */
 function getSourceCanvas(image, _ref6, _ref7, _ref8) {
   var imageAspectRatio = _ref6.aspectRatio,
-      imageNaturalWidth = _ref6.naturalWidth,
-      imageNaturalHeight = _ref6.naturalHeight,
-      _ref6$rotate = _ref6.rotate,
-      rotate = _ref6$rotate === undefined ? 0 : _ref6$rotate,
-      _ref6$scaleX = _ref6.scaleX,
-      scaleX = _ref6$scaleX === undefined ? 1 : _ref6$scaleX,
-      _ref6$scaleY = _ref6.scaleY,
-      scaleY = _ref6$scaleY === undefined ? 1 : _ref6$scaleY;
+    imageNaturalWidth = _ref6.naturalWidth,
+    imageNaturalHeight = _ref6.naturalHeight,
+    _ref6$rotate = _ref6.rotate,
+    rotate = _ref6$rotate === undefined ? 0 : _ref6$rotate,
+    _ref6$scaleX = _ref6.scaleX,
+    scaleX = _ref6$scaleX === undefined ? 1 : _ref6$scaleX,
+    _ref6$scaleY = _ref6.scaleY,
+    scaleY = _ref6$scaleY === undefined ? 1 : _ref6$scaleY;
   var aspectRatio = _ref7.aspectRatio,
-      naturalWidth = _ref7.naturalWidth,
-      naturalHeight = _ref7.naturalHeight;
+    naturalWidth = _ref7.naturalWidth,
+    naturalHeight = _ref7.naturalHeight;
   var _ref8$fillColor = _ref8.fillColor,
-      fillColor = _ref8$fillColor === undefined ? 'transparent' : _ref8$fillColor,
-      _ref8$imageSmoothingE = _ref8.imageSmoothingEnabled,
-      imageSmoothingEnabled = _ref8$imageSmoothingE === undefined ? true : _ref8$imageSmoothingE,
-      _ref8$imageSmoothingQ = _ref8.imageSmoothingQuality,
-      imageSmoothingQuality = _ref8$imageSmoothingQ === undefined ? 'low' : _ref8$imageSmoothingQ,
-      _ref8$maxWidth = _ref8.maxWidth,
-      maxWidth = _ref8$maxWidth === undefined ? Infinity : _ref8$maxWidth,
-      _ref8$maxHeight = _ref8.maxHeight,
-      maxHeight = _ref8$maxHeight === undefined ? Infinity : _ref8$maxHeight,
-      _ref8$minWidth = _ref8.minWidth,
-      minWidth = _ref8$minWidth === undefined ? 0 : _ref8$minWidth,
-      _ref8$minHeight = _ref8.minHeight,
-      minHeight = _ref8$minHeight === undefined ? 0 : _ref8$minHeight;
+    fillColor = _ref8$fillColor === undefined ? "transparent" : _ref8$fillColor,
+    _ref8$imageSmoothingE = _ref8.imageSmoothingEnabled,
+    imageSmoothingEnabled =
+      _ref8$imageSmoothingE === undefined ? true : _ref8$imageSmoothingE,
+    _ref8$imageSmoothingQ = _ref8.imageSmoothingQuality,
+    imageSmoothingQuality =
+      _ref8$imageSmoothingQ === undefined ? "low" : _ref8$imageSmoothingQ,
+    _ref8$maxWidth = _ref8.maxWidth,
+    maxWidth = _ref8$maxWidth === undefined ? Infinity : _ref8$maxWidth,
+    _ref8$maxHeight = _ref8.maxHeight,
+    maxHeight = _ref8$maxHeight === undefined ? Infinity : _ref8$maxHeight,
+    _ref8$minWidth = _ref8.minWidth,
+    minWidth = _ref8$minWidth === undefined ? 0 : _ref8$minWidth,
+    _ref8$minHeight = _ref8.minHeight,
+    minHeight = _ref8$minHeight === undefined ? 0 : _ref8$minHeight;
 
-  var canvas = document.createElement('canvas');
-  var context = canvas.getContext('2d');
+  var canvas = document.createElement("canvas");
+  var context = canvas.getContext("2d");
   var maxSizes = getAdjustedSizes({
     aspectRatio: aspectRatio,
     width: maxWidth,
-    height: maxHeight
+    height: maxHeight,
   });
-  var minSizes = getAdjustedSizes({
-    aspectRatio: aspectRatio,
-    width: minWidth,
-    height: minHeight
-  }, 'cover');
+  var minSizes = getAdjustedSizes(
+    {
+      aspectRatio: aspectRatio,
+      width: minWidth,
+      height: minHeight,
+    },
+    "cover"
+  );
   var width = Math.min(maxSizes.width, Math.max(minSizes.width, naturalWidth));
-  var height = Math.min(maxSizes.height, Math.max(minSizes.height, naturalHeight));
+  var height = Math.min(
+    maxSizes.height,
+    Math.max(minSizes.height, naturalHeight)
+  );
 
   // Note: should always use image's natural sizes for drawing as
   // imageData.naturalWidth === canvasData.naturalHeight when rotate % 180 === 90
   var destMaxSizes = getAdjustedSizes({
     aspectRatio: imageAspectRatio,
     width: maxWidth,
-    height: maxHeight
+    height: maxHeight,
   });
-  var destMinSizes = getAdjustedSizes({
-    aspectRatio: imageAspectRatio,
-    width: minWidth,
-    height: minHeight
-  }, 'cover');
-  var destWidth = Math.min(destMaxSizes.width, Math.max(destMinSizes.width, imageNaturalWidth));
-  var destHeight = Math.min(destMaxSizes.height, Math.max(destMinSizes.height, imageNaturalHeight));
+  var destMinSizes = getAdjustedSizes(
+    {
+      aspectRatio: imageAspectRatio,
+      width: minWidth,
+      height: minHeight,
+    },
+    "cover"
+  );
+  var destWidth = Math.min(
+    destMaxSizes.width,
+    Math.max(destMinSizes.width, imageNaturalWidth)
+  );
+  var destHeight = Math.min(
+    destMaxSizes.height,
+    Math.max(destMinSizes.height, imageNaturalHeight)
+  );
   var params = [-destWidth / 2, -destHeight / 2, destWidth, destHeight];
 
   canvas.width = normalizeDecimalNumber(width);
@@ -971,13 +1082,20 @@ function getSourceCanvas(image, _ref6, _ref7, _ref8) {
   context.fillRect(0, 0, width, height);
   context.save();
   context.translate(width / 2, height / 2);
-  context.rotate(rotate * Math.PI / 180);
+  context.rotate((rotate * Math.PI) / 180);
   context.scale(scaleX, scaleY);
   context.imageSmoothingEnabled = imageSmoothingEnabled;
   context.imageSmoothingQuality = imageSmoothingQuality;
-  context.drawImage.apply(context, [image].concat(toConsumableArray(params.map(function (param) {
-    return Math.floor(normalizeDecimalNumber(param));
-  }))));
+  context.drawImage.apply(
+    context,
+    [image].concat(
+      toConsumableArray(
+        params.map(function (param) {
+          return Math.floor(normalizeDecimalNumber(param));
+        })
+      )
+    )
+  );
   context.restore();
   return canvas;
 }
@@ -993,7 +1111,7 @@ var fromCharCode = String.fromCharCode;
  */
 
 function getStringFromCharCode(dataView, start, length) {
-  var str = '';
+  var str = "";
   var i = void 0;
 
   length += start;
@@ -1013,7 +1131,7 @@ var REGEXP_DATA_URL_HEAD = /^data:.*,/;
  * @returns {ArrayBuffer} The result array buffer.
  */
 function dataURLToArrayBuffer(dataURL) {
-  var base64 = dataURL.replace(REGEXP_DATA_URL_HEAD, '');
+  var base64 = dataURL.replace(REGEXP_DATA_URL_HEAD, "");
   var binary = atob(base64);
   var arrayBuffer = new ArrayBuffer(binary.length);
   var uint8 = new Uint8Array(arrayBuffer);
@@ -1033,14 +1151,14 @@ function dataURLToArrayBuffer(dataURL) {
  */
 function arrayBufferToDataURL(arrayBuffer, mimeType) {
   var uint8 = new Uint8Array(arrayBuffer);
-  var data = '';
+  var data = "";
 
   // TypedArray.prototype.forEach is not supported in some browsers.
   forEach(uint8, function (value) {
     data += fromCharCode(value);
   });
 
-  return 'data:' + mimeType + ';base64,' + btoa(data);
+  return "data:" + mimeType + ";base64," + btoa(data);
 }
 
 /**
@@ -1056,12 +1174,15 @@ function getOrientation(arrayBuffer) {
   var ifdStart = void 0;
 
   // Only handle JPEG image (start by 0xFFD8)
-  if (dataView.getUint8(0) === 0xFF && dataView.getUint8(1) === 0xD8) {
+  if (dataView.getUint8(0) === 0xff && dataView.getUint8(1) === 0xd8) {
     var length = dataView.byteLength;
     var offset = 2;
 
     while (offset < length) {
-      if (dataView.getUint8(offset) === 0xFF && dataView.getUint8(offset + 1) === 0xE1) {
+      if (
+        dataView.getUint8(offset) === 0xff &&
+        dataView.getUint8(offset + 1) === 0xe1
+      ) {
         app1Start = offset;
         break;
       }
@@ -1074,20 +1195,20 @@ function getOrientation(arrayBuffer) {
     var exifIDCode = app1Start + 4;
     var tiffOffset = app1Start + 10;
 
-    if (getStringFromCharCode(dataView, exifIDCode, 4) === 'Exif') {
+    if (getStringFromCharCode(dataView, exifIDCode, 4) === "Exif") {
       var endianness = dataView.getUint16(tiffOffset);
 
       littleEndian = endianness === 0x4949;
 
-      if (littleEndian || endianness === 0x4D4D /* bigEndian */) {
-          if (dataView.getUint16(tiffOffset + 2, littleEndian) === 0x002A) {
-            var firstIFDOffset = dataView.getUint32(tiffOffset + 4, littleEndian);
+      if (littleEndian || endianness === 0x4d4d /* bigEndian */) {
+        if (dataView.getUint16(tiffOffset + 2, littleEndian) === 0x002a) {
+          var firstIFDOffset = dataView.getUint32(tiffOffset + 4, littleEndian);
 
-            if (firstIFDOffset >= 0x00000008) {
-              ifdStart = tiffOffset + firstIFDOffset;
-            }
+          if (firstIFDOffset >= 0x00000008) {
+            ifdStart = tiffOffset + firstIFDOffset;
           }
         }
+      }
     }
   }
 
@@ -1099,17 +1220,19 @@ function getOrientation(arrayBuffer) {
     for (i = 0; i < _length; i += 1) {
       _offset = ifdStart + i * 12 + 2;
 
-      if (dataView.getUint16(_offset, littleEndian) === 0x0112 /* Orientation */) {
-          // 8 is the offset of the current tag's value
-          _offset += 8;
+      if (
+        dataView.getUint16(_offset, littleEndian) === 0x0112 /* Orientation */
+      ) {
+        // 8 is the offset of the current tag's value
+        _offset += 8;
 
-          // Get the original orientation value
-          orientation = dataView.getUint16(_offset, littleEndian);
+        // Get the original orientation value
+        orientation = dataView.getUint16(_offset, littleEndian);
 
-          // Override the orientation with its default value
-          dataView.setUint16(_offset, 1, littleEndian);
-          break;
-        }
+        // Override the orientation with its default value
+        dataView.setUint16(_offset, 1, littleEndian);
+        break;
+      }
     }
   }
 
@@ -1170,7 +1293,7 @@ function parseOrientation(orientation) {
   return {
     rotate: rotate,
     scaleX: scaleX,
-    scaleY: scaleY
+    scaleY: scaleY,
   };
 }
 
@@ -1187,40 +1310,48 @@ var render = {
   },
   initContainer: function initContainer() {
     var element = this.element,
-        options = this.options,
-        container = this.container,
-        cropper = this.cropper;
-
+      options = this.options,
+      container = this.container,
+      cropper = this.cropper;
 
     addClass(cropper, CLASS_HIDDEN);
     removeClass(element, CLASS_HIDDEN);
 
     var containerData = {
-      width: Math.max(container.offsetWidth, Number(options.minContainerWidth) || 200),
-      height: Math.max(container.offsetHeight, Number(options.minContainerHeight) || 100)
+      width: Math.max(
+        container.offsetWidth,
+        Number(options.minContainerWidth) || 200
+      ),
+      height: Math.max(
+        container.offsetHeight,
+        Number(options.minContainerHeight) || 100
+      ),
     };
 
     this.containerData = containerData;
 
     setStyle(cropper, {
       width: containerData.width,
-      height: containerData.height
+      height: containerData.height,
     });
 
     addClass(element, CLASS_HIDDEN);
     removeClass(cropper, CLASS_HIDDEN);
   },
 
-
   // Canvas (image wrapper)
   initCanvas: function initCanvas() {
     var containerData = this.containerData,
-        imageData = this.imageData;
+      imageData = this.imageData;
     var viewMode = this.options.viewMode;
 
     var rotated = Math.abs(imageData.rotate) % 180 === 90;
-    var naturalWidth = rotated ? imageData.naturalHeight : imageData.naturalWidth;
-    var naturalHeight = rotated ? imageData.naturalWidth : imageData.naturalHeight;
+    var naturalWidth = rotated
+      ? imageData.naturalHeight
+      : imageData.naturalWidth;
+    var naturalHeight = rotated
+      ? imageData.naturalWidth
+      : imageData.naturalHeight;
     var aspectRatio = naturalWidth / naturalHeight;
     var canvasWidth = containerData.width;
     var canvasHeight = containerData.height;
@@ -1242,7 +1373,7 @@ var render = {
       naturalWidth: naturalWidth,
       naturalHeight: naturalHeight,
       width: canvasWidth,
-      height: canvasHeight
+      height: canvasHeight,
     };
 
     canvasData.left = (containerData.width - canvasWidth) / 2;
@@ -1258,9 +1389,9 @@ var render = {
   },
   limitCanvas: function limitCanvas(sizeLimited, positionLimited) {
     var options = this.options,
-        containerData = this.containerData,
-        canvasData = this.canvasData,
-        cropBoxData = this.cropBoxData;
+      containerData = this.containerData,
+      canvasData = this.canvasData,
+      cropBoxData = this.cropBoxData;
     var viewMode = options.viewMode;
     var aspectRatio = canvasData.aspectRatio;
 
@@ -1283,9 +1414,15 @@ var render = {
         }
       } else if (viewMode > 0) {
         if (minCanvasWidth) {
-          minCanvasWidth = Math.max(minCanvasWidth, cropped ? cropBoxData.width : 0);
+          minCanvasWidth = Math.max(
+            minCanvasWidth,
+            cropped ? cropBoxData.width : 0
+          );
         } else if (minCanvasHeight) {
-          minCanvasHeight = Math.max(minCanvasHeight, cropped ? cropBoxData.height : 0);
+          minCanvasHeight = Math.max(
+            minCanvasHeight,
+            cropped ? cropBoxData.height : 0
+          );
         } else if (cropped) {
           minCanvasWidth = cropBoxData.width;
           minCanvasHeight = cropBoxData.height;
@@ -1301,12 +1438,11 @@ var render = {
       var _getAdjustedSizes = getAdjustedSizes({
         aspectRatio: aspectRatio,
         width: minCanvasWidth,
-        height: minCanvasHeight
+        height: minCanvasHeight,
       });
 
       minCanvasWidth = _getAdjustedSizes.width;
       minCanvasHeight = _getAdjustedSizes.height;
-
 
       canvasData.minWidth = minCanvasWidth;
       canvasData.minHeight = minCanvasHeight;
@@ -1325,8 +1461,14 @@ var render = {
         canvasData.maxTop = Math.max(0, newCanvasTop);
 
         if (cropped && this.limited) {
-          canvasData.minLeft = Math.min(cropBoxData.left, cropBoxData.left + (cropBoxData.width - canvasData.width));
-          canvasData.minTop = Math.min(cropBoxData.top, cropBoxData.top + (cropBoxData.height - canvasData.height));
+          canvasData.minLeft = Math.min(
+            cropBoxData.left,
+            cropBoxData.left + (cropBoxData.width - canvasData.width)
+          );
+          canvasData.minTop = Math.min(
+            cropBoxData.top,
+            cropBoxData.top + (cropBoxData.height - canvasData.height)
+          );
           canvasData.maxLeft = cropBoxData.left;
           canvasData.maxTop = cropBoxData.top;
 
@@ -1352,20 +1494,20 @@ var render = {
   },
   renderCanvas: function renderCanvas(changed, transformed) {
     var canvasData = this.canvasData,
-        imageData = this.imageData;
-
+      imageData = this.imageData;
 
     if (transformed) {
       var _getRotatedSizes = getRotatedSizes({
-        width: imageData.naturalWidth * Math.abs(imageData.scaleX || 1),
-        height: imageData.naturalHeight * Math.abs(imageData.scaleY || 1),
-        degree: imageData.rotate || 0
-      }),
-          naturalWidth = _getRotatedSizes.width,
-          naturalHeight = _getRotatedSizes.height;
+          width: imageData.naturalWidth * Math.abs(imageData.scaleX || 1),
+          height: imageData.naturalHeight * Math.abs(imageData.scaleY || 1),
+          degree: imageData.rotate || 0,
+        }),
+        naturalWidth = _getRotatedSizes.width,
+        naturalHeight = _getRotatedSizes.height;
 
       var width = canvasData.width * (naturalWidth / canvasData.naturalWidth);
-      var height = canvasData.height * (naturalHeight / canvasData.naturalHeight);
+      var height =
+        canvasData.height * (naturalHeight / canvasData.naturalHeight);
 
       canvasData.left -= (width - canvasData.width) / 2;
       canvasData.top -= (height - canvasData.height) / 2;
@@ -1377,31 +1519,55 @@ var render = {
       this.limitCanvas(true, false);
     }
 
-    if (canvasData.width > canvasData.maxWidth || canvasData.width < canvasData.minWidth) {
+    if (
+      canvasData.width > canvasData.maxWidth ||
+      canvasData.width < canvasData.minWidth
+    ) {
       canvasData.left = canvasData.oldLeft;
     }
 
-    if (canvasData.height > canvasData.maxHeight || canvasData.height < canvasData.minHeight) {
+    if (
+      canvasData.height > canvasData.maxHeight ||
+      canvasData.height < canvasData.minHeight
+    ) {
       canvasData.top = canvasData.oldTop;
     }
 
-    canvasData.width = Math.min(Math.max(canvasData.width, canvasData.minWidth), canvasData.maxWidth);
-    canvasData.height = Math.min(Math.max(canvasData.height, canvasData.minHeight), canvasData.maxHeight);
+    canvasData.width = Math.min(
+      Math.max(canvasData.width, canvasData.minWidth),
+      canvasData.maxWidth
+    );
+    canvasData.height = Math.min(
+      Math.max(canvasData.height, canvasData.minHeight),
+      canvasData.maxHeight
+    );
 
     this.limitCanvas(false, true);
 
-    canvasData.left = Math.min(Math.max(canvasData.left, canvasData.minLeft), canvasData.maxLeft);
-    canvasData.top = Math.min(Math.max(canvasData.top, canvasData.minTop), canvasData.maxTop);
+    canvasData.left = Math.min(
+      Math.max(canvasData.left, canvasData.minLeft),
+      canvasData.maxLeft
+    );
+    canvasData.top = Math.min(
+      Math.max(canvasData.top, canvasData.minTop),
+      canvasData.maxTop
+    );
     canvasData.oldLeft = canvasData.left;
     canvasData.oldTop = canvasData.top;
 
-    setStyle(this.canvas, assign({
-      width: canvasData.width,
-      height: canvasData.height
-    }, getTransforms({
-      translateX: canvasData.left,
-      translateY: canvasData.top
-    })));
+    setStyle(
+      this.canvas,
+      assign(
+        {
+          width: canvasData.width,
+          height: canvasData.height,
+        },
+        getTransforms({
+          translateX: canvasData.left,
+          translateY: canvasData.top,
+        })
+      )
+    );
 
     this.renderImage(changed);
 
@@ -1411,24 +1577,37 @@ var render = {
   },
   renderImage: function renderImage(changed) {
     var canvasData = this.canvasData,
-        imageData = this.imageData;
+      imageData = this.imageData;
 
-    var width = imageData.naturalWidth * (canvasData.width / canvasData.naturalWidth);
-    var height = imageData.naturalHeight * (canvasData.height / canvasData.naturalHeight);
+    var width =
+      imageData.naturalWidth * (canvasData.width / canvasData.naturalWidth);
+    var height =
+      imageData.naturalHeight * (canvasData.height / canvasData.naturalHeight);
 
     assign(imageData, {
       width: width,
       height: height,
       left: (canvasData.width - width) / 2,
-      top: (canvasData.height - height) / 2
+      top: (canvasData.height - height) / 2,
     });
-    setStyle(this.image, assign({
-      width: imageData.width,
-      height: imageData.height
-    }, getTransforms(assign({
-      translateX: imageData.left,
-      translateY: imageData.top
-    }, imageData))));
+    setStyle(
+      this.image,
+      assign(
+        {
+          width: imageData.width,
+          height: imageData.height,
+        },
+        getTransforms(
+          assign(
+            {
+              translateX: imageData.left,
+              translateY: imageData.top,
+            },
+            imageData
+          )
+        )
+      )
+    );
 
     if (changed) {
       this.output();
@@ -1436,13 +1615,13 @@ var render = {
   },
   initCropBox: function initCropBox() {
     var options = this.options,
-        canvasData = this.canvasData;
+      canvasData = this.canvasData;
     var aspectRatio = options.aspectRatio;
 
     var autoCropArea = Number(options.autoCropArea) || 0.8;
     var cropBoxData = {
       width: canvasData.width,
-      height: canvasData.height
+      height: canvasData.height,
     };
 
     if (aspectRatio) {
@@ -1457,14 +1636,28 @@ var render = {
     this.limitCropBox(true, true);
 
     // Initialize auto crop area
-    cropBoxData.width = Math.min(Math.max(cropBoxData.width, cropBoxData.minWidth), cropBoxData.maxWidth);
-    cropBoxData.height = Math.min(Math.max(cropBoxData.height, cropBoxData.minHeight), cropBoxData.maxHeight);
+    cropBoxData.width = Math.min(
+      Math.max(cropBoxData.width, cropBoxData.minWidth),
+      cropBoxData.maxWidth
+    );
+    cropBoxData.height = Math.min(
+      Math.max(cropBoxData.height, cropBoxData.minHeight),
+      cropBoxData.maxHeight
+    );
 
     // The width/height of auto crop area must large than "minWidth/Height"
-    cropBoxData.width = Math.max(cropBoxData.minWidth, cropBoxData.width * autoCropArea);
-    cropBoxData.height = Math.max(cropBoxData.minHeight, cropBoxData.height * autoCropArea);
-    cropBoxData.left = canvasData.left + (canvasData.width - cropBoxData.width) / 2;
-    cropBoxData.top = canvasData.top + (canvasData.height - cropBoxData.height) / 2;
+    cropBoxData.width = Math.max(
+      cropBoxData.minWidth,
+      cropBoxData.width * autoCropArea
+    );
+    cropBoxData.height = Math.max(
+      cropBoxData.minHeight,
+      cropBoxData.height * autoCropArea
+    );
+    cropBoxData.left =
+      canvasData.left + (canvasData.width - cropBoxData.width) / 2;
+    cropBoxData.top =
+      canvasData.top + (canvasData.height - cropBoxData.height) / 2;
     cropBoxData.oldLeft = cropBoxData.left;
     cropBoxData.oldTop = cropBoxData.top;
 
@@ -1472,18 +1665,23 @@ var render = {
   },
   limitCropBox: function limitCropBox(sizeLimited, positionLimited) {
     var options = this.options,
-        containerData = this.containerData,
-        canvasData = this.canvasData,
-        cropBoxData = this.cropBoxData,
-        limited = this.limited;
+      containerData = this.containerData,
+      canvasData = this.canvasData,
+      cropBoxData = this.cropBoxData,
+      limited = this.limited;
     var aspectRatio = options.aspectRatio;
-
 
     if (sizeLimited) {
       var minCropBoxWidth = Number(options.minCropBoxWidth) || 0;
       var minCropBoxHeight = Number(options.minCropBoxHeight) || 0;
-      var maxCropBoxWidth = Math.min(containerData.width, limited ? canvasData.width : containerData.width);
-      var maxCropBoxHeight = Math.min(containerData.height, limited ? canvasData.height : containerData.height);
+      var maxCropBoxWidth = Math.min(
+        containerData.width,
+        limited ? canvasData.width : containerData.width
+      );
+      var maxCropBoxHeight = Math.min(
+        containerData.height,
+        limited ? canvasData.height : containerData.height
+      );
 
       // The min/maxCropBoxWidth/Height must be less than container's width/height
       minCropBoxWidth = Math.min(minCropBoxWidth, containerData.width);
@@ -1520,8 +1718,12 @@ var render = {
       if (limited) {
         cropBoxData.minLeft = Math.max(0, canvasData.left);
         cropBoxData.minTop = Math.max(0, canvasData.top);
-        cropBoxData.maxLeft = Math.min(containerData.width, canvasData.left + canvasData.width) - cropBoxData.width;
-        cropBoxData.maxTop = Math.min(containerData.height, canvasData.top + canvasData.height) - cropBoxData.height;
+        cropBoxData.maxLeft =
+          Math.min(containerData.width, canvasData.left + canvasData.width) -
+          cropBoxData.width;
+        cropBoxData.maxTop =
+          Math.min(containerData.height, canvasData.top + canvasData.height) -
+          cropBoxData.height;
       } else {
         cropBoxData.minLeft = 0;
         cropBoxData.minTop = 0;
@@ -1532,40 +1734,70 @@ var render = {
   },
   renderCropBox: function renderCropBox() {
     var options = this.options,
-        containerData = this.containerData,
-        cropBoxData = this.cropBoxData;
+      containerData = this.containerData,
+      cropBoxData = this.cropBoxData;
 
-
-    if (cropBoxData.width > cropBoxData.maxWidth || cropBoxData.width < cropBoxData.minWidth) {
+    if (
+      cropBoxData.width > cropBoxData.maxWidth ||
+      cropBoxData.width < cropBoxData.minWidth
+    ) {
       cropBoxData.left = cropBoxData.oldLeft;
     }
 
-    if (cropBoxData.height > cropBoxData.maxHeight || cropBoxData.height < cropBoxData.minHeight) {
+    if (
+      cropBoxData.height > cropBoxData.maxHeight ||
+      cropBoxData.height < cropBoxData.minHeight
+    ) {
       cropBoxData.top = cropBoxData.oldTop;
     }
 
-    cropBoxData.width = Math.min(Math.max(cropBoxData.width, cropBoxData.minWidth), cropBoxData.maxWidth);
-    cropBoxData.height = Math.min(Math.max(cropBoxData.height, cropBoxData.minHeight), cropBoxData.maxHeight);
+    cropBoxData.width = Math.min(
+      Math.max(cropBoxData.width, cropBoxData.minWidth),
+      cropBoxData.maxWidth
+    );
+    cropBoxData.height = Math.min(
+      Math.max(cropBoxData.height, cropBoxData.minHeight),
+      cropBoxData.maxHeight
+    );
 
     this.limitCropBox(false, true);
 
-    cropBoxData.left = Math.min(Math.max(cropBoxData.left, cropBoxData.minLeft), cropBoxData.maxLeft);
-    cropBoxData.top = Math.min(Math.max(cropBoxData.top, cropBoxData.minTop), cropBoxData.maxTop);
+    cropBoxData.left = Math.min(
+      Math.max(cropBoxData.left, cropBoxData.minLeft),
+      cropBoxData.maxLeft
+    );
+    cropBoxData.top = Math.min(
+      Math.max(cropBoxData.top, cropBoxData.minTop),
+      cropBoxData.maxTop
+    );
     cropBoxData.oldLeft = cropBoxData.left;
     cropBoxData.oldTop = cropBoxData.top;
 
     if (options.movable && options.cropBoxMovable) {
       // Turn to move the canvas when the crop box is equal to the container
-      setData(this.face, DATA_ACTION, cropBoxData.width >= containerData.width && cropBoxData.height >= containerData.height ? ACTION_MOVE : ACTION_ALL);
+      setData(
+        this.face,
+        DATA_ACTION,
+        cropBoxData.width >= containerData.width &&
+          cropBoxData.height >= containerData.height
+          ? ACTION_MOVE
+          : ACTION_ALL
+      );
     }
 
-    setStyle(this.cropBox, assign({
-      width: cropBoxData.width,
-      height: cropBoxData.height
-    }, getTransforms({
-      translateX: cropBoxData.left,
-      translateY: cropBoxData.top
-    })));
+    setStyle(
+      this.cropBox,
+      assign(
+        {
+          width: cropBoxData.width,
+          height: cropBoxData.height,
+        },
+        getTransforms({
+          translateX: cropBoxData.left,
+          translateY: cropBoxData.top,
+        })
+      )
+    );
 
     if (this.cropped && this.limited) {
       this.limitCanvas(true, true);
@@ -1578,7 +1810,7 @@ var render = {
   output: function output() {
     this.preview();
     dispatchEvent(this.element, EVENT_CROP, this.getData());
-  }
+  },
 };
 
 var preview = {
@@ -1587,7 +1819,7 @@ var preview = {
     var preview = this.options.preview;
 
     var url = crossOrigin ? this.crossOriginUrl : this.url;
-    var image = document.createElement('img');
+    var image = document.createElement("img");
 
     if (crossOrigin) {
       image.crossOrigin = crossOrigin;
@@ -1603,7 +1835,7 @@ var preview = {
 
     var previews = preview;
 
-    if (typeof preview === 'string') {
+    if (typeof preview === "string") {
       previews = this.element.ownerDocument.querySelectorAll(preview);
     } else if (preview.querySelector) {
       previews = [preview];
@@ -1612,13 +1844,13 @@ var preview = {
     this.previews = previews;
 
     forEach(previews, function (el) {
-      var img = document.createElement('img');
+      var img = document.createElement("img");
 
       // Save the original size for recover
       setData(el, DATA_PREVIEW, {
         width: el.offsetWidth,
         height: el.offsetHeight,
-        html: el.innerHTML
+        html: el.innerHTML,
       });
 
       if (crossOrigin) {
@@ -1633,9 +1865,17 @@ var preview = {
        * Add `height:auto` to override `height` attribute on IE8
        * (Occur only when margin-top <= -height)
        */
-      img.style.cssText = 'display:block;' + 'width:100%;' + 'height:auto;' + 'min-width:0!important;' + 'min-height:0!important;' + 'max-width:none!important;' + 'max-height:none!important;' + 'image-orientation:0deg!important;"';
+      img.style.cssText =
+        "display:block;" +
+        "width:100%;" +
+        "height:auto;" +
+        "min-width:0!important;" +
+        "min-height:0!important;" +
+        "max-width:none!important;" +
+        "max-height:none!important;" +
+        'image-orientation:0deg!important;"';
 
-      el.innerHTML = '';
+      el.innerHTML = "";
       el.appendChild(img);
     });
   },
@@ -1645,7 +1885,7 @@ var preview = {
 
       setStyle(element, {
         width: data.width,
-        height: data.height
+        height: data.height,
       });
 
       element.innerHTML = data.html;
@@ -1654,12 +1894,12 @@ var preview = {
   },
   preview: function preview() {
     var imageData = this.imageData,
-        canvasData = this.canvasData,
-        cropBoxData = this.cropBoxData;
+      canvasData = this.canvasData,
+      cropBoxData = this.cropBoxData;
     var cropBoxWidth = cropBoxData.width,
-        cropBoxHeight = cropBoxData.height;
+      cropBoxHeight = cropBoxData.height;
     var width = imageData.width,
-        height = imageData.height;
+      height = imageData.height;
 
     var left = cropBoxData.left - canvasData.left - imageData.left;
     var top = cropBoxData.top - canvasData.top - imageData.top;
@@ -1668,13 +1908,24 @@ var preview = {
       return;
     }
 
-    setStyle(this.viewBoxImage, assign({
-      width: width,
-      height: height
-    }, getTransforms(assign({
-      translateX: -left,
-      translateY: -top
-    }, imageData))));
+    setStyle(
+      this.viewBoxImage,
+      assign(
+        {
+          width: width,
+          height: height,
+        },
+        getTransforms(
+          assign(
+            {
+              translateX: -left,
+              translateY: -top,
+            },
+            imageData
+          )
+        )
+      )
+    );
 
     forEach(this.previews, function (element) {
       var data = getData(element, DATA_PREVIEW);
@@ -1697,26 +1948,36 @@ var preview = {
 
       setStyle(element, {
         width: newWidth,
-        height: newHeight
+        height: newHeight,
       });
 
-      setStyle(element.getElementsByTagName('img')[0], assign({
-        width: width * ratio,
-        height: height * ratio
-      }, getTransforms(assign({
-        translateX: -left * ratio,
-        translateY: -top * ratio
-      }, imageData))));
+      setStyle(
+        element.getElementsByTagName("img")[0],
+        assign(
+          {
+            width: width * ratio,
+            height: height * ratio,
+          },
+          getTransforms(
+            assign(
+              {
+                translateX: -left * ratio,
+                translateY: -top * ratio,
+              },
+              imageData
+            )
+          )
+        )
+      );
     });
-  }
+  },
 };
 
 var events = {
   bind: function bind() {
     var element = this.element,
-        options = this.options,
-        cropper = this.cropper;
-
+      options = this.options,
+      cropper = this.cropper;
 
     if (isFunction(options.cropstart)) {
       addListener(element, EVENT_CROP_START, options.cropstart);
@@ -1738,28 +1999,47 @@ var events = {
       addListener(element, EVENT_ZOOM, options.zoom);
     }
 
-    addListener(cropper, EVENT_POINTER_DOWN, this.onCropStart = this.cropStart.bind(this));
+    addListener(
+      cropper,
+      EVENT_POINTER_DOWN,
+      (this.onCropStart = this.cropStart.bind(this))
+    );
 
     if (options.zoomable && options.zoomOnWheel) {
-      addListener(cropper, EVENT_WHEEL, this.onWheel = this.wheel.bind(this));
+      addListener(cropper, EVENT_WHEEL, (this.onWheel = this.wheel.bind(this)));
     }
 
     if (options.toggleDragModeOnDblclick) {
-      addListener(cropper, EVENT_DBLCLICK, this.onDblclick = this.dblclick.bind(this));
+      addListener(
+        cropper,
+        EVENT_DBLCLICK,
+        (this.onDblclick = this.dblclick.bind(this))
+      );
     }
 
-    addListener(element.ownerDocument, EVENT_POINTER_MOVE, this.onCropMove = this.cropMove.bind(this));
-    addListener(element.ownerDocument, EVENT_POINTER_UP, this.onCropEnd = this.cropEnd.bind(this));
+    addListener(
+      element.ownerDocument,
+      EVENT_POINTER_MOVE,
+      (this.onCropMove = this.cropMove.bind(this))
+    );
+    addListener(
+      element.ownerDocument,
+      EVENT_POINTER_UP,
+      (this.onCropEnd = this.cropEnd.bind(this))
+    );
 
     if (options.responsive) {
-      addListener(window, EVENT_RESIZE, this.onResize = this.resize.bind(this));
+      addListener(
+        window,
+        EVENT_RESIZE,
+        (this.onResize = this.resize.bind(this))
+      );
     }
   },
   unbind: function unbind() {
     var element = this.element,
-        options = this.options,
-        cropper = this.cropper;
-
+      options = this.options,
+      cropper = this.cropper;
 
     if (isFunction(options.cropstart)) {
       removeListener(element, EVENT_CROP_START, options.cropstart);
@@ -1797,19 +2077,23 @@ var events = {
     if (options.responsive) {
       removeListener(window, EVENT_RESIZE, this.onResize);
     }
-  }
+  },
 };
 
 var handlers = {
   resize: function resize() {
     var options = this.options,
-        container = this.container,
-        containerData = this.containerData;
+      container = this.container,
+      containerData = this.containerData;
 
     var minContainerWidth = Number(options.minContainerWidth) || 200;
     var minContainerHeight = Number(options.minContainerHeight) || 100;
 
-    if (this.disabled || containerData.width <= minContainerWidth || containerData.height <= minContainerHeight) {
+    if (
+      this.disabled ||
+      containerData.width <= minContainerWidth ||
+      containerData.height <= minContainerHeight
+    ) {
       return;
     }
 
@@ -1828,12 +2112,16 @@ var handlers = {
       this.render();
 
       if (options.restore) {
-        this.setCanvasData(forEach(canvasData, function (n, i) {
-          canvasData[i] = n * ratio;
-        }));
-        this.setCropBoxData(forEach(cropBoxData, function (n, i) {
-          cropBoxData[i] = n * ratio;
-        }));
+        this.setCanvasData(
+          forEach(canvasData, function (n, i) {
+            canvasData[i] = n * ratio;
+          })
+        );
+        this.setCropBoxData(
+          forEach(cropBoxData, function (n, i) {
+            cropBoxData[i] = n * ratio;
+          })
+        );
       }
     }
   },
@@ -1842,7 +2130,9 @@ var handlers = {
       return;
     }
 
-    this.setDragMode(hasClass(this.dragBox, CLASS_CROP) ? DRAG_MODE_MOVE : DRAG_MODE_CROP);
+    this.setDragMode(
+      hasClass(this.dragBox, CLASS_CROP) ? DRAG_MODE_MOVE : DRAG_MODE_CROP
+    );
   },
   wheel: function wheel(e) {
     var _this = this;
@@ -1883,7 +2173,7 @@ var handlers = {
     }
 
     var options = this.options,
-        pointers = this.pointers;
+      pointers = this.pointers;
 
     var action = void 0;
 
@@ -1897,7 +2187,11 @@ var handlers = {
       pointers[e.pointerId || 0] = getPointer(e);
     }
 
-    if (Object.keys(pointers).length > 1 && options.zoomable && options.zoomOnTouch) {
+    if (
+      Object.keys(pointers).length > 1 &&
+      options.zoomable &&
+      options.zoomOnTouch
+    ) {
       action = ACTION_ZOOM;
     } else {
       action = getData(e.target, DATA_ACTION);
@@ -1907,10 +2201,12 @@ var handlers = {
       return;
     }
 
-    if (dispatchEvent(this.element, EVENT_CROP_START, {
-      originalEvent: e,
-      action: action
-    }) === false) {
+    if (
+      dispatchEvent(this.element, EVENT_CROP_START, {
+        originalEvent: e,
+        action: action,
+      }) === false
+    ) {
       return;
     }
 
@@ -1927,20 +2223,20 @@ var handlers = {
   cropMove: function cropMove(e) {
     var action = this.action;
 
-
     if (this.disabled || !action) {
       return;
     }
 
     var pointers = this.pointers;
 
-
     e.preventDefault();
 
-    if (dispatchEvent(this.element, EVENT_CROP_MOVE, {
-      originalEvent: e,
-      action: action
-    }) === false) {
+    if (
+      dispatchEvent(this.element, EVENT_CROP_MOVE, {
+        originalEvent: e,
+        action: action,
+      }) === false
+    ) {
       return;
     }
 
@@ -1960,8 +2256,7 @@ var handlers = {
     }
 
     var action = this.action,
-        pointers = this.pointers;
-
+      pointers = this.pointers;
 
     if (e.changedTouches) {
       forEach(e.changedTouches, function (touch) {
@@ -1978,34 +2273,38 @@ var handlers = {
     e.preventDefault();
 
     if (!Object.keys(pointers).length) {
-      this.action = '';
+      this.action = "";
     }
 
     if (this.cropping) {
       this.cropping = false;
-      toggleClass(this.dragBox, CLASS_MODAL, this.cropped && this.options.modal);
+      toggleClass(
+        this.dragBox,
+        CLASS_MODAL,
+        this.cropped && this.options.modal
+      );
     }
 
     dispatchEvent(this.element, EVENT_CROP_END, {
       originalEvent: e,
-      action: action
+      action: action,
     });
-  }
+  },
 };
 
 var change = {
   change: function change(e) {
     var options = this.options,
-        canvasData = this.canvasData,
-        containerData = this.containerData,
-        cropBoxData = this.cropBoxData,
-        pointers = this.pointers;
+      canvasData = this.canvasData,
+      containerData = this.containerData,
+      cropBoxData = this.cropBoxData,
+      pointers = this.pointers;
     var action = this.action;
     var aspectRatio = options.aspectRatio;
     var left = cropBoxData.left,
-        top = cropBoxData.top,
-        width = cropBoxData.width,
-        height = cropBoxData.height;
+      top = cropBoxData.top,
+      width = cropBoxData.width,
+      height = cropBoxData.height;
 
     var right = left + width;
     var bottom = top + height;
@@ -2025,14 +2324,26 @@ var change = {
       minLeft = cropBoxData.minLeft;
       minTop = cropBoxData.minTop;
 
-      maxWidth = minLeft + Math.min(containerData.width, canvasData.width, canvasData.left + canvasData.width);
-      maxHeight = minTop + Math.min(containerData.height, canvasData.height, canvasData.top + canvasData.height);
+      maxWidth =
+        minLeft +
+        Math.min(
+          containerData.width,
+          canvasData.width,
+          canvasData.left + canvasData.width
+        );
+      maxHeight =
+        minTop +
+        Math.min(
+          containerData.height,
+          canvasData.height,
+          canvasData.top + canvasData.height
+        );
     }
 
     var pointer = pointers[Object.keys(pointers)[0]];
     var range = {
       x: pointer.endX - pointer.startX,
-      y: pointer.endY - pointer.startY
+      y: pointer.endY - pointer.startY,
     };
     var check = function check(side) {
       switch (side) {
@@ -2077,7 +2388,11 @@ var change = {
 
       // Resize crop box
       case ACTION_EAST:
-        if (range.x >= 0 && (right >= maxWidth || aspectRatio && (top <= minTop || bottom >= maxHeight))) {
+        if (
+          range.x >= 0 &&
+          (right >= maxWidth ||
+            (aspectRatio && (top <= minTop || bottom >= maxHeight)))
+        ) {
           renderable = false;
           break;
         }
@@ -2098,7 +2413,11 @@ var change = {
         break;
 
       case ACTION_NORTH:
-        if (range.y <= 0 && (top <= minTop || aspectRatio && (left <= minLeft || right >= maxWidth))) {
+        if (
+          range.y <= 0 &&
+          (top <= minTop ||
+            (aspectRatio && (left <= minLeft || right >= maxWidth)))
+        ) {
           renderable = false;
           break;
         }
@@ -2109,7 +2428,7 @@ var change = {
 
         if (aspectRatio) {
           width = height * aspectRatio;
-          left += range.y * aspectRatio / 2;
+          left += (range.y * aspectRatio) / 2;
         }
 
         if (height < 0) {
@@ -2120,7 +2439,11 @@ var change = {
         break;
 
       case ACTION_WEST:
-        if (range.x <= 0 && (left <= minLeft || aspectRatio && (top <= minTop || bottom >= maxHeight))) {
+        if (
+          range.x <= 0 &&
+          (left <= minLeft ||
+            (aspectRatio && (top <= minTop || bottom >= maxHeight)))
+        ) {
           renderable = false;
           break;
         }
@@ -2142,7 +2465,11 @@ var change = {
         break;
 
       case ACTION_SOUTH:
-        if (range.y >= 0 && (bottom >= maxHeight || aspectRatio && (left <= minLeft || right >= maxWidth))) {
+        if (
+          range.y >= 0 &&
+          (bottom >= maxHeight ||
+            (aspectRatio && (left <= minLeft || right >= maxWidth)))
+        ) {
           renderable = false;
           break;
         }
@@ -2152,7 +2479,7 @@ var change = {
 
         if (aspectRatio) {
           width = height * aspectRatio;
-          left -= range.y * aspectRatio / 2;
+          left -= (range.y * aspectRatio) / 2;
         }
 
         if (height < 0) {
@@ -2427,7 +2754,7 @@ var change = {
       p.startX = p.endX;
       p.startY = p.endY;
     });
-  }
+  },
 };
 
 var methods = {
@@ -2448,7 +2775,6 @@ var methods = {
     return this;
   },
 
-
   // Reset the image and crop box to their initial states
   reset: function reset() {
     if (this.ready && !this.disabled) {
@@ -2465,7 +2791,6 @@ var methods = {
     return this;
   },
 
-
   // Clear the crop box
   clear: function clear() {
     if (this.cropped && !this.disabled) {
@@ -2473,7 +2798,7 @@ var methods = {
         left: 0,
         top: 0,
         width: 0,
-        height: 0
+        height: 0,
       });
 
       this.cropped = false;
@@ -2489,7 +2814,6 @@ var methods = {
     return this;
   },
 
-
   /**
    * Replace the image's src and rebuild the cropper
    * @param {string} url - The new URL.
@@ -2497,7 +2821,8 @@ var methods = {
    * @returns {Cropper} this
    */
   replace: function replace(url) {
-    var hasSameSize = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var hasSameSize =
+      arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
     if (!this.disabled && url) {
       if (this.isImg) {
@@ -2512,7 +2837,7 @@ var methods = {
           this.viewBoxImage.src = url;
 
           forEach(this.previews, function (element) {
-            element.getElementsByTagName('img')[0].src = url;
+            element.getElementsByTagName("img")[0].src = url;
           });
         }
       } else {
@@ -2529,7 +2854,6 @@ var methods = {
     return this;
   },
 
-
   // Enable (unfreeze) the cropper
   enable: function enable() {
     if (this.ready && this.disabled) {
@@ -2539,7 +2863,6 @@ var methods = {
 
     return this;
   },
-
 
   // Disable (freeze) the cropper
   disable: function disable() {
@@ -2551,14 +2874,12 @@ var methods = {
     return this;
   },
 
-
   /**
    * Destroy the cropper and remove the instance from the image
    * @returns {Cropper} this
    */
   destroy: function destroy() {
     var element = this.element;
-
 
     if (!getData(element, NAMESPACE)) {
       return this;
@@ -2574,7 +2895,6 @@ var methods = {
     return this;
   },
 
-
   /**
    * Move the canvas with relative offsets
    * @param {number} offsetX - The relative offset distance on the x-axis.
@@ -2582,15 +2902,19 @@ var methods = {
    * @returns {Cropper} this
    */
   move: function move(offsetX) {
-    var offsetY = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : offsetX;
+    var offsetY =
+      arguments.length > 1 && arguments[1] !== undefined
+        ? arguments[1]
+        : offsetX;
     var _canvasData = this.canvasData,
-        left = _canvasData.left,
-        top = _canvasData.top;
+      left = _canvasData.left,
+      top = _canvasData.top;
 
-
-    return this.moveTo(isUndefined(offsetX) ? offsetX : left + Number(offsetX), isUndefined(offsetY) ? offsetY : top + Number(offsetY));
+    return this.moveTo(
+      isUndefined(offsetX) ? offsetX : left + Number(offsetX),
+      isUndefined(offsetY) ? offsetY : top + Number(offsetY)
+    );
   },
-
 
   /**
    * Move the canvas to an absolute point
@@ -2599,7 +2923,8 @@ var methods = {
    * @returns {Cropper} this
    */
   moveTo: function moveTo(x) {
-    var y = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : x;
+    var y =
+      arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : x;
     var canvasData = this.canvasData;
 
     var changed = false;
@@ -2626,7 +2951,6 @@ var methods = {
     return this;
   },
 
-
   /**
    * Zoom the canvas with a relative ratio
    * @param {number} ratio - The target ratio.
@@ -2636,7 +2960,6 @@ var methods = {
   zoom: function zoom(ratio, _originalEvent) {
     var canvasData = this.canvasData;
 
-
     ratio = Number(ratio);
 
     if (ratio < 0) {
@@ -2645,9 +2968,12 @@ var methods = {
       ratio = 1 + ratio;
     }
 
-    return this.zoomTo(canvasData.width * ratio / canvasData.naturalWidth, null, _originalEvent);
+    return this.zoomTo(
+      (canvasData.width * ratio) / canvasData.naturalWidth,
+      null,
+      _originalEvent
+    );
   },
-
 
   /**
    * Zoom the canvas to an absolute ratio
@@ -2658,12 +2984,11 @@ var methods = {
    */
   zoomTo: function zoomTo(ratio, pivot, _originalEvent) {
     var options = this.options,
-        canvasData = this.canvasData;
+      canvasData = this.canvasData;
     var width = canvasData.width,
-        height = canvasData.height,
-        naturalWidth = canvasData.naturalWidth,
-        naturalHeight = canvasData.naturalHeight;
-
+      height = canvasData.height,
+      naturalWidth = canvasData.naturalWidth,
+      naturalHeight = canvasData.naturalHeight;
 
     ratio = Number(ratio);
 
@@ -2671,11 +2996,13 @@ var methods = {
       var newWidth = naturalWidth * ratio;
       var newHeight = naturalHeight * ratio;
 
-      if (dispatchEvent(this.element, EVENT_ZOOM, {
-        originalEvent: _originalEvent,
-        oldRatio: width / naturalWidth,
-        ratio: newWidth / naturalWidth
-      }) === false) {
+      if (
+        dispatchEvent(this.element, EVENT_ZOOM, {
+          originalEvent: _originalEvent,
+          oldRatio: width / naturalWidth,
+          ratio: newWidth / naturalWidth,
+        }) === false
+      ) {
         return this;
       }
 
@@ -2683,17 +3010,30 @@ var methods = {
         var pointers = this.pointers;
 
         var offset = getOffset(this.cropper);
-        var center = pointers && Object.keys(pointers).length ? getPointersCenter(pointers) : {
-          pageX: _originalEvent.pageX,
-          pageY: _originalEvent.pageY
-        };
+        var center =
+          pointers && Object.keys(pointers).length
+            ? getPointersCenter(pointers)
+            : {
+                pageX: _originalEvent.pageX,
+                pageY: _originalEvent.pageY,
+              };
 
         // Zoom from the triggering point of the event
-        canvasData.left -= (newWidth - width) * ((center.pageX - offset.left - canvasData.left) / width);
-        canvasData.top -= (newHeight - height) * ((center.pageY - offset.top - canvasData.top) / height);
-      } else if (isPlainObject(pivot) && isNumber(pivot.x) && isNumber(pivot.y)) {
-        canvasData.left -= (newWidth - width) * ((pivot.x - canvasData.left) / width);
-        canvasData.top -= (newHeight - height) * ((pivot.y - canvasData.top) / height);
+        canvasData.left -=
+          (newWidth - width) *
+          ((center.pageX - offset.left - canvasData.left) / width);
+        canvasData.top -=
+          (newHeight - height) *
+          ((center.pageY - offset.top - canvasData.top) / height);
+      } else if (
+        isPlainObject(pivot) &&
+        isNumber(pivot.x) &&
+        isNumber(pivot.y)
+      ) {
+        canvasData.left -=
+          (newWidth - width) * ((pivot.x - canvasData.left) / width);
+        canvasData.top -=
+          (newHeight - height) * ((pivot.y - canvasData.top) / height);
       } else {
         // Zoom from the center of the canvas
         canvasData.left -= (newWidth - width) / 2;
@@ -2708,7 +3048,6 @@ var methods = {
     return this;
   },
 
-
   /**
    * Rotate the canvas with a relative degree
    * @param {number} degree - The rotate degree.
@@ -2718,7 +3057,6 @@ var methods = {
     return this.rotateTo((this.imageData.rotate || 0) + Number(degree));
   },
 
-
   /**
    * Rotate the canvas to an absolute degree
    * @param {number} degree - The rotate degree.
@@ -2727,14 +3065,18 @@ var methods = {
   rotateTo: function rotateTo(degree) {
     degree = Number(degree);
 
-    if (isNumber(degree) && this.ready && !this.disabled && this.options.rotatable) {
+    if (
+      isNumber(degree) &&
+      this.ready &&
+      !this.disabled &&
+      this.options.rotatable
+    ) {
       this.imageData.rotate = degree % 360;
       this.renderCanvas(true, true);
     }
 
     return this;
   },
-
 
   /**
    * Scale the image on the x-axis.
@@ -2744,10 +3086,8 @@ var methods = {
   scaleX: function scaleX(_scaleX) {
     var scaleY = this.imageData.scaleY;
 
-
     return this.scale(_scaleX, isNumber(scaleY) ? scaleY : 1);
   },
-
 
   /**
    * Scale the image on the y-axis.
@@ -2757,10 +3097,8 @@ var methods = {
   scaleY: function scaleY(_scaleY) {
     var scaleX = this.imageData.scaleX;
 
-
     return this.scale(isNumber(scaleX) ? scaleX : 1, _scaleY);
   },
-
 
   /**
    * Scale the image
@@ -2769,7 +3107,10 @@ var methods = {
    * @returns {Cropper} this
    */
   scale: function scale(scaleX) {
-    var scaleY = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : scaleX;
+    var scaleY =
+      arguments.length > 1 && arguments[1] !== undefined
+        ? arguments[1]
+        : scaleX;
     var imageData = this.imageData;
 
     var transformed = false;
@@ -2796,18 +3137,18 @@ var methods = {
     return this;
   },
 
-
   /**
    * Get the cropped area position and size data (base on the original image)
    * @param {boolean} [rounded=false] - Indicate if round the data values or not.
    * @returns {Object} The result cropped data.
    */
   getData: function getData$$1() {
-    var rounded = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    var rounded =
+      arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     var options = this.options,
-        imageData = this.imageData,
-        canvasData = this.canvasData,
-        cropBoxData = this.cropBoxData;
+      imageData = this.imageData,
+      canvasData = this.canvasData,
+      cropBoxData = this.cropBoxData;
 
     var data = void 0;
 
@@ -2816,7 +3157,7 @@ var methods = {
         x: cropBoxData.left - canvasData.left,
         y: cropBoxData.top - canvasData.top,
         width: cropBoxData.width,
-        height: cropBoxData.height
+        height: cropBoxData.height,
       };
 
       var ratio = imageData.width / imageData.naturalWidth;
@@ -2830,7 +3171,7 @@ var methods = {
         x: 0,
         y: 0,
         width: 0,
-        height: 0
+        height: 0,
       };
     }
 
@@ -2846,7 +3187,6 @@ var methods = {
     return data;
   },
 
-
   /**
    * Set the cropped area position and size with new data
    * @param {Object} data - The new data.
@@ -2854,8 +3194,8 @@ var methods = {
    */
   setData: function setData$$1(data) {
     var options = this.options,
-        imageData = this.imageData,
-        canvasData = this.canvasData;
+      imageData = this.imageData,
+      canvasData = this.canvasData;
 
     var cropBoxData = {};
 
@@ -2909,7 +3249,6 @@ var methods = {
     return this;
   },
 
-
   /**
    * Get the container size data.
    * @returns {Object} The result container data.
@@ -2918,7 +3257,6 @@ var methods = {
     return this.ready ? assign({}, this.containerData) : {};
   },
 
-
   /**
    * Get the image position and size data.
    * @returns {Object} The result image data.
@@ -2926,7 +3264,6 @@ var methods = {
   getImageData: function getImageData() {
     return this.sized ? assign({}, this.imageData) : {};
   },
-
 
   /**
    * Get the canvas position and size data.
@@ -2938,14 +3275,16 @@ var methods = {
     var data = {};
 
     if (this.ready) {
-      forEach(['left', 'top', 'width', 'height', 'naturalWidth', 'naturalHeight'], function (n) {
-        data[n] = canvasData[n];
-      });
+      forEach(
+        ["left", "top", "width", "height", "naturalWidth", "naturalHeight"],
+        function (n) {
+          data[n] = canvasData[n];
+        }
+      );
     }
 
     return data;
   },
-
 
   /**
    * Set the canvas position and size with new data.
@@ -2955,7 +3294,6 @@ var methods = {
   setCanvasData: function setCanvasData(data) {
     var canvasData = this.canvasData;
     var aspectRatio = canvasData.aspectRatio;
-
 
     if (this.ready && !this.disabled && isPlainObject(data)) {
       if (isNumber(data.left)) {
@@ -2980,7 +3318,6 @@ var methods = {
     return this;
   },
 
-
   /**
    * Get the crop box position and size data.
    * @returns {Object} The result crop box data.
@@ -2995,13 +3332,12 @@ var methods = {
         left: cropBoxData.left,
         top: cropBoxData.top,
         width: cropBoxData.width,
-        height: cropBoxData.height
+        height: cropBoxData.height,
       };
     }
 
     return data || {};
   },
-
 
   /**
    * Set the crop box position and size with new data.
@@ -3048,14 +3384,14 @@ var methods = {
     return this;
   },
 
-
   /**
    * Get a canvas drawn the cropped image.
    * @param {Object} [options={}] - The config options.
    * @returns {HTMLCanvasElement} - The result canvas.
    */
   getCroppedCanvas: function getCroppedCanvas() {
-    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var options =
+      arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     if (!this.ready || !window.HTMLCanvasElement) {
       return null;
@@ -3063,7 +3399,12 @@ var methods = {
 
     var canvasData = this.canvasData;
 
-    var source = getSourceCanvas(this.image, this.imageData, canvasData, options);
+    var source = getSourceCanvas(
+      this.image,
+      this.imageData,
+      canvasData,
+      options
+    );
 
     // Returns the source canvas if it is not cropped.
     if (!this.cropped) {
@@ -3071,10 +3412,10 @@ var methods = {
     }
 
     var _getData = this.getData(),
-        initialX = _getData.x,
-        initialY = _getData.y,
-        initialWidth = _getData.width,
-        initialHeight = _getData.height;
+      initialX = _getData.x,
+      initialY = _getData.y,
+      initialWidth = _getData.width,
+      initialHeight = _getData.height;
 
     var ratio = source.width / Math.floor(canvasData.naturalWidth);
 
@@ -3089,38 +3430,41 @@ var methods = {
     var maxSizes = getAdjustedSizes({
       aspectRatio: aspectRatio,
       width: options.maxWidth || Infinity,
-      height: options.maxHeight || Infinity
+      height: options.maxHeight || Infinity,
     });
-    var minSizes = getAdjustedSizes({
-      aspectRatio: aspectRatio,
-      width: options.minWidth || 0,
-      height: options.minHeight || 0
-    }, 'cover');
+    var minSizes = getAdjustedSizes(
+      {
+        aspectRatio: aspectRatio,
+        width: options.minWidth || 0,
+        height: options.minHeight || 0,
+      },
+      "cover"
+    );
 
     var _getAdjustedSizes = getAdjustedSizes({
-      aspectRatio: aspectRatio,
-      width: options.width || (ratio !== 1 ? source.width : initialWidth),
-      height: options.height || (ratio !== 1 ? source.height : initialHeight)
-    }),
-        width = _getAdjustedSizes.width,
-        height = _getAdjustedSizes.height;
+        aspectRatio: aspectRatio,
+        width: options.width || (ratio !== 1 ? source.width : initialWidth),
+        height: options.height || (ratio !== 1 ? source.height : initialHeight),
+      }),
+      width = _getAdjustedSizes.width,
+      height = _getAdjustedSizes.height;
 
     width = Math.min(maxSizes.width, Math.max(minSizes.width, width));
     height = Math.min(maxSizes.height, Math.max(minSizes.height, height));
 
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
+    var canvas = document.createElement("canvas");
+    var context = canvas.getContext("2d");
 
     canvas.width = normalizeDecimalNumber(width);
     canvas.height = normalizeDecimalNumber(height);
 
-    context.fillStyle = options.fillColor || 'transparent';
+    context.fillStyle = options.fillColor || "transparent";
     context.fillRect(0, 0, width, height);
 
     var _options$imageSmoothi = options.imageSmoothingEnabled,
-        imageSmoothingEnabled = _options$imageSmoothi === undefined ? true : _options$imageSmoothi,
-        imageSmoothingQuality = options.imageSmoothingQuality;
-
+      imageSmoothingEnabled =
+        _options$imageSmoothi === undefined ? true : _options$imageSmoothi,
+      imageSmoothingQuality = options.imageSmoothingQuality;
 
     context.imageSmoothingEnabled = imageSmoothingEnabled;
 
@@ -3182,18 +3526,29 @@ var methods = {
     if (dstWidth > 0 && dstHeight > 0) {
       var scale = width / initialWidth;
 
-      params.push(dstX * scale, dstY * scale, dstWidth * scale, dstHeight * scale);
+      params.push(
+        dstX * scale,
+        dstY * scale,
+        dstWidth * scale,
+        dstHeight * scale
+      );
     }
 
     // All the numerical parameters should be integer for `drawImage`
     // https://github.com/fengyuanchen/cropper/issues/476
-    context.drawImage.apply(context, [source].concat(toConsumableArray(params.map(function (param) {
-      return Math.floor(normalizeDecimalNumber(param));
-    }))));
+    context.drawImage.apply(
+      context,
+      [source].concat(
+        toConsumableArray(
+          params.map(function (param) {
+            return Math.floor(normalizeDecimalNumber(param));
+          })
+        )
+      )
+    );
 
     return canvas;
   },
-
 
   /**
    * Change the aspect ratio of the crop box.
@@ -3202,7 +3557,6 @@ var methods = {
    */
   setAspectRatio: function setAspectRatio(aspectRatio) {
     var options = this.options;
-
 
     if (!this.disabled && !isUndefined(aspectRatio)) {
       // 0 -> NaN
@@ -3220,7 +3574,6 @@ var methods = {
     return this;
   },
 
-
   /**
    * Change the drag mode.
    * @param {string} mode - The new drag mode.
@@ -3228,9 +3581,8 @@ var methods = {
    */
   setDragMode: function setDragMode(mode) {
     var options = this.options,
-        dragBox = this.dragBox,
-        face = this.face;
-
+      dragBox = this.dragBox,
+      face = this.face;
 
     if (this.ready && !this.disabled) {
       var croppable = mode === DRAG_MODE_CROP;
@@ -3252,23 +3604,26 @@ var methods = {
     }
 
     return this;
-  }
+  },
 };
 
 var AnotherCropper = WINDOW.Cropper;
 
-var Cropper = function () {
+var Cropper = (function () {
   /**
    * Create a new Cropper.
    * @param {Element} element - The target element for cropping.
    * @param {Object} [options={}] - The configuration options.
    */
   function Cropper(element) {
-    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var options =
+      arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     classCallCheck(this, Cropper);
 
     if (!element || !REGEXP_TAG_NAME.test(element.tagName)) {
-      throw new Error('The first argument is required and must be an <img> or <canvas> element.');
+      throw new Error(
+        "The first argument is required and must be an <img> or <canvas> element."
+      );
     }
 
     this.element = element;
@@ -3284,429 +3639,476 @@ var Cropper = function () {
     this.init();
   }
 
-  createClass(Cropper, [{
-    key: 'init',
-    value: function init() {
-      var element = this.element;
+  createClass(
+    Cropper,
+    [
+      {
+        key: "init",
+        value: function init() {
+          var element = this.element;
 
-      var tagName = element.tagName.toLowerCase();
-      var url = void 0;
+          var tagName = element.tagName.toLowerCase();
+          var url = void 0;
 
-      if (getData(element, NAMESPACE)) {
-        return;
-      }
+          if (getData(element, NAMESPACE)) {
+            return;
+          }
 
-      setData(element, NAMESPACE, this);
+          setData(element, NAMESPACE, this);
 
-      if (tagName === 'img') {
-        this.isImg = true;
+          if (tagName === "img") {
+            this.isImg = true;
 
-        // e.g.: "img/picture.jpg"
-        url = element.getAttribute('src') || '';
-        this.originalUrl = url;
+            // e.g.: "img/picture.jpg"
+            url = element.getAttribute("src") || "";
+            this.originalUrl = url;
 
-        // Stop when it's a blank image
-        if (!url) {
-          return;
-        }
+            // Stop when it's a blank image
+            if (!url) {
+              return;
+            }
 
-        // e.g.: "http://example.com/img/picture.jpg"
-        url = element.src;
-      } else if (tagName === 'canvas' && window.HTMLCanvasElement) {
-        url = element.toDataURL();
-      }
+            // e.g.: "http://example.com/img/picture.jpg"
+            url = element.src;
+          } else if (tagName === "canvas" && window.HTMLCanvasElement) {
+            url = element.toDataURL();
+          }
 
-      this.load(url);
-    }
-  }, {
-    key: 'load',
-    value: function load(url) {
-      var _this = this;
+          this.load(url);
+        },
+      },
+      {
+        key: "load",
+        value: function load(url) {
+          var _this = this;
 
-      if (!url) {
-        return;
-      }
+          if (!url) {
+            return;
+          }
 
-      this.url = url;
-      this.imageData = {};
+          this.url = url;
+          this.imageData = {};
 
-      var element = this.element,
-          options = this.options;
+          var element = this.element,
+            options = this.options;
 
+          if (!options.checkOrientation || !window.ArrayBuffer) {
+            this.clone();
+            return;
+          }
 
-      if (!options.checkOrientation || !window.ArrayBuffer) {
-        this.clone();
-        return;
-      }
+          // XMLHttpRequest disallows to open a Data URL in some browsers like IE11 and Safari
+          if (REGEXP_DATA_URL.test(url)) {
+            if (REGEXP_DATA_URL_JPEG.test(url)) {
+              this.read(dataURLToArrayBuffer(url));
+            } else {
+              this.clone();
+            }
 
-      // XMLHttpRequest disallows to open a Data URL in some browsers like IE11 and Safari
-      if (REGEXP_DATA_URL.test(url)) {
-        if (REGEXP_DATA_URL_JPEG.test(url)) {
-          this.read(dataURLToArrayBuffer(url));
-        } else {
+            return;
+          }
+
+          var xhr = new XMLHttpRequest();
+
+          this.reloading = true;
+          this.xhr = xhr;
+
+          var done = function done() {
+            _this.reloading = false;
+            _this.xhr = null;
+          };
+
+          xhr.ontimeout = done;
+          xhr.onabort = done;
+          xhr.onerror = function () {
+            done();
+            _this.clone();
+          };
+
+          xhr.onload = function () {
+            done();
+            _this.read(xhr.response);
+          };
+
+          // Bust cache when there is a "crossOrigin" property
+          if (
+            options.checkCrossOrigin &&
+            isCrossOriginURL(url) &&
+            element.crossOrigin
+          ) {
+            url = addTimestamp(url);
+          }
+
+          xhr.open("get", url);
+          xhr.responseType = "arraybuffer";
+          xhr.withCredentials = element.crossOrigin === "use-credentials";
+          xhr.send();
+        },
+      },
+      {
+        key: "read",
+        value: function read(arrayBuffer) {
+          var options = this.options,
+            imageData = this.imageData;
+
+          var orientation = getOrientation(arrayBuffer);
+          var rotate = 0;
+          var scaleX = 1;
+          var scaleY = 1;
+
+          if (orientation > 1) {
+            this.url = arrayBufferToDataURL(arrayBuffer, "image/jpeg");
+
+            var _parseOrientation = parseOrientation(orientation);
+
+            rotate = _parseOrientation.rotate;
+            scaleX = _parseOrientation.scaleX;
+            scaleY = _parseOrientation.scaleY;
+          }
+
+          if (options.rotatable) {
+            imageData.rotate = rotate;
+          }
+
+          if (options.scalable) {
+            imageData.scaleX = scaleX;
+            imageData.scaleY = scaleY;
+          }
+
           this.clone();
-        }
-
-        return;
-      }
-
-      var xhr = new XMLHttpRequest();
-
-      this.reloading = true;
-      this.xhr = xhr;
-
-      var done = function done() {
-        _this.reloading = false;
-        _this.xhr = null;
-      };
-
-      xhr.ontimeout = done;
-      xhr.onabort = done;
-      xhr.onerror = function () {
-        done();
-        _this.clone();
-      };
-
-      xhr.onload = function () {
-        done();
-        _this.read(xhr.response);
-      };
-
-      // Bust cache when there is a "crossOrigin" property
-      if (options.checkCrossOrigin && isCrossOriginURL(url) && element.crossOrigin) {
-        url = addTimestamp(url);
-      }
-
-      xhr.open('get', url);
-      xhr.responseType = 'arraybuffer';
-      xhr.withCredentials = element.crossOrigin === 'use-credentials';
-      xhr.send();
-    }
-  }, {
-    key: 'read',
-    value: function read(arrayBuffer) {
-      var options = this.options,
-          imageData = this.imageData;
-
-      var orientation = getOrientation(arrayBuffer);
-      var rotate = 0;
-      var scaleX = 1;
-      var scaleY = 1;
-
-      if (orientation > 1) {
-        this.url = arrayBufferToDataURL(arrayBuffer, 'image/jpeg');
-
-        var _parseOrientation = parseOrientation(orientation);
-
-        rotate = _parseOrientation.rotate;
-        scaleX = _parseOrientation.scaleX;
-        scaleY = _parseOrientation.scaleY;
-      }
-
-      if (options.rotatable) {
-        imageData.rotate = rotate;
-      }
-
-      if (options.scalable) {
-        imageData.scaleX = scaleX;
-        imageData.scaleY = scaleY;
-      }
-
-      this.clone();
-    }
-  }, {
-    key: 'clone',
-    value: function clone() {
-      var element = this.element,
-          url = this.url;
-
-      var crossOrigin = void 0;
-      var crossOriginUrl = void 0;
-
-      if (this.options.checkCrossOrigin && isCrossOriginURL(url)) {
-        crossOrigin = element.crossOrigin;
-
-
-        if (crossOrigin) {
-          crossOriginUrl = url;
-        } else {
-          crossOrigin = 'anonymous';
-
-          // Bust cache when there is not a "crossOrigin" property
-          crossOriginUrl = addTimestamp(url);
-        }
-      }
-
-      this.crossOrigin = crossOrigin;
-      this.crossOriginUrl = crossOriginUrl;
-
-      var image = document.createElement('img');
-
-      if (crossOrigin) {
-        image.crossOrigin = crossOrigin;
-      }
-
-      image.src = crossOriginUrl || url;
-
-      var start = this.start.bind(this);
-      var stop = this.stop.bind(this);
-
-      this.image = image;
-      this.onStart = start;
-      this.onStop = stop;
-
-      if (this.isImg) {
-        if (element.complete) {
-          // start asynchronously to keep `this.cropper` is accessible in `ready` event handler.
-          this.timeout = setTimeout(start, 0);
-        } else {
-          addListener(element, EVENT_LOAD, start, {
-            once: true
-          });
-        }
-      } else {
-        image.onload = start;
-        image.onerror = stop;
-        addClass(image, CLASS_HIDE);
-        element.parentNode.insertBefore(image, element.nextSibling);
-      }
-    }
-  }, {
-    key: 'start',
-    value: function start(event) {
-      var _this2 = this;
-
-      var image = this.isImg ? this.element : this.image;
-
-      if (event) {
-        image.onload = null;
-        image.onerror = null;
-      }
-
-      this.sizing = true;
-
-      var IS_SAFARI = WINDOW.navigator && /(Macintosh|iPhone|iPod|iPad).*AppleWebKit/i.test(WINDOW.navigator.userAgent);
-      var done = function done(naturalWidth, naturalHeight) {
-        assign(_this2.imageData, {
-          naturalWidth: naturalWidth,
-          naturalHeight: naturalHeight,
-          aspectRatio: naturalWidth / naturalHeight
-        });
-        _this2.sizing = false;
-        _this2.sized = true;
-        _this2.build();
-      };
-
-      // Modern browsers (except Safari)
-      if (image.naturalWidth && !IS_SAFARI) {
-        done(image.naturalWidth, image.naturalHeight);
-        return;
-      }
-
-      var sizingImage = document.createElement('img');
-      var body = document.body || document.documentElement;
-
-      this.sizingImage = sizingImage;
-
-      sizingImage.onload = function () {
-        done(sizingImage.width, sizingImage.height);
-
-        if (!IS_SAFARI) {
-          body.removeChild(sizingImage);
-        }
-      };
-
-      sizingImage.src = image.src;
-
-      // iOS Safari will convert the image automatically
-      // with its orientation once append it into DOM (#279)
-      if (!IS_SAFARI) {
-        sizingImage.style.cssText = 'left:0;' + 'max-height:none!important;' + 'max-width:none!important;' + 'min-height:0!important;' + 'min-width:0!important;' + 'opacity:0;' + 'position:absolute;' + 'top:0;' + 'z-index:-1;';
-        body.appendChild(sizingImage);
-      }
-    }
-  }, {
-    key: 'stop',
-    value: function stop() {
-      var image = this.image;
-
-
-      image.onload = null;
-      image.onerror = null;
-      image.parentNode.removeChild(image);
-      this.image = null;
-    }
-  }, {
-    key: 'build',
-    value: function build() {
-      if (!this.sized || this.ready) {
-        return;
-      }
-
-      var element = this.element,
-          options = this.options,
-          image = this.image;
-
-      // Create cropper elements
-
-      var container = element.parentNode;
-      var template = document.createElement('div');
-
-      template.innerHTML = TEMPLATE;
-
-      var cropper = template.querySelector('.' + NAMESPACE + '-container');
-      var canvas = cropper.querySelector('.' + NAMESPACE + '-canvas');
-      var dragBox = cropper.querySelector('.' + NAMESPACE + '-drag-box');
-      var cropBox = cropper.querySelector('.' + NAMESPACE + '-crop-box');
-      var face = cropBox.querySelector('.' + NAMESPACE + '-face');
-
-      this.container = container;
-      this.cropper = cropper;
-      this.canvas = canvas;
-      this.dragBox = dragBox;
-      this.cropBox = cropBox;
-      this.viewBox = cropper.querySelector('.' + NAMESPACE + '-view-box');
-      this.face = face;
-
-      canvas.appendChild(image);
-
-      // Hide the original image
-      addClass(element, CLASS_HIDDEN);
-
-      // Inserts the cropper after to the current image
-      container.insertBefore(cropper, element.nextSibling);
-
-      // Show the image if is hidden
-      if (!this.isImg) {
-        removeClass(image, CLASS_HIDE);
-      }
-
-      this.initPreview();
-      this.bind();
-
-      options.aspectRatio = Math.max(0, options.aspectRatio) || NaN;
-      options.viewMode = Math.max(0, Math.min(3, Math.round(options.viewMode))) || 0;
-
-      addClass(cropBox, CLASS_HIDDEN);
-
-      if (!options.guides) {
-        addClass(cropBox.getElementsByClassName(NAMESPACE + '-dashed'), CLASS_HIDDEN);
-      }
-
-      if (!options.center) {
-        addClass(cropBox.getElementsByClassName(NAMESPACE + '-center'), CLASS_HIDDEN);
-      }
-
-      if (options.background) {
-        addClass(cropper, NAMESPACE + '-bg');
-      }
-
-      if (!options.highlight) {
-        addClass(face, CLASS_INVISIBLE);
-      }
-
-      if (options.cropBoxMovable) {
-        addClass(face, CLASS_MOVE);
-        setData(face, DATA_ACTION, ACTION_ALL);
-      }
-
-      if (!options.cropBoxResizable) {
-        addClass(cropBox.getElementsByClassName(NAMESPACE + '-line'), CLASS_HIDDEN);
-        addClass(cropBox.getElementsByClassName(NAMESPACE + '-point'), CLASS_HIDDEN);
-      }
-
-      this.render();
-      this.ready = true;
-      this.setDragMode(options.dragMode);
-
-      if (options.autoCrop) {
-        this.crop();
-      }
-
-      this.setData(options.data);
-
-      if (isFunction(options.ready)) {
-        addListener(element, EVENT_READY, options.ready, {
-          once: true
-        });
-      }
-
-      dispatchEvent(element, EVENT_READY);
-    }
-  }, {
-    key: 'unbuild',
-    value: function unbuild() {
-      if (!this.ready) {
-        return;
-      }
-
-      this.ready = false;
-      this.unbind();
-      this.resetPreview();
-      this.cropper.parentNode.removeChild(this.cropper);
-      removeClass(this.element, CLASS_HIDDEN);
-    }
-  }, {
-    key: 'uncreate',
-    value: function uncreate() {
-      var element = this.element;
-
-
-      if (this.ready) {
-        this.unbuild();
-        this.ready = false;
-        this.cropped = false;
-      } else if (this.sizing) {
-        this.sizingImage.onload = null;
-        this.sizing = false;
-        this.sized = false;
-      } else if (this.reloading) {
-        this.xhr.abort();
-      } else if (this.isImg) {
-        if (element.complete) {
-          clearTimeout(this.timeout);
-        } else {
-          removeListener(element, EVENT_LOAD, this.onStart);
-        }
-      } else if (this.image) {
-        this.stop();
-      }
-    }
-
-    /**
-     * Get the no conflict cropper class.
-     * @returns {Cropper} The cropper class.
-     */
-
-  }], [{
-    key: 'noConflict',
-    value: function noConflict() {
-      window.Cropper = AnotherCropper;
-      return Cropper;
-    }
-
-    /**
-     * Change the default options.
-     * @param {Object} options - The new default options.
-     */
-
-  }, {
-    key: 'setDefaults',
-    value: function setDefaults(options) {
-      assign(DEFAULTS, isPlainObject(options) && options);
-    }
-  }]);
+        },
+      },
+      {
+        key: "clone",
+        value: function clone() {
+          var element = this.element,
+            url = this.url;
+
+          var crossOrigin = void 0;
+          var crossOriginUrl = void 0;
+
+          if (this.options.checkCrossOrigin && isCrossOriginURL(url)) {
+            crossOrigin = element.crossOrigin;
+
+            if (crossOrigin) {
+              crossOriginUrl = url;
+            } else {
+              crossOrigin = "anonymous";
+
+              // Bust cache when there is not a "crossOrigin" property
+              crossOriginUrl = addTimestamp(url);
+            }
+          }
+
+          this.crossOrigin = crossOrigin;
+          this.crossOriginUrl = crossOriginUrl;
+
+          var image = document.createElement("img");
+
+          if (crossOrigin) {
+            image.crossOrigin = crossOrigin;
+          }
+
+          image.src = crossOriginUrl || url;
+
+          var start = this.start.bind(this);
+          var stop = this.stop.bind(this);
+
+          this.image = image;
+          this.onStart = start;
+          this.onStop = stop;
+
+          if (this.isImg) {
+            if (element.complete) {
+              // start asynchronously to keep `this.cropper` is accessible in `ready` event handler.
+              this.timeout = setTimeout(start, 0);
+            } else {
+              addListener(element, EVENT_LOAD, start, {
+                once: true,
+              });
+            }
+          } else {
+            image.onload = start;
+            image.onerror = stop;
+            addClass(image, CLASS_HIDE);
+            element.parentNode.insertBefore(image, element.nextSibling);
+          }
+        },
+      },
+      {
+        key: "start",
+        value: function start(event) {
+          var _this2 = this;
+
+          var image = this.isImg ? this.element : this.image;
+
+          if (event) {
+            image.onload = null;
+            image.onerror = null;
+          }
+
+          this.sizing = true;
+
+          var IS_SAFARI =
+            WINDOW.navigator &&
+            /(Macintosh|iPhone|iPod|iPad).*AppleWebKit/i.test(
+              WINDOW.navigator.userAgent
+            );
+          var done = function done(naturalWidth, naturalHeight) {
+            assign(_this2.imageData, {
+              naturalWidth: naturalWidth,
+              naturalHeight: naturalHeight,
+              aspectRatio: naturalWidth / naturalHeight,
+            });
+            _this2.sizing = false;
+            _this2.sized = true;
+            _this2.build();
+          };
+
+          // Modern browsers (except Safari)
+          if (image.naturalWidth && !IS_SAFARI) {
+            done(image.naturalWidth, image.naturalHeight);
+            return;
+          }
+
+          var sizingImage = document.createElement("img");
+          var body = document.body || document.documentElement;
+
+          this.sizingImage = sizingImage;
+
+          sizingImage.onload = function () {
+            done(sizingImage.width, sizingImage.height);
+
+            if (!IS_SAFARI) {
+              body.removeChild(sizingImage);
+            }
+          };
+
+          sizingImage.src = image.src;
+
+          // iOS Safari will convert the image automatically
+          // with its orientation once append it into DOM (#279)
+          if (!IS_SAFARI) {
+            sizingImage.style.cssText =
+              "left:0;" +
+              "max-height:none!important;" +
+              "max-width:none!important;" +
+              "min-height:0!important;" +
+              "min-width:0!important;" +
+              "opacity:0;" +
+              "position:absolute;" +
+              "top:0;" +
+              "z-index:-1;";
+            body.appendChild(sizingImage);
+          }
+        },
+      },
+      {
+        key: "stop",
+        value: function stop() {
+          var image = this.image;
+
+          image.onload = null;
+          image.onerror = null;
+          image.parentNode.removeChild(image);
+          this.image = null;
+        },
+      },
+      {
+        key: "build",
+        value: function build() {
+          if (!this.sized || this.ready) {
+            return;
+          }
+
+          var element = this.element,
+            options = this.options,
+            image = this.image;
+
+          // Create cropper elements
+
+          var container = element.parentNode;
+          var template = document.createElement("div");
+
+          template.innerHTML = TEMPLATE;
+
+          var cropper = template.querySelector("." + NAMESPACE + "-container");
+          var canvas = cropper.querySelector("." + NAMESPACE + "-canvas");
+          var dragBox = cropper.querySelector("." + NAMESPACE + "-drag-box");
+          var cropBox = cropper.querySelector("." + NAMESPACE + "-crop-box");
+          var face = cropBox.querySelector("." + NAMESPACE + "-face");
+
+          this.container = container;
+          this.cropper = cropper;
+          this.canvas = canvas;
+          this.dragBox = dragBox;
+          this.cropBox = cropBox;
+          this.viewBox = cropper.querySelector("." + NAMESPACE + "-view-box");
+          this.face = face;
+
+          canvas.appendChild(image);
+
+          // Hide the original image
+          addClass(element, CLASS_HIDDEN);
+
+          // Inserts the cropper after to the current image
+          container.insertBefore(cropper, element.nextSibling);
+
+          // Show the image if is hidden
+          if (!this.isImg) {
+            removeClass(image, CLASS_HIDE);
+          }
+
+          this.initPreview();
+          this.bind();
+
+          options.aspectRatio = Math.max(0, options.aspectRatio) || NaN;
+          options.viewMode =
+            Math.max(0, Math.min(3, Math.round(options.viewMode))) || 0;
+
+          addClass(cropBox, CLASS_HIDDEN);
+
+          if (!options.guides) {
+            addClass(
+              cropBox.getElementsByClassName(NAMESPACE + "-dashed"),
+              CLASS_HIDDEN
+            );
+          }
+
+          if (!options.center) {
+            addClass(
+              cropBox.getElementsByClassName(NAMESPACE + "-center"),
+              CLASS_HIDDEN
+            );
+          }
+
+          if (options.background) {
+            addClass(cropper, NAMESPACE + "-bg");
+          }
+
+          if (!options.highlight) {
+            addClass(face, CLASS_INVISIBLE);
+          }
+
+          if (options.cropBoxMovable) {
+            addClass(face, CLASS_MOVE);
+            setData(face, DATA_ACTION, ACTION_ALL);
+          }
+
+          if (!options.cropBoxResizable) {
+            addClass(
+              cropBox.getElementsByClassName(NAMESPACE + "-line"),
+              CLASS_HIDDEN
+            );
+            addClass(
+              cropBox.getElementsByClassName(NAMESPACE + "-point"),
+              CLASS_HIDDEN
+            );
+          }
+
+          this.render();
+          this.ready = true;
+          this.setDragMode(options.dragMode);
+
+          if (options.autoCrop) {
+            this.crop();
+          }
+
+          this.setData(options.data);
+
+          if (isFunction(options.ready)) {
+            addListener(element, EVENT_READY, options.ready, {
+              once: true,
+            });
+          }
+
+          dispatchEvent(element, EVENT_READY);
+        },
+      },
+      {
+        key: "unbuild",
+        value: function unbuild() {
+          if (!this.ready) {
+            return;
+          }
+
+          this.ready = false;
+          this.unbind();
+          this.resetPreview();
+          this.cropper.parentNode.removeChild(this.cropper);
+          removeClass(this.element, CLASS_HIDDEN);
+        },
+      },
+      {
+        key: "uncreate",
+        value: function uncreate() {
+          var element = this.element;
+
+          if (this.ready) {
+            this.unbuild();
+            this.ready = false;
+            this.cropped = false;
+          } else if (this.sizing) {
+            this.sizingImage.onload = null;
+            this.sizing = false;
+            this.sized = false;
+          } else if (this.reloading) {
+            this.xhr.abort();
+          } else if (this.isImg) {
+            if (element.complete) {
+              clearTimeout(this.timeout);
+            } else {
+              removeListener(element, EVENT_LOAD, this.onStart);
+            }
+          } else if (this.image) {
+            this.stop();
+          }
+        },
+
+        /**
+         * Get the no conflict cropper class.
+         * @returns {Cropper} The cropper class.
+         */
+      },
+    ],
+    [
+      {
+        key: "noConflict",
+        value: function noConflict() {
+          window.Cropper = AnotherCropper;
+          return Cropper;
+        },
+
+        /**
+         * Change the default options.
+         * @param {Object} options - The new default options.
+         */
+      },
+      {
+        key: "setDefaults",
+        value: function setDefaults(options) {
+          assign(DEFAULTS, isPlainObject(options) && options);
+        },
+      },
+    ]
+  );
   return Cropper;
-}();
+})();
 
 assign(Cropper.prototype, render, preview, events, handlers, change, methods);
 
 if ($.fn) {
   var AnotherCropper$1 = $.fn.cropper;
-  var NAMESPACE$1 = 'cropper';
+  var NAMESPACE$1 = "cropper";
 
   $.fn.cropper = function jQueryCropper(option) {
-    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    for (
+      var _len = arguments.length,
+        args = Array(_len > 1 ? _len - 1 : 0),
+        _key = 1;
+      _key < _len;
+      _key++
+    ) {
       args[_key - 1] = arguments[_key];
     }
 
@@ -3714,7 +4116,7 @@ if ($.fn) {
 
     this.each(function (i, element) {
       var $element = $(element);
-      var isDestroy = option === 'destroy';
+      var isDestroy = option === "destroy";
       var cropper = $element.data(NAMESPACE$1);
 
       if (!cropper) {
@@ -3722,13 +4124,17 @@ if ($.fn) {
           return;
         }
 
-        var options = $.extend({}, $element.data(), $.isPlainObject(option) && option);
+        var options = $.extend(
+          {},
+          $element.data(),
+          $.isPlainObject(option) && option
+        );
 
         cropper = new Cropper(element, options);
         $element.data(NAMESPACE$1, cropper);
       }
 
-      if (typeof option === 'string') {
+      if (typeof option === "string") {
         var fn = cropper[option];
 
         if ($.isFunction(fn)) {

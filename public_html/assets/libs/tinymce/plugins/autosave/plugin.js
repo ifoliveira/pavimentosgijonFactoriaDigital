@@ -1,6 +1,6 @@
 (function () {
-var autosave = (function (domGlobals) {
-    'use strict';
+  var autosave = (function (domGlobals) {
+    "use strict";
 
     var Cell = function (initial) {
       var value = initial;
@@ -16,64 +16,88 @@ var autosave = (function (domGlobals) {
       return {
         get: get,
         set: set,
-        clone: clone
+        clone: clone,
       };
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global = tinymce.util.Tools.resolve("tinymce.PluginManager");
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.LocalStorage');
+    var global$1 = tinymce.util.Tools.resolve("tinymce.util.LocalStorage");
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global$2 = tinymce.util.Tools.resolve("tinymce.util.Tools");
 
     var fireRestoreDraft = function (editor) {
-      return editor.fire('RestoreDraft');
+      return editor.fire("RestoreDraft");
     };
     var fireStoreDraft = function (editor) {
-      return editor.fire('StoreDraft');
+      return editor.fire("StoreDraft");
     };
     var fireRemoveDraft = function (editor) {
-      return editor.fire('RemoveDraft');
+      return editor.fire("RemoveDraft");
     };
 
     var parse = function (timeString, defaultTime) {
       var multiples = {
         s: 1000,
-        m: 60000
+        m: 60000,
       };
       var toParse = timeString || defaultTime;
-      var parsedTime = /^(\d+)([ms]?)$/.exec('' + toParse);
-      return (parsedTime[2] ? multiples[parsedTime[2]] : 1) * parseInt(toParse, 10);
+      var parsedTime = /^(\d+)([ms]?)$/.exec("" + toParse);
+      return (
+        (parsedTime[2] ? multiples[parsedTime[2]] : 1) * parseInt(toParse, 10)
+      );
     };
 
     var shouldAskBeforeUnload = function (editor) {
-      return editor.getParam('autosave_ask_before_unload', true);
+      return editor.getParam("autosave_ask_before_unload", true);
     };
     var getAutoSavePrefix = function (editor) {
-      var prefix = editor.getParam('autosave_prefix', 'tinymce-autosave-{path}{query}{hash}-{id}-');
-      prefix = prefix.replace(/\{path\}/g, domGlobals.document.location.pathname);
-      prefix = prefix.replace(/\{query\}/g, domGlobals.document.location.search);
+      var prefix = editor.getParam(
+        "autosave_prefix",
+        "tinymce-autosave-{path}{query}{hash}-{id}-"
+      );
+      prefix = prefix.replace(
+        /\{path\}/g,
+        domGlobals.document.location.pathname
+      );
+      prefix = prefix.replace(
+        /\{query\}/g,
+        domGlobals.document.location.search
+      );
       prefix = prefix.replace(/\{hash\}/g, domGlobals.document.location.hash);
       prefix = prefix.replace(/\{id\}/g, editor.id);
       return prefix;
     };
     var shouldRestoreWhenEmpty = function (editor) {
-      return editor.getParam('autosave_restore_when_empty', false);
+      return editor.getParam("autosave_restore_when_empty", false);
     };
     var getAutoSaveInterval = function (editor) {
-      return parse(editor.settings.autosave_interval, '30s');
+      return parse(editor.settings.autosave_interval, "30s");
     };
     var getAutoSaveRetention = function (editor) {
-      return parse(editor.settings.autosave_retention, '20m');
+      return parse(editor.settings.autosave_retention, "20m");
     };
 
     var isEmpty = function (editor, html) {
       var forcedRootBlockName = editor.settings.forced_root_block;
-      html = global$2.trim(typeof html === 'undefined' ? editor.getBody().innerHTML : html);
-      return html === '' || new RegExp('^<' + forcedRootBlockName + '[^>]*>((\xA0|&nbsp;|[ \t]|<br[^>]*>)+?|)</' + forcedRootBlockName + '>|<br>$', 'i').test(html);
+      html = global$2.trim(
+        typeof html === "undefined" ? editor.getBody().innerHTML : html
+      );
+      return (
+        html === "" ||
+        new RegExp(
+          "^<" +
+            forcedRootBlockName +
+            "[^>]*>((\xA0|&nbsp;|[ \t]|<br[^>]*>)+?|)</" +
+            forcedRootBlockName +
+            ">|<br>$",
+          "i"
+        ).test(html)
+      );
     };
     var hasDraft = function (editor) {
-      var time = parseInt(global$1.getItem(getAutoSavePrefix(editor) + 'time'), 10) || 0;
+      var time =
+        parseInt(global$1.getItem(getAutoSavePrefix(editor) + "time"), 10) || 0;
       if (new Date().getTime() - time > getAutoSaveRetention(editor)) {
         removeDraft(editor, false);
         return false;
@@ -82,8 +106,8 @@ var autosave = (function (domGlobals) {
     };
     var removeDraft = function (editor, fire) {
       var prefix = getAutoSavePrefix(editor);
-      global$1.removeItem(prefix + 'draft');
-      global$1.removeItem(prefix + 'time');
+      global$1.removeItem(prefix + "draft");
+      global$1.removeItem(prefix + "time");
       if (fire !== false) {
         fireRemoveDraft(editor);
       }
@@ -91,18 +115,23 @@ var autosave = (function (domGlobals) {
     var storeDraft = function (editor) {
       var prefix = getAutoSavePrefix(editor);
       if (!isEmpty(editor) && editor.isDirty()) {
-        global$1.setItem(prefix + 'draft', editor.getContent({
-          format: 'raw',
-          no_events: true
-        }));
-        global$1.setItem(prefix + 'time', new Date().getTime().toString());
+        global$1.setItem(
+          prefix + "draft",
+          editor.getContent({
+            format: "raw",
+            no_events: true,
+          })
+        );
+        global$1.setItem(prefix + "time", new Date().getTime().toString());
         fireStoreDraft(editor);
       }
     };
     var restoreDraft = function (editor) {
       var prefix = getAutoSavePrefix(editor);
       if (hasDraft(editor)) {
-        editor.setContent(global$1.getItem(prefix + 'draft'), { format: 'raw' });
+        editor.setContent(global$1.getItem(prefix + "draft"), {
+          format: "raw",
+        });
         fireRestoreDraft(editor);
       }
     };
@@ -146,11 +175,11 @@ var autosave = (function (domGlobals) {
         storeDraft: curry(storeDraft, editor),
         restoreDraft: curry(restoreDraft, editor),
         removeDraft: curry(removeDraft, editor),
-        isEmpty: curry(isEmpty, editor)
+        isEmpty: curry(isEmpty, editor),
       };
     };
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.EditorManager');
+    var global$3 = tinymce.util.Tools.resolve("tinymce.EditorManager");
 
     global$3._beforeUnloadHandler = function () {
       var msg;
@@ -159,7 +188,9 @@ var autosave = (function (domGlobals) {
           editor.plugins.autosave.storeDraft();
         }
         if (!msg && editor.isDirty() && shouldAskBeforeUnload(editor)) {
-          msg = editor.translate('You have unsaved changes are you sure you want to navigate away?');
+          msg = editor.translate(
+            "You have unsaved changes are you sure you want to navigate away?"
+          );
         }
       });
       return msg;
@@ -172,45 +203,46 @@ var autosave = (function (domGlobals) {
       return function (e) {
         var ctrl = e.control;
         ctrl.disabled(!hasDraft(editor));
-        editor.on('StoreDraft RestoreDraft RemoveDraft', function () {
+        editor.on("StoreDraft RestoreDraft RemoveDraft", function () {
           ctrl.disabled(!hasDraft(editor));
         });
         startStoreDraft(editor, started);
       };
     };
     var register = function (editor, started) {
-      editor.addButton('restoredraft', {
-        title: 'Restore last draft',
-        onclick: function () {
-          restoreLastDraft(editor);
-        },
-        onPostRender: postRender(editor, started)
-      });
-      editor.addMenuItem('restoredraft', {
-        text: 'Restore last draft',
+      editor.addButton("restoredraft", {
+        title: "Restore last draft",
         onclick: function () {
           restoreLastDraft(editor);
         },
         onPostRender: postRender(editor, started),
-        context: 'file'
+      });
+      editor.addMenuItem("restoredraft", {
+        text: "Restore last draft",
+        onclick: function () {
+          restoreLastDraft(editor);
+        },
+        onPostRender: postRender(editor, started),
+        context: "file",
       });
     };
 
-    global.add('autosave', function (editor) {
+    global.add("autosave", function (editor) {
       var started = Cell(false);
       setup();
       register(editor, started);
-      editor.on('init', function () {
-        if (shouldRestoreWhenEmpty(editor) && editor.dom.isEmpty(editor.getBody())) {
+      editor.on("init", function () {
+        if (
+          shouldRestoreWhenEmpty(editor) &&
+          editor.dom.isEmpty(editor.getBody())
+        ) {
           restoreDraft(editor);
         }
       });
       return get(editor);
     });
-    function Plugin () {
-    }
+    function Plugin() {}
 
     return Plugin;
-
-}(window));
+  })(window);
 })();

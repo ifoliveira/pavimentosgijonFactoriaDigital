@@ -1,6 +1,6 @@
 (function () {
-var imagetools = (function (domGlobals) {
-    'use strict';
+  var imagetools = (function (domGlobals) {
+    "use strict";
 
     var Cell = function (initial) {
       var value = initial;
@@ -16,13 +16,13 @@ var imagetools = (function (domGlobals) {
       return {
         get: get,
         set: set,
-        clone: clone
+        clone: clone,
       };
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global = tinymce.util.Tools.resolve("tinymce.PluginManager");
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global$1 = tinymce.util.Tools.resolve("tinymce.util.Tools");
 
     var constant = function (value) {
       return function () {
@@ -51,7 +51,7 @@ var imagetools = (function (domGlobals) {
     var none = function () {
       return NONE;
     };
-    var NONE = function () {
+    var NONE = (function () {
       var eq = function (o) {
         return o.isNone();
       };
@@ -61,8 +61,7 @@ var imagetools = (function (domGlobals) {
       var id = function (n) {
         return n;
       };
-      var noop = function () {
-      };
+      var noop = function () {};
       var nul = function () {
         return null;
       };
@@ -79,7 +78,7 @@ var imagetools = (function (domGlobals) {
         getOr: id,
         getOrThunk: call,
         getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
+          throw new Error(msg || "error: getOrDie called on none.");
         },
         getOrNull: nul,
         getOrUndefined: undef,
@@ -98,12 +97,11 @@ var imagetools = (function (domGlobals) {
         toArray: function () {
           return [];
         },
-        toString: constant('none()')
+        toString: constant("none()"),
       };
-      if (Object.freeze)
-        Object.freeze(me);
+      if (Object.freeze) Object.freeze(me);
       return me;
-    }();
+    })();
     var some = function (a) {
       var constant_a = function () {
         return a;
@@ -161,8 +159,8 @@ var imagetools = (function (domGlobals) {
           return [a];
         },
         toString: function () {
-          return 'some(' + a + ')';
-        }
+          return "some(" + a + ")";
+        },
       };
       return me;
     };
@@ -172,10 +170,13 @@ var imagetools = (function (domGlobals) {
     var Option = {
       some: some,
       none: none,
-      from: from
+      from: from,
     };
 
-    var Global = typeof domGlobals.window !== 'undefined' ? domGlobals.window : Function('return this;')();
+    var Global =
+      typeof domGlobals.window !== "undefined"
+        ? domGlobals.window
+        : Function("return this;")();
 
     var path = function (parts, scope) {
       var o = scope !== undefined && scope !== null ? scope : Global;
@@ -184,7 +185,7 @@ var imagetools = (function (domGlobals) {
       return o;
     };
     var resolve = function (p, scope) {
-      var parts = p.split('.');
+      var parts = p.split(".");
       return path(parts, scope);
     };
 
@@ -194,41 +195,41 @@ var imagetools = (function (domGlobals) {
     var getOrDie = function (name, scope) {
       var actual = unsafe(name, scope);
       if (actual === undefined || actual === null)
-        throw name + ' not available on this browser';
+        throw name + " not available on this browser";
       return actual;
     };
     var Global$1 = { getOrDie: getOrDie };
 
-    function SandBlob (parts, properties) {
-      var f = Global$1.getOrDie('Blob');
+    function SandBlob(parts, properties) {
+      var f = Global$1.getOrDie("Blob");
       return new f(parts, properties);
     }
 
-    function FileReader () {
-      var f = Global$1.getOrDie('FileReader');
+    function FileReader() {
+      var f = Global$1.getOrDie("FileReader");
       return new f();
     }
 
-    function Uint8Array (arr) {
-      var f = Global$1.getOrDie('Uint8Array');
+    function Uint8Array(arr) {
+      var f = Global$1.getOrDie("Uint8Array");
       return new f(arr);
     }
 
     var requestAnimationFrame = function (callback) {
-      var f = Global$1.getOrDie('requestAnimationFrame');
+      var f = Global$1.getOrDie("requestAnimationFrame");
       f(callback);
     };
     var atob = function (base64) {
-      var f = Global$1.getOrDie('atob');
+      var f = Global$1.getOrDie("atob");
       return f(base64);
     };
     var Window = {
       atob: atob,
-      requestAnimationFrame: requestAnimationFrame
+      requestAnimationFrame: requestAnimationFrame,
     };
 
     function create(width, height) {
-      return resize(domGlobals.document.createElement('canvas'), width, height);
+      return resize(domGlobals.document.createElement("canvas"), width, height);
     }
     function clone(canvas) {
       var tCanvas = create(canvas.width, canvas.height);
@@ -237,7 +238,7 @@ var imagetools = (function (domGlobals) {
       return tCanvas;
     }
     function get2dContext(canvas) {
-      return canvas.getContext('2d');
+      return canvas.getContext("2d");
     }
     function resize(canvas, width, height) {
       canvas.width = width;
@@ -254,28 +255,33 @@ var imagetools = (function (domGlobals) {
 
     var promise = function () {
       var Promise = function (fn) {
-        if (typeof this !== 'object') {
-          throw new TypeError('Promises must be constructed via new');
+        if (typeof this !== "object") {
+          throw new TypeError("Promises must be constructed via new");
         }
-        if (typeof fn !== 'function') {
-          throw new TypeError('not a function');
+        if (typeof fn !== "function") {
+          throw new TypeError("not a function");
         }
         this._state = null;
         this._value = null;
         this._deferreds = [];
         doResolve(fn, bind(resolve, this), bind(reject, this));
       };
-      var asap = Promise.immediateFn || typeof window.setImmediate === 'function' && window.setImmediate || function (fn) {
-        domGlobals.setTimeout(fn, 1);
-      };
+      var asap =
+        Promise.immediateFn ||
+        (typeof window.setImmediate === "function" && window.setImmediate) ||
+        function (fn) {
+          domGlobals.setTimeout(fn, 1);
+        };
       function bind(fn, thisArg) {
         return function () {
           return fn.apply(thisArg, arguments);
         };
       }
-      var isArray = Array.isArray || function (value) {
-        return Object.prototype.toString.call(value) === '[object Array]';
-      };
+      var isArray =
+        Array.isArray ||
+        function (value) {
+          return Object.prototype.toString.call(value) === "[object Array]";
+        };
       function handle(deferred) {
         var me = this;
         if (this._state === null) {
@@ -301,12 +307,19 @@ var imagetools = (function (domGlobals) {
       function resolve(newValue) {
         try {
           if (newValue === this) {
-            throw new TypeError('A promise cannot be resolved with itself.');
+            throw new TypeError("A promise cannot be resolved with itself.");
           }
-          if (newValue && (typeof newValue === 'object' || typeof newValue === 'function')) {
+          if (
+            newValue &&
+            (typeof newValue === "object" || typeof newValue === "function")
+          ) {
             var then = newValue.then;
-            if (typeof then === 'function') {
-              doResolve(bind(then, newValue), bind(resolve, this), bind(reject, this));
+            if (typeof then === "function") {
+              doResolve(
+                bind(then, newValue),
+                bind(resolve, this),
+                bind(reject, this)
+              );
               return;
             }
           }
@@ -330,27 +343,31 @@ var imagetools = (function (domGlobals) {
         this._deferreds = [];
       }
       function Handler(onFulfilled, onRejected, resolve, reject) {
-        this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
-        this.onRejected = typeof onRejected === 'function' ? onRejected : null;
+        this.onFulfilled =
+          typeof onFulfilled === "function" ? onFulfilled : null;
+        this.onRejected = typeof onRejected === "function" ? onRejected : null;
         this.resolve = resolve;
         this.reject = reject;
       }
       function doResolve(fn, onFulfilled, onRejected) {
         var done = false;
         try {
-          fn(function (value) {
-            if (done) {
-              return;
+          fn(
+            function (value) {
+              if (done) {
+                return;
+              }
+              done = true;
+              onFulfilled(value);
+            },
+            function (reason) {
+              if (done) {
+                return;
+              }
+              done = true;
+              onRejected(reason);
             }
-            done = true;
-            onFulfilled(value);
-          }, function (reason) {
-            if (done) {
-              return;
-            }
-            done = true;
-            onRejected(reason);
-          });
+          );
         } catch (ex) {
           if (done) {
             return;
@@ -365,7 +382,10 @@ var imagetools = (function (domGlobals) {
       Promise.prototype.then = function (onFulfilled, onRejected) {
         var me = this;
         return new Promise(function (resolve, reject) {
-          handle.call(me, new Handler(onFulfilled, onRejected, resolve, reject));
+          handle.call(
+            me,
+            new Handler(onFulfilled, onRejected, resolve, reject)
+          );
         });
       };
       Promise.all = function () {
@@ -373,7 +393,9 @@ var imagetools = (function (domGlobals) {
         for (var _i = 0; _i < arguments.length; _i++) {
           values[_i] = arguments[_i];
         }
-        var args = Array.prototype.slice.call(values.length === 1 && isArray(values[0]) ? values[0] : values);
+        var args = Array.prototype.slice.call(
+          values.length === 1 && isArray(values[0]) ? values[0] : values
+        );
         return new Promise(function (resolve, reject) {
           if (args.length === 0) {
             return resolve([]);
@@ -381,12 +403,19 @@ var imagetools = (function (domGlobals) {
           var remaining = args.length;
           function res(i, val) {
             try {
-              if (val && (typeof val === 'object' || typeof val === 'function')) {
+              if (
+                val &&
+                (typeof val === "object" || typeof val === "function")
+              ) {
                 var then = val.then;
-                if (typeof then === 'function') {
-                  then.call(val, function (val) {
-                    res(i, val);
-                  }, reject);
+                if (typeof then === "function") {
+                  then.call(
+                    val,
+                    function (val) {
+                      res(i, val);
+                    },
+                    reject
+                  );
                   return;
                 }
               }
@@ -404,7 +433,11 @@ var imagetools = (function (domGlobals) {
         });
       };
       Promise.resolve = function (value) {
-        if (value && typeof value === 'object' && value.constructor === Promise) {
+        if (
+          value &&
+          typeof value === "object" &&
+          value.constructor === Promise
+        ) {
           return value;
         }
         return new Promise(function (resolve) {
@@ -430,7 +463,7 @@ var imagetools = (function (domGlobals) {
 
     function imageToBlob(image) {
       var src = image.src;
-      if (src.indexOf('data:') === 0) {
+      if (src.indexOf("data:") === 0) {
         return dataUriToBlob(src);
       }
       return anyUriToBlob(src);
@@ -440,8 +473,8 @@ var imagetools = (function (domGlobals) {
         var blobUrl = domGlobals.URL.createObjectURL(blob);
         var image = new domGlobals.Image();
         var removeListeners = function () {
-          image.removeEventListener('load', loaded);
-          image.removeEventListener('error', error);
+          image.removeEventListener("load", loaded);
+          image.removeEventListener("error", error);
         };
         function loaded() {
           removeListeners();
@@ -449,10 +482,10 @@ var imagetools = (function (domGlobals) {
         }
         function error() {
           removeListeners();
-          reject('Unable to load data of type ' + blob.type + ': ' + blobUrl);
+          reject("Unable to load data of type " + blob.type + ": " + blobUrl);
         }
-        image.addEventListener('load', loaded);
-        image.addEventListener('error', error);
+        image.addEventListener("load", loaded);
+        image.addEventListener("error", error);
         image.src = blobUrl;
         if (image.complete) {
           loaded();
@@ -462,8 +495,8 @@ var imagetools = (function (domGlobals) {
     function anyUriToBlob(url) {
       return new Promise(function (resolve, reject) {
         var xhr = new domGlobals.XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.responseType = 'blob';
+        xhr.open("GET", url, true);
+        xhr.responseType = "blob";
         xhr.onload = function () {
           if (this.status === 200) {
             resolve(this.response);
@@ -472,13 +505,13 @@ var imagetools = (function (domGlobals) {
         xhr.onerror = function () {
           var _this = this;
           var corsError = function () {
-            var obj = new Error('No access to download image');
+            var obj = new Error("No access to download image");
             obj.code = 18;
-            obj.name = 'SecurityError';
+            obj.name = "SecurityError";
             return obj;
           };
           var genericError = function () {
-            return new Error('Error ' + _this.status + ' downloading image');
+            return new Error("Error " + _this.status + " downloading image");
           };
           reject(this.status === 0 ? corsError() : genericError());
         };
@@ -486,7 +519,7 @@ var imagetools = (function (domGlobals) {
       });
     }
     function dataUriToBlobSync(uri) {
-      var data = uri.split(',');
+      var data = uri.split(",");
       var matches = /data:([^;]+)/.exec(data[0]);
       if (!matches) {
         return Option.none();
@@ -512,28 +545,32 @@ var imagetools = (function (domGlobals) {
     function dataUriToBlob(uri) {
       return new Promise(function (resolve, reject) {
         dataUriToBlobSync(uri).fold(function () {
-          reject('uri is not base64: ' + uri);
+          reject("uri is not base64: " + uri);
         }, resolve);
       });
     }
     function canvasToBlob(canvas, type, quality) {
-      type = type || 'image/png';
+      type = type || "image/png";
       if (domGlobals.HTMLCanvasElement.prototype.toBlob) {
         return new Promise(function (resolve, reject) {
-          canvas.toBlob(function (blob) {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject();
-            }
-          }, type, quality);
+          canvas.toBlob(
+            function (blob) {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject();
+              }
+            },
+            type,
+            quality
+          );
         });
       } else {
         return dataUriToBlob(canvas.toDataURL(type, quality));
       }
     }
     function canvasToDataURL(canvas, type, quality) {
-      type = type || 'image/png';
+      type = type || "image/png";
       return canvas.toDataURL(type, quality);
     }
     function blobToCanvas(blob) {
@@ -575,7 +612,7 @@ var imagetools = (function (domGlobals) {
         return uri;
       }
       function toBase64() {
-        return uri.split(',')[1];
+        return uri.split(",")[1];
       }
       function toAdjustedBlob(type, quality) {
         return getCanvas.then(function (canvas) {
@@ -589,7 +626,7 @@ var imagetools = (function (domGlobals) {
       }
       function toAdjustedBase64(type, quality) {
         return toAdjustedDataURL(type, quality).then(function (dataurl) {
-          return dataurl.split(',')[1];
+          return dataurl.split(",")[1];
         });
       }
       function toCanvas() {
@@ -603,7 +640,7 @@ var imagetools = (function (domGlobals) {
         toAdjustedBlob: toAdjustedBlob,
         toAdjustedDataURL: toAdjustedDataURL,
         toAdjustedBase64: toAdjustedBase64,
-        toCanvas: toCanvas
+        toCanvas: toCanvas,
       };
     }
     function fromBlob(blob) {
@@ -618,7 +655,7 @@ var imagetools = (function (domGlobals) {
     }
 
     function clamp(value, min, max) {
-      var parsedValue = typeof value === 'string' ? parseFloat(value) : value;
+      var parsedValue = typeof value === "string" ? parseFloat(value) : value;
       if (parsedValue > max) {
         parsedValue = max;
       } else if (parsedValue < min) {
@@ -628,135 +665,19 @@ var imagetools = (function (domGlobals) {
     }
     function identity() {
       return [
+        1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
         1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1
       ];
     }
     var DELTA_INDEX = [
-      0,
-      0.01,
-      0.02,
-      0.04,
-      0.05,
-      0.06,
-      0.07,
-      0.08,
-      0.1,
-      0.11,
-      0.12,
-      0.14,
-      0.15,
-      0.16,
-      0.17,
-      0.18,
-      0.2,
-      0.21,
-      0.22,
-      0.24,
-      0.25,
-      0.27,
-      0.28,
-      0.3,
-      0.32,
-      0.34,
-      0.36,
-      0.38,
-      0.4,
-      0.42,
-      0.44,
-      0.46,
-      0.48,
-      0.5,
-      0.53,
-      0.56,
-      0.59,
-      0.62,
-      0.65,
-      0.68,
-      0.71,
-      0.74,
-      0.77,
-      0.8,
-      0.83,
-      0.86,
-      0.89,
-      0.92,
-      0.95,
-      0.98,
-      1,
-      1.06,
-      1.12,
-      1.18,
-      1.24,
-      1.3,
-      1.36,
-      1.42,
-      1.48,
-      1.54,
-      1.6,
-      1.66,
-      1.72,
-      1.78,
-      1.84,
-      1.9,
-      1.96,
-      2,
-      2.12,
-      2.25,
-      2.37,
-      2.5,
-      2.62,
-      2.75,
-      2.87,
-      3,
-      3.2,
-      3.4,
-      3.6,
-      3.8,
-      4,
-      4.3,
-      4.7,
-      4.9,
-      5,
-      5.5,
-      6,
-      6.5,
-      6.8,
-      7,
-      7.3,
-      7.5,
-      7.8,
-      8,
-      8.4,
-      8.7,
-      9,
-      9.4,
-      9.6,
-      9.8,
-      10
+      0, 0.01, 0.02, 0.04, 0.05, 0.06, 0.07, 0.08, 0.1, 0.11, 0.12, 0.14, 0.15,
+      0.16, 0.17, 0.18, 0.2, 0.21, 0.22, 0.24, 0.25, 0.27, 0.28, 0.3, 0.32,
+      0.34, 0.36, 0.38, 0.4, 0.42, 0.44, 0.46, 0.48, 0.5, 0.53, 0.56, 0.59,
+      0.62, 0.65, 0.68, 0.71, 0.74, 0.77, 0.8, 0.83, 0.86, 0.89, 0.92, 0.95,
+      0.98, 1, 1.06, 1.12, 1.18, 1.24, 1.3, 1.36, 1.42, 1.48, 1.54, 1.6, 1.66,
+      1.72, 1.78, 1.84, 1.9, 1.96, 2, 2.12, 2.25, 2.37, 2.5, 2.62, 2.75, 2.87,
+      3, 3.2, 3.4, 3.6, 3.8, 4, 4.3, 4.7, 4.9, 5, 5.5, 6, 6.5, 6.8, 7, 7.3, 7.5,
+      7.8, 8, 8.4, 8.7, 9, 9.4, 9.6, 9.8, 10,
     ];
     function multiply(matrix1, matrix2) {
       var col = [];
@@ -792,13 +713,15 @@ var imagetools = (function (domGlobals) {
       value = clamp(value, -1, 1);
       value *= 100;
       if (value < 0) {
-        x = 127 + value / 100 * 127;
+        x = 127 + (value / 100) * 127;
       } else {
         x = value % 1;
         if (x === 0) {
           x = DELTA_INDEX[value];
         } else {
-          x = DELTA_INDEX[Math.floor(value)] * (1 - x) + DELTA_INDEX[Math.floor(value) + 1] * x;
+          x =
+            DELTA_INDEX[Math.floor(value)] * (1 - x) +
+            DELTA_INDEX[Math.floor(value) + 1] * x;
         }
         x = x * 127 + 127;
       }
@@ -827,7 +750,7 @@ var imagetools = (function (domGlobals) {
         0,
         0,
         0,
-        1
+        1,
       ]);
     }
     function adjustSaturation(matrix, value) {
@@ -861,11 +784,11 @@ var imagetools = (function (domGlobals) {
         0,
         0,
         0,
-        1
+        1,
       ]);
     }
     function adjustHue(matrix, angle) {
-      angle = clamp(angle, -180, 180) / 180 * Math.PI;
+      angle = (clamp(angle, -180, 180) / 180) * Math.PI;
       var cosVal = Math.cos(angle);
       var sinVal = Math.sin(angle);
       var lumR = 0.213;
@@ -896,7 +819,7 @@ var imagetools = (function (domGlobals) {
         0,
         0,
         0,
-        1
+        1,
       ]);
     }
     function adjustBrightness(matrix, value) {
@@ -926,7 +849,7 @@ var imagetools = (function (domGlobals) {
         0,
         0,
         0,
-        1
+        1,
       ]);
     }
     function adjustColors(matrix, adjustR, adjustG, adjustB) {
@@ -958,68 +881,34 @@ var imagetools = (function (domGlobals) {
         0,
         0,
         0,
-        1
+        1,
       ]);
     }
     function adjustSepia(matrix, value) {
       value = clamp(value, 0, 1);
-      return multiply(matrix, adjust([
-        0.393,
-        0.769,
-        0.189,
-        0,
-        0,
-        0.349,
-        0.686,
-        0.168,
-        0,
-        0,
-        0.272,
-        0.534,
-        0.131,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1
-      ], value));
+      return multiply(
+        matrix,
+        adjust(
+          [
+            0.393, 0.769, 0.189, 0, 0, 0.349, 0.686, 0.168, 0, 0, 0.272, 0.534,
+            0.131, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1,
+          ],
+          value
+        )
+      );
     }
     function adjustGrayscale(matrix, value) {
       value = clamp(value, 0, 1);
-      return multiply(matrix, adjust([
-        0.33,
-        0.34,
-        0.33,
-        0,
-        0,
-        0.33,
-        0.34,
-        0.33,
-        0,
-        0,
-        0.33,
-        0.34,
-        0.33,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1
-      ], value));
+      return multiply(
+        matrix,
+        adjust(
+          [
+            0.33, 0.34, 0.33, 0, 0, 0.33, 0.34, 0.33, 0, 0, 0.33, 0.34, 0.33, 0,
+            0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1,
+          ],
+          value
+        )
+      );
     }
 
     function colorFilter(ir, matrix) {
@@ -1031,7 +920,27 @@ var imagetools = (function (domGlobals) {
       var context = get2dContext(canvas);
       function applyMatrix(pixelsData, m) {
         var r, g, b, a;
-        var data = pixelsData.data, m0 = m[0], m1 = m[1], m2 = m[2], m3 = m[3], m4 = m[4], m5 = m[5], m6 = m[6], m7 = m[7], m8 = m[8], m9 = m[9], m10 = m[10], m11 = m[11], m12 = m[12], m13 = m[13], m14 = m[14], m15 = m[15], m16 = m[16], m17 = m[17], m18 = m[18], m19 = m[19];
+        var data = pixelsData.data,
+          m0 = m[0],
+          m1 = m[1],
+          m2 = m[2],
+          m3 = m[3],
+          m4 = m[4],
+          m5 = m[5],
+          m6 = m[6],
+          m7 = m[7],
+          m8 = m[8],
+          m9 = m[9],
+          m10 = m[10],
+          m11 = m[11],
+          m12 = m[12],
+          m13 = m[13],
+          m14 = m[14],
+          m15 = m[15],
+          m16 = m[16],
+          m17 = m[17],
+          m18 = m[18],
+          m19 = m[19];
         for (var i = 0; i < data.length; i += 4) {
           r = data[i];
           g = data[i + 1];
@@ -1044,7 +953,10 @@ var imagetools = (function (domGlobals) {
         }
         return pixelsData;
       }
-      var pixels = applyMatrix(context.getImageData(0, 0, canvas.width, canvas.height), matrix);
+      var pixels = applyMatrix(
+        context.getImageData(0, 0, canvas.width, canvas.height),
+        matrix
+      );
       context.putImageData(pixels, 0, 0);
       return fromCanvas(canvas, type);
     }
@@ -1116,7 +1028,10 @@ var imagetools = (function (domGlobals) {
         for (var i = 0; i < lookup.length; i++) {
           lookup[i] = colorFn(i, value);
         }
-        var pixels = applyLookup(context.getImageData(0, 0, canvas.width, canvas.height), lookup);
+        var pixels = applyLookup(
+          context.getImageData(0, 0, canvas.width, canvas.height),
+          lookup
+        );
         context.putImageData(pixels, 0, 0);
         return fromCanvas(canvas, type);
       };
@@ -1142,31 +1057,8 @@ var imagetools = (function (domGlobals) {
       };
     }
     var invert = basicColorFilter([
-      -1,
-      0,
-      0,
-      0,
-      255,
-      0,
-      -1,
-      0,
-      0,
-      255,
-      0,
-      0,
-      -1,
-      0,
-      255,
-      0,
-      0,
-      0,
-      1,
-      0,
-      0,
-      0,
-      0,
-      0,
-      1
+      -1, 0, 0, 0, 255, 0, -1, 0, 0, 255, 0, 0, -1, 0, 255, 0, 0, 0, 1, 0, 0, 0,
+      0, 0, 1,
     ]);
     var brightness = complexAdjustableColorFilter(adjustBrightness);
     var hue = complexAdjustableColorFilter(adjustHue);
@@ -1175,30 +1067,13 @@ var imagetools = (function (domGlobals) {
     var grayscale = complexAdjustableColorFilter(adjustGrayscale);
     var sepia = complexAdjustableColorFilter(adjustSepia);
     var colorize = function (ir, adjustR, adjustG, adjustB) {
-      return colorFilter(ir, adjustColors(identity(), adjustR, adjustG, adjustB));
+      return colorFilter(
+        ir,
+        adjustColors(identity(), adjustR, adjustG, adjustB)
+      );
     };
-    var sharpen = basicConvolutionFilter([
-      0,
-      -1,
-      0,
-      -1,
-      5,
-      -1,
-      0,
-      -1,
-      0
-    ]);
-    var emboss = basicConvolutionFilter([
-      -2,
-      -1,
-      0,
-      -1,
-      1,
-      1,
-      0,
-      1,
-      2
-    ]);
+    var sharpen = basicConvolutionFilter([0, -1, 0, -1, 5, -1, 0, -1, 0]);
+    var emboss = basicConvolutionFilter([-2, -1, 0, -1, 1, 1, 0, 1, 2]);
     var gamma = functionColorFilter(function (color, value) {
       return Math.pow(color / 255, 1 - value) * 255;
     });
@@ -1221,9 +1096,11 @@ var imagetools = (function (domGlobals) {
         scaleCapped = true;
       }
       var scaled = _scale(image, wRatio, hRatio);
-      return !scaleCapped ? scaled : scaled.then(function (tCanvas) {
-        return scale(tCanvas, dW, dH);
-      });
+      return !scaleCapped
+        ? scaled
+        : scaled.then(function (tCanvas) {
+            return scale(tCanvas, dW, dH);
+          });
     }
     function _scale(image, wRatio, hRatio) {
       return new Promise(function (resolve) {
@@ -1259,7 +1136,7 @@ var imagetools = (function (domGlobals) {
         translateY = canvas.height;
       }
       context.translate(translateX, translateY);
-      context.rotate(angle * Math.PI / 180);
+      context.rotate((angle * Math.PI) / 180);
       context.drawImage(image, 0, 0);
       return fromCanvas(canvas, type);
     }
@@ -1271,7 +1148,7 @@ var imagetools = (function (domGlobals) {
     function applyFlip(image, type, axis) {
       var canvas = create(image.width, image.height);
       var context = get2dContext(canvas);
-      if (axis === 'v') {
+      if (axis === "v") {
         context.scale(1, -1);
         context.drawImage(image, 0, -canvas.height);
       } else {
@@ -1353,7 +1230,7 @@ var imagetools = (function (domGlobals) {
     };
 
     var url = function () {
-      return Global$1.getOrDie('URL');
+      return Global$1.getOrDie("URL");
     };
     var createObjectURL = function (blob) {
       return url().createObjectURL(blob);
@@ -1363,42 +1240,49 @@ var imagetools = (function (domGlobals) {
     };
     var URL = {
       createObjectURL: createObjectURL,
-      revokeObjectURL: revokeObjectURL
+      revokeObjectURL: revokeObjectURL,
     };
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+    var global$2 = tinymce.util.Tools.resolve("tinymce.util.Delay");
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Promise');
+    var global$3 = tinymce.util.Tools.resolve("tinymce.util.Promise");
 
-    var global$4 = tinymce.util.Tools.resolve('tinymce.util.URI');
+    var global$4 = tinymce.util.Tools.resolve("tinymce.util.URI");
 
     var getToolbarItems = function (editor) {
-      return editor.getParam('imagetools_toolbar', 'rotateleft rotateright | flipv fliph | crop editimage imageoptions');
+      return editor.getParam(
+        "imagetools_toolbar",
+        "rotateleft rotateright | flipv fliph | crop editimage imageoptions"
+      );
     };
     var getProxyUrl = function (editor) {
-      return editor.getParam('imagetools_proxy');
+      return editor.getParam("imagetools_proxy");
     };
     var getCorsHosts = function (editor) {
-      return editor.getParam('imagetools_cors_hosts', [], 'string[]');
+      return editor.getParam("imagetools_cors_hosts", [], "string[]");
     };
     var getCredentialsHosts = function (editor) {
-      return editor.getParam('imagetools_credentials_hosts', [], 'string[]');
+      return editor.getParam("imagetools_credentials_hosts", [], "string[]");
     };
     var getApiKey = function (editor) {
-      return editor.getParam('api_key', editor.getParam('imagetools_api_key', '', 'string'), 'string');
+      return editor.getParam(
+        "api_key",
+        editor.getParam("imagetools_api_key", "", "string"),
+        "string"
+      );
     };
     var getUploadTimeout = function (editor) {
-      return editor.getParam('images_upload_timeout', 30000, 'number');
+      return editor.getParam("images_upload_timeout", 30000, "number");
     };
     var shouldReuseFilename = function (editor) {
-      return editor.getParam('images_reuse_filename', false, 'boolean');
+      return editor.getParam("images_reuse_filename", false, "boolean");
     };
 
-    var global$5 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
+    var global$5 = tinymce.util.Tools.resolve("tinymce.dom.DOMUtils");
 
-    var global$6 = tinymce.util.Tools.resolve('tinymce.ui.Factory');
+    var global$6 = tinymce.util.Tools.resolve("tinymce.ui.Factory");
 
-    function UndoStack () {
+    function UndoStack() {
       var data = [];
       var index = -1;
       function add(state) {
@@ -1407,7 +1291,7 @@ var imagetools = (function (domGlobals) {
         data.push(state);
         return {
           state: state,
-          removed: removed
+          removed: removed,
         };
       }
       function undo() {
@@ -1432,105 +1316,106 @@ var imagetools = (function (domGlobals) {
         undo: undo,
         redo: redo,
         canUndo: canUndo,
-        canRedo: canRedo
+        canRedo: canRedo,
       };
     }
 
-    var global$7 = tinymce.util.Tools.resolve('tinymce.geom.Rect');
+    var global$7 = tinymce.util.Tools.resolve("tinymce.geom.Rect");
 
     var loadImage = function (image) {
       return new global$3(function (resolve) {
         var loaded = function () {
-          image.removeEventListener('load', loaded);
+          image.removeEventListener("load", loaded);
           resolve(image);
         };
         if (image.complete) {
           resolve(image);
         } else {
-          image.addEventListener('load', loaded);
+          image.addEventListener("load", loaded);
         }
       });
     };
     var LoadImage = { loadImage: loadImage };
 
-    var global$8 = tinymce.util.Tools.resolve('tinymce.dom.DomQuery');
+    var global$8 = tinymce.util.Tools.resolve("tinymce.dom.DomQuery");
 
-    var global$9 = tinymce.util.Tools.resolve('tinymce.util.Observable');
+    var global$9 = tinymce.util.Tools.resolve("tinymce.util.Observable");
 
-    var global$a = tinymce.util.Tools.resolve('tinymce.util.VK');
+    var global$a = tinymce.util.Tools.resolve("tinymce.util.VK");
 
     var count = 0;
-    function CropRect (currentRect, viewPortRect, clampRect, containerElm, action) {
+    function CropRect(
+      currentRect,
+      viewPortRect,
+      clampRect,
+      containerElm,
+      action
+    ) {
       var instance;
       var handles;
       var dragHelpers;
       var blockers;
-      var prefix = 'mce-';
-      var id = prefix + 'crid-' + count++;
+      var prefix = "mce-";
+      var id = prefix + "crid-" + count++;
       handles = [
         {
-          name: 'move',
+          name: "move",
           xMul: 0,
           yMul: 0,
           deltaX: 1,
           deltaY: 1,
           deltaW: 0,
           deltaH: 0,
-          label: 'Crop Mask'
+          label: "Crop Mask",
         },
         {
-          name: 'nw',
+          name: "nw",
           xMul: 0,
           yMul: 0,
           deltaX: 1,
           deltaY: 1,
           deltaW: -1,
           deltaH: -1,
-          label: 'Top Left Crop Handle'
+          label: "Top Left Crop Handle",
         },
         {
-          name: 'ne',
+          name: "ne",
           xMul: 1,
           yMul: 0,
           deltaX: 0,
           deltaY: 1,
           deltaW: 1,
           deltaH: -1,
-          label: 'Top Right Crop Handle'
+          label: "Top Right Crop Handle",
         },
         {
-          name: 'sw',
+          name: "sw",
           xMul: 0,
           yMul: 1,
           deltaX: 1,
           deltaY: 0,
           deltaW: -1,
           deltaH: 1,
-          label: 'Bottom Left Crop Handle'
+          label: "Bottom Left Crop Handle",
         },
         {
-          name: 'se',
+          name: "se",
           xMul: 1,
           yMul: 1,
           deltaX: 0,
           deltaY: 0,
           deltaW: 1,
           deltaH: 1,
-          label: 'Bottom Right Crop Handle'
-        }
+          label: "Bottom Right Crop Handle",
+        },
       ];
-      blockers = [
-        'top',
-        'right',
-        'bottom',
-        'left'
-      ];
+      blockers = ["top", "right", "bottom", "left"];
       function getAbsoluteRect(outerRect, relativeRect) {
         return {
           x: relativeRect.x + outerRect.x,
           y: relativeRect.y + outerRect.y,
           w: relativeRect.w,
-          h: relativeRect.h
+          h: relativeRect.h,
         };
       }
       function getRelativeRect(outerRect, innerRect) {
@@ -1538,7 +1423,7 @@ var imagetools = (function (domGlobals) {
           x: innerRect.x - outerRect.x,
           y: innerRect.y - outerRect.y,
           w: innerRect.w,
-          h: innerRect.h
+          h: innerRect.h,
         };
       }
       function getInnerRect() {
@@ -1560,47 +1445,82 @@ var imagetools = (function (domGlobals) {
         if (h < 20) {
           h = 20;
         }
-        rect = currentRect = global$7.clamp({
-          x: x,
-          y: y,
-          w: w,
-          h: h
-        }, clampRect, handle.name === 'move');
+        rect = currentRect = global$7.clamp(
+          {
+            x: x,
+            y: y,
+            w: w,
+            h: h,
+          },
+          clampRect,
+          handle.name === "move"
+        );
         rect = getRelativeRect(clampRect, rect);
-        instance.fire('updateRect', { rect: rect });
+        instance.fire("updateRect", { rect: rect });
         setInnerRect(rect);
       }
       function render() {
         function createDragHelper(handle) {
           var startRect;
-          var DragHelper = global$6.get('DragHelper');
+          var DragHelper = global$6.get("DragHelper");
           return new DragHelper(id, {
             document: containerElm.ownerDocument,
-            handle: id + '-' + handle.name,
+            handle: id + "-" + handle.name,
             start: function () {
               startRect = currentRect;
             },
             drag: function (e) {
               moveRect(handle, startRect, e.deltaX, e.deltaY);
-            }
+            },
           });
         }
-        global$8('<div id="' + id + '" class="' + prefix + 'croprect-container"' + ' role="grid" aria-dropeffect="execute">').appendTo(containerElm);
+        global$8(
+          '<div id="' +
+            id +
+            '" class="' +
+            prefix +
+            'croprect-container"' +
+            ' role="grid" aria-dropeffect="execute">'
+        ).appendTo(containerElm);
         global$1.each(blockers, function (blocker) {
-          global$8('#' + id, containerElm).append('<div id="' + id + '-' + blocker + '"class="' + prefix + 'croprect-block" style="display: none" data-mce-bogus="all">');
+          global$8("#" + id, containerElm).append(
+            '<div id="' +
+              id +
+              "-" +
+              blocker +
+              '"class="' +
+              prefix +
+              'croprect-block" style="display: none" data-mce-bogus="all">'
+          );
         });
         global$1.each(handles, function (handle) {
-          global$8('#' + id, containerElm).append('<div id="' + id + '-' + handle.name + '" class="' + prefix + 'croprect-handle ' + prefix + 'croprect-handle-' + handle.name + '"' + 'style="display: none" data-mce-bogus="all" role="gridcell" tabindex="-1"' + ' aria-label="' + handle.label + '" aria-grabbed="false">');
+          global$8("#" + id, containerElm).append(
+            '<div id="' +
+              id +
+              "-" +
+              handle.name +
+              '" class="' +
+              prefix +
+              "croprect-handle " +
+              prefix +
+              "croprect-handle-" +
+              handle.name +
+              '"' +
+              'style="display: none" data-mce-bogus="all" role="gridcell" tabindex="-1"' +
+              ' aria-label="' +
+              handle.label +
+              '" aria-grabbed="false">'
+          );
         });
         dragHelpers = global$1.map(handles, createDragHelper);
         repaint(currentRect);
-        global$8(containerElm).on('focusin focusout', function (e) {
-          global$8(e.target).attr('aria-grabbed', e.type === 'focus');
+        global$8(containerElm).on("focusin focusout", function (e) {
+          global$8(e.target).attr("aria-grabbed", e.type === "focus");
         });
-        global$8(containerElm).on('keydown', function (e) {
+        global$8(containerElm).on("keydown", function (e) {
           var activeHandle;
           global$1.each(handles, function (handle) {
-            if (e.target.id === id + '-' + handle.name) {
+            if (e.target.id === id + "-" + handle.name) {
               activeHandle = handle;
               return false;
             }
@@ -1611,33 +1531,38 @@ var imagetools = (function (domGlobals) {
             moveRect(activeHandle, startRect, deltaX, deltaY);
           }
           switch (e.keyCode) {
-          case global$a.LEFT:
-            moveAndBlock(e, activeHandle, currentRect, -10, 0);
-            break;
-          case global$a.RIGHT:
-            moveAndBlock(e, activeHandle, currentRect, 10, 0);
-            break;
-          case global$a.UP:
-            moveAndBlock(e, activeHandle, currentRect, 0, -10);
-            break;
-          case global$a.DOWN:
-            moveAndBlock(e, activeHandle, currentRect, 0, 10);
-            break;
-          case global$a.ENTER:
-          case global$a.SPACEBAR:
-            e.preventDefault();
-            action();
-            break;
+            case global$a.LEFT:
+              moveAndBlock(e, activeHandle, currentRect, -10, 0);
+              break;
+            case global$a.RIGHT:
+              moveAndBlock(e, activeHandle, currentRect, 10, 0);
+              break;
+            case global$a.UP:
+              moveAndBlock(e, activeHandle, currentRect, 0, -10);
+              break;
+            case global$a.DOWN:
+              moveAndBlock(e, activeHandle, currentRect, 0, 10);
+              break;
+            case global$a.ENTER:
+            case global$a.SPACEBAR:
+              e.preventDefault();
+              action();
+              break;
           }
         });
       }
       function toggleVisibility(state) {
         var selectors;
-        selectors = global$1.map(handles, function (handle) {
-          return '#' + id + '-' + handle.name;
-        }).concat(global$1.map(blockers, function (blocker) {
-          return '#' + id + '-' + blocker;
-        })).join(',');
+        selectors = global$1
+          .map(handles, function (handle) {
+            return "#" + id + "-" + handle.name;
+          })
+          .concat(
+            global$1.map(blockers, function (blocker) {
+              return "#" + id + "-" + blocker;
+            })
+          )
+          .join(",");
         if (state) {
           global$8(selectors, containerElm).show();
         } else {
@@ -1652,44 +1577,44 @@ var imagetools = (function (domGlobals) {
           if (rect.w < 0) {
             rect.w = 0;
           }
-          global$8('#' + id + '-' + name, containerElm).css({
+          global$8("#" + id + "-" + name, containerElm).css({
             left: rect.x,
             top: rect.y,
             width: rect.w,
-            height: rect.h
+            height: rect.h,
           });
         }
         global$1.each(handles, function (handle) {
-          global$8('#' + id + '-' + handle.name, containerElm).css({
+          global$8("#" + id + "-" + handle.name, containerElm).css({
             left: rect.w * handle.xMul + rect.x,
-            top: rect.h * handle.yMul + rect.y
+            top: rect.h * handle.yMul + rect.y,
           });
         });
-        updateElementRect('top', {
+        updateElementRect("top", {
           x: viewPortRect.x,
           y: viewPortRect.y,
           w: viewPortRect.w,
-          h: rect.y - viewPortRect.y
+          h: rect.y - viewPortRect.y,
         });
-        updateElementRect('right', {
+        updateElementRect("right", {
           x: rect.x + rect.w,
           y: rect.y,
           w: viewPortRect.w - rect.x - rect.w + viewPortRect.x,
-          h: rect.h
+          h: rect.h,
         });
-        updateElementRect('bottom', {
+        updateElementRect("bottom", {
           x: viewPortRect.x,
           y: rect.y + rect.h,
           w: viewPortRect.w,
-          h: viewPortRect.h - rect.y - rect.h + viewPortRect.y
+          h: viewPortRect.h - rect.y - rect.h + viewPortRect.y,
         });
-        updateElementRect('left', {
+        updateElementRect("left", {
           x: viewPortRect.x,
           y: rect.y,
           w: rect.x - viewPortRect.x,
-          h: rect.h
+          h: rect.h,
         });
-        updateElementRect('move', rect);
+        updateElementRect("move", rect);
       }
       function setRect(rect) {
         currentRect = rect;
@@ -1713,51 +1638,55 @@ var imagetools = (function (domGlobals) {
         dragHelpers = [];
       }
       render();
-      instance = global$1.extend({
-        toggleVisibility: toggleVisibility,
-        setClampRect: setClampRect,
-        setRect: setRect,
-        getInnerRect: getInnerRect,
-        setInnerRect: setInnerRect,
-        setViewPortRect: setViewPortRect,
-        destroy: destroy
-      }, global$9);
+      instance = global$1.extend(
+        {
+          toggleVisibility: toggleVisibility,
+          setClampRect: setClampRect,
+          setRect: setRect,
+          getInnerRect: getInnerRect,
+          setInnerRect: setInnerRect,
+          setViewPortRect: setViewPortRect,
+          destroy: destroy,
+        },
+        global$9
+      );
       return instance;
     }
 
     var create$2 = function (settings) {
-      var Control = global$6.get('Control');
+      var Control = global$6.get("Control");
       var ImagePanel = Control.extend({
-        Defaults: { classes: 'imagepanel' },
+        Defaults: { classes: "imagepanel" },
         selection: function (rect) {
           if (arguments.length) {
-            this.state.set('rect', rect);
+            this.state.set("rect", rect);
             return this;
           }
-          return this.state.get('rect');
+          return this.state.get("rect");
         },
         imageSize: function () {
-          var viewRect = this.state.get('viewRect');
+          var viewRect = this.state.get("viewRect");
           return {
             w: viewRect.w,
-            h: viewRect.h
+            h: viewRect.h,
           };
         },
         toggleCropRect: function (state) {
-          this.state.set('cropEnabled', state);
+          this.state.set("cropEnabled", state);
         },
         imageSrc: function (url) {
-          var self = this, img = new domGlobals.Image();
+          var self = this,
+            img = new domGlobals.Image();
           img.src = url;
           LoadImage.loadImage(img).then(function () {
             var rect, $img;
-            var lastRect = self.state.get('viewRect');
-            $img = self.$el.find('img');
+            var lastRect = self.state.get("viewRect");
+            $img = self.$el.find("img");
             if ($img[0]) {
               $img.replaceWith(img);
             } else {
-              var bg = domGlobals.document.createElement('div');
-              bg.className = 'mce-imagepanel-bg';
+              var bg = domGlobals.document.createElement("div");
+              bg.className = "mce-imagepanel-bg";
               self.getEl().appendChild(bg);
               self.getEl().appendChild(img);
             }
@@ -1765,23 +1694,23 @@ var imagetools = (function (domGlobals) {
               x: 0,
               y: 0,
               w: img.naturalWidth,
-              h: img.naturalHeight
+              h: img.naturalHeight,
             };
-            self.state.set('viewRect', rect);
-            self.state.set('rect', global$7.inflate(rect, -20, -20));
+            self.state.set("viewRect", rect);
+            self.state.set("rect", global$7.inflate(rect, -20, -20));
             if (!lastRect || lastRect.w !== rect.w || lastRect.h !== rect.h) {
               self.zoomFit();
             }
             self.repaintImage();
-            self.fire('load');
+            self.fire("load");
           });
         },
         zoom: function (value) {
           if (arguments.length) {
-            this.state.set('zoom', value);
+            this.state.set("zoom", value);
             return this;
           }
-          return this.state.get('zoom');
+          return this.state.get("zoom");
         },
         postRender: function () {
           this.imageSrc(this.settings.imageSrc);
@@ -1791,7 +1720,7 @@ var imagetools = (function (domGlobals) {
           var self = this;
           var $img, pw, ph, w, h, zoom, padding;
           padding = 10;
-          $img = self.$el.find('img');
+          $img = self.$el.find("img");
           pw = self.getEl().clientWidth;
           ph = self.getEl().clientHeight;
           w = $img[0].naturalWidth;
@@ -1806,9 +1735,9 @@ var imagetools = (function (domGlobals) {
           var x, y, w, h, pw, ph, $img, $bg, zoom, rect, elm;
           elm = this.getEl();
           zoom = this.zoom();
-          rect = this.state.get('rect');
-          $img = this.$el.find('img');
-          $bg = this.$el.find('.mce-imagepanel-bg');
+          rect = this.state.get("rect");
+          $img = this.$el.find("img");
+          $bg = this.$el.find(".mce-imagepanel-bg");
           pw = elm.offsetWidth;
           ph = elm.offsetHeight;
           w = $img[0].naturalWidth * zoom;
@@ -1819,69 +1748,75 @@ var imagetools = (function (domGlobals) {
             left: x,
             top: y,
             width: w,
-            height: h
+            height: h,
           });
           $bg.css({
             left: x,
             top: y,
             width: w,
-            height: h
+            height: h,
           });
           if (this.cropRect) {
             this.cropRect.setRect({
               x: rect.x * zoom + x,
               y: rect.y * zoom + y,
               w: rect.w * zoom,
-              h: rect.h * zoom
+              h: rect.h * zoom,
             });
             this.cropRect.setClampRect({
               x: x,
               y: y,
               w: w,
-              h: h
+              h: h,
             });
             this.cropRect.setViewPortRect({
               x: 0,
               y: 0,
               w: pw,
-              h: ph
+              h: ph,
             });
           }
         },
         bindStates: function () {
           var self = this;
           function setupCropRect(rect) {
-            self.cropRect = CropRect(rect, self.state.get('viewRect'), self.state.get('viewRect'), self.getEl(), function () {
-              self.fire('crop');
-            });
-            self.cropRect.on('updateRect', function (e) {
+            self.cropRect = CropRect(
+              rect,
+              self.state.get("viewRect"),
+              self.state.get("viewRect"),
+              self.getEl(),
+              function () {
+                self.fire("crop");
+              }
+            );
+            self.cropRect.on("updateRect", function (e) {
               var rect = e.rect;
               var zoom = self.zoom();
               rect = {
                 x: Math.round(rect.x / zoom),
                 y: Math.round(rect.y / zoom),
                 w: Math.round(rect.w / zoom),
-                h: Math.round(rect.h / zoom)
+                h: Math.round(rect.h / zoom),
               };
-              self.state.set('rect', rect);
+              self.state.set("rect", rect);
             });
-            self.on('remove', self.cropRect.destroy);
+            self.on("remove", self.cropRect.destroy);
           }
-          self.state.on('change:cropEnabled', function (e) {
+          self.state.on("change:cropEnabled", function (e) {
             self.cropRect.toggleVisibility(e.value);
             self.repaintImage();
           });
-          self.state.on('change:zoom', function () {
+          self.state.on("change:zoom", function () {
             self.repaintImage();
           });
-          self.state.on('change:rect', function (e) {
+          self.state.on("change:rect", function (e) {
             var rect = e.value;
             if (!self.cropRect) {
               setupCropRect(rect);
             }
             self.cropRect.setRect(rect);
           });
-        }
+        },
       });
       return new ImagePanel(settings);
     };
@@ -1890,7 +1825,7 @@ var imagetools = (function (domGlobals) {
     function createState(blob) {
       return {
         blob: blob,
-        url: URL.createObjectURL(blob)
+        url: URL.createObjectURL(blob),
       };
     }
     function destroyState(state) {
@@ -1902,18 +1837,51 @@ var imagetools = (function (domGlobals) {
       global$1.each(states, destroyState);
     }
     function open(editor, currentState, resolve, reject) {
-      var win, undoStack = UndoStack(), mainPanel, filtersPanel, tempState, cropPanel, resizePanel, flipRotatePanel, imagePanel, sidePanel, mainViewContainer, invertPanel, brightnessPanel, huePanel, saturatePanel, contrastPanel, grayscalePanel, sepiaPanel, colorizePanel, sharpenPanel, embossPanel, gammaPanel, exposurePanel, panels, width, height, ratioW, ratioH;
+      var win,
+        undoStack = UndoStack(),
+        mainPanel,
+        filtersPanel,
+        tempState,
+        cropPanel,
+        resizePanel,
+        flipRotatePanel,
+        imagePanel,
+        sidePanel,
+        mainViewContainer,
+        invertPanel,
+        brightnessPanel,
+        huePanel,
+        saturatePanel,
+        contrastPanel,
+        grayscalePanel,
+        sepiaPanel,
+        colorizePanel,
+        sharpenPanel,
+        embossPanel,
+        gammaPanel,
+        exposurePanel,
+        panels,
+        width,
+        height,
+        ratioW,
+        ratioH;
       var reverseIfRtl = function (items) {
         return editor.rtl ? items.reverse() : items;
       };
       function recalcSize(e) {
         var widthCtrl, heightCtrl, newWidth, newHeight;
-        widthCtrl = win.find('#w')[0];
-        heightCtrl = win.find('#h')[0];
+        widthCtrl = win.find("#w")[0];
+        heightCtrl = win.find("#h")[0];
         newWidth = parseInt(widthCtrl.value(), 10);
         newHeight = parseInt(heightCtrl.value(), 10);
-        if (win.find('#constrain')[0].checked() && width && height && newWidth && newHeight) {
-          if (e.control.settings.name === 'w') {
+        if (
+          win.find("#constrain")[0].checked() &&
+          width &&
+          height &&
+          newWidth &&
+          newHeight
+        ) {
+          if (e.control.settings.name === "w") {
             newHeight = Math.round(newWidth * ratioW);
             heightCtrl.value(newHeight);
           } else {
@@ -1925,16 +1893,16 @@ var imagetools = (function (domGlobals) {
         height = newHeight;
       }
       function floatToPercent(value) {
-        return Math.round(value * 100) + '%';
+        return Math.round(value * 100) + "%";
       }
       function updateButtonUndoStates() {
-        win.find('#undo').disabled(!undoStack.canUndo());
-        win.find('#redo').disabled(!undoStack.canRedo());
-        win.statusbar.find('#save').disabled(!undoStack.canUndo());
+        win.find("#undo").disabled(!undoStack.canUndo());
+        win.find("#redo").disabled(!undoStack.canRedo());
+        win.statusbar.find("#save").disabled(!undoStack.canUndo());
       }
       function disableUndoRedo() {
-        win.find('#undo').disabled(true);
-        win.find('#redo').disabled(true);
+        win.find("#undo").disabled(true);
+        win.find("#redo").disabled(true);
       }
       function displayState(state) {
         if (state) {
@@ -1966,10 +1934,12 @@ var imagetools = (function (domGlobals) {
       function crop() {
         var rect = imagePanel.selection();
         blobToImageResult(currentState.blob).then(function (ir) {
-          crop$1(ir, rect.x, rect.y, rect.w, rect.h).then(imageResultToBlob).then(function (blob) {
-            addBlobState(blob);
-            cancel();
-          });
+          crop$1(ir, rect.x, rect.y, rect.w, rect.h)
+            .then(imageResultToBlob)
+            .then(function (blob) {
+              addBlobState(blob);
+              cancel();
+            });
         });
       }
       var tempAction = function (fn) {
@@ -1977,7 +1947,9 @@ var imagetools = (function (domGlobals) {
         return function () {
           var state = tempState || currentState;
           blobToImageResult(state.blob).then(function (ir) {
-            fn.apply(this, [ir].concat(args)).then(imageResultToBlob).then(addTempState);
+            fn.apply(this, [ir].concat(args))
+              .then(imageResultToBlob)
+              .then(addTempState);
           });
         };
       };
@@ -1989,7 +1961,9 @@ var imagetools = (function (domGlobals) {
         var args = [].slice.call(arguments, 1);
         return function () {
           blobToImageResult(currentState.blob).then(function (ir) {
-            fn.apply(this, [ir].concat(args)).then(imageResultToBlob).then(addBlobState);
+            fn.apply(this, [ir].concat(args))
+              .then(imageResultToBlob)
+              .then(addBlobState);
           });
         };
       }
@@ -2007,7 +1981,9 @@ var imagetools = (function (domGlobals) {
             if (times-- > 0) {
               waitForTempState(times, applyCall);
             } else {
-              editor.windowManager.alert('Error: failed to apply image operation.');
+              editor.windowManager.alert(
+                "Error: failed to apply image operation."
+              );
             }
           }, 10);
         }
@@ -2049,424 +2025,491 @@ var imagetools = (function (domGlobals) {
         win.close();
       }
       function createPanel(items) {
-        return global$6.create('Form', {
-          layout: 'flex',
-          direction: 'row',
+        return global$6.create("Form", {
+          layout: "flex",
+          direction: "row",
           labelGap: 5,
-          border: '0 0 1 0',
-          align: 'center',
-          pack: 'center',
-          padding: '0 10 0 10',
+          border: "0 0 1 0",
+          align: "center",
+          pack: "center",
+          padding: "0 10 0 10",
           spacing: 5,
           flex: 0,
           minHeight: 60,
           defaults: {
-            classes: 'imagetool',
-            type: 'button'
+            classes: "imagetool",
+            type: "button",
           },
-          items: items
+          items: items,
         });
       }
       var imageResultToBlob = function (ir) {
         return ir.toBlob();
       };
       function createFilterPanel(title, filter) {
-        return createPanel(reverseIfRtl([
-          {
-            text: 'Back',
-            onclick: cancel
-          },
-          {
-            type: 'spacer',
-            flex: 1
-          },
-          {
-            text: 'Apply',
-            subtype: 'primary',
-            onclick: applyTempState
-          }
-        ])).hide().on('show', function () {
-          disableUndoRedo();
-          blobToImageResult(currentState.blob).then(function (ir) {
-            return filter(ir);
-          }).then(imageResultToBlob).then(function (blob) {
-            var newTempState = createState(blob);
-            displayState(newTempState);
-            destroyState(tempState);
-            tempState = newTempState;
+        return createPanel(
+          reverseIfRtl([
+            {
+              text: "Back",
+              onclick: cancel,
+            },
+            {
+              type: "spacer",
+              flex: 1,
+            },
+            {
+              text: "Apply",
+              subtype: "primary",
+              onclick: applyTempState,
+            },
+          ])
+        )
+          .hide()
+          .on("show", function () {
+            disableUndoRedo();
+            blobToImageResult(currentState.blob)
+              .then(function (ir) {
+                return filter(ir);
+              })
+              .then(imageResultToBlob)
+              .then(function (blob) {
+                var newTempState = createState(blob);
+                displayState(newTempState);
+                destroyState(tempState);
+                tempState = newTempState;
+              });
           });
-        });
       }
       function createVariableFilterPanel(title, filter, value, min, max) {
         function update(value) {
-          blobToImageResult(currentState.blob).then(function (ir) {
-            return filter(ir, value);
-          }).then(imageResultToBlob).then(function (blob) {
-            var newTempState = createState(blob);
-            displayState(newTempState);
-            destroyState(tempState);
-            tempState = newTempState;
-          });
+          blobToImageResult(currentState.blob)
+            .then(function (ir) {
+              return filter(ir, value);
+            })
+            .then(imageResultToBlob)
+            .then(function (blob) {
+              var newTempState = createState(blob);
+              displayState(newTempState);
+              destroyState(tempState);
+              tempState = newTempState;
+            });
         }
-        return createPanel(reverseIfRtl([
-          {
-            text: 'Back',
-            onclick: cancel
-          },
-          {
-            type: 'spacer',
-            flex: 1
-          },
-          {
-            type: 'slider',
-            flex: 1,
-            ondragend: function (e) {
-              update(e.value);
+        return createPanel(
+          reverseIfRtl([
+            {
+              text: "Back",
+              onclick: cancel,
             },
-            minValue: editor.rtl ? max : min,
-            maxValue: editor.rtl ? min : max,
-            value: value,
-            previewFilter: floatToPercent
-          },
-          {
-            type: 'spacer',
-            flex: 1
-          },
-          {
-            text: 'Apply',
-            subtype: 'primary',
-            onclick: applyTempState
-          }
-        ])).hide().on('show', function () {
-          this.find('slider').value(value);
-          disableUndoRedo();
-        });
+            {
+              type: "spacer",
+              flex: 1,
+            },
+            {
+              type: "slider",
+              flex: 1,
+              ondragend: function (e) {
+                update(e.value);
+              },
+              minValue: editor.rtl ? max : min,
+              maxValue: editor.rtl ? min : max,
+              value: value,
+              previewFilter: floatToPercent,
+            },
+            {
+              type: "spacer",
+              flex: 1,
+            },
+            {
+              text: "Apply",
+              subtype: "primary",
+              onclick: applyTempState,
+            },
+          ])
+        )
+          .hide()
+          .on("show", function () {
+            this.find("slider").value(value);
+            disableUndoRedo();
+          });
       }
       function createRgbFilterPanel(title, filter) {
         function update() {
           var r, g, b;
-          r = win.find('#r')[0].value();
-          g = win.find('#g')[0].value();
-          b = win.find('#b')[0].value();
-          blobToImageResult(currentState.blob).then(function (ir) {
-            return filter(ir, r, g, b);
-          }).then(imageResultToBlob).then(function (blob) {
-            var newTempState = createState(blob);
-            displayState(newTempState);
-            destroyState(tempState);
-            tempState = newTempState;
-          });
+          r = win.find("#r")[0].value();
+          g = win.find("#g")[0].value();
+          b = win.find("#b")[0].value();
+          blobToImageResult(currentState.blob)
+            .then(function (ir) {
+              return filter(ir, r, g, b);
+            })
+            .then(imageResultToBlob)
+            .then(function (blob) {
+              var newTempState = createState(blob);
+              displayState(newTempState);
+              destroyState(tempState);
+              tempState = newTempState;
+            });
         }
         var min = editor.rtl ? 2 : 0;
         var max = editor.rtl ? 0 : 2;
-        return createPanel(reverseIfRtl([
-          {
-            text: 'Back',
-            onclick: cancel
-          },
-          {
-            type: 'spacer',
-            flex: 1
-          },
-          {
-            type: 'slider',
-            label: 'R',
-            name: 'r',
-            minValue: min,
-            value: 1,
-            maxValue: max,
-            ondragend: update,
-            previewFilter: floatToPercent
-          },
-          {
-            type: 'slider',
-            label: 'G',
-            name: 'g',
-            minValue: min,
-            value: 1,
-            maxValue: max,
-            ondragend: update,
-            previewFilter: floatToPercent
-          },
-          {
-            type: 'slider',
-            label: 'B',
-            name: 'b',
-            minValue: min,
-            value: 1,
-            maxValue: max,
-            ondragend: update,
-            previewFilter: floatToPercent
-          },
-          {
-            type: 'spacer',
-            flex: 1
-          },
-          {
-            text: 'Apply',
-            subtype: 'primary',
-            onclick: applyTempState
-          }
-        ])).hide().on('show', function () {
-          win.find('#r,#g,#b').value(1);
-          disableUndoRedo();
-        });
+        return createPanel(
+          reverseIfRtl([
+            {
+              text: "Back",
+              onclick: cancel,
+            },
+            {
+              type: "spacer",
+              flex: 1,
+            },
+            {
+              type: "slider",
+              label: "R",
+              name: "r",
+              minValue: min,
+              value: 1,
+              maxValue: max,
+              ondragend: update,
+              previewFilter: floatToPercent,
+            },
+            {
+              type: "slider",
+              label: "G",
+              name: "g",
+              minValue: min,
+              value: 1,
+              maxValue: max,
+              ondragend: update,
+              previewFilter: floatToPercent,
+            },
+            {
+              type: "slider",
+              label: "B",
+              name: "b",
+              minValue: min,
+              value: 1,
+              maxValue: max,
+              ondragend: update,
+              previewFilter: floatToPercent,
+            },
+            {
+              type: "spacer",
+              flex: 1,
+            },
+            {
+              text: "Apply",
+              subtype: "primary",
+              onclick: applyTempState,
+            },
+          ])
+        )
+          .hide()
+          .on("show", function () {
+            win.find("#r,#g,#b").value(1);
+            disableUndoRedo();
+          });
       }
-      cropPanel = createPanel(reverseIfRtl([
-        {
-          text: 'Back',
-          onclick: cancel
-        },
-        {
-          type: 'spacer',
-          flex: 1
-        },
-        {
-          text: 'Apply',
-          subtype: 'primary',
-          onclick: crop
-        }
-      ])).hide().on('show hide', function (e) {
-        imagePanel.toggleCropRect(e.type === 'show');
-      }).on('show', disableUndoRedo);
+      cropPanel = createPanel(
+        reverseIfRtl([
+          {
+            text: "Back",
+            onclick: cancel,
+          },
+          {
+            type: "spacer",
+            flex: 1,
+          },
+          {
+            text: "Apply",
+            subtype: "primary",
+            onclick: crop,
+          },
+        ])
+      )
+        .hide()
+        .on("show hide", function (e) {
+          imagePanel.toggleCropRect(e.type === "show");
+        })
+        .on("show", disableUndoRedo);
       function toggleConstrain(e) {
         if (e.control.value() === true) {
           ratioW = height / width;
           ratioH = width / height;
         }
       }
-      resizePanel = createPanel(reverseIfRtl([
-        {
-          text: 'Back',
-          onclick: cancel
-        },
-        {
-          type: 'spacer',
-          flex: 1
-        },
-        {
-          type: 'textbox',
-          name: 'w',
-          label: 'Width',
-          size: 4,
-          onkeyup: recalcSize
-        },
-        {
-          type: 'textbox',
-          name: 'h',
-          label: 'Height',
-          size: 4,
-          onkeyup: recalcSize
-        },
-        {
-          type: 'checkbox',
-          name: 'constrain',
-          text: 'Constrain proportions',
-          checked: true,
-          onchange: toggleConstrain
-        },
-        {
-          type: 'spacer',
-          flex: 1
-        },
-        {
-          text: 'Apply',
-          subtype: 'primary',
-          onclick: 'submit'
-        }
-      ])).hide().on('submit', function (e) {
-        var width = parseInt(win.find('#w').value(), 10), height = parseInt(win.find('#h').value(), 10);
-        e.preventDefault();
-        action(resize$2, width, height)();
-        cancel();
-      }).on('show', disableUndoRedo);
-      flipRotatePanel = createPanel(reverseIfRtl([
-        {
-          text: 'Back',
-          onclick: cancel
-        },
-        {
-          type: 'spacer',
-          flex: 1
-        },
-        {
-          icon: 'fliph',
-          tooltip: 'Flip horizontally',
-          onclick: tempAction(flip$1, 'h')
-        },
-        {
-          icon: 'flipv',
-          tooltip: 'Flip vertically',
-          onclick: tempAction(flip$1, 'v')
-        },
-        {
-          icon: 'rotateleft',
-          tooltip: 'Rotate counterclockwise',
-          onclick: tempAction(rotate$1, -90)
-        },
-        {
-          icon: 'rotateright',
-          tooltip: 'Rotate clockwise',
-          onclick: tempAction(rotate$1, 90)
-        },
-        {
-          type: 'spacer',
-          flex: 1
-        },
-        {
-          text: 'Apply',
-          subtype: 'primary',
-          onclick: applyTempState
-        }
-      ])).hide().on('show', disableUndoRedo);
-      invertPanel = createFilterPanel('Invert', invert$1);
-      sharpenPanel = createFilterPanel('Sharpen', sharpen$1);
-      embossPanel = createFilterPanel('Emboss', emboss$1);
-      brightnessPanel = createVariableFilterPanel('Brightness', brightness$1, 0, -1, 1);
-      huePanel = createVariableFilterPanel('Hue', hue$1, 180, 0, 360);
-      saturatePanel = createVariableFilterPanel('Saturate', saturate$1, 0, -1, 1);
-      contrastPanel = createVariableFilterPanel('Contrast', contrast$1, 0, -1, 1);
-      grayscalePanel = createVariableFilterPanel('Grayscale', grayscale$1, 0, 0, 1);
-      sepiaPanel = createVariableFilterPanel('Sepia', sepia$1, 0, 0, 1);
-      colorizePanel = createRgbFilterPanel('Colorize', colorize$1);
-      gammaPanel = createVariableFilterPanel('Gamma', gamma$1, 0, -1, 1);
-      exposurePanel = createVariableFilterPanel('Exposure', exposure$1, 1, 0, 2);
-      filtersPanel = createPanel(reverseIfRtl([
-        {
-          text: 'Back',
-          onclick: cancel
-        },
-        {
-          type: 'spacer',
-          flex: 1
-        },
-        {
-          text: 'hue',
-          icon: 'hue',
-          onclick: switchPanel(huePanel)
-        },
-        {
-          text: 'saturate',
-          icon: 'saturate',
-          onclick: switchPanel(saturatePanel)
-        },
-        {
-          text: 'sepia',
-          icon: 'sepia',
-          onclick: switchPanel(sepiaPanel)
-        },
-        {
-          text: 'emboss',
-          icon: 'emboss',
-          onclick: switchPanel(embossPanel)
-        },
-        {
-          text: 'exposure',
-          icon: 'exposure',
-          onclick: switchPanel(exposurePanel)
-        },
-        {
-          type: 'spacer',
-          flex: 1
-        }
-      ])).hide();
-      mainPanel = createPanel(reverseIfRtl([
-        {
-          tooltip: 'Crop',
-          icon: 'crop',
-          onclick: switchPanel(cropPanel)
-        },
-        {
-          tooltip: 'Resize',
-          icon: 'resize2',
-          onclick: switchPanel(resizePanel)
-        },
-        {
-          tooltip: 'Orientation',
-          icon: 'orientation',
-          onclick: switchPanel(flipRotatePanel)
-        },
-        {
-          tooltip: 'Brightness',
-          icon: 'sun',
-          onclick: switchPanel(brightnessPanel)
-        },
-        {
-          tooltip: 'Sharpen',
-          icon: 'sharpen',
-          onclick: switchPanel(sharpenPanel)
-        },
-        {
-          tooltip: 'Contrast',
-          icon: 'contrast',
-          onclick: switchPanel(contrastPanel)
-        },
-        {
-          tooltip: 'Color levels',
-          icon: 'drop',
-          onclick: switchPanel(colorizePanel)
-        },
-        {
-          tooltip: 'Gamma',
-          icon: 'gamma',
-          onclick: switchPanel(gammaPanel)
-        },
-        {
-          tooltip: 'Invert',
-          icon: 'invert',
-          onclick: switchPanel(invertPanel)
-        }
-      ]));
+      resizePanel = createPanel(
+        reverseIfRtl([
+          {
+            text: "Back",
+            onclick: cancel,
+          },
+          {
+            type: "spacer",
+            flex: 1,
+          },
+          {
+            type: "textbox",
+            name: "w",
+            label: "Width",
+            size: 4,
+            onkeyup: recalcSize,
+          },
+          {
+            type: "textbox",
+            name: "h",
+            label: "Height",
+            size: 4,
+            onkeyup: recalcSize,
+          },
+          {
+            type: "checkbox",
+            name: "constrain",
+            text: "Constrain proportions",
+            checked: true,
+            onchange: toggleConstrain,
+          },
+          {
+            type: "spacer",
+            flex: 1,
+          },
+          {
+            text: "Apply",
+            subtype: "primary",
+            onclick: "submit",
+          },
+        ])
+      )
+        .hide()
+        .on("submit", function (e) {
+          var width = parseInt(win.find("#w").value(), 10),
+            height = parseInt(win.find("#h").value(), 10);
+          e.preventDefault();
+          action(resize$2, width, height)();
+          cancel();
+        })
+        .on("show", disableUndoRedo);
+      flipRotatePanel = createPanel(
+        reverseIfRtl([
+          {
+            text: "Back",
+            onclick: cancel,
+          },
+          {
+            type: "spacer",
+            flex: 1,
+          },
+          {
+            icon: "fliph",
+            tooltip: "Flip horizontally",
+            onclick: tempAction(flip$1, "h"),
+          },
+          {
+            icon: "flipv",
+            tooltip: "Flip vertically",
+            onclick: tempAction(flip$1, "v"),
+          },
+          {
+            icon: "rotateleft",
+            tooltip: "Rotate counterclockwise",
+            onclick: tempAction(rotate$1, -90),
+          },
+          {
+            icon: "rotateright",
+            tooltip: "Rotate clockwise",
+            onclick: tempAction(rotate$1, 90),
+          },
+          {
+            type: "spacer",
+            flex: 1,
+          },
+          {
+            text: "Apply",
+            subtype: "primary",
+            onclick: applyTempState,
+          },
+        ])
+      )
+        .hide()
+        .on("show", disableUndoRedo);
+      invertPanel = createFilterPanel("Invert", invert$1);
+      sharpenPanel = createFilterPanel("Sharpen", sharpen$1);
+      embossPanel = createFilterPanel("Emboss", emboss$1);
+      brightnessPanel = createVariableFilterPanel(
+        "Brightness",
+        brightness$1,
+        0,
+        -1,
+        1
+      );
+      huePanel = createVariableFilterPanel("Hue", hue$1, 180, 0, 360);
+      saturatePanel = createVariableFilterPanel(
+        "Saturate",
+        saturate$1,
+        0,
+        -1,
+        1
+      );
+      contrastPanel = createVariableFilterPanel(
+        "Contrast",
+        contrast$1,
+        0,
+        -1,
+        1
+      );
+      grayscalePanel = createVariableFilterPanel(
+        "Grayscale",
+        grayscale$1,
+        0,
+        0,
+        1
+      );
+      sepiaPanel = createVariableFilterPanel("Sepia", sepia$1, 0, 0, 1);
+      colorizePanel = createRgbFilterPanel("Colorize", colorize$1);
+      gammaPanel = createVariableFilterPanel("Gamma", gamma$1, 0, -1, 1);
+      exposurePanel = createVariableFilterPanel(
+        "Exposure",
+        exposure$1,
+        1,
+        0,
+        2
+      );
+      filtersPanel = createPanel(
+        reverseIfRtl([
+          {
+            text: "Back",
+            onclick: cancel,
+          },
+          {
+            type: "spacer",
+            flex: 1,
+          },
+          {
+            text: "hue",
+            icon: "hue",
+            onclick: switchPanel(huePanel),
+          },
+          {
+            text: "saturate",
+            icon: "saturate",
+            onclick: switchPanel(saturatePanel),
+          },
+          {
+            text: "sepia",
+            icon: "sepia",
+            onclick: switchPanel(sepiaPanel),
+          },
+          {
+            text: "emboss",
+            icon: "emboss",
+            onclick: switchPanel(embossPanel),
+          },
+          {
+            text: "exposure",
+            icon: "exposure",
+            onclick: switchPanel(exposurePanel),
+          },
+          {
+            type: "spacer",
+            flex: 1,
+          },
+        ])
+      ).hide();
+      mainPanel = createPanel(
+        reverseIfRtl([
+          {
+            tooltip: "Crop",
+            icon: "crop",
+            onclick: switchPanel(cropPanel),
+          },
+          {
+            tooltip: "Resize",
+            icon: "resize2",
+            onclick: switchPanel(resizePanel),
+          },
+          {
+            tooltip: "Orientation",
+            icon: "orientation",
+            onclick: switchPanel(flipRotatePanel),
+          },
+          {
+            tooltip: "Brightness",
+            icon: "sun",
+            onclick: switchPanel(brightnessPanel),
+          },
+          {
+            tooltip: "Sharpen",
+            icon: "sharpen",
+            onclick: switchPanel(sharpenPanel),
+          },
+          {
+            tooltip: "Contrast",
+            icon: "contrast",
+            onclick: switchPanel(contrastPanel),
+          },
+          {
+            tooltip: "Color levels",
+            icon: "drop",
+            onclick: switchPanel(colorizePanel),
+          },
+          {
+            tooltip: "Gamma",
+            icon: "gamma",
+            onclick: switchPanel(gammaPanel),
+          },
+          {
+            tooltip: "Invert",
+            icon: "invert",
+            onclick: switchPanel(invertPanel),
+          },
+        ])
+      );
       imagePanel = ImagePanel.create({
         flex: 1,
-        imageSrc: currentState.url
+        imageSrc: currentState.url,
       });
-      sidePanel = global$6.create('Container', {
-        layout: 'flex',
-        direction: 'column',
-        pack: 'start',
-        border: '0 1 0 0',
+      sidePanel = global$6.create("Container", {
+        layout: "flex",
+        direction: "column",
+        pack: "start",
+        border: "0 1 0 0",
         padding: 5,
         spacing: 5,
         items: [
           {
-            type: 'button',
-            icon: 'undo',
-            tooltip: 'Undo',
-            name: 'undo',
-            onclick: undo
+            type: "button",
+            icon: "undo",
+            tooltip: "Undo",
+            name: "undo",
+            onclick: undo,
           },
           {
-            type: 'button',
-            icon: 'redo',
-            tooltip: 'Redo',
-            name: 'redo',
-            onclick: redo
+            type: "button",
+            icon: "redo",
+            tooltip: "Redo",
+            name: "redo",
+            onclick: redo,
           },
           {
-            type: 'button',
-            icon: 'zoomin',
-            tooltip: 'Zoom in',
-            onclick: zoomIn
+            type: "button",
+            icon: "zoomin",
+            tooltip: "Zoom in",
+            onclick: zoomIn,
           },
           {
-            type: 'button',
-            icon: 'zoomout',
-            tooltip: 'Zoom out',
-            onclick: zoomOut
-          }
-        ]
+            type: "button",
+            icon: "zoomout",
+            tooltip: "Zoom out",
+            onclick: zoomOut,
+          },
+        ],
       });
-      mainViewContainer = global$6.create('Container', {
-        type: 'container',
-        layout: 'flex',
-        direction: 'row',
-        align: 'stretch',
+      mainViewContainer = global$6.create("Container", {
+        type: "container",
+        layout: "flex",
+        direction: "row",
+        align: "stretch",
         flex: 1,
-        items: reverseIfRtl([
-          sidePanel,
-          imagePanel
-        ])
+        items: reverseIfRtl([sidePanel, imagePanel]),
       });
       panels = [
         mainPanel,
@@ -2485,30 +2528,30 @@ var imagetools = (function (domGlobals) {
         sharpenPanel,
         embossPanel,
         gammaPanel,
-        exposurePanel
+        exposurePanel,
       ];
       win = editor.windowManager.open({
-        layout: 'flex',
-        direction: 'column',
-        align: 'stretch',
+        layout: "flex",
+        direction: "column",
+        align: "stretch",
         minWidth: Math.min(global$5.DOM.getViewPort().w, 800),
         minHeight: Math.min(global$5.DOM.getViewPort().h, 650),
-        title: 'Edit image',
+        title: "Edit image",
         items: panels.concat([mainViewContainer]),
         buttons: reverseIfRtl([
           {
-            text: 'Save',
-            name: 'save',
-            subtype: 'primary',
-            onclick: save
+            text: "Save",
+            name: "save",
+            subtype: "primary",
+            onclick: save,
           },
           {
-            text: 'Cancel',
-            onclick: 'close'
-          }
-        ])
+            text: "Cancel",
+            onclick: "close",
+          },
+        ]),
       });
-      win.on('close', function () {
+      win.on("close", function () {
         reject();
         destroyStates(undoStack.data);
         undoStack = null;
@@ -2516,15 +2559,15 @@ var imagetools = (function (domGlobals) {
       });
       undoStack.add(currentState);
       updateButtonUndoStates();
-      imagePanel.on('load', function () {
+      imagePanel.on("load", function () {
         width = imagePanel.imageSize().w;
         height = imagePanel.imageSize().h;
         ratioW = height / width;
         ratioH = width / height;
-        win.find('#w').value(width);
-        win.find('#h').value(height);
+        win.find("#w").value(width);
+        win.find("#h").value(height);
       });
-      imagePanel.on('crop', crop);
+      imagePanel.on("crop", crop);
     }
     function edit(editor, imageResult) {
       return new global$3(function (resolve, reject) {
@@ -2546,7 +2589,7 @@ var imagetools = (function (domGlobals) {
         if (isPxValue(width) && isPxValue(height)) {
           return {
             w: parseInt(width, 10),
-            h: parseInt(height, 10)
+            h: parseInt(height, 10),
           };
         }
         return null;
@@ -2556,7 +2599,7 @@ var imagetools = (function (domGlobals) {
       if (width && height) {
         return {
           w: parseInt(width, 10),
-          h: parseInt(height, 10)
+          h: parseInt(height, 10),
         };
       }
       return null;
@@ -2567,38 +2610,45 @@ var imagetools = (function (domGlobals) {
         width = img.style.width;
         height = img.style.height;
         if (width || height) {
-          img.style.width = size.w + 'px';
-          img.style.height = size.h + 'px';
-          img.removeAttribute('data-mce-style');
+          img.style.width = size.w + "px";
+          img.style.height = size.h + "px";
+          img.removeAttribute("data-mce-style");
         }
         width = img.width;
         height = img.height;
         if (width || height) {
-          img.setAttribute('width', size.w);
-          img.setAttribute('height', size.h);
+          img.setAttribute("width", size.w);
+          img.setAttribute("height", size.h);
         }
       }
     }
     function getNaturalImageSize(img) {
       return {
         w: img.naturalWidth,
-        h: img.naturalHeight
+        h: img.naturalHeight,
       };
     }
     var ImageSize = {
       getImageSize: getImageSize,
       setImageSize: setImageSize,
-      getNaturalImageSize: getNaturalImageSize
+      getNaturalImageSize: getNaturalImageSize,
     };
 
     var typeOf = function (x) {
-      if (x === null)
-        return 'null';
+      if (x === null) return "null";
       var t = typeof x;
-      if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array'))
-        return 'array';
-      if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String'))
-        return 'string';
+      if (
+        t === "object" &&
+        (Array.prototype.isPrototypeOf(x) ||
+          (x.constructor && x.constructor.name === "Array"))
+      )
+        return "array";
+      if (
+        t === "object" &&
+        (String.prototype.isPrototypeOf(x) ||
+          (x.constructor && x.constructor.name === "String"))
+      )
+        return "string";
       return t;
     };
     var isType = function (type) {
@@ -2606,7 +2656,7 @@ var imagetools = (function (domGlobals) {
         return typeOf(value) === type;
       };
     };
-    var isFunction = isType('function');
+    var isFunction = isType("function");
 
     var slice = Array.prototype.slice;
     var find = function (xs, pred) {
@@ -2618,12 +2668,14 @@ var imagetools = (function (domGlobals) {
       }
       return Option.none();
     };
-    var from$1 = isFunction(Array.from) ? Array.from : function (x) {
-      return slice.call(x);
-    };
+    var from$1 = isFunction(Array.from)
+      ? Array.from
+      : function (x) {
+          return slice.call(x);
+        };
 
-    function XMLHttpRequest () {
-      var f = Global$1.getOrDie('XMLHttpRequest');
+    function XMLHttpRequest() {
+      var f = Global$1.getOrDie("XMLHttpRequest");
       return new f();
     }
 
@@ -2645,16 +2697,16 @@ var imagetools = (function (domGlobals) {
           if (xhr.readyState === 4) {
             resolve({
               status: xhr.status,
-              blob: this.response
+              blob: this.response,
             });
           }
         };
-        xhr.open('GET', url, true);
+        xhr.open("GET", url, true);
         xhr.withCredentials = withCredentials;
         global$1.each(headers, function (value, key) {
           xhr.setRequestHeader(key, value);
         });
-        xhr.responseType = 'blob';
+        xhr.responseType = "blob";
         xhr.send();
       });
     };
@@ -2672,44 +2724,43 @@ var imagetools = (function (domGlobals) {
       var json;
       try {
         json = JSON.parse(text);
-      } catch (ex) {
-      }
+      } catch (ex) {}
       return json;
     };
     var Utils = {
       traverse: traverse,
       readBlob: readBlob,
       requestUrlAsBlob: requestUrlAsBlob,
-      parseJson: parseJson
+      parseJson: parseJson,
     };
 
     var friendlyHttpErrors = [
       {
         code: 404,
-        message: 'Could not find Image Proxy'
+        message: "Could not find Image Proxy",
       },
       {
         code: 403,
-        message: 'Rejected request'
+        message: "Rejected request",
       },
       {
         code: 0,
-        message: 'Incorrect Image Proxy URL'
-      }
+        message: "Incorrect Image Proxy URL",
+      },
     ];
     var friendlyServiceErrors = [
       {
-        type: 'key_missing',
-        message: 'The request did not include an api key.'
+        type: "key_missing",
+        message: "The request did not include an api key.",
       },
       {
-        type: 'key_not_found',
-        message: 'The provided api key could not be found.'
+        type: "key_not_found",
+        message: "The provided api key could not be found.",
       },
       {
-        type: 'domain_not_trusted',
-        message: 'The api key is not valid for the request origins.'
-      }
+        type: "domain_not_trusted",
+        message: "The api key is not valid for the request origins.",
+      },
     ];
     var isServiceErrorCode = function (code) {
       return code === 400 || code === 403 || code === 500;
@@ -2717,10 +2768,10 @@ var imagetools = (function (domGlobals) {
     var getHttpErrorMsg = function (status) {
       var message = find(friendlyHttpErrors, function (error) {
         return status === error.code;
-      }).fold(constant('Unknown ImageProxy error'), function (error) {
+      }).fold(constant("Unknown ImageProxy error"), function (error) {
         return error.message;
       });
-      return 'ImageProxy HTTP error: ' + message;
+      return "ImageProxy HTTP error: " + message;
     };
     var handleHttpError = function (status) {
       var message = getHttpErrorMsg(status);
@@ -2729,18 +2780,17 @@ var imagetools = (function (domGlobals) {
     var getServiceErrorMsg = function (type) {
       return find(friendlyServiceErrors, function (error) {
         return error.type === type;
-      }).fold(constant('Unknown service error'), function (error) {
+      }).fold(constant("Unknown service error"), function (error) {
         return error.message;
       });
     };
     var getServiceError = function (text) {
       var serviceError = Utils.parseJson(text);
-      var errorType = Utils.traverse(serviceError, [
-        'error',
-        'type'
-      ]);
-      var errorMsg = errorType ? getServiceErrorMsg(errorType) : 'Invalid JSON in service error message';
-      return 'ImageProxy Service error: ' + errorMsg;
+      var errorType = Utils.traverse(serviceError, ["error", "type"]);
+      var errorMsg = errorType
+        ? getServiceErrorMsg(errorType)
+        : "Invalid JSON in service error message";
+      return "ImageProxy Service error: " + errorMsg;
     };
     var handleServiceError = function (status, blob) {
       return Utils.readBlob(blob).then(function (text) {
@@ -2749,51 +2799,73 @@ var imagetools = (function (domGlobals) {
       });
     };
     var handleServiceErrorResponse = function (status, blob) {
-      return isServiceErrorCode(status) ? handleServiceError(status, blob) : handleHttpError(status);
+      return isServiceErrorCode(status)
+        ? handleServiceError(status, blob)
+        : handleHttpError(status);
     };
     var Errors = {
       handleServiceErrorResponse: handleServiceErrorResponse,
       handleHttpError: handleHttpError,
       getHttpErrorMsg: getHttpErrorMsg,
-      getServiceErrorMsg: getServiceErrorMsg
+      getServiceErrorMsg: getServiceErrorMsg,
     };
 
     var appendApiKey = function (url, apiKey) {
-      var separator = url.indexOf('?') === -1 ? '?' : '&';
+      var separator = url.indexOf("?") === -1 ? "?" : "&";
       if (/[?&]apiKey=/.test(url) || !apiKey) {
         return url;
       } else {
-        return url + separator + 'apiKey=' + encodeURIComponent(apiKey);
+        return url + separator + "apiKey=" + encodeURIComponent(apiKey);
       }
     };
     var requestServiceBlob = function (url, apiKey) {
       var headers = {
-        'Content-Type': 'application/json;charset=UTF-8',
-        'tiny-api-key': apiKey
+        "Content-Type": "application/json;charset=UTF-8",
+        "tiny-api-key": apiKey,
       };
-      return Utils.requestUrlAsBlob(appendApiKey(url, apiKey), headers, false).then(function (result) {
-        return result.status < 200 || result.status >= 300 ? Errors.handleServiceErrorResponse(result.status, result.blob) : global$3.resolve(result.blob);
+      return Utils.requestUrlAsBlob(
+        appendApiKey(url, apiKey),
+        headers,
+        false
+      ).then(function (result) {
+        return result.status < 200 || result.status >= 300
+          ? Errors.handleServiceErrorResponse(result.status, result.blob)
+          : global$3.resolve(result.blob);
       });
     };
     function requestBlob(url, withCredentials) {
-      return Utils.requestUrlAsBlob(url, {}, withCredentials).then(function (result) {
-        return result.status < 200 || result.status >= 300 ? Errors.handleHttpError(result.status) : global$3.resolve(result.blob);
+      return Utils.requestUrlAsBlob(url, {}, withCredentials).then(function (
+        result
+      ) {
+        return result.status < 200 || result.status >= 300
+          ? Errors.handleHttpError(result.status)
+          : global$3.resolve(result.blob);
       });
     }
     var getUrl = function (url, apiKey, withCredentials) {
-      return apiKey ? requestServiceBlob(url, apiKey) : requestBlob(url, withCredentials);
+      return apiKey
+        ? requestServiceBlob(url, apiKey)
+        : requestBlob(url, withCredentials);
     };
     var Proxy = { getUrl: getUrl };
 
     var count$1 = 0;
     var isEditableImage = function (editor, img) {
-      var selectorMatched = editor.dom.is(img, 'img:not([data-mce-object],[data-mce-placeholder])');
-      return selectorMatched && (isLocalImage(editor, img) || isCorsImage(editor, img) || editor.settings.imagetools_proxy);
+      var selectorMatched = editor.dom.is(
+        img,
+        "img:not([data-mce-object],[data-mce-placeholder])"
+      );
+      return (
+        selectorMatched &&
+        (isLocalImage(editor, img) ||
+          isCorsImage(editor, img) ||
+          editor.settings.imagetools_proxy)
+      );
     };
     var displayError = function (editor, error) {
       editor.notificationManager.open({
         text: error,
-        type: 'error'
+        type: "error",
       });
     };
     var getSelectedImage = function (editor) {
@@ -2807,26 +2879,46 @@ var imagetools = (function (domGlobals) {
       return null;
     };
     var createId = function () {
-      return 'imagetools' + count$1++;
+      return "imagetools" + count$1++;
     };
     var isLocalImage = function (editor, img) {
       var url = img.src;
-      return url.indexOf('data:') === 0 || url.indexOf('blob:') === 0 || new global$4(url).host === editor.documentBaseURI.host;
+      return (
+        url.indexOf("data:") === 0 ||
+        url.indexOf("blob:") === 0 ||
+        new global$4(url).host === editor.documentBaseURI.host
+      );
     };
     var isCorsImage = function (editor, img) {
-      return global$1.inArray(getCorsHosts(editor), new global$4(img.src).host) !== -1;
+      return (
+        global$1.inArray(getCorsHosts(editor), new global$4(img.src).host) !==
+        -1
+      );
     };
     var isCorsWithCredentialsImage = function (editor, img) {
-      return global$1.inArray(getCredentialsHosts(editor), new global$4(img.src).host) !== -1;
+      return (
+        global$1.inArray(
+          getCredentialsHosts(editor),
+          new global$4(img.src).host
+        ) !== -1
+      );
     };
     var imageToBlob$2 = function (editor, img) {
-      var src = img.src, apiKey;
+      var src = img.src,
+        apiKey;
       if (isCorsImage(editor, img)) {
-        return Proxy.getUrl(img.src, null, isCorsWithCredentialsImage(editor, img));
+        return Proxy.getUrl(
+          img.src,
+          null,
+          isCorsWithCredentialsImage(editor, img)
+        );
       }
       if (!isLocalImage(editor, img)) {
         src = getProxyUrl(editor);
-        src += (src.indexOf('?') === -1 ? '?' : '&') + 'url=' + encodeURIComponent(img.src);
+        src +=
+          (src.indexOf("?") === -1 ? "?" : "&") +
+          "url=" +
+          encodeURIComponent(img.src);
         apiKey = getApiKey(editor);
         return Proxy.getUrl(src, apiKey, false);
       }
@@ -2834,22 +2926,34 @@ var imagetools = (function (domGlobals) {
     };
     var findSelectedBlob = function (editor) {
       var blobInfo;
-      blobInfo = editor.editorUpload.blobCache.getByUri(getSelectedImage(editor).src);
+      blobInfo = editor.editorUpload.blobCache.getByUri(
+        getSelectedImage(editor).src
+      );
       if (blobInfo) {
         return global$3.resolve(blobInfo.blob());
       }
       return imageToBlob$2(editor, getSelectedImage(editor));
     };
     var startTimedUpload = function (editor, imageUploadTimerState) {
-      var imageUploadTimer = global$2.setEditorTimeout(editor, function () {
-        editor.editorUpload.uploadImagesAuto();
-      }, getUploadTimeout(editor));
+      var imageUploadTimer = global$2.setEditorTimeout(
+        editor,
+        function () {
+          editor.editorUpload.uploadImagesAuto();
+        },
+        getUploadTimeout(editor)
+      );
       imageUploadTimerState.set(imageUploadTimer);
     };
     var cancelTimedUpload = function (imageUploadTimerState) {
       clearTimeout(imageUploadTimerState.get());
     };
-    var updateSelectedImage = function (editor, ir, uploadImmediately, imageUploadTimerState, size) {
+    var updateSelectedImage = function (
+      editor,
+      ir,
+      uploadImmediately,
+      imageUploadTimerState,
+      size
+    ) {
       return ir.toBlob().then(function (blob) {
         var uri, name, blobCache, blobInfo, selectedImage;
         blobCache = editor.editorUpload.blobCache;
@@ -2869,12 +2973,12 @@ var imagetools = (function (domGlobals) {
           blob: blob,
           base64: ir.toBase64(),
           uri: uri,
-          name: name
+          name: name,
         });
         blobCache.add(blobInfo);
         editor.undoManager.transact(function () {
           function imageLoadedHandler() {
-            editor.$(selectedImage).off('load', imageLoadedHandler);
+            editor.$(selectedImage).off("load", imageLoadedHandler);
             editor.nodeChanged();
             if (uploadImmediately) {
               editor.editorUpload.uploadImagesAuto();
@@ -2883,54 +2987,91 @@ var imagetools = (function (domGlobals) {
               startTimedUpload(editor, imageUploadTimerState);
             }
           }
-          editor.$(selectedImage).on('load', imageLoadedHandler);
+          editor.$(selectedImage).on("load", imageLoadedHandler);
           if (size) {
             editor.$(selectedImage).attr({
               width: size.w,
-              height: size.h
+              height: size.h,
             });
           }
-          editor.$(selectedImage).attr({ src: blobInfo.blobUri() }).removeAttr('data-mce-src');
+          editor
+            .$(selectedImage)
+            .attr({ src: blobInfo.blobUri() })
+            .removeAttr("data-mce-src");
         });
         return blobInfo;
       });
     };
-    var selectedImageOperation = function (editor, imageUploadTimerState, fn, size) {
+    var selectedImageOperation = function (
+      editor,
+      imageUploadTimerState,
+      fn,
+      size
+    ) {
       return function () {
-        return editor._scanForImages().then(curry(findSelectedBlob, editor)).then(blobToImageResult).then(fn).then(function (imageResult) {
-          return updateSelectedImage(editor, imageResult, false, imageUploadTimerState, size);
-        }, function (error) {
-          displayError(editor, error);
-        });
+        return editor
+          ._scanForImages()
+          .then(curry(findSelectedBlob, editor))
+          .then(blobToImageResult)
+          .then(fn)
+          .then(
+            function (imageResult) {
+              return updateSelectedImage(
+                editor,
+                imageResult,
+                false,
+                imageUploadTimerState,
+                size
+              );
+            },
+            function (error) {
+              displayError(editor, error);
+            }
+          );
       };
     };
     var rotate$2 = function (editor, imageUploadTimerState, angle) {
       return function () {
         var size = ImageSize.getImageSize(getSelectedImage(editor));
-        var flippedSize = size ? {
-          w: size.h,
-          h: size.w
-        } : null;
-        return selectedImageOperation(editor, imageUploadTimerState, function (imageResult) {
-          return rotate$1(imageResult, angle);
-        }, flippedSize)();
+        var flippedSize = size
+          ? {
+              w: size.h,
+              h: size.w,
+            }
+          : null;
+        return selectedImageOperation(
+          editor,
+          imageUploadTimerState,
+          function (imageResult) {
+            return rotate$1(imageResult, angle);
+          },
+          flippedSize
+        )();
       };
     };
     var flip$2 = function (editor, imageUploadTimerState, axis) {
       return function () {
-        return selectedImageOperation(editor, imageUploadTimerState, function (imageResult) {
-          return flip$1(imageResult, axis);
-        })();
+        return selectedImageOperation(
+          editor,
+          imageUploadTimerState,
+          function (imageResult) {
+            return flip$1(imageResult, axis);
+          }
+        )();
       };
     };
     var editImageDialog = function (editor, imageUploadTimerState) {
       return function () {
-        var img = getSelectedImage(editor), originalSize = ImageSize.getNaturalImageSize(img);
+        var img = getSelectedImage(editor),
+          originalSize = ImageSize.getNaturalImageSize(img);
         var handleDialogBlob = function (blob) {
           return new global$3(function (resolve) {
             blobToImage$1(blob).then(function (newImage) {
               var newSize = ImageSize.getNaturalImageSize(newImage);
-              if (originalSize.w !== newSize.w || originalSize.h !== newSize.h) {
+              if (
+                originalSize.w !== newSize.w ||
+                originalSize.h !== newSize.h
+              ) {
                 if (ImageSize.getImageSize(img)) {
                   ImageSize.setImageSize(img, newSize);
                 }
@@ -2941,14 +3082,26 @@ var imagetools = (function (domGlobals) {
           });
         };
         var openDialog = function (editor, imageResult) {
-          return Dialog.edit(editor, imageResult).then(handleDialogBlob).then(blobToImageResult).then(function (imageResult) {
-            return updateSelectedImage(editor, imageResult, true, imageUploadTimerState);
-          }, function () {
-          });
+          return Dialog.edit(editor, imageResult)
+            .then(handleDialogBlob)
+            .then(blobToImageResult)
+            .then(
+              function (imageResult) {
+                return updateSelectedImage(
+                  editor,
+                  imageResult,
+                  true,
+                  imageUploadTimerState
+                );
+              },
+              function () {}
+            );
         };
-        findSelectedBlob(editor).then(blobToImageResult).then(curry(openDialog, editor), function (error) {
-          displayError(editor, error);
-        });
+        findSelectedBlob(editor)
+          .then(blobToImageResult)
+          .then(curry(openDialog, editor), function (error) {
+            displayError(editor, error);
+          });
       };
     };
     var Actions = {
@@ -2956,24 +3109,47 @@ var imagetools = (function (domGlobals) {
       flip: flip$2,
       editImageDialog: editImageDialog,
       isEditableImage: isEditableImage,
-      cancelTimedUpload: cancelTimedUpload
+      cancelTimedUpload: cancelTimedUpload,
     };
 
     var register = function (editor, imageUploadTimerState) {
-      global$1.each({
-        mceImageRotateLeft: Actions.rotate(editor, imageUploadTimerState, -90),
-        mceImageRotateRight: Actions.rotate(editor, imageUploadTimerState, 90),
-        mceImageFlipVertical: Actions.flip(editor, imageUploadTimerState, 'v'),
-        mceImageFlipHorizontal: Actions.flip(editor, imageUploadTimerState, 'h'),
-        mceEditImage: Actions.editImageDialog(editor, imageUploadTimerState)
-      }, function (fn, cmd) {
-        editor.addCommand(cmd, fn);
-      });
+      global$1.each(
+        {
+          mceImageRotateLeft: Actions.rotate(
+            editor,
+            imageUploadTimerState,
+            -90
+          ),
+          mceImageRotateRight: Actions.rotate(
+            editor,
+            imageUploadTimerState,
+            90
+          ),
+          mceImageFlipVertical: Actions.flip(
+            editor,
+            imageUploadTimerState,
+            "v"
+          ),
+          mceImageFlipHorizontal: Actions.flip(
+            editor,
+            imageUploadTimerState,
+            "h"
+          ),
+          mceEditImage: Actions.editImageDialog(editor, imageUploadTimerState),
+        },
+        function (fn, cmd) {
+          editor.addCommand(cmd, fn);
+        }
+      );
     };
     var Commands = { register: register };
 
-    var setup = function (editor, imageUploadTimerState, lastSelectedImageState) {
-      editor.on('NodeChange', function (e) {
+    var setup = function (
+      editor,
+      imageUploadTimerState,
+      lastSelectedImageState
+    ) {
+      editor.on("NodeChange", function (e) {
         var lastSelectedImage = lastSelectedImageState.get();
         if (lastSelectedImage && lastSelectedImage.src !== e.element.src) {
           Actions.cancelTimedUpload(imageUploadTimerState);
@@ -2988,51 +3164,56 @@ var imagetools = (function (domGlobals) {
     var UploadSelectedImage = { setup: setup };
 
     var register$1 = function (editor) {
-      editor.addButton('rotateleft', {
-        title: 'Rotate counterclockwise',
-        cmd: 'mceImageRotateLeft'
+      editor.addButton("rotateleft", {
+        title: "Rotate counterclockwise",
+        cmd: "mceImageRotateLeft",
       });
-      editor.addButton('rotateright', {
-        title: 'Rotate clockwise',
-        cmd: 'mceImageRotateRight'
+      editor.addButton("rotateright", {
+        title: "Rotate clockwise",
+        cmd: "mceImageRotateRight",
       });
-      editor.addButton('flipv', {
-        title: 'Flip vertically',
-        cmd: 'mceImageFlipVertical'
+      editor.addButton("flipv", {
+        title: "Flip vertically",
+        cmd: "mceImageFlipVertical",
       });
-      editor.addButton('fliph', {
-        title: 'Flip horizontally',
-        cmd: 'mceImageFlipHorizontal'
+      editor.addButton("fliph", {
+        title: "Flip horizontally",
+        cmd: "mceImageFlipHorizontal",
       });
-      editor.addButton('editimage', {
-        title: 'Edit image',
-        cmd: 'mceEditImage'
+      editor.addButton("editimage", {
+        title: "Edit image",
+        cmd: "mceEditImage",
       });
-      editor.addButton('imageoptions', {
-        title: 'Image options',
-        icon: 'options',
-        cmd: 'mceImage'
+      editor.addButton("imageoptions", {
+        title: "Image options",
+        icon: "options",
+        cmd: "mceImage",
       });
     };
     var Buttons = { register: register$1 };
 
     var register$2 = function (editor) {
-      editor.addContextToolbar(curry(Actions.isEditableImage, editor), getToolbarItems(editor));
+      editor.addContextToolbar(
+        curry(Actions.isEditableImage, editor),
+        getToolbarItems(editor)
+      );
     };
     var ContextToolbar = { register: register$2 };
 
-    global.add('imagetools', function (editor) {
+    global.add("imagetools", function (editor) {
       var imageUploadTimerState = Cell(0);
       var lastSelectedImageState = Cell(null);
       Commands.register(editor, imageUploadTimerState);
       Buttons.register(editor);
       ContextToolbar.register(editor);
-      UploadSelectedImage.setup(editor, imageUploadTimerState, lastSelectedImageState);
+      UploadSelectedImage.setup(
+        editor,
+        imageUploadTimerState,
+        lastSelectedImageState
+      );
     });
-    function Plugin () {
-    }
+    function Plugin() {}
 
     return Plugin;
-
-}(window));
+  })(window);
 })();

@@ -1,6 +1,6 @@
 (function () {
-var visualchars = (function (domGlobals) {
-    'use strict';
+  var visualchars = (function (domGlobals) {
+    "use strict";
 
     var Cell = function (initial) {
       var value = initial;
@@ -16,11 +16,11 @@ var visualchars = (function (domGlobals) {
       return {
         get: get,
         set: set,
-        clone: clone
+        clone: clone,
       };
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global = tinymce.util.Tools.resolve("tinymce.PluginManager");
 
     var get = function (toggleState) {
       var isEnabled = function () {
@@ -31,28 +31,30 @@ var visualchars = (function (domGlobals) {
     var Api = { get: get };
 
     var fireVisualChars = function (editor, state) {
-      return editor.fire('VisualChars', { state: state });
+      return editor.fire("VisualChars", { state: state });
     };
     var Events = { fireVisualChars: fireVisualChars };
 
     var charMap = {
-      '\xA0': 'nbsp',
-      '\xAD': 'shy'
+      "\xA0": "nbsp",
+      "\xAD": "shy",
     };
     var charMapToRegExp = function (charMap, global) {
-      var key, regExp = '';
+      var key,
+        regExp = "";
       for (key in charMap) {
         regExp += key;
       }
-      return new RegExp('[' + regExp + ']', global ? 'g' : '');
+      return new RegExp("[" + regExp + "]", global ? "g" : "");
     };
     var charMapToSelector = function (charMap) {
-      var key, selector = '';
+      var key,
+        selector = "";
       for (key in charMap) {
         if (selector) {
-          selector += ',';
+          selector += ",";
         }
-        selector += 'span.mce-' + charMap[key];
+        selector += "span.mce-" + charMap[key];
       }
       return selector;
     };
@@ -62,7 +64,7 @@ var visualchars = (function (domGlobals) {
       regExpGlobal: charMapToRegExp(charMap, true),
       selector: charMapToSelector(charMap),
       charMapToRegExp: charMapToRegExp,
-      charMapToSelector: charMapToSelector
+      charMapToSelector: charMapToSelector,
     };
 
     var constant = function (value) {
@@ -78,7 +80,7 @@ var visualchars = (function (domGlobals) {
     var none = function () {
       return NONE;
     };
-    var NONE = function () {
+    var NONE = (function () {
       var eq = function (o) {
         return o.isNone();
       };
@@ -88,8 +90,7 @@ var visualchars = (function (domGlobals) {
       var id = function (n) {
         return n;
       };
-      var noop = function () {
-      };
+      var noop = function () {};
       var nul = function () {
         return null;
       };
@@ -106,7 +107,7 @@ var visualchars = (function (domGlobals) {
         getOr: id,
         getOrThunk: call,
         getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
+          throw new Error(msg || "error: getOrDie called on none.");
         },
         getOrNull: nul,
         getOrUndefined: undef,
@@ -125,12 +126,11 @@ var visualchars = (function (domGlobals) {
         toArray: function () {
           return [];
         },
-        toString: constant('none()')
+        toString: constant("none()"),
       };
-      if (Object.freeze)
-        Object.freeze(me);
+      if (Object.freeze) Object.freeze(me);
       return me;
-    }();
+    })();
     var some = function (a) {
       var constant_a = function () {
         return a;
@@ -188,8 +188,8 @@ var visualchars = (function (domGlobals) {
           return [a];
         },
         toString: function () {
-          return 'some(' + a + ')';
-        }
+          return "some(" + a + ")";
+        },
       };
       return me;
     };
@@ -199,17 +199,24 @@ var visualchars = (function (domGlobals) {
     var Option = {
       some: some,
       none: none,
-      from: from
+      from: from,
     };
 
     var typeOf = function (x) {
-      if (x === null)
-        return 'null';
+      if (x === null) return "null";
       var t = typeof x;
-      if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array'))
-        return 'array';
-      if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String'))
-        return 'string';
+      if (
+        t === "object" &&
+        (Array.prototype.isPrototypeOf(x) ||
+          (x.constructor && x.constructor.name === "Array"))
+      )
+        return "array";
+      if (
+        t === "object" &&
+        (String.prototype.isPrototypeOf(x) ||
+          (x.constructor && x.constructor.name === "String"))
+      )
+        return "string";
       return t;
     };
     var isType = function (type) {
@@ -217,7 +224,7 @@ var visualchars = (function (domGlobals) {
         return typeOf(value) === type;
       };
     };
-    var isFunction = isType('function');
+    var isFunction = isType("function");
 
     var slice = Array.prototype.slice;
     var map = function (xs, f) {
@@ -235,17 +242,19 @@ var visualchars = (function (domGlobals) {
         f(x, i, xs);
       }
     };
-    var from$1 = isFunction(Array.from) ? Array.from : function (x) {
-      return slice.call(x);
-    };
+    var from$1 = isFunction(Array.from)
+      ? Array.from
+      : function (x) {
+          return slice.call(x);
+        };
 
     var fromHtml = function (html, scope) {
       var doc = scope || domGlobals.document;
-      var div = doc.createElement('div');
+      var div = doc.createElement("div");
       div.innerHTML = html;
       if (!div.hasChildNodes() || div.childNodes.length > 1) {
-        domGlobals.console.error('HTML does not have a single root node', html);
-        throw new Error('HTML must have a single root node');
+        domGlobals.console.error("HTML does not have a single root node", html);
+        throw new Error("HTML must have a single root node");
       }
       return fromDom(div.childNodes[0]);
     };
@@ -261,7 +270,7 @@ var visualchars = (function (domGlobals) {
     };
     var fromDom = function (node) {
       if (node === null || node === undefined) {
-        throw new Error('Node cannot be null or undefined');
+        throw new Error("Node cannot be null or undefined");
       }
       return { dom: constant(node) };
     };
@@ -274,7 +283,7 @@ var visualchars = (function (domGlobals) {
       fromTag: fromTag,
       fromText: fromText,
       fromDom: fromDom,
-      fromPoint: fromPoint
+      fromPoint: fromPoint,
     };
 
     var ATTRIBUTE = domGlobals.Node.ATTRIBUTE_NODE;
@@ -304,7 +313,13 @@ var visualchars = (function (domGlobals) {
     var isText = isType$1(TEXT);
 
     var wrapCharWithSpan = function (value) {
-      return '<span data-mce-bogus="1" class="mce-' + Data.charMap[value] + '">' + value + '</span>';
+      return (
+        '<span data-mce-bogus="1" class="mce-' +
+        Data.charMap[value] +
+        '">' +
+        value +
+        "</span>"
+      );
     };
     var Html = { wrapCharWithSpan: wrapCharWithSpan };
 
@@ -338,16 +353,19 @@ var visualchars = (function (domGlobals) {
       isMatch: isMatch,
       filterDescendants: filterDescendants,
       findParentElm: findParentElm,
-      replaceWithSpans: replaceWithSpans
+      replaceWithSpans: replaceWithSpans,
     };
 
     var show = function (editor, rootElm) {
       var node, div;
-      var nodeList = Nodes.filterDescendants(Element.fromDom(rootElm), Nodes.isMatch);
+      var nodeList = Nodes.filterDescendants(
+        Element.fromDom(rootElm),
+        Nodes.isMatch
+      );
       each(nodeList, function (n) {
         var withSpans = Nodes.replaceWithSpans(value(n));
-        div = editor.dom.create('div', null, withSpans);
-        while (node = div.lastChild) {
+        div = editor.dom.create("div", null, withSpans);
+        while ((node = div.lastChild)) {
           editor.dom.insertAfter(node, n.dom());
         }
         editor.dom.remove(n.dom());
@@ -371,7 +389,7 @@ var visualchars = (function (domGlobals) {
     var VisualChars = {
       show: show,
       hide: hide,
-      toggle: toggle
+      toggle: toggle,
     };
 
     var toggleVisualChars = function (editor, toggleState) {
@@ -391,20 +409,20 @@ var visualchars = (function (domGlobals) {
     var Actions = { toggleVisualChars: toggleVisualChars };
 
     var register = function (editor, toggleState) {
-      editor.addCommand('mceVisualChars', function () {
+      editor.addCommand("mceVisualChars", function () {
         Actions.toggleVisualChars(editor, toggleState);
       });
     };
     var Commands = { register: register };
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+    var global$1 = tinymce.util.Tools.resolve("tinymce.util.Delay");
 
     var setup = function (editor, toggleState) {
       var debouncedToggle = global$1.debounce(function () {
         VisualChars.toggle(editor);
       }, 300);
       if (editor.settings.forced_root_block !== false) {
-        editor.on('keydown', function (e) {
+        editor.on("keydown", function (e) {
           if (toggleState.get() === true) {
             e.keyCode === 13 ? VisualChars.toggle(editor) : debouncedToggle();
           }
@@ -414,12 +432,12 @@ var visualchars = (function (domGlobals) {
     var Keyboard = { setup: setup };
 
     var isEnabledByDefault = function (editor) {
-      return editor.getParam('visualchars_default_state', false);
+      return editor.getParam("visualchars_default_state", false);
     };
     var Settings = { isEnabledByDefault: isEnabledByDefault };
 
     var setup$1 = function (editor, toggleState) {
-      editor.on('init', function () {
+      editor.on("init", function () {
         var valueForToggling = !Settings.isEnabledByDefault(editor);
         toggleState.set(valueForToggling);
         Actions.toggleVisualChars(editor, toggleState);
@@ -430,29 +448,29 @@ var visualchars = (function (domGlobals) {
     var toggleActiveState = function (editor) {
       return function (e) {
         var ctrl = e.control;
-        editor.on('VisualChars', function (e) {
+        editor.on("VisualChars", function (e) {
           ctrl.active(e.state);
         });
       };
     };
     var register$1 = function (editor) {
-      editor.addButton('visualchars', {
+      editor.addButton("visualchars", {
         active: false,
-        title: 'Show invisible characters',
-        cmd: 'mceVisualChars',
-        onPostRender: toggleActiveState(editor)
+        title: "Show invisible characters",
+        cmd: "mceVisualChars",
+        onPostRender: toggleActiveState(editor),
       });
-      editor.addMenuItem('visualchars', {
-        text: 'Show invisible characters',
-        cmd: 'mceVisualChars',
+      editor.addMenuItem("visualchars", {
+        text: "Show invisible characters",
+        cmd: "mceVisualChars",
         onPostRender: toggleActiveState(editor),
         selectable: true,
-        context: 'view',
-        prependToContext: true
+        context: "view",
+        prependToContext: true,
       });
     };
 
-    global.add('visualchars', function (editor) {
+    global.add("visualchars", function (editor) {
       var toggleState = Cell(false);
       Commands.register(editor, toggleState);
       register$1(editor);
@@ -460,10 +478,8 @@ var visualchars = (function (domGlobals) {
       Bindings.setup(editor, toggleState);
       return Api.get(toggleState);
     });
-    function Plugin () {
-    }
+    function Plugin() {}
 
     return Plugin;
-
-}(window));
+  })(window);
 })();

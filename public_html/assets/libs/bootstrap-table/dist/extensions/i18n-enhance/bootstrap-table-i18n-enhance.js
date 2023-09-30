@@ -3,8 +3,8 @@
  * @version: v1.0.0
  */
 
-!function ($) {
-  'use strict';
+!(function ($) {
+  "use strict";
 
   var BootstrapTable = $.fn.bootstrapTable.Constructor;
 
@@ -29,7 +29,6 @@
     this.initToolbar();
   };
 
-  $.fn.bootstrapTable.methods.push('changeTitle');
-  $.fn.bootstrapTable.methods.push('changeLocale');
-
-}(jQuery);
+  $.fn.bootstrapTable.methods.push("changeTitle");
+  $.fn.bootstrapTable.methods.push("changeLocale");
+})(jQuery);

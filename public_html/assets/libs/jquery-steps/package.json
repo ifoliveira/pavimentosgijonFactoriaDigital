@@ -1,27 +1,32 @@
 {
-  "_from": "jquery-steps@^1.1.0",
+  "_args": [
+    [
+      "jquery-steps@1.1.0",
+      "E:\\bitbucket\\bootstrap\\xtreme-admin"
+    ]
+  ],
+  "_from": "jquery-steps@1.1.0",
   "_id": "jquery-steps@1.1.0",
   "_inBundle": false,
   "_integrity": "sha1-DO7gsNLkkUOYGtEg1FjtVuqOGSQ=",
   "_location": "/jquery-steps",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "version",
     "registry": true,
-    "raw": "jquery-steps@^1.1.0",
+    "raw": "jquery-steps@1.1.0",
     "name": "jquery-steps",
     "escapedName": "jquery-steps",
-    "rawSpec": "^1.1.0",
+    "rawSpec": "1.1.0",
     "saveSpec": null,
-    "fetchSpec": "^1.1.0"
+    "fetchSpec": "1.1.0"
   },
   "_requiredBy": [
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/jquery-steps/-/jquery-steps-1.1.0.tgz",
-  "_shasum": "0ceee0b0d2e49143981ad120d458ed56ea8e1924",
-  "_spec": "jquery-steps@^1.1.0",
-  "_where": "E:\\bitbucket\\bootstrap\\elite-bt4\\dark",
+  "_spec": "1.1.0",
+  "_where": "E:\\bitbucket\\bootstrap\\xtreme-admin",
   "author": {
     "name": "Rafael Staib",
     "email": "me@rafaelstaib.com",
@@ -30,8 +35,6 @@
   "bugs": {
     "url": "https://github.com/rstaib/jquery-steps/issues"
   },
-  "bundleDependencies": false,
-  "deprecated": false,
   "description": "A powerful jQuery wizard plugin that supports accessibility and HTML5",
   "devDependencies": {
     "grunt": "~0.4.1",

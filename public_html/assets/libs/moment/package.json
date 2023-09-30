@@ -2,7 +2,7 @@
   "_args": [
     [
       "moment@2.23.0",
-      "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster"
+      "E:\\bitbucket\\bootstrap\\xtreme-admin"
     ]
   ],
   "_from": "moment@2.23.0",
@@ -30,7 +30,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/moment/-/moment-2.23.0.tgz",
   "_spec": "2.23.0",
-  "_where": "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster",
+  "_where": "E:\\bitbucket\\bootstrap\\xtreme-admin",
   "author": {
     "name": "Iskren Ivov Chernev",
     "email": "iskren.chernev@gmail.com",

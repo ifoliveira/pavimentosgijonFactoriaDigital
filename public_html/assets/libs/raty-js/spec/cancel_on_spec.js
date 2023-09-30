@@ -1,35 +1,35 @@
-describe('#cancelOn', function() {
-  beforeEach(function() {
-    $.fn.raty.defaults.path = '../lib/images';
+describe("#cancelOn", function () {
+  beforeEach(function () {
+    $.fn.raty.defaults.path = "../lib/images";
   });
 
-  afterEach(function() {
+  afterEach(function () {
     Helper.clear();
   });
 
-  it ('changes the icon', function() {
+  it("changes the icon", function () {
     // given
-    this.el = Helper.create('#el');
+    this.el = Helper.create("#el");
 
-    this.el.raty({ cancel: true, cancelOn: 'star-half.png' });
+    this.el.raty({ cancel: true, cancelOn: "star-half.png" });
 
-    var cancel = this.el.children('.raty-cancel');
+    var cancel = this.el.children(".raty-cancel");
 
     // when
-    cancel.trigger('mouseover');
+    cancel.trigger("mouseover");
 
     // then
-    expect(cancel).toHaveAttr('src', '../lib/images/star-half.png');
+    expect(cancel).toHaveAttr("src", "../lib/images/star-half.png");
   });
 
-  it ('accepts data attribute', function() {
+  it("accepts data attribute", function () {
     // given
-    this.el = Helper._append('div', { 'data-cancel-on': 'custom' });
+    this.el = Helper._append("div", { "data-cancel-on": "custom" });
 
     // when
     this.el.raty();
 
     // then
-    expect(this.el[0].opt.cancelOn).toEqual('custom');
+    expect(this.el[0].opt.cancelOn).toEqual("custom");
   });
 });

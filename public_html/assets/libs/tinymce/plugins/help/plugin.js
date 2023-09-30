@@ -1,8 +1,8 @@
 (function () {
-var help = (function () {
-    'use strict';
+  var help = (function () {
+    "use strict";
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global = tinymce.util.Tools.resolve("tinymce.PluginManager");
 
     var constant = function (value) {
       return function () {
@@ -40,7 +40,7 @@ var help = (function () {
     var none = function () {
       return NONE;
     };
-    var NONE = function () {
+    var NONE = (function () {
       var eq = function (o) {
         return o.isNone();
       };
@@ -50,8 +50,7 @@ var help = (function () {
       var id = function (n) {
         return n;
       };
-      var noop = function () {
-      };
+      var noop = function () {};
       var nul = function () {
         return null;
       };
@@ -68,7 +67,7 @@ var help = (function () {
         getOr: id,
         getOrThunk: call,
         getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
+          throw new Error(msg || "error: getOrDie called on none.");
         },
         getOrNull: nul,
         getOrUndefined: undef,
@@ -87,12 +86,11 @@ var help = (function () {
         toArray: function () {
           return [];
         },
-        toString: constant('none()')
+        toString: constant("none()"),
       };
-      if (Object.freeze)
-        Object.freeze(me);
+      if (Object.freeze) Object.freeze(me);
       return me;
-    }();
+    })();
     var some = function (a) {
       var constant_a = function () {
         return a;
@@ -150,8 +148,8 @@ var help = (function () {
           return [a];
         },
         toString: function () {
-          return 'some(' + a + ')';
-        }
+          return "some(" + a + ")";
+        },
       };
       return me;
     };
@@ -161,17 +159,24 @@ var help = (function () {
     var Option = {
       some: some,
       none: none,
-      from: from
+      from: from,
     };
 
     var typeOf = function (x) {
-      if (x === null)
-        return 'null';
+      if (x === null) return "null";
       var t = typeof x;
-      if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array'))
-        return 'array';
-      if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String'))
-        return 'string';
+      if (
+        t === "object" &&
+        (Array.prototype.isPrototypeOf(x) ||
+          (x.constructor && x.constructor.name === "Array"))
+      )
+        return "array";
+      if (
+        t === "object" &&
+        (String.prototype.isPrototypeOf(x) ||
+          (x.constructor && x.constructor.name === "String"))
+      )
+        return "string";
       return t;
     };
     var isType = function (type) {
@@ -179,10 +184,10 @@ var help = (function () {
         return typeOf(value) === type;
       };
     };
-    var isFunction = isType('function');
+    var isFunction = isType("function");
 
     var slice = Array.prototype.slice;
-    var rawIndexOf = function () {
+    var rawIndexOf = (function () {
       var pIndexOf = Array.prototype.indexOf;
       var fastIndex = function (xs, x) {
         return pIndexOf.call(xs, x);
@@ -191,7 +196,7 @@ var help = (function () {
         return slowIndexOf(xs, x);
       };
       return pIndexOf === undefined ? slowIndex : fastIndex;
-    }();
+    })();
     var contains = function (xs, x) {
       return rawIndexOf(xs, x) > -1;
     };
@@ -231,123 +236,160 @@ var help = (function () {
       }
       return -1;
     };
-    var from$1 = isFunction(Array.from) ? Array.from : function (x) {
-      return slice.call(x);
-    };
+    var from$1 = isFunction(Array.from)
+      ? Array.from
+      : function (x) {
+          return slice.call(x);
+        };
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.I18n');
+    var global$1 = tinymce.util.Tools.resolve("tinymce.util.I18n");
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.Env');
+    var global$2 = tinymce.util.Tools.resolve("tinymce.Env");
 
-    var meta = global$2.mac ? '\u2318' : 'Ctrl';
-    var access = global$2.mac ? 'Ctrl + Alt' : 'Shift + Alt';
+    var meta = global$2.mac ? "\u2318" : "Ctrl";
+    var access = global$2.mac ? "Ctrl + Alt" : "Shift + Alt";
     var shortcuts = [
       {
-        shortcut: meta + ' + B',
-        action: 'Bold'
+        shortcut: meta + " + B",
+        action: "Bold",
       },
       {
-        shortcut: meta + ' + I',
-        action: 'Italic'
+        shortcut: meta + " + I",
+        action: "Italic",
       },
       {
-        shortcut: meta + ' + U',
-        action: 'Underline'
+        shortcut: meta + " + U",
+        action: "Underline",
       },
       {
-        shortcut: meta + ' + A',
-        action: 'Select all'
+        shortcut: meta + " + A",
+        action: "Select all",
       },
       {
-        shortcut: meta + ' + Y or ' + meta + ' + Shift + Z',
-        action: 'Redo'
+        shortcut: meta + " + Y or " + meta + " + Shift + Z",
+        action: "Redo",
       },
       {
-        shortcut: meta + ' + Z',
-        action: 'Undo'
+        shortcut: meta + " + Z",
+        action: "Undo",
       },
       {
-        shortcut: access + ' + 1',
-        action: 'Header 1'
+        shortcut: access + " + 1",
+        action: "Header 1",
       },
       {
-        shortcut: access + ' + 2',
-        action: 'Header 2'
+        shortcut: access + " + 2",
+        action: "Header 2",
       },
       {
-        shortcut: access + ' + 3',
-        action: 'Header 3'
+        shortcut: access + " + 3",
+        action: "Header 3",
       },
       {
-        shortcut: access + ' + 4',
-        action: 'Header 4'
+        shortcut: access + " + 4",
+        action: "Header 4",
       },
       {
-        shortcut: access + ' + 5',
-        action: 'Header 5'
+        shortcut: access + " + 5",
+        action: "Header 5",
       },
       {
-        shortcut: access + ' + 6',
-        action: 'Header 6'
+        shortcut: access + " + 6",
+        action: "Header 6",
       },
       {
-        shortcut: access + ' + 7',
-        action: 'Paragraph'
+        shortcut: access + " + 7",
+        action: "Paragraph",
       },
       {
-        shortcut: access + ' + 8',
-        action: 'Div'
+        shortcut: access + " + 8",
+        action: "Div",
       },
       {
-        shortcut: access + ' + 9',
-        action: 'Address'
+        shortcut: access + " + 9",
+        action: "Address",
       },
       {
-        shortcut: 'Alt + F9',
-        action: 'Focus to menubar'
+        shortcut: "Alt + F9",
+        action: "Focus to menubar",
       },
       {
-        shortcut: 'Alt + F10',
-        action: 'Focus to toolbar'
+        shortcut: "Alt + F10",
+        action: "Focus to toolbar",
       },
       {
-        shortcut: 'Alt + F11',
-        action: 'Focus to element path'
+        shortcut: "Alt + F11",
+        action: "Focus to element path",
       },
       {
-        shortcut: 'Ctrl + F9',
-        action: 'Focus to contextual toolbar'
+        shortcut: "Ctrl + F9",
+        action: "Focus to contextual toolbar",
       },
       {
-        shortcut: meta + ' + K',
-        action: 'Insert link (if link plugin activated)'
+        shortcut: meta + " + K",
+        action: "Insert link (if link plugin activated)",
       },
       {
-        shortcut: meta + ' + S',
-        action: 'Save (if save plugin activated)'
+        shortcut: meta + " + S",
+        action: "Save (if save plugin activated)",
       },
       {
-        shortcut: meta + ' + F',
-        action: 'Find (if searchreplace plugin activated)'
-      }
+        shortcut: meta + " + F",
+        action: "Find (if searchreplace plugin activated)",
+      },
     ];
     var KeyboardShortcuts = { shortcuts: shortcuts };
 
     var makeTab = function () {
       var makeAriaLabel = function (shortcut) {
-        return 'aria-label="Action: ' + shortcut.action + ', Shortcut: ' + shortcut.shortcut.replace(/Ctrl/g, 'Control') + '"';
+        return (
+          'aria-label="Action: ' +
+          shortcut.action +
+          ", Shortcut: " +
+          shortcut.shortcut.replace(/Ctrl/g, "Control") +
+          '"'
+        );
       };
-      var shortcutLisString = map(KeyboardShortcuts.shortcuts, function (shortcut) {
-        return '<tr data-mce-tabstop="1" tabindex="-1" ' + makeAriaLabel(shortcut) + '>' + '<td>' + global$1.translate(shortcut.action) + '</td>' + '<td>' + shortcut.shortcut + '</td>' + '</tr>';
-      }).join('');
+      var shortcutLisString = map(
+        KeyboardShortcuts.shortcuts,
+        function (shortcut) {
+          return (
+            '<tr data-mce-tabstop="1" tabindex="-1" ' +
+            makeAriaLabel(shortcut) +
+            ">" +
+            "<td>" +
+            global$1.translate(shortcut.action) +
+            "</td>" +
+            "<td>" +
+            shortcut.shortcut +
+            "</td>" +
+            "</tr>"
+          );
+        }
+      ).join("");
       return {
-        title: 'Handy Shortcuts',
-        type: 'container',
-        style: 'overflow-y: auto; overflow-x: hidden; max-height: 250px',
-        items: [{
-            type: 'container',
-            html: '<div>' + '<table class="mce-table-striped">' + '<thead>' + '<th>' + global$1.translate('Action') + '</th>' + '<th>' + global$1.translate('Shortcut') + '</th>' + '</thead>' + shortcutLisString + '</table>' + '</div>'
-          }]
+        title: "Handy Shortcuts",
+        type: "container",
+        style: "overflow-y: auto; overflow-x: hidden; max-height: 250px",
+        items: [
+          {
+            type: "container",
+            html:
+              "<div>" +
+              '<table class="mce-table-striped">' +
+              "<thead>" +
+              "<th>" +
+              global$1.translate("Action") +
+              "</th>" +
+              "<th>" +
+              global$1.translate("Shortcut") +
+              "</th>" +
+              "</thead>" +
+              shortcutLisString +
+              "</table>" +
+              "</div>",
+          },
+        ],
       };
     };
     var KeyboardShortcutsTab = { makeTab: makeTab };
@@ -357,7 +399,7 @@ var help = (function () {
     var supplant = function (str, obj) {
       var isStringOrNumber = function (a) {
         var t = typeof a;
-        return t === 'string' || t === 'number';
+        return t === "string" || t === "number";
       };
       return str.replace(/\$\{([^{}]*)\}/g, function (fullMatch, key) {
         var value = obj[key];
@@ -367,270 +409,300 @@ var help = (function () {
 
     var urls = [
       {
-        key: 'advlist',
-        name: 'Advanced List'
+        key: "advlist",
+        name: "Advanced List",
       },
       {
-        key: 'anchor',
-        name: 'Anchor'
+        key: "anchor",
+        name: "Anchor",
       },
       {
-        key: 'autolink',
-        name: 'Autolink'
+        key: "autolink",
+        name: "Autolink",
       },
       {
-        key: 'autoresize',
-        name: 'Autoresize'
+        key: "autoresize",
+        name: "Autoresize",
       },
       {
-        key: 'autosave',
-        name: 'Autosave'
+        key: "autosave",
+        name: "Autosave",
       },
       {
-        key: 'bbcode',
-        name: 'BBCode'
+        key: "bbcode",
+        name: "BBCode",
       },
       {
-        key: 'charmap',
-        name: 'Character Map'
+        key: "charmap",
+        name: "Character Map",
       },
       {
-        key: 'code',
-        name: 'Code'
+        key: "code",
+        name: "Code",
       },
       {
-        key: 'codesample',
-        name: 'Code Sample'
+        key: "codesample",
+        name: "Code Sample",
       },
       {
-        key: 'colorpicker',
-        name: 'Color Picker'
+        key: "colorpicker",
+        name: "Color Picker",
       },
       {
-        key: 'compat3x',
-        name: '3.x Compatibility'
+        key: "compat3x",
+        name: "3.x Compatibility",
       },
       {
-        key: 'contextmenu',
-        name: 'Context Menu'
+        key: "contextmenu",
+        name: "Context Menu",
       },
       {
-        key: 'directionality',
-        name: 'Directionality'
+        key: "directionality",
+        name: "Directionality",
       },
       {
-        key: 'emoticons',
-        name: 'Emoticons'
+        key: "emoticons",
+        name: "Emoticons",
       },
       {
-        key: 'fullpage',
-        name: 'Full Page'
+        key: "fullpage",
+        name: "Full Page",
       },
       {
-        key: 'fullscreen',
-        name: 'Full Screen'
+        key: "fullscreen",
+        name: "Full Screen",
       },
       {
-        key: 'help',
-        name: 'Help'
+        key: "help",
+        name: "Help",
       },
       {
-        key: 'hr',
-        name: 'Horizontal Rule'
+        key: "hr",
+        name: "Horizontal Rule",
       },
       {
-        key: 'image',
-        name: 'Image'
+        key: "image",
+        name: "Image",
       },
       {
-        key: 'imagetools',
-        name: 'Image Tools'
+        key: "imagetools",
+        name: "Image Tools",
       },
       {
-        key: 'importcss',
-        name: 'Import CSS'
+        key: "importcss",
+        name: "Import CSS",
       },
       {
-        key: 'insertdatetime',
-        name: 'Insert Date/Time'
+        key: "insertdatetime",
+        name: "Insert Date/Time",
       },
       {
-        key: 'legacyoutput',
-        name: 'Legacy Output'
+        key: "legacyoutput",
+        name: "Legacy Output",
       },
       {
-        key: 'link',
-        name: 'Link'
+        key: "link",
+        name: "Link",
       },
       {
-        key: 'lists',
-        name: 'Lists'
+        key: "lists",
+        name: "Lists",
       },
       {
-        key: 'media',
-        name: 'Media'
+        key: "media",
+        name: "Media",
       },
       {
-        key: 'nonbreaking',
-        name: 'Nonbreaking'
+        key: "nonbreaking",
+        name: "Nonbreaking",
       },
       {
-        key: 'noneditable',
-        name: 'Noneditable'
+        key: "noneditable",
+        name: "Noneditable",
       },
       {
-        key: 'pagebreak',
-        name: 'Page Break'
+        key: "pagebreak",
+        name: "Page Break",
       },
       {
-        key: 'paste',
-        name: 'Paste'
+        key: "paste",
+        name: "Paste",
       },
       {
-        key: 'preview',
-        name: 'Preview'
+        key: "preview",
+        name: "Preview",
       },
       {
-        key: 'print',
-        name: 'Print'
+        key: "print",
+        name: "Print",
       },
       {
-        key: 'save',
-        name: 'Save'
+        key: "save",
+        name: "Save",
       },
       {
-        key: 'searchreplace',
-        name: 'Search and Replace'
+        key: "searchreplace",
+        name: "Search and Replace",
       },
       {
-        key: 'spellchecker',
-        name: 'Spell Checker'
+        key: "spellchecker",
+        name: "Spell Checker",
       },
       {
-        key: 'tabfocus',
-        name: 'Tab Focus'
+        key: "tabfocus",
+        name: "Tab Focus",
       },
       {
-        key: 'table',
-        name: 'Table'
+        key: "table",
+        name: "Table",
       },
       {
-        key: 'template',
-        name: 'Template'
+        key: "template",
+        name: "Template",
       },
       {
-        key: 'textcolor',
-        name: 'Text Color'
+        key: "textcolor",
+        name: "Text Color",
       },
       {
-        key: 'textpattern',
-        name: 'Text Pattern'
+        key: "textpattern",
+        name: "Text Pattern",
       },
       {
-        key: 'toc',
-        name: 'Table of Contents'
+        key: "toc",
+        name: "Table of Contents",
       },
       {
-        key: 'visualblocks',
-        name: 'Visual Blocks'
+        key: "visualblocks",
+        name: "Visual Blocks",
       },
       {
-        key: 'visualchars',
-        name: 'Visual Characters'
+        key: "visualchars",
+        name: "Visual Characters",
       },
       {
-        key: 'wordcount',
-        name: 'Word Count'
-      }
+        key: "wordcount",
+        name: "Word Count",
+      },
     ];
     var PluginUrls = { urls: urls };
 
-    var makeLink = curry(supplant, '<a href="${url}" target="_blank" rel="noopener">${name}</a>');
+    var makeLink = curry(
+      supplant,
+      '<a href="${url}" target="_blank" rel="noopener">${name}</a>'
+    );
     var maybeUrlize = function (editor, key) {
       return find(PluginUrls.urls, function (x) {
         return x.key === key;
-      }).fold(function () {
-        var getMetadata = editor.plugins[key].getMetadata;
-        return typeof getMetadata === 'function' ? makeLink(getMetadata()) : key;
-      }, function (x) {
-        return makeLink({
-          name: x.name,
-          url: 'https://www.tinymce.com/docs/plugins/' + x.key
-        });
-      });
+      }).fold(
+        function () {
+          var getMetadata = editor.plugins[key].getMetadata;
+          return typeof getMetadata === "function"
+            ? makeLink(getMetadata())
+            : key;
+        },
+        function (x) {
+          return makeLink({
+            name: x.name,
+            url: "https://www.tinymce.com/docs/plugins/" + x.key,
+          });
+        }
+      );
     };
     var getPluginKeys = function (editor) {
       var keys$1 = keys(editor.plugins);
-      return editor.settings.forced_plugins === undefined ? keys$1 : filter(keys$1, not(curry(contains, editor.settings.forced_plugins)));
+      return editor.settings.forced_plugins === undefined
+        ? keys$1
+        : filter(keys$1, not(curry(contains, editor.settings.forced_plugins)));
     };
     var pluginLister = function (editor) {
       var pluginKeys = getPluginKeys(editor);
       var pluginLis = map(pluginKeys, function (key) {
-        return '<li>' + maybeUrlize(editor, key) + '</li>';
+        return "<li>" + maybeUrlize(editor, key) + "</li>";
       });
       var count = pluginLis.length;
-      var pluginsString = pluginLis.join('');
-      return '<p><b>' + global$1.translate([
-        'Plugins installed ({0}):',
-        count
-      ]) + '</b></p>' + '<ul>' + pluginsString + '</ul>';
+      var pluginsString = pluginLis.join("");
+      return (
+        "<p><b>" +
+        global$1.translate(["Plugins installed ({0}):", count]) +
+        "</b></p>" +
+        "<ul>" +
+        pluginsString +
+        "</ul>"
+      );
     };
     var installedPlugins = function (editor) {
       return {
-        type: 'container',
-        html: '<div style="overflow-y: auto; overflow-x: hidden; max-height: 230px; height: 230px;" data-mce-tabstop="1" tabindex="-1">' + pluginLister(editor) + '</div>',
-        flex: 1
+        type: "container",
+        html:
+          '<div style="overflow-y: auto; overflow-x: hidden; max-height: 230px; height: 230px;" data-mce-tabstop="1" tabindex="-1">' +
+          pluginLister(editor) +
+          "</div>",
+        flex: 1,
       };
     };
     var availablePlugins = function () {
       return {
-        type: 'container',
-        html: '<div style="padding: 10px; background: #e3e7f4; height: 100%;" data-mce-tabstop="1" tabindex="-1">' + '<p><b>' + global$1.translate('Premium plugins:') + '</b></p>' + '<ul>' + '<li>PowerPaste</li>' + '<li>Spell Checker Pro</li>' + '<li>Accessibility Checker</li>' + '<li>Advanced Code Editor</li>' + '<li>Enhanced Media Embed</li>' + '<li>Link Checker</li>' + '</ul><br />' + '<p style="float: right;"><a href="https://www.tinymce.com/pricing/?utm_campaign=editor_referral&utm_medium=help_dialog&utm_source=tinymce" target="_blank">' + global$1.translate('Learn more...') + '</a></p>' + '</div>',
-        flex: 1
+        type: "container",
+        html:
+          '<div style="padding: 10px; background: #e3e7f4; height: 100%;" data-mce-tabstop="1" tabindex="-1">' +
+          "<p><b>" +
+          global$1.translate("Premium plugins:") +
+          "</b></p>" +
+          "<ul>" +
+          "<li>PowerPaste</li>" +
+          "<li>Spell Checker Pro</li>" +
+          "<li>Accessibility Checker</li>" +
+          "<li>Advanced Code Editor</li>" +
+          "<li>Enhanced Media Embed</li>" +
+          "<li>Link Checker</li>" +
+          "</ul><br />" +
+          '<p style="float: right;"><a href="https://www.tinymce.com/pricing/?utm_campaign=editor_referral&utm_medium=help_dialog&utm_source=tinymce" target="_blank">' +
+          global$1.translate("Learn more...") +
+          "</a></p>" +
+          "</div>",
+        flex: 1,
       };
     };
     var makeTab$1 = function (editor) {
       return {
-        title: 'Plugins',
-        type: 'container',
-        style: 'overflow-y: auto; overflow-x: hidden;',
-        layout: 'flex',
+        title: "Plugins",
+        type: "container",
+        style: "overflow-y: auto; overflow-x: hidden;",
+        layout: "flex",
         padding: 10,
         spacing: 10,
-        items: [
-          installedPlugins(editor),
-          availablePlugins()
-        ]
+        items: [installedPlugins(editor), availablePlugins()],
       };
     };
     var PluginsTab = { makeTab: makeTab$1 };
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.EditorManager');
+    var global$3 = tinymce.util.Tools.resolve("tinymce.EditorManager");
 
     var getVersion = function (major, minor) {
-      return major.indexOf('@') === 0 ? 'X.X.X' : major + '.' + minor;
+      return major.indexOf("@") === 0 ? "X.X.X" : major + "." + minor;
     };
     var makeRow = function () {
       var version = getVersion(global$3.majorVersion, global$3.minorVersion);
-      var changeLogLink = '<a href="https://www.tinymce.com/docs/changelog/?utm_campaign=editor_referral&utm_medium=help_dialog&utm_source=tinymce" target="_blank">TinyMCE ' + version + '</a>';
+      var changeLogLink =
+        '<a href="https://www.tinymce.com/docs/changelog/?utm_campaign=editor_referral&utm_medium=help_dialog&utm_source=tinymce" target="_blank">TinyMCE ' +
+        version +
+        "</a>";
       return [
         {
-          type: 'label',
-          html: global$1.translate([
-            'You are using {0}',
-            changeLogLink
-          ])
+          type: "label",
+          html: global$1.translate(["You are using {0}", changeLogLink]),
         },
         {
-          type: 'spacer',
-          flex: 1
+          type: "spacer",
+          flex: 1,
         },
         {
-          text: 'Close',
+          text: "Close",
           onclick: function () {
             this.parent().parent().close();
-          }
-        }
+          },
+        },
       ];
     };
     var ButtonsRow = { makeRow: makeRow };
@@ -638,51 +710,49 @@ var help = (function () {
     var open = function (editor, pluginUrl) {
       return function () {
         editor.windowManager.open({
-          title: 'Help',
-          bodyType: 'tabpanel',
-          layout: 'flex',
-          body: [
-            KeyboardShortcutsTab.makeTab(),
-            PluginsTab.makeTab(editor)
-          ],
+          title: "Help",
+          bodyType: "tabpanel",
+          layout: "flex",
+          body: [KeyboardShortcutsTab.makeTab(), PluginsTab.makeTab(editor)],
           buttons: ButtonsRow.makeRow(),
           onPostRender: function () {
-            var title = this.getEl('title');
-            title.innerHTML = '<img src="' + pluginUrl + '/img/logo.png" alt="TinyMCE Logo" style="display: inline-block; width: 200px; height: 50px">';
-          }
+            var title = this.getEl("title");
+            title.innerHTML =
+              '<img src="' +
+              pluginUrl +
+              '/img/logo.png" alt="TinyMCE Logo" style="display: inline-block; width: 200px; height: 50px">';
+          },
         });
       };
     };
     var Dialog = { open: open };
 
     var register = function (editor, pluginUrl) {
-      editor.addCommand('mceHelp', Dialog.open(editor, pluginUrl));
+      editor.addCommand("mceHelp", Dialog.open(editor, pluginUrl));
     };
     var Commands = { register: register };
 
     var register$1 = function (editor, pluginUrl) {
-      editor.addButton('help', {
-        icon: 'help',
-        onclick: Dialog.open(editor, pluginUrl)
+      editor.addButton("help", {
+        icon: "help",
+        onclick: Dialog.open(editor, pluginUrl),
       });
-      editor.addMenuItem('help', {
-        text: 'Help',
-        icon: 'help',
-        context: 'help',
-        onclick: Dialog.open(editor, pluginUrl)
+      editor.addMenuItem("help", {
+        text: "Help",
+        icon: "help",
+        context: "help",
+        onclick: Dialog.open(editor, pluginUrl),
       });
     };
     var Buttons = { register: register$1 };
 
-    global.add('help', function (editor, pluginUrl) {
+    global.add("help", function (editor, pluginUrl) {
       Buttons.register(editor, pluginUrl);
       Commands.register(editor, pluginUrl);
-      editor.shortcuts.add('Alt+0', 'Open help dialog', 'mceHelp');
+      editor.shortcuts.add("Alt+0", "Open help dialog", "mceHelp");
     });
-    function Plugin () {
-    }
+    function Plugin() {}
 
     return Plugin;
-
-}());
+  })();
 })();

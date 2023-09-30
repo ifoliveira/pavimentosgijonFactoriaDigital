@@ -1,38 +1,48 @@
 (function () {
-var advlist = (function () {
-    'use strict';
+  var advlist = (function () {
+    "use strict";
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global = tinymce.util.Tools.resolve("tinymce.PluginManager");
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global$1 = tinymce.util.Tools.resolve("tinymce.util.Tools");
 
     var applyListFormat = function (editor, listName, styleValue) {
-      var cmd = listName === 'UL' ? 'InsertUnorderedList' : 'InsertOrderedList';
-      editor.execCommand(cmd, false, styleValue === false ? null : { 'list-style-type': styleValue });
+      var cmd = listName === "UL" ? "InsertUnorderedList" : "InsertOrderedList";
+      editor.execCommand(
+        cmd,
+        false,
+        styleValue === false ? null : { "list-style-type": styleValue }
+      );
     };
     var Actions = { applyListFormat: applyListFormat };
 
     var register = function (editor) {
-      editor.addCommand('ApplyUnorderedListStyle', function (ui, value) {
-        Actions.applyListFormat(editor, 'UL', value['list-style-type']);
+      editor.addCommand("ApplyUnorderedListStyle", function (ui, value) {
+        Actions.applyListFormat(editor, "UL", value["list-style-type"]);
       });
-      editor.addCommand('ApplyOrderedListStyle', function (ui, value) {
-        Actions.applyListFormat(editor, 'OL', value['list-style-type']);
+      editor.addCommand("ApplyOrderedListStyle", function (ui, value) {
+        Actions.applyListFormat(editor, "OL", value["list-style-type"]);
       });
     };
     var Commands = { register: register };
 
     var getNumberStyles = function (editor) {
-      var styles = editor.getParam('advlist_number_styles', 'default,lower-alpha,lower-greek,lower-roman,upper-alpha,upper-roman');
+      var styles = editor.getParam(
+        "advlist_number_styles",
+        "default,lower-alpha,lower-greek,lower-roman,upper-alpha,upper-roman"
+      );
       return styles ? styles.split(/[ ,]/) : [];
     };
     var getBulletStyles = function (editor) {
-      var styles = editor.getParam('advlist_bullet_styles', 'default,circle,disc,square');
+      var styles = editor.getParam(
+        "advlist_bullet_styles",
+        "default,circle,disc,square"
+      );
       return styles ? styles.split(/[ ,]/) : [];
     };
     var Settings = {
       getNumberStyles: getNumberStyles,
-      getBulletStyles: getBulletStyles
+      getBulletStyles: getBulletStyles,
     };
 
     var isChildOfBody = function (editor, elm) {
@@ -43,31 +53,35 @@ var advlist = (function () {
     };
     var isListNode = function (editor) {
       return function (node) {
-        return node && /^(OL|UL|DL)$/.test(node.nodeName) && isChildOfBody(editor, node);
+        return (
+          node &&
+          /^(OL|UL|DL)$/.test(node.nodeName) &&
+          isChildOfBody(editor, node)
+        );
       };
     };
     var getSelectedStyleType = function (editor) {
-      var listElm = editor.dom.getParent(editor.selection.getNode(), 'ol,ul');
-      return editor.dom.getStyle(listElm, 'listStyleType') || '';
+      var listElm = editor.dom.getParent(editor.selection.getNode(), "ol,ul");
+      return editor.dom.getStyle(listElm, "listStyleType") || "";
     };
     var ListUtils = {
       isTableCellNode: isTableCellNode,
       isListNode: isListNode,
-      getSelectedStyleType: getSelectedStyleType
+      getSelectedStyleType: getSelectedStyleType,
     };
 
     var styleValueToText = function (styleValue) {
-      return styleValue.replace(/\-/g, ' ').replace(/\b\w/g, function (chr) {
+      return styleValue.replace(/\-/g, " ").replace(/\b\w/g, function (chr) {
         return chr.toUpperCase();
       });
     };
     var toMenuItems = function (styles) {
       return global$1.map(styles, function (styleValue) {
         var text = styleValueToText(styleValue);
-        var data = styleValue === 'default' ? '' : styleValue;
+        var data = styleValue === "default" ? "" : styleValue;
         return {
           text: text,
-          data: data
+          data: data,
         };
       });
     };
@@ -85,9 +99,12 @@ var advlist = (function () {
     var listState = function (editor, listName) {
       return function (e) {
         var ctrl = e.control;
-        editor.on('NodeChange', function (e) {
+        editor.on("NodeChange", function (e) {
           var tableCellIndex = findIndex(e.parents, ListUtils.isTableCellNode);
-          var parents = tableCellIndex !== -1 ? e.parents.slice(0, tableCellIndex) : e.parents;
+          var parents =
+            tableCellIndex !== -1
+              ? e.parents.slice(0, tableCellIndex)
+              : e.parents;
           var lists = global$1.grep(parents, ListUtils.isListNode(editor));
           ctrl.active(lists.length > 0 && lists[0].nodeName === listName);
         });
@@ -104,7 +121,7 @@ var advlist = (function () {
     var addSplitButton = function (editor, id, tooltip, cmd, nodeName, styles) {
       editor.addButton(id, {
         active: false,
-        type: 'splitbutton',
+        type: "splitbutton",
         tooltip: tooltip,
         menu: ListStyles.toMenuItems(styles),
         onPostRender: listState(editor, nodeName),
@@ -114,18 +131,18 @@ var advlist = (function () {
         },
         onclick: function () {
           editor.execCommand(cmd);
-        }
+        },
       });
     };
     var addButton = function (editor, id, tooltip, cmd, nodeName, styles) {
       editor.addButton(id, {
         active: false,
-        type: 'button',
+        type: "button",
         tooltip: tooltip,
         onPostRender: listState(editor, nodeName),
         onclick: function () {
           editor.execCommand(cmd);
-        }
+        },
       });
     };
     var addControl = function (editor, id, tooltip, cmd, nodeName, styles) {
@@ -136,25 +153,37 @@ var advlist = (function () {
       }
     };
     var register$1 = function (editor) {
-      addControl(editor, 'numlist', 'Numbered list', 'InsertOrderedList', 'OL', Settings.getNumberStyles(editor));
-      addControl(editor, 'bullist', 'Bullet list', 'InsertUnorderedList', 'UL', Settings.getBulletStyles(editor));
+      addControl(
+        editor,
+        "numlist",
+        "Numbered list",
+        "InsertOrderedList",
+        "OL",
+        Settings.getNumberStyles(editor)
+      );
+      addControl(
+        editor,
+        "bullist",
+        "Bullet list",
+        "InsertUnorderedList",
+        "UL",
+        Settings.getBulletStyles(editor)
+      );
     };
     var Buttons = { register: register$1 };
 
-    global.add('advlist', function (editor) {
+    global.add("advlist", function (editor) {
       var hasPlugin = function (editor, plugin) {
-        var plugins = editor.settings.plugins ? editor.settings.plugins : '';
+        var plugins = editor.settings.plugins ? editor.settings.plugins : "";
         return global$1.inArray(plugins.split(/[ ,]/), plugin) !== -1;
       };
-      if (hasPlugin(editor, 'lists')) {
+      if (hasPlugin(editor, "lists")) {
         Buttons.register(editor);
         Commands.register(editor);
       }
     });
-    function Plugin () {
-    }
+    function Plugin() {}
 
     return Plugin;
-
-}());
+  })();
 })();

@@ -19,8 +19,10 @@ class ManoObraType extends AbstractType
             ->add('presupuestoMo')
             ->add('categoriaMo')
             ->add('tipoMo')
-            ->add('textoMo')
-
+            ->add('textoMo', null, array(
+                'label' => 'Texto Descripción', 
+                'attr' => array('style' => 'height: 200px')
+               ))
         ;
     }
 

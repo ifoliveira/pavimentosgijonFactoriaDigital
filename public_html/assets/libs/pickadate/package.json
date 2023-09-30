@@ -2,7 +2,7 @@
   "_args": [
     [
       "pickadate@3.5.6",
-      "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster"
+      "E:\\bitbucket\\bootstrap\\xtreme-admin"
     ]
   ],
   "_from": "pickadate@3.5.6",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/pickadate/-/pickadate-3.5.6.tgz",
   "_spec": "3.5.6",
-  "_where": "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster",
+  "_where": "E:\\bitbucket\\bootstrap\\xtreme-admin",
   "author": {
     "name": "Amsul",
     "email": "reach@amsul.ca",

@@ -1,6 +1,6 @@
 (function () {
-var contextmenu = (function () {
-    'use strict';
+  var contextmenu = (function () {
+    "use strict";
 
     var Cell = function (initial) {
       var value = initial;
@@ -16,11 +16,11 @@ var contextmenu = (function () {
       return {
         get: get,
         set: set,
-        clone: clone
+        clone: clone,
       };
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global = tinymce.util.Tools.resolve("tinymce.PluginManager");
 
     var get = function (visibleState) {
       var isContextMenuVisible = function () {
@@ -34,14 +34,17 @@ var contextmenu = (function () {
       return editor.settings.contextmenu_never_use_native;
     };
     var getContextMenu = function (editor) {
-      return editor.getParam('contextmenu', 'link openlink image inserttable | cell row column deletetable');
+      return editor.getParam(
+        "contextmenu",
+        "link openlink image inserttable | cell row column deletetable"
+      );
     };
     var Settings = {
       shouldNeverUseNative: shouldNeverUseNative,
-      getContextMenu: getContextMenu
+      getContextMenu: getContextMenu,
     };
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
+    var global$1 = tinymce.util.Tools.resolve("tinymce.dom.DOMUtils");
 
     var getUiContainer = function (editor) {
       return global$1.DOM.select(editor.settings.ui_container)[0];
@@ -50,7 +53,7 @@ var contextmenu = (function () {
     var nu = function (x, y) {
       return {
         x: x,
-        y: y
+        y: y,
       };
     };
     var transpose = function (pos, dx, dy) {
@@ -63,7 +66,10 @@ var contextmenu = (function () {
       return nu(e.clientX, e.clientY);
     };
     var transposeUiContainer = function (element, pos) {
-      if (element && global$1.DOM.getStyle(element, 'position', true) !== 'static') {
+      if (
+        element &&
+        global$1.DOM.getStyle(element, "position", true) !== "static"
+      ) {
         var containerPos = global$1.DOM.getPos(element);
         var dx = containerPos.x - element.scrollLeft;
         var dy = containerPos.y - element.scrollTop;
@@ -80,15 +86,18 @@ var contextmenu = (function () {
       if (editor.inline) {
         return transposeUiContainer(getUiContainer(editor), fromPageXY(e));
       } else {
-        var iframePos = transposeContentAreaContainer(editor.getContentAreaContainer(), fromClientXY(e));
+        var iframePos = transposeContentAreaContainer(
+          editor.getContentAreaContainer(),
+          fromClientXY(e)
+        );
         return transposeUiContainer(getUiContainer(editor), iframePos);
       }
     };
     var Coords = { getPos: getPos };
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.ui.Factory');
+    var global$2 = tinymce.util.Tools.resolve("tinymce.ui.Factory");
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global$3 = tinymce.util.Tools.resolve("tinymce.util.Tools");
 
     var renderMenu = function (editor, visibleState) {
       var menu, contextmenu;
@@ -96,34 +105,34 @@ var contextmenu = (function () {
       contextmenu = Settings.getContextMenu(editor);
       global$3.each(contextmenu.split(/[ ,]/), function (name) {
         var item = editor.menuItems[name];
-        if (name === '|') {
+        if (name === "|") {
           item = { text: name };
         }
         if (item) {
-          item.shortcut = '';
+          item.shortcut = "";
           items.push(item);
         }
       });
       for (var i = 0; i < items.length; i++) {
-        if (items[i].text === '|') {
+        if (items[i].text === "|") {
           if (i === 0 || i === items.length - 1) {
             items.splice(i, 1);
           }
         }
       }
-      menu = global$2.create('menu', {
+      menu = global$2.create("menu", {
         items: items,
-        context: 'contextmenu',
-        classes: 'contextmenu'
+        context: "contextmenu",
+        classes: "contextmenu",
       });
       menu.uiContainer = getUiContainer(editor);
       menu.renderTo(getUiContainer(editor));
-      menu.on('hide', function (e) {
+      menu.on("hide", function (e) {
         if (e.control === this) {
           visibleState.set(false);
         }
       });
-      editor.on('remove', function () {
+      editor.on("remove", function () {
         menu.remove();
         menu = null;
       });
@@ -144,7 +153,7 @@ var contextmenu = (function () {
       return e.ctrlKey && !Settings.shouldNeverUseNative(editor);
     };
     var setup = function (editor, visibleState, menu) {
-      editor.on('contextmenu', function (e) {
+      editor.on("contextmenu", function (e) {
         if (isNativeOverrideKeyEvent(editor, e)) {
           return;
         }
@@ -154,15 +163,14 @@ var contextmenu = (function () {
     };
     var Bind = { setup: setup };
 
-    global.add('contextmenu', function (editor) {
-      var menu = Cell(null), visibleState = Cell(false);
+    global.add("contextmenu", function (editor) {
+      var menu = Cell(null),
+        visibleState = Cell(false);
       Bind.setup(editor, visibleState, menu);
       return Api.get(visibleState);
     });
-    function Plugin () {
-    }
+    function Plugin() {}
 
     return Plugin;
-
-}());
+  })();
 })();

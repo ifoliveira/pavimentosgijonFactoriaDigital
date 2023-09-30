@@ -1,33 +1,36 @@
 {
-  "_from": "nestable@^0.2.0",
+  "_args": [
+    [
+      "nestable@0.2.0",
+      "E:\\bitbucket\\bootstrap\\xtreme-admin"
+    ]
+  ],
+  "_from": "nestable@0.2.0",
   "_id": "nestable@0.2.0",
   "_inBundle": false,
   "_integrity": "sha1-m75F5R9hNfw/sIRf32sQFnpwAJw=",
   "_location": "/nestable",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "version",
     "registry": true,
-    "raw": "nestable@^0.2.0",
+    "raw": "nestable@0.2.0",
     "name": "nestable",
     "escapedName": "nestable",
-    "rawSpec": "^0.2.0",
+    "rawSpec": "0.2.0",
     "saveSpec": null,
-    "fetchSpec": "^0.2.0"
+    "fetchSpec": "0.2.0"
   },
   "_requiredBy": [
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/nestable/-/nestable-0.2.0.tgz",
-  "_shasum": "9bbe45e51f6135fc3fb0845fdf6b10167a70009c",
-  "_spec": "nestable@^0.2.0",
-  "_where": "E:\\bitbucket\\bootstrap\\elite-bt4\\dark",
+  "_spec": "0.2.0",
+  "_where": "E:\\bitbucket\\bootstrap\\xtreme-admin",
   "bugs": {
     "url": "https://github.com/dbushell/Nestable/issues"
   },
-  "bundleDependencies": false,
   "dependencies": {},
-  "deprecated": false,
   "description": "Drag & drop hierarchical list with mouse and touch compatibility (jQuery plugin)",
   "devDependencies": {},
   "homepage": "https://github.com/dbushell/Nestable#readme",

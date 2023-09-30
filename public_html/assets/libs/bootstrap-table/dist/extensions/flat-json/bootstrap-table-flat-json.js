@@ -5,58 +5,61 @@
  */
 
 (function ($) {
-    'use strict';
+  "use strict";
 
-    var flat = function (element, that) {
-        var result = {};
+  var flat = function (element, that) {
+    var result = {};
 
-        function recurse(cur, prop) {
-            if (Object(cur) !== cur) {
-                result[prop] = cur;
-            } else if ($.isArray(cur)) {
-                for (var i = 0, l = cur.length; i < l; i++) {
-                    recurse(cur[i], prop ? prop + that.options.flatSeparator + i : "" + i);
-                    if (l == 0) {
-                        result[prop] = [];
-                    }
-                }
-            } else {
-                var isEmpty = true;
-                for (var p in cur) {
-                    isEmpty = false;
-                    recurse(cur[p], prop ? prop + that.options.flatSeparator + p : p);
-                }
-                if (isEmpty) {
-                    result[prop] = {};
-                }
-            }
+    function recurse(cur, prop) {
+      if (Object(cur) !== cur) {
+        result[prop] = cur;
+      } else if ($.isArray(cur)) {
+        for (var i = 0, l = cur.length; i < l; i++) {
+          recurse(
+            cur[i],
+            prop ? prop + that.options.flatSeparator + i : "" + i
+          );
+          if (l == 0) {
+            result[prop] = [];
+          }
         }
+      } else {
+        var isEmpty = true;
+        for (var p in cur) {
+          isEmpty = false;
+          recurse(cur[p], prop ? prop + that.options.flatSeparator + p : p);
+        }
+        if (isEmpty) {
+          result[prop] = {};
+        }
+      }
+    }
 
-        recurse(element, "");
-        return result;
-    };
+    recurse(element, "");
+    return result;
+  };
 
-    var flatHelper = function (data, that) {
-        var flatArray = [];
+  var flatHelper = function (data, that) {
+    var flatArray = [];
 
-        $.each(!$.isArray(data) ? [data] : data, function (i, element) {
-            flatArray.push(flat(element, that));
-        });
-        return flatArray;
-    };
-
-    $.extend($.fn.bootstrapTable.defaults, {
-        flat: false,
-        flatSeparator: '.'
+    $.each(!$.isArray(data) ? [data] : data, function (i, element) {
+      flatArray.push(flat(element, that));
     });
+    return flatArray;
+  };
 
-    var BootstrapTable = $.fn.bootstrapTable.Constructor,
-        _initData = BootstrapTable.prototype.initData;
+  $.extend($.fn.bootstrapTable.defaults, {
+    flat: false,
+    flatSeparator: ".",
+  });
 
-    BootstrapTable.prototype.initData = function (data, type) {
-        if (this.options.flat) {
-            data = flatHelper(data ? data : this.options.data, this);
-        }
-        _initData.apply(this, [data, type]);
-    };
+  var BootstrapTable = $.fn.bootstrapTable.Constructor,
+    _initData = BootstrapTable.prototype.initData;
+
+  BootstrapTable.prototype.initData = function (data, type) {
+    if (this.options.flat) {
+      data = flatHelper(data ? data : this.options.data, this);
+    }
+    _initData.apply(this, [data, type]);
+  };
 })(jQuery);

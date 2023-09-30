@@ -1,27 +1,32 @@
 {
-  "_from": "morris.js@^0.5.0",
+  "_args": [
+    [
+      "morris.js@0.5.0",
+      "E:\\bitbucket\\bootstrap\\xtreme-admin"
+    ]
+  ],
+  "_from": "morris.js@0.5.0",
   "_id": "morris.js@0.5.0",
   "_inBundle": false,
   "_integrity": "sha1-cldnE1z64Fmq51mZuyzmocXRtEs=",
   "_location": "/morris.js",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "version",
     "registry": true,
-    "raw": "morris.js@^0.5.0",
+    "raw": "morris.js@0.5.0",
     "name": "morris.js",
     "escapedName": "morris.js",
-    "rawSpec": "^0.5.0",
+    "rawSpec": "0.5.0",
     "saveSpec": null,
-    "fetchSpec": "^0.5.0"
+    "fetchSpec": "0.5.0"
   },
   "_requiredBy": [
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/morris.js/-/morris.js-0.5.0.tgz",
-  "_shasum": "725767135cfae059aae75999bb2ce6a1c5d1b44b",
-  "_spec": "morris.js@^0.5.0",
-  "_where": "E:\\bitbucket\\bootstrap\\elite-bt4\\dark",
+  "_spec": "0.5.0",
+  "_where": "E:\\bitbucket\\bootstrap\\xtreme-admin",
   "author": {
     "name": "Olly Smith",
     "email": "olly@oesmith.co.uk"
@@ -29,8 +34,6 @@
   "bugs": {
     "url": "https://github.com/morrisjs/morris.js/issues"
   },
-  "bundleDependencies": false,
-  "deprecated": false,
   "description": "Easy, pretty charts",
   "devDependencies": {
     "bower": "~1.2.8",
@@ -57,14 +60,5 @@
   "scripts": {
     "test": "grunt concat coffee mocha"
   },
-  "version": "0.5.0",
-  "warnings": [
-    {
-      "code": "ENOTSUP",
-      "required": {
-        "node": ">=0.8 <0.11"
-      },
-      "pkgid": "morris.js@0.5.0"
-    }
-  ]
+  "version": "0.5.0"
 }

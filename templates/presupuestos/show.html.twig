@@ -101,7 +101,8 @@
 
                                     <div class="card">
                                         <div class="card-body">
-                                            <a href="/Tickets/{{ presupuesto.ticket.numticketCs }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Ticket final </a>
+                                            <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'FACTURA FINAL'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura SIN precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'FACTURA FINAL'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura CON precios</a>
                                         </div>
                                     </div>
                         {% endif %}
@@ -198,7 +199,7 @@
                                             <div class="card-body">
                                             <h6 class="card-subtitle"></code></h6>
                                             <div class="action-form">
-                                                <div class="form-group mb-0 text-left">
+                                                <div class="form-group text-left">
                                                     <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Guardar Foto') }}</button>
                                                 </div>
                                             </div>

@@ -1,65 +1,65 @@
-describe('#mouseover', function() {
-  beforeEach(function() {
-    $.fn.raty.defaults.path = '../lib/images';
+describe("#mouseover", function () {
+  beforeEach(function () {
+    $.fn.raty.defaults.path = "../lib/images";
 
-    this.el = Helper.create('#el');
+    this.el = Helper.create("#el");
   });
 
-  afterEach(function() {
+  afterEach(function () {
     Helper.clear();
   });
 
-  it ('receives the score as int', function() {
+  it("receives the score as int", function () {
     // given
     this.el.raty({
-      mouseover: function(score) {
-        $(this).data('score', score);
-      }
+      mouseover: function (score) {
+        $(this).data("score", score);
+      },
     });
 
-    var star = this.el.children('img:last');
+    var star = this.el.children("img:last");
 
     // when
-    star.trigger('mouseover');
+    star.trigger("mouseover");
 
     // then
-    expect(this.el.data('score')).toEqual(5);
+    expect(this.el.data("score")).toEqual(5);
   });
 
-  it ('receives the mouse event', function() {
+  it("receives the mouse event", function () {
     // given
     this.el.raty({
-      mouseover: function(_, evt) {
-        $(this).data('evt', evt);
-      }
+      mouseover: function (_, evt) {
+        $(this).data("evt", evt);
+      },
     });
 
-    var star = this.el.children('img:last');
+    var star = this.el.children("img:last");
 
     // when
-    star.trigger('mouseover');
+    star.trigger("mouseover");
 
     // then
-    expect(this.el.data('evt').type).toEqual('mouseover');
+    expect(this.el.data("evt").type).toEqual("mouseover");
   });
 
-  context('with :cancel', function() {
-    it ('receives null as score', function() {
+  context("with :cancel", function () {
+    it("receives null as score", function () {
       // given
       this.el.raty({
-        cancel    : true,
-        mouseover : function(score) {
-          $(this).data('score', score);
-        }
+        cancel: true,
+        mouseover: function (score) {
+          $(this).data("score", score);
+        },
       });
 
-      var cancel = this.el.children('.raty-cancel');
+      var cancel = this.el.children(".raty-cancel");
 
       // when
-      cancel.trigger('mouseover');
+      cancel.trigger("mouseover");
 
       // then
-      expect(this.el.data('score')).toBeNull();
+      expect(this.el.data("score")).toBeNull();
     });
   });
 });

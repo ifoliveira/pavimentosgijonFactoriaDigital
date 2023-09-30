@@ -1,6 +1,8 @@
 (function ($, w, undefined) {
   if (w.footable === undefined || w.foobox === null)
-    throw new Error('Please check and make sure footable.js is included in the page and is loaded prior to this script.');
+    throw new Error(
+      "Please check and make sure footable.js is included in the page and is loaded prior to this script."
+    );
 
   var defaults = {
     /*
@@ -18,8 +20,8 @@
 
   function MyPlugin() {
     var p = this;
-    p.name = 'Footable MyPlugin';
-    p.init = function(ft) {
+    p.name = "Footable MyPlugin";
+    p.init = function (ft) {
       $(ft.table).bind({
         /*
            Bind to relevant events here to modify/add functionality to Footable, example:
@@ -38,7 +40,6 @@
       });
     };
   }
-  
+
   w.footable.plugins.register(MyPlugin, defaults);
-  
 })(jQuery, window);

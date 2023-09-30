@@ -1,15 +1,15 @@
-describe('stars', function() {
-  beforeEach(function() {
-    $.fn.raty.defaults.path = '../lib/images';
+describe("stars", function () {
+  beforeEach(function () {
+    $.fn.raty.defaults.path = "../lib/images";
 
-    this.el = Helper.create('#el');
+    this.el = Helper.create("#el");
   });
 
-  afterEach(function() {
+  afterEach(function () {
     Helper.clear();
   });
 
-  it ('starts all off', function() {
+  it("starts all off", function () {
     // given
     var self = this.el;
 
@@ -17,74 +17,81 @@ describe('stars', function() {
     self.raty();
 
     // then
-    expect(self.children('img')).toHaveAttr('src', '../lib/images/star-off.png');
+    expect(self.children("img")).toHaveAttr(
+      "src",
+      "../lib/images/star-off.png"
+    );
   });
 
-  context('on click', function() {
-    it ('changes the score', function() {
+  context("on click", function () {
+    it("changes the score", function () {
       // given
-      var self  = this.el.raty(),
-          stars = self.children('img');
+      var self = this.el.raty(),
+        stars = self.children("img");
 
       // when
-      stars.last().trigger('click');
+      stars.last().trigger("click");
 
       // then
-      expect(self.children('input')).toHaveValue('5');
+      expect(self.children("input")).toHaveValue("5");
     });
   });
 
-  context('on mouseover', function() {
-    it ('turns on the stars', function() {
+  context("on mouseover", function () {
+    it("turns on the stars", function () {
       // given
-      var self  = this.el.raty(),
-          stars = self.children('img');
+      var self = this.el.raty(),
+        stars = self.children("img");
 
       // when
-      stars.last().trigger('mouseover');
+      stars.last().trigger("mouseover");
 
       // then
-      expect(stars).toHaveAttr('src', '../lib/images/star-on.png');
+      expect(stars).toHaveAttr("src", "../lib/images/star-on.png");
     });
 
-    context('and mouseout', function() {
-      it ('turns off all stars', function() {
+    context("and mouseout", function () {
+      it("turns off all stars", function () {
         // given
-        var self  = this.el.raty(),
-            stars = self.children('img');
+        var self = this.el.raty(),
+          stars = self.children("img");
 
         // when
-        stars.last().trigger('mouseover').trigger('mouseout');
+        stars.last().trigger("mouseover").trigger("mouseout");
 
         // then
-        expect(stars).toHaveAttr('src', '../lib/images/star-off.png');
+        expect(stars).toHaveAttr("src", "../lib/images/star-off.png");
       });
     });
 
-    context('and click', function() {
-      it ('changes the score', function() {
+    context("and click", function () {
+      it("changes the score", function () {
         // given
-        var self  = this.el.raty(),
-            stars = self.children('img');
+        var self = this.el.raty(),
+          stars = self.children("img");
 
         // when
-        stars.last().trigger('mouseover').trigger('click');
+        stars.last().trigger("mouseover").trigger("click");
 
         // then
-        expect(self.children('input')).toHaveValue('5');
+        expect(self.children("input")).toHaveValue("5");
       });
 
-      context('and mouseout', function() {
-        it ('keeps the stars on', function() {
+      context("and mouseout", function () {
+        it("keeps the stars on", function () {
           // given
-          var self  = this.el.raty(),
-              stars = self.children('img');
+          var self = this.el.raty(),
+            stars = self.children("img");
 
           // when
-          stars.last().trigger('mouseover').trigger('click').trigger('mouseout');
+          stars
+            .last()
+            .trigger("mouseover")
+            .trigger("click")
+            .trigger("mouseout");
 
           // then
-          expect(stars).toHaveAttr('src', '../lib/images/star-on.png');
+          expect(stars).toHaveAttr("src", "../lib/images/star-on.png");
         });
       });
     });

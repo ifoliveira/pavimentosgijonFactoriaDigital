@@ -2,7 +2,7 @@
   "_args": [
     [
       "ckeditor@4.11.3",
-      "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster"
+      "E:\\bitbucket\\bootstrap\\xtreme-admin"
     ]
   ],
   "_from": "ckeditor@4.11.3",
@@ -26,7 +26,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/ckeditor/-/ckeditor-4.11.3.tgz",
   "_spec": "4.11.3",
-  "_where": "E:\\bitbucket\\bootstrap\\monster-getstarted\\monster",
+  "_where": "E:\\bitbucket\\bootstrap\\xtreme-admin",
   "author": {
     "name": "CKSource",
     "url": "http://cksource.com/"

@@ -1,6 +1,6 @@
 (function () {
-var fullscreen = (function (domGlobals) {
-    'use strict';
+  var fullscreen = (function (domGlobals) {
+    "use strict";
 
     var Cell = function (initial) {
       var value = initial;
@@ -16,25 +16,25 @@ var fullscreen = (function (domGlobals) {
       return {
         get: get,
         set: set,
-        clone: clone
+        clone: clone,
       };
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global = tinymce.util.Tools.resolve("tinymce.PluginManager");
 
     var get = function (fullscreenState) {
       return {
         isFullscreen: function () {
           return fullscreenState.get() !== null;
-        }
+        },
       };
     };
     var Api = { get: get };
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
+    var global$1 = tinymce.util.Tools.resolve("tinymce.dom.DOMUtils");
 
     var fireFullscreenStateChanged = function (editor, state) {
-      editor.fire('FullscreenStateChanged', { state: state });
+      editor.fire("FullscreenStateChanged", { state: state });
     };
     var Events = { fireFullscreenStateChanged: fireFullscreenStateChanged };
 
@@ -55,14 +55,14 @@ var fullscreen = (function (domGlobals) {
       }
       return {
         w: w,
-        h: h
+        h: h,
       };
     };
     var getScrollPos = function () {
       var vp = DOM.getViewPort();
       return {
         x: vp.x,
-        y: vp.y
+        y: vp.y,
       };
     };
     var setScrollPos = function (pos) {
@@ -75,10 +75,15 @@ var fullscreen = (function (domGlobals) {
       var editorContainer, iframe, iframeStyle;
       var fullscreenInfo = fullscreenState.get();
       var resize = function () {
-        DOM.setStyle(iframe, 'height', getWindowSize().h - (editorContainer.clientHeight - iframe.clientHeight));
+        DOM.setStyle(
+          iframe,
+          "height",
+          getWindowSize().h -
+            (editorContainer.clientHeight - iframe.clientHeight)
+        );
       };
       var removeResize = function () {
-        DOM.unbind(domGlobals.window, 'resize', resize);
+        DOM.unbind(domGlobals.window, "resize", resize);
       };
       editorContainer = editor.getContainer();
       editorContainerStyle = editorContainer.style;
@@ -92,15 +97,15 @@ var fullscreen = (function (domGlobals) {
           iframeWidth: iframeStyle.width,
           iframeHeight: iframeStyle.height,
           resizeHandler: resize,
-          removeHandler: removeResize
+          removeHandler: removeResize,
         };
-        iframeStyle.width = iframeStyle.height = '100%';
-        editorContainerStyle.width = editorContainerStyle.height = '';
-        DOM.addClass(body, 'mce-fullscreen');
-        DOM.addClass(documentElement, 'mce-fullscreen');
-        DOM.addClass(editorContainer, 'mce-fullscreen');
-        DOM.bind(domGlobals.window, 'resize', resize);
-        editor.on('remove', removeResize);
+        iframeStyle.width = iframeStyle.height = "100%";
+        editorContainerStyle.width = editorContainerStyle.height = "";
+        DOM.addClass(body, "mce-fullscreen");
+        DOM.addClass(documentElement, "mce-fullscreen");
+        DOM.addClass(editorContainer, "mce-fullscreen");
+        DOM.bind(domGlobals.window, "resize", resize);
+        editor.on("remove", removeResize);
         resize();
         fullscreenState.set(newFullScreenInfo);
         Events.fireFullscreenStateChanged(editor, true);
@@ -113,12 +118,12 @@ var fullscreen = (function (domGlobals) {
         if (fullscreenInfo.containerHeight) {
           editorContainerStyle.height = fullscreenInfo.containerHeight;
         }
-        DOM.removeClass(body, 'mce-fullscreen');
-        DOM.removeClass(documentElement, 'mce-fullscreen');
-        DOM.removeClass(editorContainer, 'mce-fullscreen');
+        DOM.removeClass(body, "mce-fullscreen");
+        DOM.removeClass(documentElement, "mce-fullscreen");
+        DOM.removeClass(editorContainer, "mce-fullscreen");
         setScrollPos(fullscreenInfo.scrollPos);
-        DOM.unbind(domGlobals.window, 'resize', fullscreenInfo.resizeHandler);
-        editor.off('remove', fullscreenInfo.removeHandler);
+        DOM.unbind(domGlobals.window, "resize", fullscreenInfo.resizeHandler);
+        editor.off("remove", fullscreenInfo.removeHandler);
         fullscreenState.set(null);
         Events.fireFullscreenStateChanged(editor, false);
       }
@@ -126,7 +131,7 @@ var fullscreen = (function (domGlobals) {
     var Actions = { toggleFullscreen: toggleFullscreen };
 
     var register = function (editor, fullscreenState) {
-      editor.addCommand('mceFullScreen', function () {
+      editor.addCommand("mceFullScreen", function () {
         Actions.toggleFullscreen(editor, fullscreenState);
       });
     };
@@ -135,43 +140,41 @@ var fullscreen = (function (domGlobals) {
     var postRender = function (editor) {
       return function (e) {
         var ctrl = e.control;
-        editor.on('FullscreenStateChanged', function (e) {
+        editor.on("FullscreenStateChanged", function (e) {
           ctrl.active(e.state);
         });
       };
     };
     var register$1 = function (editor) {
-      editor.addMenuItem('fullscreen', {
-        text: 'Fullscreen',
-        shortcut: 'Ctrl+Shift+F',
+      editor.addMenuItem("fullscreen", {
+        text: "Fullscreen",
+        shortcut: "Ctrl+Shift+F",
         selectable: true,
-        cmd: 'mceFullScreen',
+        cmd: "mceFullScreen",
         onPostRender: postRender(editor),
-        context: 'view'
+        context: "view",
       });
-      editor.addButton('fullscreen', {
+      editor.addButton("fullscreen", {
         active: false,
-        tooltip: 'Fullscreen',
-        cmd: 'mceFullScreen',
-        onPostRender: postRender(editor)
+        tooltip: "Fullscreen",
+        cmd: "mceFullScreen",
+        onPostRender: postRender(editor),
       });
     };
     var Buttons = { register: register$1 };
 
-    global.add('fullscreen', function (editor) {
+    global.add("fullscreen", function (editor) {
       var fullscreenState = Cell(null);
       if (editor.settings.inline) {
         return Api.get(fullscreenState);
       }
       Commands.register(editor, fullscreenState);
       Buttons.register(editor);
-      editor.addShortcut('Ctrl+Shift+F', '', 'mceFullScreen');
+      editor.addShortcut("Ctrl+Shift+F", "", "mceFullScreen");
       return Api.get(fullscreenState);
     });
-    function Plugin () {
-    }
+    function Plugin() {}
 
     return Plugin;
-
-}(window));
+  })(window);
 })();

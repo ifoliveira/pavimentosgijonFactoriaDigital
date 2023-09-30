@@ -12,14 +12,14 @@
 function alphanum(a, b) {
   function chunkify(t) {
     var tz = [],
-        x = 0,
-        y = -1,
-        n = 0,
-        i,
-        j;
+      x = 0,
+      y = -1,
+      n = 0,
+      i,
+      j;
 
-    while (i = (j = t.charAt(x++)).charCodeAt(0)) {
-      var m = (i === 46 || (i >= 48 && i <= 57));
+    while ((i = (j = t.charAt(x++)).charCodeAt(0))) {
+      var m = i === 46 || (i >= 48 && i <= 57);
       if (m !== n) {
         tz[++y] = "";
         n = m;
@@ -30,7 +30,7 @@ function alphanum(a, b) {
   }
 
   function stringfy(v) {
-    if (typeof(v) === "number") {
+    if (typeof v === "number") {
       v = "" + v;
     }
     if (!v) {
@@ -45,12 +45,12 @@ function alphanum(a, b) {
   for (x = 0; aa[x] && bb[x]; x++) {
     if (aa[x] !== bb[x]) {
       var c = Number(aa[x]),
-          d = Number(bb[x]);
+        d = Number(bb[x]);
 
       if (c == aa[x] && d == bb[x]) {
         return c - d;
       } else {
-          return (aa[x] > bb[x]) ? 1 : -1;
+        return aa[x] > bb[x] ? 1 : -1;
       }
     }
   }
@@ -58,10 +58,10 @@ function alphanum(a, b) {
 }
 
 function numericOnly(a, b) {
-    function stripNonNumber(s) {
-        s = s.replace(new RegExp(/[^0-9]/g), "");
-        return parseInt(s, 10);
-    }
+  function stripNonNumber(s) {
+    s = s.replace(new RegExp(/[^0-9]/g), "");
+    return parseInt(s, 10);
+  }
 
-    return stripNonNumber(a) - stripNonNumber(b);
+  return stripNonNumber(a) - stripNonNumber(b);
 }
