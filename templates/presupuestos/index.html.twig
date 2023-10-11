@@ -128,8 +128,8 @@
 
                                                     <td><a href="{{ path ('presupuestos_show', { 'id': presupuesto.id  }) }}" class="font-medium link">{{ presupuesto.clientePe.direccionCl}}  ( {{presupuesto.clientePe.nombreCl}}  -  {{presupuesto.manoobraPe}} )</a></td>
                                                     <td>{{ presupuesto.clientePe.telefono1Cl }}</td>
-                                                    <td>{{ (presupuesto.importetotPe + presupuesto.importemanoobra)  |format_currency('EUR', locale='es')  }}</td>
-                                                    <td>{{ presupuesto.importesnalPe  |format_currency('EUR', locale='es')  }}</td>
+                                                    <td  align="right">{{ (presupuesto.importetotPe + presupuesto.importemanoobra)  |format_currency('EUR', locale='es')  }}</td>
+                                                    <td  align="right">{{ presupuesto.importesnalPe  |format_currency('EUR', locale='es')  }}</td>
                                                     {% set beneficio = presupuesto.importetotPe + presupuesto.importemanoobra - presupuesto.costetotPe %}
                                                     {% set coste_total = presupuesto.importemanoobra + presupuesto.importetotPe %}
 

@@ -112,7 +112,7 @@
                                             {% for detalle in presupuesto.ticket.detallecesta %}
                                                 <tr stylw='line-height: 10px'>
                                                     <td class="text-center"></td>
-                                                    <td>{{ detalle.productoDc.descripcionPd }}</td>
+                                                    <td>{{ detalle.productoDc.descripcionPd }} {{detalle.textoDc}}</td>
                                                     <td class="text-center">{{ detalle.cantidadDc }} </td>
                                                     <td class="text-left"  style = "text-align: right"> {% if precios == 'S' %}{{ detalle.pvpDc  |format_currency('EUR', locale='es')  }}{% endif %} </td>
                                                     <td class="" style = "text-align: right"> {% if precios == 'S' %}{{ (detalle.cantidadDc * detalle.pvpDc ) |format_currency('EUR', locale='es')  }}{% endif %}</td>

@@ -327,7 +327,7 @@
                 })
 
                 if (accept) {
-            // Pop up con datos del producto
+            // Pop up importe señal
                      await Swal.fire({
                     title: 'Cantidad y PVP',
                     html: `
@@ -400,7 +400,7 @@
         
         function ticket_pdf(tipopago, importesnal) 
         {
-            
+
             $.ajax({             
                     url:        '{{ path("ticketpdf", {id: cestaId}) }}',  
                     type:       'GET',   

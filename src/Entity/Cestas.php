@@ -230,17 +230,6 @@ class Cestas
         return $this->detallecesta;
     }
 
-
-    public function adddetallecesta(Detallecesta $detallecesta): self
-    {
-        if (!$this->detallecesta->contains($detallecesta)) {
-            $this->detallescesta[] = $detallecesta;
-            $detallecesta->getCestaDc($this);
-        }
-
-        return $this;
-    }
-
     public function removedetallescesta(Detallecesta $detallecesta): self
     {
         if ($this->detallecesta->removeElement($detallecesta)) {

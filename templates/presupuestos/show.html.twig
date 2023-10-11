@@ -50,7 +50,7 @@
                         {% if presupuesto.EstadoPe.id < 7 %}
                                     <div class="card">
                                         <div class="card-body">
-                                             <a href="{{ path('mano_obra_new', {presu: presupuesto.id}) }}" target=""  class="btn btn-rounded btn-outline-danger "> Añadir mano de obra</a>
+                                             
                                         </div>
                                     </div>
                         {% endif %}
@@ -162,7 +162,7 @@
                        {% if presupuesto.EstadoPe.id == 7  or presupuesto.EstadoPe.id == 6 %}
 
                                     <div class="card">
-                                        <div class="card-body">
+
                                         {{ form_start(formmanoob) }}
                                                 {{ form_row(formmanoob._token) }}
 
@@ -182,7 +182,7 @@
                                                 {{ form_row(formmanoob.importemanoobra) }}
                                                 {{ form_row(formmanoob.descuaetoPe)}}
                                         {{ form_end(formmanoob, {'render_rest': false}) }}
-                                        </div>
+
                                         </div>
                                     </div>
                        {% endif %}
@@ -380,7 +380,14 @@
                         {% endif %}
 
                         <div class="card">
+                      
                             <div class="card-body">
+                                <div class="action-form">
+                                   <div class="form-group mb-0 text-left">
+                                        <button  id="NuevaMano" type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Nueva Mano de Obra') }}</button>
+                                    </div>
+                                </div>
+                                <hr>                              
                                 <h4 class="card-title">Mano de Obra - {{ presupuesto.importemanoobra |format_currency('EUR', locale='es') }}</h4>
                                 <h6 class="card-subtitle"></h6>
                                 <div class="table-responsive">
@@ -415,7 +422,8 @@
                                         {% endfor %}
                                         </tbody>
                                     </table>
-                                     <a href="{{ path('mano_obra_new' , {'presu' : presupuesto.id}) }}">Nuevo</a>
+
+
                                 </div>
                             </div>
                         </div>
@@ -428,7 +436,7 @@
                                         <h6 class="card-subtitle"></code></h6>
                                         <div class="action-form">
                                             <div class="form-group mb-0 text-left">
-                                                <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Save') }}</button>
+                                                <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Guardar') }}</button>
                                             </div>
                                         </div>
                                         <hr>
@@ -569,16 +577,16 @@
 
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="card-title">Subir fotos</h4>
+
                                     {{ form_start(form) }}
                                         
-                                            <div class="card-body">
+
                                             <h6 class="card-subtitle"></code></h6>
                                             <div class="action-form">
                                                 <div class="form-group mb-0 text-left">
                                                     <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Guardar Fotos') }}</button>
                                                 </div>
-                                            </div>
+
                                             <hr>
                                         
                                     {{ form_end(form) }}
@@ -588,17 +596,16 @@
 
 
                         {% endif %}
+                        {% if presupuesto.EstadoPe.id < 9 %}
                         <div class="card">
                             <div class="card-body">
-                                <h4 class="card-title">Cambiar estado presupuesto</h4>
                                     {{ form_start(formestadopr) }}
                                         {{ form_row(formestadopr._token) }}
                                         
-                                <div class="card-body">
                                             <h6 class="card-subtitle"></code></h6>
                                             <div class="action-form">
                                                 <div class="form-group mb-0 text-left">
-                                                    <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Cambiar Estado') }}</button>
+                                                    <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Cambiar Estado Presupuesto') }}</button>
                                                 </div>
                                             </div>
                                             <hr>
@@ -609,9 +616,10 @@
                                             {{ form_row(formestadopr.descuaetoPe, { 'row_attr': {'class': 'd-none'} }) }}
                                             {{ form_row(formestadopr.importemanoobra, { 'row_attr': {'class': 'd-none'} }) }}
                                     {{ form_end(formestadopr, {'render_rest': false}) }}
-                                </div>
+
                             </div>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="row el-element-overlay">
@@ -724,6 +732,16 @@
 
 
         })
+
+        /****************************************
+        *      Nueva Mano de Obra             *
+        *****************************************/
+
+        $(document).on('click', 'button[id="NuevaMano"]' , function(event) {
+
+            location.href = "{{ path('mano_obra_new' , {'presu' : presupuesto.id}) }}";
+
+        })        
 
 
         /****************************************

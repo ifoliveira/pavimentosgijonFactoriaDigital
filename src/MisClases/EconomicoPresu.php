@@ -4,8 +4,7 @@ namespace App\MisClases;
 
 use Doctrine\ORM\EntityManager;
 use App\Entity\Economicpresu;
-
-
+use PhpParser\Node\Expr\Cast\Double;
 
 class EconomicoPresu {
 
@@ -54,6 +53,20 @@ class EconomicoPresu {
         $this->em->persist($economicpresu);
         $this->em->flush();        
     }
+
+
+    private function obtener_restante($presupuesto) : Double
+    {
+        $restante = 0;
+        $economicpresu = new Economicpresu();
+        $economicpresu = $this->em->getRepository(Economicpresu::class)->findAll(array('idpresuEco' => $presupuesto,'estadoEco'=> '1', 'debehaberEco' => 'H'));
+        foreach ($economicpresu as &$valor) {
+            $restante += $valor->getImporteEco();
+        }
+
+
+        return $restante;
+    }    
 
 }
 

@@ -155,7 +155,7 @@ class DetallecestaController extends AbstractController
         $cestauser = new CestaUser($entityManager);
         $cestaactual = $cestauser->getCesta($cestaId);
         $importeact = $cestaactual->getDescuentoCs();
-        $cestaactual->setDescuentoCs($importeact + $importe);
+        $cestaactual->setImporteTotCs($importeact + $importe);
 
         $detcesta = new Detallecesta;
         $detcesta->setCestaDc($cestaactual);

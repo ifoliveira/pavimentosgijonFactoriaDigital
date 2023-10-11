@@ -4,17 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Presupuestos;
 use App\Entity\Productos;
-use App\Entity\manoObra;
 use App\Entity\Efectivo;
 use App\Entity\Economicpresu;
-
+use Doctrine\ORM\EntityManagerInterface;
 use App\Form\PresupuestosType;
-use App\Form\CollectionType;
-use App\Form\PresupuestosManoObraType;
 use App\Form\ProductosType;
 use App\Entity\Cestas;
 use App\MisClases\EconomicoPresu;
-USE App\MisClases\ManoObraClass;
 use App\MisClases\CestaUser;
 use App\MisClases\FinanciacionClass;
 use App\Repository\EfectivoRepository;
@@ -33,14 +29,20 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
-use Knp\Snappy\Pdf;
 
 /**
  * @Route("/admin/presupuestos")
  */
 class PresupuestosController extends AbstractController
 {
+
+    protected $em;
+
+    public function __construct( EntityManagerInterface $em )
+    {
+        $this->em = $em;
+    }
+
     /**
      * @Route("/", name="presupuestos_index", methods={"GET"})
      */
@@ -98,16 +100,16 @@ class PresupuestosController extends AbstractController
         $presupuesto->setEstadoPe($estadocesta);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
+
             $user = $this->getUser();
             $presupuesto->setUserPe($user);
             $cesta = new Cestas();
-            $cesta->setUserCs($user->getId());
+            $cesta->setUserCs(1);
             $cesta->setEstadoCs(11);
-            $entityManager->persist($cesta);
+            $this->em->persist($cesta);
             $presupuesto->setTicket($cesta);            
-            $entityManager->persist($presupuesto);
-            $entityManager->flush();
+            $this->em->persist($presupuesto);
+            $this->em->flush();
 
             die;
 
@@ -162,7 +164,7 @@ class PresupuestosController extends AbstractController
      
         if ($formmanoob->isSubmitted() && $formmanoob->isValid()) {
 
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId() ));
 
@@ -173,7 +175,7 @@ class PresupuestosController extends AbstractController
         $formestadopr->handleRequest($request);
 
         if ($formestadopr->isSubmitted() && $formestadopr->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId() ));
         }
@@ -207,9 +209,9 @@ class PresupuestosController extends AbstractController
         $formprod->handleRequest($request);
 
         if ($formprod->isSubmitted() && $formprod->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($producto);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
-            $entityManager->flush();
+            
+            $this->em->persist($producto);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+            $this->em->flush();
 
             return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId() ));
         }
@@ -241,7 +243,7 @@ class PresupuestosController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('presupuestos_index');
         }
@@ -272,9 +274,7 @@ class PresupuestosController extends AbstractController
             }
 
             $presupuesto->setEstadoPe($estadocesta);
-            $entityManager = $this->getDoctrine()->getManager();
-
-            $entityManager->flush();
+            $this->em->flush();
 
 
             }
@@ -294,7 +294,7 @@ class PresupuestosController extends AbstractController
         $productos = $productosRepository->findAll();
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('presupuestos_index');
         }
@@ -315,14 +315,14 @@ class PresupuestosController extends AbstractController
     public function finalizar(Request $request, Presupuestos $presupuesto, EstadocestasRepository $estadocestasRepository): Response
     {   
 
-        $entityManager = $this->getDoctrine()->getManager();
+        
        
         $estadocesta = $estadocestasRepository->findOneBy(
             ['id' => 10],
         );
 
         $presupuesto->setEstadoPe($estadocesta);
-        $entityManager->flush();
+        $this->em->flush();
 
         $response = new JsonResponse();
 
@@ -346,9 +346,7 @@ class PresupuestosController extends AbstractController
         );
 
         $presupuesto->setEstadoPe($estadocesta);
-        $entityManager = $this->getDoctrine()->getManager();
-
-        $entityManager->flush();
+        $this->em->flush();
 
                                                                                             
         return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId()));
@@ -364,8 +362,7 @@ class PresupuestosController extends AbstractController
         $manoobra = $request->query->get('texto');
 
         $presupuesto->setManoobraPe($manoobra);
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->flush();
+        $this->em->flush();
         $response = new JsonResponse();
                                                                                             
         return $response->setData("OK");
@@ -377,9 +374,8 @@ class PresupuestosController extends AbstractController
     public function delete(Request $request, Presupuestos $presupuesto): Response
     {
         if ($this->isCsrfTokenValid('delete'.$presupuesto->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($presupuesto);
-            $entityManager->flush();
+            $this->em->remove($presupuesto);
+            $this->em->flush();
         }
 
         return $this->redirectToRoute('presupuestos_index');
@@ -408,13 +404,13 @@ class PresupuestosController extends AbstractController
      */
     public function imprimir(Request $request): JsonResponse
     {
-        // get EntityManager
-        $em = $this->getDoctrine()->getManager();
+        
+        
         // valores de data ajax
         $idpresu   = $request->query->get('id');
 
         // recuperar presupuesto
-        $presupuesto = $em->getRepository(Presupuestos::class)->findOneBy(array('id' => $idpresu));
+        $presupuesto = $this->em->getRepository(Presupuestos::class)->findOneBy(array('id' => $idpresu));
         
 
         // Configure Dompdf según sus necesidades
@@ -484,7 +480,7 @@ class PresupuestosController extends AbstractController
         $estado    = $request->query->get('estado');
 
 
-        $entityManager = $this->getDoctrine()->getManager();
+       
         $estadocesta = $estadocestasRepository->findOneBy(
             ['id' => $estado],
         );
@@ -493,7 +489,7 @@ class PresupuestosController extends AbstractController
         $presupuesto->setImporteSnalPe($importe);
         $presupuesto->setTipopagoSnalPe($tipopago);
 
-        $entityManager->flush();
+        $this->em->flush();
 
         $response = new JsonResponse();
 
@@ -510,7 +506,6 @@ class PresupuestosController extends AbstractController
     {
         $tipopago  = $request->query->get('tipopago');
         $importesenal   = $request->query->get('importesenal');
-        $entityManager = $this->getDoctrine()->getManager();
         $estadocesta = $estadocestasRepository->findOneBy(
             ['descripcionEc' => 'Aceptado'],
         );
@@ -536,10 +531,10 @@ class PresupuestosController extends AbstractController
         $cestanueva->setTipopagoCs($tipopago);
 
  
-        $entityManager->persist($cestanueva);
-        $entityManager->flush();
+        $this->em->persist($cestanueva);
+        $this->em->flush();
 
-        $economic = new EconomicoPresu($entityManager);
+        $economic = new EconomicoPresu($this->em);
 
         $economic->iniciarPresu($presupuesto->getimportemanoobra(),$presupuesto->getTicket()->getDescuentoCs(),$presupuesto);
 
@@ -560,8 +555,8 @@ class PresupuestosController extends AbstractController
         $importesenal = $request->query->get('importesenal');
         $ideconomic = $request->query->get('id');
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $ideconomic]);
+       
+        $actualizar = $this->em->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $ideconomic]);
        // $actualizar->setImporteEco($actualizar->getImporteEco()-$importesenal);
 
         if (($actualizar->getImporteEco()-$importesenal) == 0) {
@@ -573,7 +568,7 @@ class PresupuestosController extends AbstractController
             $economicnuevo = clone $actualizar;
             $economicnuevo->setEstadoEco(6);  
             $economicnuevo->setImporteEco($importesenal);  
-            $entityManager->persist($economicnuevo);                   
+            $this->em->persist($economicnuevo);                   
         };        
 
         $presupuesto->setImporteSnalPe($importesenal + $presupuesto->getImporteSnalPe());
@@ -587,8 +582,8 @@ class PresupuestosController extends AbstractController
         $cestanueva->setDescuentoCs(0);
         $cestanueva->setTimestampCs(new \DateTime());
 
-        $entityManager->persist($cestanueva);
-        $entityManager->flush();
+        $this->em->persist($cestanueva);
+        $this->em->flush();
 
         $response = new JsonResponse();
 
@@ -607,8 +602,8 @@ class PresupuestosController extends AbstractController
         $importe = $request->query->get('importe');
         $ideconomic = $request->query->get('id');
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $ideconomic]);
+        
+        $actualizar = $this->em->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $ideconomic]);
         //$actualizar->setImporteEco($actualizar->getImporteEco()-$importe);
 
         if (($actualizar->getImporteEco()-$importe) == 0) {
@@ -629,21 +624,21 @@ class PresupuestosController extends AbstractController
                 $economicnuevo->setEstadoEco(7); 
             }                   
             $economicnuevo->setImporteEco($importe);  
-            $entityManager->persist($economicnuevo);                   
+            $this->em->persist($economicnuevo);                   
         };        
 
         if ($tipopago == "Efectivo") {
         // Generamos movimiento efectivo
             $efectivo = new Efectivo();
-            $efectivo->setTipoEf($entityManager->getRepository('App\Entity\Tiposmovimiento')->findOneBy(['descripcionTm'=> 'Mano de Obra']));
+            $efectivo->setTipoEf($this->em->getRepository('App\Entity\Tiposmovimiento')->findOneBy(['descripcionTm'=> 'Mano de Obra']));
             $efectivo->setImporteEf($importe);
             $efectivo->setFechaEf(new \DateTime());
             $efectivo->setConceptoEf($actualizar->getConceptoEco() . ' ' . $actualizar->getIdpresuEco()->getClientePe()->getDireccionCl());
             $efectivo->setPresupuestoef($actualizar->getIdpresuEco());
-            $entityManager->persist($efectivo );
+            $this->em->persist($efectivo );
             
         }    
-        $entityManager->flush();
+        $this->em->flush();
         $response = new JsonResponse();
 
         // Envía una respuesta de texto
@@ -659,7 +654,7 @@ class PresupuestosController extends AbstractController
     {
         $tipopago  = $request->query->get('tipopago');
         $importesenal   = $request->query->get('importesenal');
-        $entityManager = $this->getDoctrine()->getManager();
+        
         $estadocesta = $estadocestasRepository->findOneBy(
             ['descripcionEc' => 'Aceptado'],
         );
@@ -673,9 +668,9 @@ class PresupuestosController extends AbstractController
         $presupuesto->getTicket()->setImporteTotCs($importesenal);
         $presupuesto->getTicket()->setDescuentoCs($detallecestaRepository->imptotalCesta($presupuesto->getTicket())-$importesenal);
 
-        $entityManager->flush();
+        $this->em->flush();
 
-        $economic = new EconomicoPresu($entityManager);
+        $economic = new EconomicoPresu($this->em);
         $economic->actualizaResto($detallecestaRepository->imptotalCesta($presupuesto->getTicket())-$importesenal,$presupuesto);
         $response = new JsonResponse();
 
@@ -694,13 +689,13 @@ class PresupuestosController extends AbstractController
         // Obtener ID del presupuesto
         $datos = $request->query->get('id');
         // get EntityManager
-        $em = $this->getDoctrine()->getManager();
+       
         // Obtener presupuesto
-        $presupuesto = $em->getRepository('App\Entity\Presupuestos')->find($datos);
+        $presupuesto = $this->em->getRepository('App\Entity\Presupuestos')->find($datos);
 
         // Borrado del detalle
-        $em->remove($presupuesto);
-        $em->flush();
+        $this->em->remove($presupuesto);
+        $this->em->flush();
 
         $response = new JsonResponse();
 
@@ -715,18 +710,17 @@ class PresupuestosController extends AbstractController
     {
 
         // Funcion encargada de añadir producto a la cesta
-        $entityManager = $this->getDoctrine()->getManager();
-        $cestauser = new CestaUser($entityManager);
+        $cestauser = new CestaUser($this->em);
         // Obtener ID del presupuesto
         $datos = $request->query->get('id');
         // Obtener presupuesto
-        $presupuesto = $entityManager->getRepository('App\Entity\Presupuestos')->find($datos);
+        $presupuesto = $this->em->getRepository('App\Entity\Presupuestos')->find($datos);
         // Producto y cantidad a añadir
         $importe = $cestauser->getImporteTot($presupuesto->getTicket()->getId());
 
         $presupuesto->setImportetotPe($importe);
 
-        $entityManager->flush();
+        $this->em->flush();
 
         $response = new JsonResponse();
 

@@ -291,10 +291,12 @@ class CestasController extends AbstractController
      */
     public function imprimir(Request $request, Cestas $cesta): jsonResponse
     {
+
         // get EntityManager
         $em = $this->getDoctrine()->getManager();
         $cestauser = new CestaUser($em);
 
+ 
         // valores de data ajax
         $tipopago = $request->query->get('tipopago');
         $importe = ('SI' == $request->query->get('espresu')) ? $request->query->get('importe') : $cestauser->getImporteTot($cesta->getId());
