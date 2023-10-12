@@ -33,12 +33,12 @@ class Presupuestos
     private $userPe;
 
     /**
-     * @ORM\Column(type="date")
+     * @ORM\Column(type="date", nullable=true)
      */
     private $fechainiPe;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="float", nullable=true)
      */
     private $costetotPe;
 
@@ -53,23 +53,23 @@ class Presupuestos
     private $descuaetoPe;
 
     /**
-     * @ORM\Column(type="string", length=20)
+     * @ORM\Column(type="string", length=20, nullable=true)
      */
     private $tipopagototPE;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="float", nullable=true)
      */
     private $importesnalPe;
 
     /**
-     * @ORM\Column(type="string", length=20)
+     * @ORM\Column(type="string", length=20, nullable=true)
      */
     private $tipopagosnalPe;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\Cestas",orphanRemoval=true, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\OneToOne(targetEntity="App\Entity\Cestas",orphanRemoval=true, cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
      */
     private $ticket;
 
@@ -85,7 +85,7 @@ class Presupuestos
     private $clientePe;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
      */
     private $timestampModPe;
 
@@ -116,6 +116,11 @@ class Presupuestos
      * @ORM\OneToMany(targetEntity=Efectivo::class, mappedBy="presupuestoef" , orphanRemoval=true, cascade={"persist","remove"})
      */
     private $efectivos;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $impmanoobraPagado;
 
     public function __construct()
     {
@@ -427,6 +432,18 @@ class Presupuestos
                 $efectivo->setPresupuestoef(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getImpmanoobraPagado(): ?float
+    {
+        return $this->impmanoobraPagado;
+    }
+
+    public function setImpmanoobraPagado(?float $impmanoobraPagado): self
+    {
+        $this->impmanoobraPagado = $impmanoobraPagado;
 
         return $this;
     }

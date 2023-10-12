@@ -19,7 +19,9 @@ class Detallecesta
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Cestas", inversedBy="detallecesta")
+     * 
+     * @ORM\ManyToOne(targetEntity=Cestas::class, inversedBy="detallecesta")
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $cestaDc;
 
@@ -45,7 +47,7 @@ class Detallecesta
     private $descuentoDc;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
      */
     private $timestampDc;
 

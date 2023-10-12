@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Banco;
+use App\Entity\Detallecesta;
 
 /**
  * @ORM\Entity(repositoryClass=CestasRepository::class)
@@ -61,7 +62,7 @@ class Cestas
     private $timestampCs;
 
     /**
-     * @ORM\OneToMany(targetEntity=Detallecesta::class, mappedBy="cestaDc" ,  orphanRemoval=true, cascade={"persist","remove"})
+     * @ORM\OneToMany(targetEntity=Detallecesta::class, mappedBy="cestaDc" , orphanRemoval=true, cascade={"persist","remove"})
      */
     private $detallecesta;
 
