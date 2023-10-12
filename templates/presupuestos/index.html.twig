@@ -92,7 +92,7 @@
                                                 <th>Telefono</th>
                                                 <th>Importe total</th>
                                                 <th>Importe abonado</th>
-                                                <th>% - Importe</th>
+                                                <th>Importe restante</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
@@ -125,11 +125,10 @@
                                                                 {% endif %}
                                                             {% endif %}
                                                         {% endif %}
-
                                                     <td><a href="{{ path ('presupuestos_show', { 'id': presupuesto.id  }) }}" class="font-medium link">{{ presupuesto.clientePe.direccionCl}}  ( {{presupuesto.clientePe.nombreCl}}  -  {{presupuesto.manoobraPe}} )</a></td>
                                                     <td>{{ presupuesto.clientePe.telefono1Cl }}</td>
                                                     <td  align="right">{{ (presupuesto.importetotPe + presupuesto.importemanoobra)  |format_currency('EUR', locale='es')  }}</td>
-                                                    <td  align="right">{{ presupuesto.importesnalPe  |format_currency('EUR', locale='es')  }}</td>
+                                                    <td  align="right">{{ (presupuesto.importesnalPe + presupuesto.impmanoobraPagado) |format_currency('EUR', locale='es')  }}</td>
                                                     {% set beneficio = presupuesto.importetotPe + presupuesto.importemanoobra - presupuesto.costetotPe %}
                                                     {% set coste_total = presupuesto.importemanoobra + presupuesto.importetotPe %}
 
@@ -137,7 +136,7 @@
                                                         <td>Division entre 0</td>
                                                     {% else %}
 
-                                                        <td>{{ ((beneficio / coste_total)|format_number(style='percent')) }} - {{ beneficio |format_currency('EUR', locale='es') }}</td>
+                                                        <td align="right">{{ (presupuesto.importetotPe + presupuesto.importemanoobra - presupuesto.importesnalPe - presupuesto.impmanoobraPagado) |format_currency('EUR', locale='es') }} </td>
                                                     {% endif %}
                                                     <td>  
                                                         <i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar cesta" name="delete_detalle" id="{{ presupuesto.id }}">

@@ -513,6 +513,7 @@ class PresupuestosController extends AbstractController
         $presupuesto->setImporteSnalPe($importesenal);
         $presupuesto->setTipopagoSnalPe($tipopago);
         $presupuesto->setEstadoPe($estadocesta);
+        $presupuesto->setImpmanoobraPagado(0);
         
         $cestanueva = new Cestas();
         $cestanueva = clone $presupuesto->getTicket();        
@@ -602,9 +603,11 @@ class PresupuestosController extends AbstractController
         $importe = $request->query->get('importe');
         $ideconomic = $request->query->get('id');
 
-        
+        $importepagado = $presupuesto->getImpmanoobraPagado() + $importe;
+
+        $presupuesto->setImpmanoobraPagado($importepagado);
+       
         $actualizar = $this->em->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $ideconomic]);
-        //$actualizar->setImporteEco($actualizar->getImporteEco()-$importe);
 
         if (($actualizar->getImporteEco()-$importe) == 0) {
             $actualizar->setImporteEco($importe);
