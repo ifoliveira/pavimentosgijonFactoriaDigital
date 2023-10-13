@@ -21,6 +21,10 @@
 
                 {% set total = 0 %}
                 {% set numero = 1 %}
+                {% set facturapagada = false %}
+                {% if (presupuesto.importetotPe - presupuesto.importesnalPe ) == 0 %}                
+                    {% set facturapagada = true %}
+                {% endif %}
                                                   
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
@@ -43,7 +47,7 @@
                                             <thead>
                                                 <tr>
                                                 
-                                                {% if tipo == "FACTURA FINAL" %}
+                                                {% if tipo == "FACTURA FINAL" or facturapagada == true %}
                                                         <th colspan="3"> <h3 align="center">FACTURA SIMPLIFICADA</h3> </th>
                                                 {% else %}
                                                     {% if tipo == "FACTURA SIMPLIFICADA" %}
@@ -128,7 +132,9 @@
                                             </tbody>
                                             <tfoot>
                                                 <tr>
+                                                {% if facturapagada == false %}
                                                     <td  class="text-center" colspan="6"> <h2><b>Materiales</b> I.V.A. Incluido : {{ (total) |format_currency('EUR', locale='es')  }}</h2></td>
+                                                {% endif %}
                                                     
                                                 </tr>                                            
                                             
@@ -153,8 +159,10 @@
                                                     <th class="text-center"><b>I.V.A.</b></th>
                                                     <th class="text-center"><b>Total</b></th>
                                             {% if tipo == "FACTURA SIMPLIFICADA" %}
+                                                {% if (presupuesto.importetotPe - presupuesto.importesnalPe ) != 0 %}
                                                     <th class="text-center"><b>Adelanto</b></th>
                                                     <th class="text-center"><b>Resto</b></th>
+                                                {% endif %}
                                             {% endif %}
                                                 </tr>
                                             </thead>
@@ -165,13 +173,15 @@
                                                     <th class="text-center"></th>
                                              {% endif %}                                                
 
-                                                    <th class="text-center">{{ "now"|date("m/d/Y") }}  {% if tipo == "FACTURA SIMPLIFICADA" %} * {% endif %}</th>
+                                                    <th class="text-center">{{ "now"|date("m/d/Y") }}  {% if tipo == "FACTURA SIMPLIFICADA" and facturapagada == false %} * {% endif %}</th>
                                                     <th class="text-center">{{ ((presupuesto.importetotPe)/1.21) |format_currency('EUR', locale='es')  }}</th>
                                                     <th class="text-center">{{ ((presupuesto.importetotPe)-((presupuesto.importetotPe)/1.21)) |format_currency('EUR', locale='es')  }}</th>
                                                     <th class="text-center">{{ (presupuesto.importetotPe) |format_currency('EUR', locale='es')  }}</th>
                                             {% if tipo == "FACTURA SIMPLIFICADA" %}
+                                                {% if (presupuesto.importetotPe - presupuesto.importesnalPe ) != 0 %}
                                                     <th class="text-center">{{ (presupuesto.importesnalPe) |format_currency('EUR', locale='es')  }}</th>
                                                     <th class="text-center"><h2>{{ (presupuesto.importetotPe - presupuesto.importesnalPe ) |format_currency('EUR', locale='es')  }}</h2></th>
+                                                {% endif %}
                                             {% endif %}
                                                 </tr>
                                             </tbody>
@@ -179,7 +189,7 @@
                                 </div>
                             </div>
 
-                             {% if tipo == "FACTURA SIMPLIFICADA" %}<h6> * Este documento rectifica toda aquel con referencia ##002100{{ presupuesto.id }}## y fecha previa   {% endif %}
+                             {% if tipo == "FACTURA SIMPLIFICADA" and facturapagada == false %}<h6> * Este documento rectifica toda aquel con referencia ##002100{{ presupuesto.id }}## y fecha previa   {% endif %}
                                 {% else %}
                                  
                             </div>
