@@ -172,7 +172,7 @@ class EconomicpresuController extends AbstractController
 
         //$actualizar->setImporteEco($actualizar->getImporteEco() + ($importe));
 
-        if (($actualizar->getImporteEco() - ($importe)) == 0) {
+        if (($actualizar->getImporteEco() - ($importe)) == 0 || $actualizar->getImporteEco()== 0 ) {
             $actualizar->setImporteEco($importe);
             $actualizar->setEstadoEco(8);    
         } else {

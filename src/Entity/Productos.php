@@ -50,6 +50,11 @@ class Productos
      */
     private $tipo_pd_id;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $obsoleto;
+
     public function __construct()
     {
 
@@ -138,5 +143,17 @@ class Productos
     {
         
         return $this->descripcion_Pd;
+    }
+
+    public function isObsoleto(): ?bool
+    {
+        return $this->obsoleto;
+    }
+
+    public function setObsoleto(?bool $obsoleto): self
+    {
+        $this->obsoleto = $obsoleto;
+
+        return $this;
     }
 }

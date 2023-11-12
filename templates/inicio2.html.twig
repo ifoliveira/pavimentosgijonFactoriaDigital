@@ -1212,15 +1212,15 @@
                   <hr />
                   <table class="table table-borderless">
                     <tr>
-                        <td><i class="{{ weathericon[1][1] }}"></i>  {{ "now" | date_modify("+1 day") | format_datetime(locale='sp') | date('l')  }}</td>
+                        <td><i class="{{ weathericon[1][1] }}"></i>  {{ "now" | date_modify("+1 day") | format_datetime(locale='es') | date('l')  }}</td>
                         <td class="text-right font-weight-medium">{{ (weathericon[1][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
                     </tr>
                     <tr>
-                        <td><i class="{{ weathericon[2][1] }}"></i>  {{ "now" | date_modify("+2 day") | format_datetime(locale='sp') | date('l')  }}</td>
+                        <td><i class="{{ weathericon[2][1] }}"></i>  {{ "now" | date_modify("+2 day") | format_datetime(locale='es') | date('l')  }}</td>
                         <td class="text-right font-weight-medium">{{ (weathericon[2][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
                     </tr>
                     <tr>
-                        <td><i class="{{ weathericon[3][1] }}"></i>  {{ "now" | date_modify("+3 day") | format_datetime(locale='sp') | date('l')  }}</td>
+                        <td><i class="{{ weathericon[3][1] }}"></i>  {{ "now" | date_modify("+3 day") | format_datetime(locale='es') | date('l')  }}</td>
                         <td class="text-right font-weight-medium">{{ (weathericon[3][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
                     </tr>
                   </table>

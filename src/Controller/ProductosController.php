@@ -43,7 +43,7 @@ class ProductosController extends AbstractController
         $datos = new CestaUser($entityManager);
 
         return $this->render('productos/index.html.twig', [
-            'productos' => $productosRepository->findAll(),
+            'productos' => $productosRepository->findBy(array('obsoleto' => '0')),
             'cestaId'   => $datos->getCestaUser($user->getId()),
         ]);
     }

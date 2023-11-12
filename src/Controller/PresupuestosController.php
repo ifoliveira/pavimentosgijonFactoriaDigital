@@ -294,9 +294,11 @@ class PresupuestosController extends AbstractController
         $productos = $productosRepository->findAll();
 
         if ($form->isSubmitted() && $form->isValid()) {
+
             $this->em->flush();
 
             return $this->redirectToRoute('presupuestos_index');
+
         }
 
         return $this->render('presupuestos/modificar.html.twig', [
@@ -305,6 +307,36 @@ class PresupuestosController extends AbstractController
             'economic' => $presupuesto->getEconomicpresus(),
             'cestaId'=> $presupuesto->getTicket()->getId(),
             'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @Route("/{id}/modificarmanoobra", name="presupuestos_modificar_manoobra")
+     */
+    public function modificarManoOobra(Request $request, Presupuestos $presupuesto, ProductosRepository $productosRepository, EconomicpresuRepository $economicpresu): Response
+    {
+
+
+        $formmanoob = $this->createForm(PresupuestosType::class, $presupuesto);
+
+        $formmanoob->handleRequest($request);
+     
+        if ($formmanoob->isSubmitted() && $formmanoob->isValid()) {
+
+            $actualizar = $this->em->getRepository('App\Entity\Economicpresu')->findOneBy(['idpresuEco'=> $presupuesto->getId(), 'aplicaEco'=> 'M', 'estadoEco' => '1']);
+            //actualizamos la cantidad
+            $actualizar->setimporteEco($presupuesto->getimportemanoobra()-$presupuesto->getImpmanoobraPagado());
+            $this->em->persist($actualizar);
+
+            $this->em->flush();
+
+            return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId() ));
+
+        }
+        return $this->render('presupuestos/modificarmanoobra.html.twig', [
+            'presupuesto' => $presupuesto,
+            'economic' => $presupuesto->getEconomicpresus(),
+            'formmanoob' => $formmanoob->createView(),
         ]);
     }
 
