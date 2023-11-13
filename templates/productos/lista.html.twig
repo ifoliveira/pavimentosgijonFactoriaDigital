@@ -44,6 +44,13 @@
                                                      <td>{{ producto.stockPd }}</td>
                                                      <td>
                                                         <a href="{{ path('productos_edit', {'id': producto.id}) }}">Editar</a>
+                                                        <i class="text-inverse pr-2" data-toggle="tooltip" title="Marca Obsoleto" name="marcar_obsoleto" id="{{ producto.id }}">
+                                                                {% if (producto.obsoleto) %} 
+                                                                 <i class="ti-eye">  </i>
+                                                                 {% else %}
+                                                                 <i class="ti-trash">  </i>
+                                                                {% endif %}
+                                                        </i>                                                         
                                                      </td>
                                                  </tr>
                                              {% else %}
@@ -84,5 +91,29 @@
     <script src="{{ asset('assets/extra-libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/extra-libs/datatables.net-bs4/js/dataTables.responsive.min.js') }}"></script>
     <script src="{{ asset('dist/js/pages/datatable/datatable-basic.init.js') }}"></script>
+ <script language = "javascript">
+$(document).ready(function(){   
+        /****************************************
+        *      Eliminar un cesta                *
+        *****************************************/
 
+        $(document).on('click', 'i[name="marcar_obsoleto"]' , async function(event) {
+            let id = this.id;
+            $.ajax({  
+               url:        '../productos/actualiza/obsoleto',  
+               type:       'GET',   
+               data:        ({id:id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) {  
+                   location.reload();   
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            });  
+        });
+});
+</script>
 {% endblock %}
