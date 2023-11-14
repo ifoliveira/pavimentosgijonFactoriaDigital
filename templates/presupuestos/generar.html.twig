@@ -113,7 +113,7 @@
                                                     <td class="text-center"></td>
                                                     <td>{{ detalle.productoDc.descripcionPd }} {{detalle.textoDc}}</td>
                                                     <td class="text-center">{{ detalle.cantidadDc }} </td>
-                                                    <td class="text-end"> {% if precios == 'S' %}{{ detalle.pvpDc  |format_currency('EUR', locale='es')  }}{% endif %} </td>
+                                                    <td class="text-end"> {% if precios == 'S' %}{{ detalle.pvpDc  |format_currency('EUR', locale='es')  }} {% endif %}</td>
                                                     <td class="text-end"> {% if precios == 'S' %}{{ (detalle.cantidadDc * detalle.pvpDc ) |format_currency('EUR', locale='es')  }}{% endif %}</td>
 
                                                     {% set total = (detalle.cantidadDc * detalle.pvpDc) + total %}  
@@ -128,8 +128,13 @@
                                             <tfoot>
                                                 <tr>
                                                 {% if facturapagada == false %}
+                                                {% if precios == 'S' %}
                                                     <td  class="text-end" colspan="4"> <b>Materiales I.V.A. Incluido : </b></td>
-                                                    <td  class="text-end" colspan="2"> <b>{{ (total) |format_currency('EUR', locale='es')  }}</b></td>
+                                                    <td  class="text-end" colspan="2    "> <b>{{ (total) |format_currency('EUR', locale='es')  }}</b></td>
+                                                {% else %}
+                                                    <td  class="text-center" colspan="3"> <b>Materiales I.V.A. Incluido : {{ (total) |format_currency('EUR', locale='es')  }}</b></td>
+
+                                                {% endif %}
                                                 {% endif %}
                                                     
                                                 </tr>                                            
