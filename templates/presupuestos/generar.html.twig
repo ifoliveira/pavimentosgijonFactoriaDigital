@@ -62,7 +62,7 @@
                                                     <th scope="col" class="text-center" >Fecha</th>
                                                     <th class="text-center" scope="col">Número</th>
                                                     <th colspan="4"> </th>
-                                                    <th colspan="2" style = "text-align: right"> Nombre : </th>
+                                                    <th colspan="2" class="text-end"> Nombre : </th>
                                                     
                                                         <td class="text-left" colspan="2" scope="col" style="padding-left: 10px">{{presupuesto.clientePe.nombreCl}} {{presupuesto.clientePe.apellidosCl}}</td>
 
@@ -75,22 +75,17 @@
                                                 {% if tipo == "FACTURA SIMPLIFICADA" or tipo == "FACTURA FINAL"  %}
                                                     <th class="text-center">{{ (presupuesto.importetotPe)|format_currency('EUR', locale='es')  }}</th>
                                                 {% else %}
-                                                    <th class="text-center">{{ (presupuesto.importetotPe + presupuesto.importemanoobra)|format_currency('EUR', locale='es')  }}</th>                                                
+                                                    <th class="text-center"><h2>{{ (presupuesto.importetotPe + presupuesto.importemanoobra)|format_currency('EUR', locale='es')  }}*    </h2></th>                                                
                                                 {% endif %}
                                                     <td class="text-center">{{ "now"|date("d/m/Y") }}</td>
                                                     <td class="text-center">#002300{{ presupuesto.id }}#</td>
                                                     <td colspan="4"> </td>
-                                                    <th colspan="2" style = "text-align: right"> Dirección :</th>
+                                                    <th colspan="2" class="text-end"> Dirección :</th>
                                                     <td class="text-left" colspan="2" style="padding-left: 10px">{{presupuesto.clientePe.direccionCl}}</td>
                                                 </tr>
                                                 <tr>
-                                                    {% if tipo == "FACTURA SIMPLIFICADA" or tipo == "FACTURA FINAL"  %}
-                                                        <th colspan = "5"></th>
-                                                    {% else %}
-                                                        <th colspan = "5"> Financiado a 12 meses sin intereses {{(financiacion.obtenermensualidad(2)|format_currency('EUR', locale='es'))}} / mes *</th>
-                                                    {% endif %}
-                                                    <td colspan="2"></td>
-                                                    <th colspan="2" style = "text-align: right"> Teléfono :</th>                                                    
+                                                    <th colspan = "7"></th>
+                                                    <th colspan="2" class="text-end"> Teléfono :</th>                                                    
                                                     <td class="text-left" colspan="2" style="padding-left: 10px"> <i class="fa fa-phone"></i> {{ presupuesto.clientePe.telefono1Cl }}</td>
                                                 </tr>
                                             </tbody>
@@ -118,8 +113,8 @@
                                                     <td class="text-center"></td>
                                                     <td>{{ detalle.productoDc.descripcionPd }} {{detalle.textoDc}}</td>
                                                     <td class="text-center">{{ detalle.cantidadDc }} </td>
-                                                    <td class="text-left"  style = "text-align: right"> {% if precios == 'S' %}{{ detalle.pvpDc  |format_currency('EUR', locale='es')  }}{% endif %} </td>
-                                                    <td class="" style = "text-align: right"> {% if precios == 'S' %}{{ (detalle.cantidadDc * detalle.pvpDc ) |format_currency('EUR', locale='es')  }}{% endif %}</td>
+                                                    <td class="text-end"> {% if precios == 'S' %}{{ detalle.pvpDc  |format_currency('EUR', locale='es')  }}{% endif %} </td>
+                                                    <td class="text-end"> {% if precios == 'S' %}{{ (detalle.cantidadDc * detalle.pvpDc ) |format_currency('EUR', locale='es')  }}{% endif %}</td>
 
                                                     {% set total = (detalle.cantidadDc * detalle.pvpDc) + total %}  
                                                     {% set numero = numero + 1 %} 
@@ -133,7 +128,8 @@
                                             <tfoot>
                                                 <tr>
                                                 {% if facturapagada == false %}
-                                                    <td  class="text-center" colspan="6"> <h2><b>Materiales</b> I.V.A. Incluido : {{ (total) |format_currency('EUR', locale='es')  }}</h2></td>
+                                                    <td  class="text-end" colspan="4"> <b>Materiales I.V.A. Incluido : </b></td>
+                                                    <td  class="text-end" colspan="2"> <b>{{ (total) |format_currency('EUR', locale='es')  }}</b></td>
                                                 {% endif %}
                                                     
                                                 </tr>                                            
@@ -234,8 +230,13 @@
                                 </div>
 
                             </div>
-                            <p>* Sujeto a aprobación por RuralFinance</p>
-                             {% endif %}   
+
+                            {% if tipo == "FACTURA SIMPLIFICADA" or tipo == "FACTURA FINAL"  %}
+                            <p></p>
+                            {% else %}
+                                <p> * Importe final. Posibilidad de financiar a 12 meses sin intereses <b>{{(financiacion.obtenermensualidad(2)|format_currency('EUR', locale='es'))}} / mes</b> - Sujeto a aprobación por RuralFinance</p>
+                            {% endif %}
+                            {% endif %}   
                         </div>
                         <hr>
                                            
