@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\MisClases\ManoObraClass;
-
+use App\MisClases\EconomicoPresu;
 
 /**
  * @Route("/admin/clientes")
@@ -66,6 +66,9 @@ class ClientesController extends AbstractController
 
             $manoobra = new ManoObraClass($entityManager);
             $manoobra->IniciarPresupuesto($presupuesto);
+
+            $economic = new EconomicoPresu($entityManager);
+            $economic->iniciarPresu(0,$presupuesto);            
           
     
 

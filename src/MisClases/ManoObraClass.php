@@ -19,11 +19,8 @@ class ManoObraClass
         public function IniciarPresupuesto($presupuesto)
         {
             $tipoManoObra = $this->em->getRepository(TipoManoObra::class)->findAll();
-            var_dump("ALTA DE PRESUPUESTO");
-            foreach($tipoManoObra as $tipo) {
-                var_dump($tipo->getTipotm());
-                $this->alta($tipo, $presupuesto);
-
+             foreach($tipoManoObra as $tipo) {
+                 $this->alta($tipo, $presupuesto);
             }
         }
 

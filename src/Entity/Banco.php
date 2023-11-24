@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\BancoRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use app\Entity\Tiposmovimiento;
 use App\Repository\TiposmovimientoRepository;
@@ -45,6 +47,16 @@ class Banco
      * @ORM\Column(type="datetime")
      */
     private $timestamp_Bn;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Pagos::class, mappedBy="bancoPg")
+     */
+    private $pagos;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $conciliado;
 
 
     public function getId(): ?int
@@ -124,6 +136,7 @@ class Banco
     public function __construct()
     {
       $this->timestamp_Bn = new \DateTime();
+      $this->pagos = new ArrayCollection();
     }
 
     /**
@@ -134,6 +147,48 @@ class Banco
     public function __clone()
     {
         $this->id = null;
+    }
+
+    /**
+     * @return Collection<int, Pagos>
+     */
+    public function getPagos(): Collection
+    {
+        return $this->pagos;
+    }
+
+    public function addPago(Pagos $pago): self
+    {
+        if (!$this->pagos->contains($pago)) {
+            $this->pagos[] = $pago;
+            $pago->setBancoPg($this);
+        }
+
+        return $this;
+    }
+
+    public function removePago(Pagos $pago): self
+    {
+        if ($this->pagos->removeElement($pago)) {
+            // set the owning side to null (unless already changed)
+            if ($pago->getBancoPg() === $this) {
+                $pago->setBancoPg(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function isConciliado(): ?bool
+    {
+        return $this->conciliado;
+    }
+
+    public function setConciliado(?bool $conciliado): self
+    {
+        $this->conciliado = $conciliado;
+
+        return $this;
     }        
 
 }

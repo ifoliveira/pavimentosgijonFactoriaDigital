@@ -73,14 +73,9 @@ class Cestas
     private $prespuestoCs;
 
     /**
-     * @ORM\Column(type="float", nullable=true)
+     * @ORM\OneToMany(targetEntity=Pagos::class, mappedBy="cesta", orphanRemoval=true)
      */
-    private $importePagoCs;
-
-    /**
-     * @ORM\OneToOne(targetEntity=banco::class, cascade={"persist", "remove"})
-     */
-    private $bancoCsId;
+    private $pagos;
 
     public function __construct()
     {
@@ -92,6 +87,7 @@ class Cestas
         $this->setNumticketCs("");
         $this->setEstadoCs(1);
         $this->setTimestampCs(new \DateTime());
+        $this->pagos = new ArrayCollection();
 
     }
 
@@ -255,26 +251,32 @@ class Cestas
         return $this;
     }
 
-    public function getImportePagoCs(): ?float
+    /**
+     * @return Collection<int, Pagos>
+     */
+    public function getPagos(): Collection
     {
-        return $this->importePagoCs;
+        return $this->pagos;
     }
 
-    public function setImportePagoCs(?float $importePagoCs): self
+    public function addPago(Pagos $pago): self
     {
-        $this->importePagoCs = $importePagoCs;
+        if (!$this->pagos->contains($pago)) {
+            $this->pagos[] = $pago;
+            $pago->setCesta($this);
+        }
 
         return $this;
     }
 
-    public function getBancoCsId(): ?banco
+    public function removePago(Pagos $pago): self
     {
-        return $this->bancoCsId;
-    }
-
-    public function setBancoCsId(?banco $bancoCsId): self
-    {
-        $this->bancoCsId = $bancoCsId;
+        if ($this->pagos->removeElement($pago)) {
+            // set the owning side to null (unless already changed)
+            if ($pago->getCesta() === $this) {
+                $pago->setCesta(null);
+            }
+        }
 
         return $this;
     }

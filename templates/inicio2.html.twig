@@ -19,7 +19,9 @@
         <link rel="stylesheet" type="text/css" href="{{ asset('assets/extra-libs/prism/prism.css') }}">
         <link href="{{ asset('dist/css/icons/themify-icons/themify-icons.css') }}" rel="stylesheet">   
           <!-- This page plugin CSS -->
-        <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css') }}" rel="stylesheet">          
+        <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css') }}" rel="stylesheet">     
+            <!-- This Page CSS -->
+        <link rel="stylesheet" type="text/css"  href="{{ asset('assets/libs/select2/dist/css/select2.min.css') }}"/>     
 
     {% endblock %}
   </head>
@@ -1062,6 +1064,12 @@
                                <span class="hide-menu">Consulta</span>
                           </a>
                       </li>
+                      <li class="sidebar-item">
+                          <a href="{{ path('pagos_index')}}" class="sidebar-link">
+                               <i class="mdi mdi-link-variant"></i>
+                               <span class="hide-menu">Conciliar</span>
+                          </a>
+                      </li>                      
                   </ul>
               </li>     
 

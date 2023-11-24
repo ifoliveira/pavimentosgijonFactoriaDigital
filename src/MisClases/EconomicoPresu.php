@@ -16,11 +16,10 @@ class EconomicoPresu {
     }
 
 
-    public function iniciarPresu($importemanoobra, $importependiente, $presupuesto)
+    public function iniciarPresu($importemanoobra, $presupuesto)
     {
 
         $this->alta('Mano de Obra', $importemanoobra, 'H', $presupuesto, 'M');
-        $this->alta('Materiales pendiente', $importependiente, 'H', $presupuesto, 'T');
         $this->alta('Pago Albañileria', 0, 'D', $presupuesto,'E');
         $this->alta('Pago Fontanería', 0, 'D', $presupuesto,'E');
         $this->alta('Pago Pintura', 0, 'D', $presupuesto,'E');
@@ -29,6 +28,7 @@ class EconomicoPresu {
         $this->alta('Pago Desescombro', 0, 'D', $presupuesto,'E');
         $this->alta('Pago Carpintero', 0, 'D', $presupuesto,'E');
         $this->alta('Pago Colocación', 0, 'D', $presupuesto,'E');
+        $this->alta('Pago Otros', 0, 'D', $presupuesto,'E');
        
     }
 

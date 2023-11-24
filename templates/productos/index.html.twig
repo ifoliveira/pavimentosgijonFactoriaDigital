@@ -336,7 +336,7 @@
 
                     }).then((result) => {
                         if (result.value) {
-                // Llamamos al insert line
+            // Llamamos al insert line
                             const inputNumber = Swal.getContent().querySelector('#range-value');
                             senal = inputNumber.value;
 
@@ -412,7 +412,6 @@
 
                             ticket_script3(tipopago, importesnal);
                             ticket_finalizar(tipopago, response.namepdf, response.importe, response.importesnal);
-                            console.log("Ticket " + + response.namepdf);
                             abrirNuevoTab('/Tickets/' + response.namepdf);
                             
                     },  
@@ -513,122 +512,6 @@
 
         };  
 
-function ticket_script4(tipopago, importesnal) 
-        {   
-	
-		const URLPlugin = "http://localhost:8000";
-                const Price = new Intl.NumberFormat('de-DE',
-                        {minimumFractionDigits: 2 });
-                // Select elements by their data attribute
-                const entryInfoElements =
-                    document.querySelectorAll('[data-entry-info]');
-
-                // Map over each element and extract the data value
-                const entryInfoObjects =
-                        Array.from(entryInfoElements).map(
-                        item => JSON.parse(item.dataset.entryInfo)
-                    );
-                let total = 0;
-
-		        let iva = 0;
-		    let descripcion='';
-            let now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const loguear = texto => $estado.textContent += (new Date()).toLocaleString() + " " + texto + "\n";
-
-            let nombreImpresora = "EPSONTicket";
-            const conector = new ConectorPluginV3(URLPlugin);
-
-            conector.Iniciar()
-            conector.DeshabilitarElModoDeCaracteresChinos()
-
-            conector.EstablecerTamañoFuente(1, 1);
-            conector.establecerEnfatizado(0);
-            conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-            //   conector.imagenLocal("../vendor/mike42/escpos-php/example/resources/Logo-Pavimentos-Gijon-BN.png");
-            conector.feed(1);
-        	conector.cortar();
-        	conector.cortarParcialmente();
-		    conector.feed(2);
-            conector.texto("P A V I M E N T O S    G I J Ó N\n");
-		    conector.feed(1);
-            conector.texto("C.I.F. 53543499-M \n");
-		    conector.feed(1);
-		    conector.texto("Avenida Schultz Nº 28 Bajo\n");
-		    conector.feed(1);
-            conector.texto("Teléfono: 985-391-326\n");
-		    conector.texto("Whatsapp: 684-608-811\n");
-		    conector.texto("También en https://www.pavimentosgijon.es   \n");
-            conector.feed(1);
-            conector.texto("-----------------------------------------------\n");
-            conector.texto("FACTURA SIMPLIFICADA\n");
-            conector.texto("-----------------------------------------------\n");
-            entryInfoObjects[0].forEach(function(cantidad,index) {
-
-
-                    cantidad.forEach(function(element,index) {
-                       
-                       parcial = (element.cantidad * element.precio)
-                       total = total + parcial
-		       cantidad = element.cantidad > 9 ? "" + element.cantidad: "0" + element.cantidad;
-		       descripcion = element.descripcion.substr(0,28);
-                        
-                       $linea = '  ' + cantidad + '  ' + descripcion.padEnd(28) + ' ' + parcial.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}).padStart(9) + ' EUR' + "\n";
-                       conector.texto($linea);
-                    });
-
-
-
-
-			
-            iva = (total * 0.21 )/1,21
-
-
-			conector.texto("-----------------------------------------------\n");
-			$linea = '  IVA 21%:                         ' + iva.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}).padStart(9) + ' EUR' + "\n";	
-			conector.texto($linea);
-			conector.establecerEnfatizado(1);
-			$linea = '  TOTAL :                          ' + total.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}).padStart(9) + ' EUR' + "\n";	
-			conector.texto($linea);
-			conector.establecerEnfatizado(0);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            });
-            
-            conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-            conector.texto("-----------------------------------------------\n");
-	        conector.feed(1);
-            conector.qr("https://www.pavimentosgijon.es")
-	        conector.feed(1);
-            conector.texto("***Gracias por su compra***");
-            conector.feed(4);
-            conector.cortar();
-            conector.cortarParcialmente();
-
-
-            conector.imprimirEn(nombreImpresora)
-                .then(respuestaAlImprimir => {
-                    if (respuestaAlImprimir === true) {
-                        loguear("Impreso correctamente");
-                    } else {
-                        loguear("Error. La respuesta es: " + respuestaAlImprimir);
-                    }
-                });
-
-        };  
 
         function ticket_finalizar(tipopago, numticket, importe, importesnal) 
         {

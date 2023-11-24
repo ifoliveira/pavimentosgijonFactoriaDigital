@@ -25,11 +25,10 @@
                           <div class="card">
                           
                             <div class="card-body">
-                                               {% set idmaterial = "" %}       
+
                                                {% set importepre = 0 %}      
                                                {% for presu in economic %}
                                                     {% if presu.aplicaEco == 'T' and presu.estadoEco == '1' %}
-                                                        {% set idmaterial = presu.id %}
                                                         {% set importepre = presu.importeEco %}
                                                     {% endif %}
                                                {% endfor %}
@@ -147,7 +146,7 @@
                             </div>
                         </div>
                         <div class="card">
-                                <div class="card-body" id="loop"  data-cesta="{{ presupuesto.ticket.Id }}" data-material="{{ idmaterial }}" data-importepre="{{ importepre }}">
+                                <div class="card-body" id="loop"  data-cesta="{{ presupuesto.ticket.Id }}"  data-importepre="{{ importepre }}">
                                     {% include 'productos/loop.html.twig' %}
                                 </div>
                         </div>
@@ -208,7 +207,6 @@
         var table = $('#tbprod').DataTable();
         var selector = document.querySelector("#loop");
         var cestaId = selector.dataset.cesta
-        var economicid = selector.dataset.material
         var importepre = Number(selector.dataset.importepre)
 
 
@@ -238,8 +236,7 @@
                success: function(response) {  
                     importe =  Number(importepre) - Number(importeresta);
                     modif_importe({{ presupuesto.id }},importe); 
-                    actualiza_importe(economicid,importe); 
-         
+          
                },  
                error : function(xhr, textStatus, errorThrown) {  
                   alert(textStatus);  
@@ -304,7 +301,8 @@
                     
                     importe = importepre + (Number(importe) * Number(cantidad));
                     modif_importe({{ presupuesto.id }},importe); 
-                    actualiza_importe(economicid,importe); 
+                    
+ 
 
                },  
                error : function(xhr, textStatus, errorThrown) {  
@@ -323,7 +321,7 @@
                async:      true,  
                
                success: function(response) {  
-                    
+                   location.reload();  
 
                },  
                error : function(xhr, textStatus, errorThrown) {  

@@ -19,29 +19,39 @@
                                                     <th>FechaCs</th>
                                                     <th>Importe Total</th>
                                                     <th>Pendiente </th>
-                                                    <th>Tipo Pago</th>
                                                     <th>Ticket</th>
+                                                    <th>Presupuesto</th>
                                                     <th>Fecha y hora</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                             {% for cestar in cestasnal %}
+                                                 {% set pagado = 0 %}
                                                 <tr>
                                                     <td>{{ cestar.id }}</td>
                                                     <td>{{ cestar.fechaCs ? cestar.fechaCs|date('Y-m-d') : '' }}</td>
                                                     <td align="right">{{ cestar.importeTotCs|format_currency('EUR', locale='es')  }}</td>
-                                                    <td align="right">{{ cestar.descuentoCs |format_currency('EUR', locale='es')   }}</td>
-                                                    <td>{{ cestar.tipopagoCs }}</td>
+                                                    {% for pagos in cestar.pagos %}
+                                                        {% set pagado = pagos.importePg + pagado %}
+                                                    {% endfor %}
+                                                    <td align="right">{{ (cestar.importeTotCs - pagado) |format_currency('EUR', locale='es')   }}</td>
+
                                                     <td> 
                                                         <a href ="/Tickets/{{ cestar.numticketCs }}" target="_blank" >{{ cestar.numticketCs }}</a>
                                                     </td>
+                                                    <td>
+                                                        {% if ( cestar.PresupuetoId != 0 ) %}
+
+                                                            <a href="{{ path('presupuestos_show', {id: cestar.PresupuetoId}) }}" target="_blank"> {{cestar.prespuestoCs.clientePe.direccionCl}} </a>
+
+                                                        {% endif %}                                                    
+                                                    </td>
                                                     <td>{{ cestar.timestampCs ? cestar.timestampCs|date('Y-m-d H:i:s') : '' }}</td>
                                                     <td>
-                                                        <a href="{{ path('cesta_senal', {'id': cestar.id}) }}" class="text-inverse pr-2"
-                                                                data-toggle="tooltip" title="Cerrar señal">
-                                                                <i class="ti-lock"></i>
-                                                        </a> 
+                                                        <a class="text-inverse pr-2" data-toggle="tooltip" title="Añadir Pago" name="cerrar_senal" id="{{ cestar.id }}" data-url="{{ path("cestas_finalizar", {'id': cestar.id}) }}">
+                                                            <i class="ti-money"></i>                                                        
+                                                        </a>
                                                         <a href="{{ path('cesta_tipopago', {'id': cestar.id}) }}" class="text-inverse pr-2"
                                                                 data-toggle="tooltip" title="Cambiar tipo pago">
                                                                 <i class="ti-exchange-vertical"></i>
@@ -64,16 +74,20 @@
                                             {% endfor %}
                                             </tbody>
                                         </table>
-
-                                         <a href="{{ path('cestas_new') }}">Create new</a>
                                 </div>
                             </div>
-                        
-                
+                        </div>
+                    </div>
+                </div>
+
+           
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
                 <!-- Footer callback -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title">Tickets</h4>
                                 <h6 class="card-subtitle"></h6>
@@ -85,22 +99,19 @@
                                                     <th>Id</th>
                                                     <th>FechaCs</th>
                                                     <th>Importe Total</th>
-                                                    <th>Adelanto </th>
-                                                    <th>Tipo Pago</th>
+                                                    <th>Tipo Pago </th>
                                                     <th>Ticket</th>
                                                     <th>Presupuesto</th>
-                                                    <th>MovimientoBanco</th>
-                                                    <th>Fecha y hora</th>
+                                                    <th>Fecha y hora</th>                                                    
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
+                                        <tbody>
                                             {% for cesta in cestas %}
                                                 <tr>
                                                     <td>{{ cesta.id }}</td>
                                                     <td>{{ cesta.fechaCs ? cesta.fechaCs|date('Y-m-d') : '' }}</td>
                                                     <td align="right">{{ cesta.importeTotCs|format_currency('EUR', locale='es')  }}</td>
-                                                    <td align="right">{{ cesta.descuentoCs |format_currency('EUR', locale='es')  }}</td>
                                                     <td>{{ cesta.tipopagoCs }}</td>
                                                     <td> 
                                                         <a href ="/Tickets/{{ cesta.numticketCs }}" target="_blank" >{{ cesta.numticketCs }}</a>
@@ -112,32 +123,15 @@
 
                                                         {% endif %}
                                                     </td>
-                                                    <td>
-                                                        {% if ( cesta.tipopagoCs == "Tarjeta" ) %}
-                                                            {% if cesta.BancoCsid is null %}
-                                                                <a href="{{ path('conciliar_cesta', {id: cesta.id}) }}"> Buscar Movimiento </a>
-                                                            {% else %}
-
-                                                                {{ cesta.BancoCsid.id}}
-                                                                    
-                                                            {% endif %}
-                                                        {% endif %}                                                            
-
-
-                                                        
-
-                                                    </td>                                                    
-                                                    
                                                     <td>{{ cesta.timestampCs ? cesta.timestampCs|date('Y-m-d H:i:s') : '' }}</td>
                                                     <td>
-
                                                         <a href="{{ path('cesta_tipopago', {'id': cesta.id}) }}" class="text-inverse pr-2"
                                                                 data-toggle="tooltip" title="Cambiar tipo pago">
                                                                 <i class="ti-exchange-vertical"></i>
                                                         </a> 
-                                                        <i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar cesta" name="delete_detalle" id="{{ cesta.id }}">
+                                                        <a class="text-inverse pr-2" data-toggle="tooltip" title="Borrar cesta" name="delete_detalle" id="{{ cesta.id }}">
                                                                 <i class="ti-trash"></i>
-                                                        </i> 
+                                                        </a> 
                                                         {% for detalle in cesta.getdetallecesta|slice(0, 1) %}
                                                             <a href="{{ path('detallecesta_show', {'id': detalle.getId}) }}" class="text-inverse pr-2"
                                                                     data-toggle="tooltip" title="Ver ticket">
@@ -145,22 +139,20 @@
                                                             </a> 
                                                         {% endfor %}
 
-                                                        <i class="text-inverse pr-2" data-toggle="tooltip" title="Imprimir ticket" name="imprimirticket" id="{{ path('ticketpdf', {'id': cesta.id}) }}">
+                                                        <a class="text-inverse pr-2" data-toggle="tooltip" title="Imprimir ticket" name="imprimirticket" id="{{ path('ticketpdf', {'id': cesta.id}) }}">
                                                                 <i class="ti-printer"></i>
-                                                        </i> 
+                                                        </a> 
 
 
                                                     </td>
                                                 </tr>
                                             {% else %}
                                                 <tr>
-                                                    <td colspan="9">no records found</td>
+                                                    <td colspan="8">no records found</td>
                                                 </tr>
                                             {% endfor %}
-                                            </tbody>
-                                        </table>
-
-                                         <a href="{{ path('cestas_new') }}">Create new</a>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -173,8 +165,7 @@
                 <!-- ============================================================== -->
                 <!-- Right sidebar -->
                 <!-- ============================================================== -->
-                <!-- .right-sid
-ebar -->
+                <!-- .right-sidebar -->
                 <!-- ============================================================== -->
                 <!-- End Right sidebar -->
                 <!-- ============================================================== -->
@@ -193,6 +184,7 @@ ebar -->
     <!-- ============================================================== -->
     <!-- Bootstrap tether Core JavaScript -->
     <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
+    <script src="{{ asset('dist/js/ConectorJavaScript.js') }}"></script>
     <!--Wave Effects -->
     <script src="{{ asset('dist/js/waves.js') }}"></script>
     <!--This page plugins -->
@@ -201,6 +193,7 @@ ebar -->
     <script src="{{ asset('dist/js/pages/datatable/datatable-basic.init.js') }}"></script>
     <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
     <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>    
+    <script src="{{ asset('js/impresoraTickets.js')}}"></script>
     <!--Custom JavaScript -->
     
     <script language = "javascript">
@@ -211,7 +204,7 @@ ebar -->
         ****************************************/
         $('#default_order2').DataTable({
             "order": [
-                [1, "desc"],[8,"desc"]
+                [1, "desc"],[7,"desc"]
             ]
         });
 
@@ -305,17 +298,31 @@ ebar -->
                }  
             }); 
         };  
-        $(document).on('click', 'i[name="cerrarsenal"]' ,async function(event) {
-            let path2 = this.getAttribute('path'); 
-            let path = this.id;
 
-            console.log(path);
-            console.log(path2);
+ 
+        $(document).on('click', 'a[name="cerrar_senal"]' ,async function(event) {
 
-            // Datos de la fila seleccionada en la lista de productos
-                const inputValue = 1
-                const inputStep = 1
+            let url = this.dataset.url;
+            console.log(url);
+         // Datos de la fila seleccionada en la lista de productos
+            const inputValue = 1
+            const inputStep = 1
 
+         // Pop up importe a abonar
+            await Swal.fire({
+                    title: 'Pago ticket',
+                    html: `
+                        <h2> Importe a abonar </h2>
+                        <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="center">`,
+
+                    }).then((result) => {
+                        if (result.value) {
+         // Llamamos al insert line
+                            const inputNumber = Swal.getContent().querySelector('#range-value');
+                            senal = inputNumber.value;
+
+                        }
+                    })
 
             const swalWithBootstrapButtons = await Swal.mixin({
                 customClass: {
@@ -333,51 +340,34 @@ ebar -->
                 confirmButtonText: 'Tarjeta',
                 cancelButtonText: 'Efectivo',
                 reverseButtons: true
-            }).then((result) => {
-                if (result.value) {
-                    ticket_pdf("Tarjeta", 0, path, path2) 
-                } else if (
-                    // Read more about handling dismissals
-                    result.dismiss === Swal.DismissReason.cancel
-                ) {
-                    ticket_pdf("Efectivo", 0, path, path2) 
-                }
+                })
+                
+                .then((result) => {
+
+                    if (result.value) {
+                        ticket_finalizar("Tarjeta", "", 0 , senal, url) 
+                    } else if (
+                        // Read more about handling dismissals
+                        result.dismiss === Swal.DismissReason.cancel
+                    ) {
+                        ticket_finalizar("Efectivo", "", 0, senal, url) 
+                    }
+                })
+
             })
-
-         }) 
         
-        function ticket_pdf(tipopago, importesnal, path, path2) 
-        {   
-            $.ajax({             
-                    url:        path,  
-                    type:       'GET',   
-                    data:        ({tipopago:tipopago, importesnal:importesnal, espresu:'SN'}),
-                    dataType:   'json',  
-                    async:      true,  
-                    
-                    success: function(response) {  
-                            ticket_finalizar(tipopago, response.namepdf, response.importe, response.importesnal, path2);
-                           
-                    },  
-                    error : function(xhr, textStatus, errorThrown) {  
-                        alert(textStatus);  
-                    }  
-                    });
-
-        };  
-
-        function ticket_finalizar(tipopago, numticket, importe, importesnal, path) 
+        function ticket_finalizar(tipopago, numticket, importe, importesnal, url) 
         {
-
-
+            
             $.ajax({             
-                    url:        path,  
+                    url:        url,  
                     type:       'GET',   
                     data:        ({tipopago : tipopago, numticket: numticket, importe:importe, importesnal:importesnal}),
                     dataType:   'json',  
                     async:      true,  
                     
-                    success: function(response) {  
+                    success: function(response) { 
+
                          location.reload();   
                     },  
                     error : function(xhr, textStatus, errorThrown) {  
@@ -387,6 +377,8 @@ ebar -->
 
         };  
 
-      });  
+        });  
+
+
    </script> 
 {% endblock %}

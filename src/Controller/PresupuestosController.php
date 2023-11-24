@@ -6,10 +6,12 @@ use App\Entity\Presupuestos;
 use App\Entity\Productos;
 use App\Entity\Efectivo;
 use App\Entity\Economicpresu;
+use App\MisClases\GenerarPago;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Form\PresupuestosType;
 use App\Form\ProductosType;
 use App\Entity\Cestas;
+use App\Entity\Tiposmovimiento;
 use App\MisClases\EconomicoPresu;
 use App\MisClases\CestaUser;
 use App\MisClases\FinanciacionClass;
@@ -20,6 +22,7 @@ use App\Repository\CestasRepository;
 use App\Repository\ProductosRepository;
 use App\Repository\DetallecestaRepository;
 use App\Repository\EconomicpresuRepository;
+use App\Repository\TiposmovimientoRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -200,7 +203,6 @@ class PresupuestosController extends AbstractController
 
         $economic = $presupuesto->getEconomicpresus();
 
-        $cestas = $cestasRepository->findBy(array('prespuestoCs' => $presupuesto->getId(), 'estadoCs' => '2'));
         $efectivos = $efectivoRepository->findBy(array('presupuestoef' => $presupuesto->getId()));
 
         
@@ -229,8 +231,6 @@ class PresupuestosController extends AbstractController
             'fotos' => $ficheros,
             'cestaId'=> $presupuesto->getTicket()->getId(),
             'productos' => $productos,
-            'cestas' => $cestas,
-            'efectivos' => $efectivos,
         ]);
     }
 
@@ -325,8 +325,10 @@ class PresupuestosController extends AbstractController
 
             $actualizar = $this->em->getRepository('App\Entity\Economicpresu')->findOneBy(['idpresuEco'=> $presupuesto->getId(), 'aplicaEco'=> 'M', 'estadoEco' => '1']);
             //actualizamos la cantidad
-            $actualizar->setimporteEco($presupuesto->getimportemanoobra()-$presupuesto->getImpmanoobraPagado());
-            $this->em->persist($actualizar);
+            if ($actualizar) {
+                $actualizar->setimporteEco($presupuesto->getimportemanoobra()-$presupuesto->getImpmanoobraPagado());
+                $this->em->persist($actualizar);
+                }
 
             $this->em->flush();
 
@@ -534,43 +536,34 @@ class PresupuestosController extends AbstractController
     /**
      * @Route("/aceptarpresu/{id}", name="aceptarpresu")
      */
-    public function aceptarpresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository): JsonResponse
+    public function aceptarpresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository, TiposmovimientoRepository $tiposmovimientoRepository): JsonResponse
     {
-        $tipopago  = $request->query->get('tipopago');
-        $importesenal   = $request->query->get('importesenal');
+        $tipopago = $request->query->get('tipopago');
+        $importesenal = $request->query->get('importesenal');
         $estadocesta = $estadocestasRepository->findOneBy(
             ['descripcionEc' => 'Aceptado'],
         );
 
-        $presupuesto->setImporteSnalPe($importesenal);
-        $presupuesto->setTipopagoSnalPe($tipopago);
         $presupuesto->setEstadoPe($estadocesta);
         $presupuesto->setImpmanoobraPagado(0);
-        
-        $cestanueva = new Cestas();
-        $cestanueva = clone $presupuesto->getTicket();        
-
-
         $presupuesto->getTicket()->setPrespuestoCs($presupuesto);
-        $presupuesto->getTicket()->setImportePagoCs($importesenal);
-        $presupuesto->getTicket()->setImporteTotCs($importesenal);
-        $presupuesto->getTicket()->setDescuentoCs($detallecestaRepository->imptotalCesta($presupuesto->getTicket())-$importesenal);
-        
-
-        $cestanueva->setPrespuestoCs($presupuesto);
-        $cestanueva->setEstadoCs(2);
-        $cestanueva->setImportePagoCs($importesenal);
-        $cestanueva->setImporteTotCs($importesenal);
-        $cestanueva->setTipopagoCs($tipopago);
-
+        $presupuesto->getTicket()->setImporteTotCs($detallecestaRepository->imptotalCesta($presupuesto->getTicket()));
+        $presupuesto->getTicket()->setDescuentoCs(0);
+        $presupuesto->getTicket()->setEstadoCs(3);
+        $presupuesto->getTicket()->setFechaCs(new \DateTime());
+        $presupuesto->getTicket()->setTimestampCs(new \DateTime());
  
-        $this->em->persist($cestanueva);
+        $this->em->persist($presupuesto);
         $this->em->flush();
 
-        $economic = new EconomicoPresu($this->em);
+     /*   $economic = new EconomicoPresu($this->em);
 
-        $economic->iniciarPresu($presupuesto->getimportemanoobra(),$presupuesto->getTicket()->getDescuentoCs(),$presupuesto);
+        $economic->iniciarPresu($presupuesto->getimportemanoobra(),$presupuesto);*/
 
+        // Creamos un pago con lo que llegue en la señal
+        $generarPago = New GenerarPago($this->em);
+
+        $generarPago->ticketPagoFinal($presupuesto->getTicket(), $importesenal, $tipopago, $tiposmovimientoRepository);
         $response = new JsonResponse();
 
         // Envía una respuesta de texto
@@ -608,7 +601,6 @@ class PresupuestosController extends AbstractController
 
         $cestanueva = new Cestas();
         $cestanueva = clone $presupuesto->getTicket();
-        $cestanueva->setImportePagoCs($importesenal);
         $cestanueva->setEstadoCs(2);
         $cestanueva->setImporteTotCs($importesenal);
         $cestanueva->setTipopagoCs($tipopago);
@@ -699,7 +691,6 @@ class PresupuestosController extends AbstractController
         $presupuesto->setEstadoPe($estadocesta);
         $presupuesto->getTicket()->setPrespuestoCs($presupuesto);
         $presupuesto->getTicket()->setEstadoCs(2);
-        $presupuesto->getTicket()->setImportePagoCs($importesenal);
         $presupuesto->getTicket()->setImporteTotCs($importesenal);
         $presupuesto->getTicket()->setDescuentoCs($detallecestaRepository->imptotalCesta($presupuesto->getTicket())-$importesenal);
 
