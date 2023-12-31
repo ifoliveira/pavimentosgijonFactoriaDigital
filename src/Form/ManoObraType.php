@@ -8,6 +8,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Bridge\Doctrine\Form\Type\DoctrineType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use App\Entity\Presupuestos;
 
 class ManoObraType extends AbstractType
@@ -16,9 +17,14 @@ class ManoObraType extends AbstractType
     {
 
             $builder
-            ->add('presupuestoMo')
-            ->add('categoriaMo')
-            ->add('tipoMo')
+            ->add('presupuestoMo', null, array(
+                'label' => 'Presupuesto' ))
+            ->add('categoriaMo', null, array(
+                'label' => 'Categoria' ))
+            ->add('tipoMo', null, array(
+                'label' => 'Tipo' ))
+            ->add('coste',  MoneyType::class, array(
+                    'label' => 'Coste' ))                
             ->add('textoMo', null, array(
                 'label' => 'Texto Descripción', 
                 'attr' => array('style' => 'height: 200px')

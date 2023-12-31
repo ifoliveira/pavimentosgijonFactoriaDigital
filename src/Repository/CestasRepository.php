@@ -66,8 +66,7 @@ class CestasRepository extends ServiceEntityRepository
         $query = $entityManager->createQuery(
             'SELECT p
             FROM App\Entity\Cestas p
-            WHERE p.estadoCs < 5
-              AND p.estadoCs > 1');
+            WHERE p.estadoCs = 2');
 
         // returns an array of Product objects
         return $query->getResult();

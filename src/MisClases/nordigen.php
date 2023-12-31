@@ -29,7 +29,7 @@ class nordigen
         {
             $client = HttpClient::create(); 
 
-            $response = $client->request('GET', 'https://ob.nordigen.com/api/v2/accounts/'. $account . '/balances/', [
+            $response = $client->request('GET', 'https://ob.gocardless.com/api/v2/accounts/'. $account . '/balances/', [
  
                 'headers' => [
                     'Accept' => '' . $this->hAccept .'',
@@ -51,7 +51,7 @@ class nordigen
         {
             $client = HttpClient::create();    
 
-            $response = $client->request('POST', 'https://ob.nordigen.com/api/v2/requisitions/', [
+            $response = $client->request('POST', 'https://ob.gocardless.com/api/v2/requisitions/', [
      
                 'headers' => [
                      'Accept' => '' . $this->hAccept .'',
@@ -76,7 +76,7 @@ class nordigen
         {
             $client = HttpClient::create(); 
 
-            $response = $client->request('GET', 'https://ob.nordigen.com/api/v2/accounts/'. $account . '/transactions/?date_from=' . $fechaini .'&date_to='. $fechafin .'' , 
+            $response = $client->request('GET', 'https://ob.gocardless.com/api/v2/accounts/'. $account . '/transactions/?date_from=' . $fechaini .'&date_to='. $fechafin .'' , 
             [
                 'timeout' => 120,
                 'headers' => [
@@ -98,7 +98,7 @@ class nordigen
         {
             $client = HttpClient::create(); 
 
-            $response = $client->request('GET', 'https://ob.nordigen.com/api/v2/accounts/'. $account . '/details/', [
+            $response = $client->request('GET', 'https://ob.gocardless.com/api/v2/accounts/'. $account . '/details/', [
  
                 'headers' => [
                     'Accept' => '' . $this->hAccept .'',
@@ -117,7 +117,7 @@ class nordigen
         public function getAccounts($bankRef)
         {
             $client = HttpClient::create(); 
-            $response = $client->request('GET', 'https://ob.nordigen.com/api/v2/requisitions/'. $bankRef . '/', [
+            $response = $client->request('GET', 'https://ob.gocardless.com/api/v2/requisitions/'. $bankRef . '/', [
      
                 'headers' => [
                     'Accept' => '' . $this->hAccept .'',
@@ -136,7 +136,7 @@ class nordigen
         {
  
             $client = HttpClient::create(); 
-            $response = $client->request('POST', 'https://ob.nordigen.com/api/v2/token/new/', [
+            $response = $client->request('POST', 'https://ob.gocardless.com/api/v2/token/new/', [
             'headers' => [
             'Accept' => '' . $this->hAccept .'',
             ],
@@ -152,7 +152,7 @@ class nordigen
         public function restoreToken($refresh, $secret_id, $secret_key)
         {
             $client = HttpClient::create(); 
-            $response = $client->request('POST', 'https://ob.nordigen.com/api/v2/token/refresh/', [
+            $response = $client->request('POST', 'https://ob.gocardless.com/api/v2/token/refresh/', [
             'headers' => [
             'Accept' => '' . $this->hAccept .'',
             ],

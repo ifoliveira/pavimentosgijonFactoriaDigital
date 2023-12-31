@@ -1021,7 +1021,7 @@
                                    <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" /></div>
                                    <div class="align-self-center">
                                        <h6 class="text-muted mt-2 mb-0">Efectivo</h6>
-                                       <h2 id="efectivototal" data-caja="{{ totalefe }}">{{ totalefe |format_currency('EUR', locale='es') }}</h2></div>
+                                       <h2 id="efectivototal" data-caja="{{ gastos['efectivototal'] }}">{{ gastos['efectivototal'] |format_currency('EUR', locale='es') }}</h2></div>
                                </div>
                            </div>
                        </div>
@@ -1033,7 +1033,7 @@
                                    <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" /></div>
                                    <div class="align-self-center">
                                        <h6 class="text-muted mt-2 mb-0">Total</h6>
-                                       <h2 id="cajatotal" data-caja="{{ bancototal['sum(importe_bn)'] + totalefe }}">{{ (bancototal['sum(importe_bn)'] + totalefe) |format_currency('EUR', locale='es') }}</h2></div>
+                                       <h2 id="cajatotal" data-caja="{{ bancototal['sum(importe_bn)'] + gastos['efectivototal'] }}">{{ (bancototal['sum(importe_bn)'] + gastos['efectivototal']) |format_currency('EUR', locale='es') }}</h2></div>
                                </div>
                            </div>
                        </div>

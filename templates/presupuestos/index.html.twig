@@ -99,7 +99,7 @@
                                             <tbody>
                                             {% for presupuesto in presupuestos %}
 
-
+ {% set pagado =0 %}
                                                 <tr> 
                                                     {% if presupuesto.EstadoPe.id == 4 %}
                                                         <td><span class="badge bg-primary">{{ presupuesto.EstadoPe }}</span></td>
@@ -128,10 +128,26 @@
                                                     <td><a href="{{ path ('presupuestos_show', { 'id': presupuesto.id  }) }}" class="font-medium link">{{ presupuesto.clientePe.direccionCl}}  ( {{presupuesto.clientePe.nombreCl}}  -  {{presupuesto.manoobraPe}} )</a></td>
                                                     <td>{{ presupuesto.clientePe.telefono1Cl }}</td>
                                                     <td  align="right">{{ (presupuesto.importetotPe + presupuesto.importemanoobra)  |format_currency('EUR', locale='es')  }}</td>
-                                                    <td  align="right">{{ (presupuesto.importesnalPe + presupuesto.impmanoobraPagado) |format_currency('EUR', locale='es')  }}</td>
+                                                    <td  align="right">                                                    
+                                                            {% for pagos in presupuesto.ticket.pagos %}
+                                                                {% set pagado = pagos.importePg + pagado %}
+                                                            {% endfor %}
+                                                            {% set manoobrapdte = 0 %}
+                                                            {% set manoobratotal = 0 %}
+                                                            {% set idmanoobra = 0 %}                                                            
+                                                            {% for economicos in presupuesto.economicpresus %}                                                
+                                                                {% if economicos.aplicaEco == 'M' %}
+                                                                    {% set manoobratotal = manoobratotal + economicos.importeEco %}
+                                                                    {% if economicos.estadoEco == '1'%}
+                                                                        {% set idmanoobra = economicos.id %}
+                                                                        {% set manoobrapdte = economicos.importeEco %}
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            {% endfor %}                                                            
+                                                    {{ (pagado + (presupuesto.importemanoobra - manoobrapdte) )  |format_currency('EUR', locale='es')  }}</td>
 
                                                         {% if presupuesto.EstadoPe.id == 9 or presupuesto.EstadoPe.id == 10 %} 
-                                                            <td align="right">{{ (presupuesto.importetotPe + presupuesto.importemanoobra - presupuesto.importesnalPe - presupuesto.impmanoobraPagado) |format_currency('EUR', locale='es') }} </td>
+                                                            <td align="right">{{ (presupuesto.importetotPe + presupuesto.importemanoobra - pagado - (presupuesto.importemanoobra - manoobrapdte )) |format_currency('EUR', locale='es') }} </td>
                                                         {% else %}
                                                             <td align="right">{{ 0 |format_currency('EUR', locale='es') }} </td>
                                                         {% endif %}

@@ -31,8 +31,8 @@
                                                 <tr>
                                                     <td>{{ detallecestum.id }}</td>
                                                     <td>{{ detallecestum.cantidadDc }}</td>
-                                                    <td>{{ detallecestum.pvpDc }}</td>
-                                                    <td>{{ detallecestum.descuentoDc }}</td>
+                                                    <td>{{ detallecestum.pvpDc|format_currency('EUR', locale='es') }}</td>
+                                                    <td>{{ detallecestum.descuentoDc |format_currency('EUR', locale='es')}}</td>
                                                     <td>{{ detallecestum.timestampDc ? detallecestum.timestampDc|date('Y-m-d H:i:s') : '' }}</td>
                                                     <td>{{ detallecestum.cestaDc }}</td>
                                                     <td>

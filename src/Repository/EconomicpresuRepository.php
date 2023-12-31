@@ -39,6 +39,66 @@ class EconomicpresuRepository extends ServiceEntityRepository
         }
     }
 
+    public function cobrototal()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT sum(importe_eco) as cobrototalMo FROM economicpresu p
+        WHERE aplica_eco = "M"
+        AND YEAR(timestamp) = YEAR(CURDATE());
+            ';
+
+        return $conn->fetchAssociative($sql);
+
+    }
+
+    public function pagototal()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT sum(importe_eco) as pagototalMo FROM economicpresu p
+        WHERE aplica_eco = "E"
+        AND YEAR(timestamp) = YEAR(CURDATE());
+            ';
+
+        return $conn->fetchAssociative($sql);
+
+    }   
+    
+    public function pendienteCobro()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT sum(importe_eco) as cobropdteMo FROM economicpresu p
+        WHERE aplica_eco = "M"
+          AND estado_eco = "1"
+          AND YEAR(timestamp) = YEAR(CURDATE());
+            ';
+
+        return $conn->fetchAssociative($sql);
+
+
+    }     
+    
+    public function pendientePago()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT sum(importe_eco) as pagopdteMo FROM economicpresu p
+        WHERE aplica_eco = "E"
+          AND estado_eco = "1"
+        AND YEAR(timestamp) = YEAR(CURDATE());
+            ';
+
+        return $conn->fetchAssociative($sql);
+
+
+    }      
+
 //    /**
 //     * @return Economicpresu[] Returns an array of Economicpresu objects
 //     */

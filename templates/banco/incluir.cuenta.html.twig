@@ -19,31 +19,31 @@
                     {% for bank in bancosJSON %}
                         {% if bank.Activo == "Si" %}
                         <div class="col-md-6 col-lg-4 col-xl-3 d-flex align-items-stretch">
-                        <div class="card w-100">
-                            <div class="p-3 d-flex align-items-stretch h-100">
-                            <div class="row">
-                            <div class="col-4 col-xl-2 col-md-3 d-flex align-items-center">
-                                <a  href="#" id="Consultar"  data-banco="{{ bank.id  }}" data-index="x">
-                                    <img width="300" height="300" src="{{ bank.logo }}"class="rounded img-fluid"/>
-                                </a>
-                            </div>
-                            <div
-                            class="col-8 col-xl-10 col-md-9 d-flex align-items-center"
-                            >
-                            <div>
+                            <div class="card w-100">
+                                <div class="p-3 d-flex align-items-stretch h-100">
+                                <div class="row">
+                                <div class="col-4 col-xl-2 col-md-3 d-flex align-items-center">
+                                    <a  href="#" id="Consultar"  data-banco="{{ bank.id  }}" data-index="x">
+                                        <img width="300" height="300" src="{{ bank.logo }}"class="rounded img-fluid"/>
+                                    </a>
+                                </div>
+                                <div
+                                class="col-8 col-xl-10 col-md-9 d-flex align-items-center"
+                                >
+                                <div>
 
-                            
-                                {% for cuenta in bank.Cuentas %}
-                                <a href="#" id="Movimientos" data-banco="{{ bank.id }}" data-index="x" class="font-weight-medium fs-4 link lh-sm">{{ cuenta.IBAN }}  <br/>       </a>
-                                {% else %}
-                                  <a href="#" id="Consultar"  data-banco="{{ bank.id }}" data-index="x" class="font-weight-medium fs-4 link lh-sm">Sin cuentas</a>
-                                {% endfor %}
+                                
+                                    {% for cuenta in bank.Cuentas %}
+                                        <a href="#" id="Movimientos" data-banco="{{ bank.id }}" data-index="x" class="font-weight-medium fs-4 link lh-sm">{{ cuenta.IBAN }}  <br/>       </a>
+                                    {% else %}
+                                        <a href="#" id="Consultar"  data-banco="{{ bank.id }}" data-index="x" class="font-weight-medium fs-4 link lh-sm">Sin cuentas</a>
+                                    {% endfor %}
 
+                                </div>
+                                </div>
+                                </div>
+                                </div>
                             </div>
-                            </div>
-                            </div>
-                            </div>
-                        </div>
                         </div>
                         {% endif %}
                     {% endfor %}

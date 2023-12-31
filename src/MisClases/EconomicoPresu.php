@@ -4,6 +4,8 @@ namespace App\MisClases;
 
 use Doctrine\ORM\EntityManager;
 use App\Entity\Economicpresu;
+use App\Entity\TipoManoObra;
+use DateTime;
 use PhpParser\Node\Expr\Cast\Double;
 
 class EconomicoPresu {
@@ -18,17 +20,16 @@ class EconomicoPresu {
 
     public function iniciarPresu($importemanoobra, $presupuesto)
     {
+        $tipomano = $this->em->getRepository(TipoManoObra::class)->findAll();
+        foreach ($presupuesto->getManoObra() as $tipo)
+        {
+            if ($tipo->getCoste() != 0 || $tipo->getTipoMo() == 'Otros')
+            {
+                $this->alta($tipo->getTipoMo(), $tipo->getCoste(), 'D', $presupuesto,'E');
+            }
+        }
 
         $this->alta('Mano de Obra', $importemanoobra, 'H', $presupuesto, 'M');
-        $this->alta('Pago Albañileria', 0, 'D', $presupuesto,'E');
-        $this->alta('Pago Fontanería', 0, 'D', $presupuesto,'E');
-        $this->alta('Pago Pintura', 0, 'D', $presupuesto,'E');
-        $this->alta('Pago Escayola', 0, 'D', $presupuesto,'E');
-        $this->alta('Pago Electricidad', 0, 'D', $presupuesto,'E');
-        $this->alta('Pago Desescombro', 0, 'D', $presupuesto,'E');
-        $this->alta('Pago Carpintero', 0, 'D', $presupuesto,'E');
-        $this->alta('Pago Colocación', 0, 'D', $presupuesto,'E');
-        $this->alta('Pago Otros', 0, 'D', $presupuesto,'E');
        
     }
 
@@ -50,6 +51,7 @@ class EconomicoPresu {
         $economicpresu->setaplicaEco($aplica);
         $economicpresu->setestadoEco('1');
         $economicpresu->setIdpresuEco($presupuesto);
+        $economicpresu->setTimestamp(New \DateTime());
         $this->em->persist($economicpresu);
         $this->em->flush();        
     }

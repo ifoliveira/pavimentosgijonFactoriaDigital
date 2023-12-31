@@ -19,12 +19,9 @@
 {% block title %}Lista presupuestos{% endblock %}
 {% block cardbody1 %}
 
-                {% set total = 0 %}
+
                 {% set numero = 1 %}
                 {% set facturapagada = false %}
-                {% if (presupuesto.importetotPe - presupuesto.importesnalPe ) == 0 %}                
-                    {% set facturapagada = true %}
-                {% endif %}
                                                   
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
@@ -43,8 +40,8 @@
                                      </div>
                             </div>
                             <div class="col-md-12 mt-1">
-                                        <table class="table">
-                                            <thead>
+                                <table class="table">
+                                    <thead>
                                                 <tr>
                                                 
                                                 {% if tipo == "FACTURA FINAL" or facturapagada == true %}
@@ -64,7 +61,7 @@
                                                     <th colspan="4"> </th>
                                                     <th colspan="2" class="text-end"> Nombre : </th>
                                                     
-                                                        <td class="text-left" colspan="2" scope="col" style="padding-left: 10px">{{presupuesto.clientePe.nombreCl}} {{presupuesto.clientePe.apellidosCl}}</td>
+                                                        <td class="text-left" colspan="2" scope="col" style="padding-left: 10px">{{presupuesto.clientePe.nombreCl}} {{presupuesto.clientePe.apellidosCl}} {% if presupuesto.clientePe.DNI != '' %}(DNI : {{presupuesto.clientePe.DNI}}){% endif %}</td>
 
 
                                                 </tr>
@@ -75,7 +72,7 @@
                                                 {% if tipo == "FACTURA SIMPLIFICADA" or tipo == "FACTURA FINAL"  %}
                                                     <th class="text-center">{{ (presupuesto.importetotPe)|format_currency('EUR', locale='es')  }}</th>
                                                 {% else %}
-                                                    <th class="text-center"><h2>{{ (presupuesto.importetotPe + presupuesto.importemanoobra)|format_currency('EUR', locale='es')  }}*    </h2></th>                                                
+                                                    <th class="text-center"><h2>{{ total |format_currency('EUR', locale='es')  }}*    </h2></th>                                                
                                                 {% endif %}
                                                     <td class="text-center">{{ "now"|date("d/m/Y") }}</td>
                                                     <td class="text-center">#002300{{ presupuesto.id }}#</td>
@@ -116,7 +113,6 @@
                                                     <td class="text-end"> {% if precios == 'S' %}{{ detalle.pvpDc  |format_currency('EUR', locale='es')  }} {% endif %}</td>
                                                     <td class="text-end"> {% if precios == 'S' %}{{ (detalle.cantidadDc * detalle.pvpDc ) |format_currency('EUR', locale='es')  }}{% endif %}</td>
 
-                                                    {% set total = (detalle.cantidadDc * detalle.pvpDc) + total %}  
                                                     {% set numero = numero + 1 %} 
                                                 </tr>
                                              {% else %}
@@ -128,13 +124,13 @@
                                             <tfoot>
                                                 <tr>
                                                 {% if facturapagada == false %}
-                                                {% if precios == 'S' %}
-                                                    <td  class="text-end" colspan="4"> <b>Materiales I.V.A. Incluido : </b></td>
-                                                    <td  class="text-end" colspan="2    "> <b>{{ (total) |format_currency('EUR', locale='es')  }}</b></td>
-                                                {% else %}
-                                                    <td  class="text-center" colspan="3"> <b>Materiales I.V.A. Incluido : {{ (total) |format_currency('EUR', locale='es')  }}</b></td>
+                                                    {% if precios == 'S' %}
+                                                        <td  class="text-end" colspan="4"> <b>Materiales I.V.A. Incluido : </b></td>
+                                                        <td  class="text-end" colspan="2    "> <b>{{ (subtotal) |format_currency('EUR', locale='es')  }}</b></td>
+                                                    {% else %}
+                                                        <td  class="text-center" colspan="3"> <b>Materiales I.V.A. Incluido : {{ (subtotal) |format_currency('EUR', locale='es')  }}</b></td>
 
-                                                {% endif %}
+                                                    {% endif %}
                                                 {% endif %}
                                                     
                                                 </tr>                                            
@@ -179,9 +175,15 @@
                                                     <th class="text-center">{{ ((presupuesto.importetotPe)-((presupuesto.importetotPe)/1.21)) |format_currency('EUR', locale='es')  }}</th>
                                                     <th class="text-center">{{ (presupuesto.importetotPe) |format_currency('EUR', locale='es')  }}</th>
                                             {% if tipo == "FACTURA SIMPLIFICADA" %}
+                                                 {% set pagado = 0 %}
                                                 {% if (presupuesto.importetotPe - presupuesto.importesnalPe ) != 0 %}
-                                                    <th class="text-center">{{ (presupuesto.importesnalPe) |format_currency('EUR', locale='es')  }}</th>
-                                                    <th class="text-center"><h2>{{ (presupuesto.importetotPe - presupuesto.importesnalPe ) |format_currency('EUR', locale='es')  }}</h2></th>
+
+                                                    {% for pagos in presupuesto.ticket.pagos %}
+                                                        {% set pagado = pagos.importePg + pagado %}
+                                                    {% endfor %}
+
+                                                    <th class="text-center">{{ (pagado) |format_currency('EUR', locale='es')  }}</th>
+                                                    <th class="text-center"><h2>{{ (presupuesto.importetotPe - pagado ) |format_currency('EUR', locale='es')  }}</h2></th>
                                                 {% endif %}
                                             {% endif %}
                                                 </tr>

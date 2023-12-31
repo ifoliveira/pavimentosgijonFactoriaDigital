@@ -11,6 +11,14 @@
                 <!-- basic table -->
                 <div class="row">
                     <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title" style="text-align:center">Ticket Info - {{ presupuesto.EstadoPe }}  
+                                <h6>{{ presupuesto.clientePe.nombreCl }} {{ presupuesto.clientePe.apellidosCl }} </h6>
+                                <p><b>Dirección : </b>{{ presupuesto.clientePe.direccionCl }} <b> &nbsp;  &nbsp; &nbsp;  Teléfono : </b> {{ presupuesto.clientePe.telefono1Cl }}  </p>
+                                
+                            </div>
+                        </div>                    
             
 
                         {% if presupuesto.EstadoPe.id > 3 and presupuesto.EstadoPe.id < 8 %}
@@ -55,7 +63,7 @@
                                     </div>
                         {% endif %}
 
-                        {% if presupuesto.EstadoPe.id == 7 %}
+                        {% if presupuesto.EstadoPe.id == 6 or presupuesto.EstadoPe.id == 7 %}
                                     <div class="card">
                                         <div class="card-body">
                                              <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'PRESUPUESTO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto CON precios</a>
@@ -182,7 +190,7 @@
                                                 {{ form_row(formmanoob.importetotPe, { 'row_attr': {'class': 'd-none'} }) }}
                                                 {{ form_row(formmanoob.clientePe, { 'row_attr': {'class': 'd-none'} }) }}
                                                 {{ form_row(formmanoob.importemanoobra) }}
-                                                {{ form_row(formmanoob.descuaetoPe)}}
+                                                {{ form_row(formmanoob.descuaetoPe, { 'row_attr': {'class': 'd-none'} }) }}
                                         {{ form_end(formmanoob, {'render_rest': false}) }}
 
                                         </div>
@@ -215,10 +223,10 @@
 
 
 
-                    {% if presupuesto.EstadoPe.id > 6 %} 
+                    {% if presupuesto.EstadoPe.id > 8 %} 
                         <div class="card">
                             <div class="card-body">
-                            <h4 class="card-title">Tickets</h4>
+                            <h4 class="card-title">Cobros pendientes</h4>
                                 <h6 class="card-subtitle"></h6>
                                 <div class="table-responsive">
                                     <table id="default_order" class="table table-striped table-bordered display"
@@ -226,7 +234,7 @@
                                             <thead>
                                                 <tr>
                                                     <th>Id</th>
-                                                    <th>FechaCs</th>
+                                                    <th>Concepto</th>
                                                     <th>Importe Total</th>
                                                     <th>Pendiente </th>
                                                     <th>Acciones</th>
@@ -236,7 +244,7 @@
                                                 <tr>
                                                     {% set pagado = 0 %}
                                                     <td>{{ presupuesto.ticket.id }}</td>
-                                                    <td>{{ presupuesto.ticket.fechaCs ? presupuesto.ticket.fechaCs|date('Y-m-d') : '' }}</td>
+                                                    <td>Materiales</td>
                                                     <td align="right">{{ presupuesto.ticket.importeTotCs|format_currency('EUR', locale='es')  }}</td>
                                                     {% for pagos in presupuesto.ticket.pagos %}
                                                         {% set pagado = pagos.importePg + pagado %}
@@ -247,7 +255,7 @@
                                                        {% if (presupuesto.ticket.importeTotCs - pagado) == 0 %}
                                                             <h5> No hay nada pendiente </h5>
                                                        {% else %}
-                                                        <a class="text-inverse pr-2" data-toggle="tooltip" title="Añadir Pago" name="cerrar_senal" id="{{ presupuesto.ticket.id }}" data-url="{{ path("cestas_finalizar", {'id': presupuesto.ticket.id}) }}">
+                                                        <a class="text-inverse pr-2" data-toggle="tooltip" title="Añadir Pago" name="cerrar_senal" id="{{ presupuesto.ticket.id }}"   data-importe="{{ (presupuesto.ticket.importeTotCs - pagado)}}" data-url="{{ path("cestas_finalizar", {'id': presupuesto.ticket.id}) }}">
                                                             <i class="ti-money"></i>                                                        
                                                         </a>     
                                                         {% endif %}                                               
@@ -255,6 +263,42 @@
                                    
 
                                                 </tr>
+
+                                                
+                                                    {% set manoobrapdte = 0 %}
+                                                    {% set manoobratotal = 0 %}
+                                                    {% set idmanoobra = 0 %}
+                                                    {% for economicos in economic %}                                                
+                                                        {% if economicos.aplicaEco == 'M' %}
+                                                            {% set manoobratotal = manoobratotal + economicos.importeEco%}
+                                                            {% if economicos.estadoEco == '1'%}
+                                                                {% set idmanoobra = economicos.id %}
+                                                                {% set manoobrapdte = economicos.importeEco %}
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                <tr>
+
+                                                            <td>{{ idmanoobra }}</td>
+                                                            <td>Mano de Obra</td>
+                                                            <td align="right">{{ manoobratotal|format_currency('EUR', locale='es')  }}</td>
+                                                            <td align="right">{{ manoobrapdte|format_currency('EUR', locale='es')  }}</td>
+                                                            <td>
+                                                            {% if manoobrapdte == 0 %}
+                                                                <h5> No hay nada pendiente </h5>
+                                                            {% else %}                                                            
+                                                               <a class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="ticket_mano" id="{{ idmanoobra }}" data-importe="{{ manoobrapdte}}" ><i class="ti-money"></i></a>                                                        
+                                                            {% endif %}
+                                                            </td>                                                
+                                                </tr>
+
+                                                <tr>
+                                                    <td></td>
+                                                    <td>Total pendiente</td>
+                                                    <td align="right"></td>
+                                                    <td align="right">{{ (presupuesto.ticket.importeTotCs - pagado + manoobrapdte)|format_currency('EUR', locale='es')  }}</td>
+                                                    <td></td>
+                                                </tr>                                                
 
 
                                             </tbody>
@@ -278,58 +322,51 @@
                                             </thead>
                                             <tbody>
                                              {% for economicos in economic %}
-                                                {% if economicos.estadoEco != 9 %}
-                                                <tr>
-                                                    <td>{{ economicos.id }}</td>
-                                                    <td>{{ economicos.conceptoEco}}</td>
-                                                    {% if economicos.debehaberEco == 'D'  %}
-                                                        <td align="right">{{ (economicos.importeEco * -1)|format_currency('EUR', locale='es')}}</td>
-                                                    {% else %}
-                                                        <td align="right">{{ economicos.importeEco|format_currency('EUR', locale='es')}}</td>
-                                                    {% endif %}
-
-                                                    {% if economicos.estadoEco == '1' %}
-                                                        <td>Pendiente</td>
-                                                        <td>
-                                                            {% if economicos.aplicaEco == 'T' %}
-                                                                <a class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="ticket_material" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco }}"><i class="ti-money"></i></a>                                                        
+                                                {% if  economicos.aplicaEco != 'M' %}
+                                                    {% if economicos.estadoEco != 9  %}
+                                                        <tr>
+                                                            <td>{{ economicos.id }}</td>
+                                                            <td>{{ economicos.conceptoEco}}</td>
+                                                            {% if economicos.debehaberEco == 'D'  %}
+                                                                <td align="right">{{ (economicos.importeEco * -1)|format_currency('EUR', locale='es')}}</td>
                                                             {% else %}
-                                                                {% if economicos.aplicaEco == 'M' %}
-                                                                    <a class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="ticket_mano" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco}}" ><i class="ti-money"></i></a>                                                        
-                                                                    
-                                                                {% else %}
-
-                                                                    <a class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="cambiar_importe" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco}}"><i class="ti-money"></i></a> 
-                                                                    
-                                                                    {% if economicos.conceptoEco != 'Pago Otros' and economicos.importeEco == 0 %}                                                       
-                                                                        <a class="text-inverse pr-2" data-toggle="tooltip" title="Cambiar a no aplica" name="no_aplica" id="{{ economicos.id }}" data-estado= "9"><i class="ti-thumb-down"></i></a>
-                                                                    {% endif %}
-                                                                {% endif %}    
+                                                                <td align="right">{{ economicos.importeEco|format_currency('EUR', locale='es')}}</td>
                                                             {% endif %}
-                                                            
-                                                           
 
-                                                        </td>    
-                                                    {% elseif economicos.estadoEco == '9' %}
-                                                        <td>No aplica</td>
-                                                        <td><a class="text-inverse pr-2" data-toggle="tooltip" title="Cambiar a aplica" name="no_aplica" id="{{ economicos.id }}" data-estado= "1"><i class="ti-thumb-up"></a></td>                                                                                                        
-                                                    {% elseif economicos.estadoEco == '8' %}
-                                                        <td>Pagado</td>
-                                                        <td></td>
-                                                    {% elseif economicos.estadoEco == '7' %}
-                                                        <td>Cobrado con tarjeta</td>
-                                                        <td></td>                                                        
-                                                    {% elseif economicos.estadoEco == '6' %}
-                                                        <td>Cobrado</td>
-                                                        <td></td>                                                        
-                                                    {% else %}
-                                                        <td>{{ economicos.estadoEco}}</td>
-                                                        <td></td>
-                                                    {% endif %}
+                                                            {% if economicos.estadoEco == '1' %}
+                                                                <td>Pendiente</td>
+                                                                <td>
+                                                                        {% if economicos.aplicaEco != 'M' %}
+
+                                                                            <a class="text-inverse pr-2" data-toggle="tooltip" title="Tratar movimiento" name="cambiar_importe" id="{{ economicos.id }}" data-importe="{{ economicos.importeEco}}"><i class="ti-money"></i></a> 
+                                                                            
+                                                                            {% if economicos.conceptoEco != 'Otros' and economicos.importeEco == 0 %}                                                       
+                                                                                <a class="text-inverse pr-2" data-toggle="tooltip" title="Cambiar a no aplica" name="no_aplica" id="{{ economicos.id }}" data-estado= "9"><i class="ti-thumb-down"></i></a>
+                                                                            {% endif %}
+                                                                        {% endif %}    
+
+                                                                </td>    
+                                                            {% elseif economicos.estadoEco == '9' %}
+                                                                <td>No aplica</td>
+                                                                <td><a class="text-inverse pr-2" data-toggle="tooltip" title="Cambiar a aplica" name="no_aplica" id="{{ economicos.id }}" data-estado= "1"><i class="ti-thumb-up"></a></td>                                                                                                        
+                                                            {% elseif economicos.estadoEco == '8' %}
+                                                                <td>Pagado</td>
+                                                                <td></td>
+                                                            {% elseif economicos.estadoEco == '7' %}
+                                                                <td>Cobrado con tarjeta</td>
+                                                                <td></td>                                                        
+                                                            {% elseif economicos.estadoEco == '6' %}
+                                                                <td>Cobrado</td>
+                                                                <td></td>                                                        
+                                                            {% else %}
+                                                                <td>{{ economicos.estadoEco}}</td>
+                                                                <td></td>
+                                                            {% endif %}
 
                                                     
                                                         
-                                                </tr>
+                                                        </tr>
+                                                    {% endif %}
                                                 {% endif %}
                                             {% endfor %}
                                             </tbody>
@@ -337,6 +374,8 @@
                                 </div>   
                             </div>
                         </div>
+                        {% endif %}
+                        {% if presupuesto.EstadoPe.id > 6 %} 
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title">Presupuesto Actual</h4>
@@ -379,7 +418,7 @@
                             </div>
                         </div>
                     {% endif %} 
-                    {% if presupuesto.EstadoPe.id > 6 and  presupuesto.EstadoPe.id < 9 %} 
+                    {% if presupuesto.EstadoPe.id > 6 and  presupuesto.EstadoPe.id < 8 %} 
                         <div class="card">
                             <div class="card-body">
   
@@ -431,6 +470,7 @@
                         
 
                         {% endif %}
+                        {% set manoobratotal = 0%}
                         {% if presupuesto.EstadoPe.id < 9 %}
                         <div class="card">
                       
@@ -441,8 +481,7 @@
                                     </div>
                                 </div>
                                 <hr>                              
-                                <h4 class="card-title">Mano de Obra - {{ presupuesto.importemanoobra |format_currency('EUR', locale='es') }}</h4>
-                                <h6 class="card-subtitle"></h6>
+                                
                                 <div class="table-responsive">
                                     <table id="footer" class="table table-striped table-bordered display"
                                         style="width:100%">
@@ -450,14 +489,17 @@
                                             <tr align="center"> 
                                                 <th>Tipo</th>
                                                 <th>Detalle</th>
+                                                <th>Coste</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                         {% for manodeobra in presupuesto.manoObra %}
+                                            {% set manoobratotal = manodeobra.coste + manoobratotal %}
                                             <tr>
                                                 <td>{{ manodeobra.categoriaMo.TipoTm}}</td>
                                                 <td align="left">{{ manodeobra.textoMo}}</td>
+                                                <td align="right">{{ manodeobra.coste|format_currency('EUR', locale='es')}}</td>
                                                 <td>
                                                         <a href="{{ path('mano_obra_edit', {'id': manodeobra.id}) }}" class="text-inverse pr-2"
                                                                 data-toggle="tooltip" title="Modificar">
@@ -475,7 +517,8 @@
                                         {% endfor %}
                                         </tbody>
                                     </table>
-
+                                    <h4 class="card-title" align = "right"> {{ manoobratotal |format_currency('EUR', locale='es') }}</h4>
+                                    <h6 class="card-subtitle" align = "right">Mano de Obra</h6>
 
                                 </div>
                             </div>
@@ -504,40 +547,16 @@
                     </div>
                     
                     <div class="col-lg-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">Ticket Info</h4>
-                            </div>
-                            <div class="card-body bg-light">
-                                <div class="row text-center">
-                                    <div class="col-6 mt-2 mb-2">
-                                        <span class="badge badge-warning">{{ presupuesto.EstadoPe }}</span>
-                                    </div>
-                                    <div class="col-6 mt-2 mb-2">
-                                        {{ presupuesto.timestampModPe ? presupuesto.timestampModPe|date("F jS \\a\\t g:ia")  : '' }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="pt-3">Presupuesto de</h5>
-                                <span>{{ presupuesto.clientePe.nombreCl }} {{ presupuesto.clientePe.apellidosCl }}</span>
-                                <h5 class="mt-4">Direccion</h5>
-                                <span>{{ presupuesto.clientePe.direccionCl }}</span>
-                                <h5 class="mt-4">Telefono</h5>
-                                <span>{{ presupuesto.clientePe.telefono1Cl }} - {{ presupuesto.clientePe.telefono2Cl }}</span>
-                                <br/>
-                            </div>
-                        </div>
                         
-                        <div class="card">
+                            <div class="card">
                                 <div class="card-body" id="loop"  data-cesta="{{ presupuesto.ticket.Id }}">
-                                {% if presupuesto.EstadoPe.id < 7  %}
+                               {% if presupuesto.EstadoPe.id < 7  %}
                                     {% include 'productos/loop.html.twig' %}
                                 {% endif %}
                                 </div>
-                        </div>
+                   
+                             </div>
                         
-
                         {% if presupuesto.EstadoPe.id >= 5 %}
                             <div class="card">
                                 <div class="card-body">
@@ -546,13 +565,15 @@
                                             <thead>
                                                 <tr align="center"> 
                                                     <th>Movimiento</th>
+                                                    <th>Fecha</th>
                                                     <th>Importe</th>
                                                 </tr>
                                             </thead>
                                             <tbody> 
                                             {% for pago in presupuesto.Ticket.Pagos %}                                   
                                                 <tr>
-                                                    <td > {{ pago.tipoPG }}</td>  
+                                                    <td > {{ pago.tipoPG }}</td> 
+                                                    <td> {{ pago.fechaPg|date("Y-M-d")}} </td> 
                                                     <td class="text-end">{{ pago.importePg |format_currency('EUR', locale='es')}}</td>                                                      
                                                                                                  
                                                 </tr>                        
@@ -568,6 +589,7 @@
                                             <thead>
                                                 <tr align="center"> 
                                                     <th>Movimiento</th>
+                                                    <th>Fecha</th>
                                                     <th>Importe</th>
                                                 </tr>
                                             </thead>
@@ -577,9 +599,11 @@
                                                         <tr>
                                                             {% if economictar.bancoEco is null %}
                                                                 <td > <a href="{{ path('conciliar_presu', {id: economictar.id}) }}"> Buscar Movimiento </a></td>  
+                                                                <td> {{ economictar.timestamp|date("Y-M-d")}} </td> 
                                                                 <td class="text-end">{{ economictar.importeEco |format_currency('EUR', locale='es')}}</td>                                                      
                                                             {% else %}                                           
                                                                 <td>{{ economictar.bancoEco.conceptoBn}}</td>
+                                                                <td> {{ economictar.timestamp|date("Y-M-d")}} </td> 
                                                                 <td class="text-end">{{ economictar.bancoEco.importeBn |format_currency('EUR', locale='es')}}</td>
                                                             {% endif %} 
                                                         </tr>  
@@ -588,6 +612,7 @@
                                                         <tr>
                                       
                                                             <td>Cobro Mano de obra</td>
+                                                            <td> {{ economictar.timestamp|date("Y-M-d")}} </td> 
                                                             <td class="text-end">{{ economictar.importeEco|format_currency('EUR', locale='es')}}</td>
                                                         </tr>  
                                                         {% endif %} 
@@ -949,7 +974,7 @@
         *      Eliminar un producto             *
         *****************************************/
 
-        $(document).on('click', 'a[name="delete_detalle"]' , function(event) {
+        $(document).on('click', 'i[name="delete_detalle"]' , function(event) {
             let id = this.id;
             delete_line(id);
         })
@@ -1115,7 +1140,7 @@
                 importe = inputNumber.value;
                 if (result.value) {
 
-                   aceptar_presu(importe, "Tarjeta"); 
+                  aceptar_presu(importe, "Tarjeta"); 
 
 
                 } else if (
@@ -1395,8 +1420,8 @@
                 const inputStep = 1
 
                 swalWithBootstrapButtons.fire({
-                    title: 'Señal',
-                    text: "Importe total" ,
+                    title: 'Mano de obra',
+                    text: "Pendiente" ,
                     type: 'warning',
                     html: `
                         <h2> Cantidad  - ${importe2} €</h2> 
@@ -1509,9 +1534,10 @@
         $(document).on('click', 'a[name="cerrar_senal"]' ,async function(event) {
 
             let url = this.dataset.url;
+            let importe = this.dataset.importe;   
             console.log(url);
          // Datos de la fila seleccionada en la lista de productos
-            const inputValue = 1
+            const inputValue = importe
             const inputStep = 1
 
          // Pop up importe a abonar

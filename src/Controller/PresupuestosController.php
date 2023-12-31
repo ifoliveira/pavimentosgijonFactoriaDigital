@@ -58,6 +58,7 @@ class PresupuestosController extends AbstractController
             ->setParameter('estado', '10')
             ->orderBy('p.id', 'DESC')
             ->getQuery();
+        
             
         $products = $query->getResult();
 
@@ -82,10 +83,8 @@ class PresupuestosController extends AbstractController
             
         $products = $query->getResult();
 
-        return $this->render('presupuestos/index.html.twig', [
-    
+        return $this->render('presupuestos/finalizados.html.twig', [
             'presupuestos' => $query->getResult(),
-//            'presupuestos' => $presupuestosRepository->findBy([], ['id' => 'DESC']),
             'estados' => $estados,
         ]);
     }    
@@ -421,14 +420,22 @@ class PresupuestosController extends AbstractController
      */
     public function generar(Request $request, string $precios, Presupuestos $presupuesto, string $tipo): Response
     {
-        $total = $presupuesto->getImportetotPe() + $presupuesto->getImportemanoobra();
+       
+
+        $cestauser = new CestaUser($this->em);
+        // Producto y cantidad a añadir
+        $subtotal = $cestauser->getImporteTot($presupuesto->getTicket()->getId());
+        $total = $subtotal + $presupuesto->getImportemanoobra();
+
         $financiacion = new FinanciacionClass($total, 12);
 
         return $this->render('presupuestos/generar.html.twig', [
             'presupuesto' => $presupuesto,
             'precios' => $precios,
             'tipo' => $tipo,
-            'financiacion' => $financiacion
+            'financiacion' => $financiacion,
+            'total' => $total,
+            'subtotal' => $subtotal
         ]);
     }
 
@@ -556,9 +563,9 @@ class PresupuestosController extends AbstractController
         $this->em->persist($presupuesto);
         $this->em->flush();
 
-     /*   $economic = new EconomicoPresu($this->em);
+        $economic = new EconomicoPresu($this->em);
 
-        $economic->iniciarPresu($presupuesto->getimportemanoobra(),$presupuesto);*/
+        $economic->iniciarPresu($presupuesto->getimportemanoobra(),$presupuesto);
 
         // Creamos un pago con lo que llegue en la señal
         $generarPago = New GenerarPago($this->em);

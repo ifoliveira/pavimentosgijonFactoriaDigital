@@ -23,12 +23,8 @@ class ForecastType extends AbstractType
                 'label' => 'Fecha del movimiento'))
             ->add('importeFr',null ,  array(
                 'label' => 'Importe' ))
-            ->add('estadoFr',null ,  array(
-                'label' => 'Estado P / C' ))
             ->add('origenFr',null ,  array(
                 'label' => 'Efectivo  / Banco' ))
-            ->add('fijovarFr' ,null ,  array(
-                'label' => 'Fijo o variable' ))
             ->add('tipoFr',null ,  array(
                 'label' => 'Tipo ' ))
         ;

@@ -55,6 +55,11 @@ class Economicpresu
     private $bancoEco;
 
     /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $timestamp;
+
+    /**
      * __clone
      * @return void
      */
@@ -149,6 +154,18 @@ class Economicpresu
     public function setBancoEco(?Banco $bancoEco): self
     {
         $this->bancoEco = $bancoEco;
+
+        return $this;
+    }
+
+    public function getTimestamp(): ?\DateTimeInterface
+    {
+        return $this->timestamp;
+    }
+
+    public function setTimestamp(?\DateTimeInterface $timestamp): self
+    {
+        $this->timestamp = $timestamp;
 
         return $this;
     }

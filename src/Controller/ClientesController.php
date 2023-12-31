@@ -66,10 +66,6 @@ class ClientesController extends AbstractController
 
             $manoobra = new ManoObraClass($entityManager);
             $manoobra->IniciarPresupuesto($presupuesto);
-
-            $economic = new EconomicoPresu($entityManager);
-            $economic->iniciarPresu(0,$presupuesto);            
-          
     
 
             $micarpeta =  $this->getParameter("presupuestoDir") . '/' . $cliente->getNombreCl() . ' ' . $presupuesto->getFechainiPe()->format('Y-m-d') .'/fotos';

@@ -51,6 +51,23 @@ class DetallecestaRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    public function beneficioTotal()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT sum(pvp_dc * cantidad_dc) as pvp, sum(precio_dc * cantidad_dc) as precio FROM detallecesta a inner Join cestas p
+        ON cesta_dc_id = p.id
+        WHERE YEAR(timestamp_dc) = YEAR(CURDATE())
+          AND precio_dc <> 0
+          AND estado_cs <> 11;
+            ';
+
+        // returns an array of arrays (i.e. a raw data set)
+        return $conn->fetchAssociative($sql);
+
+    }       
+
     // /**
     //  * @return Detallecesta[] Returns an array of Detallecesta objects
     //  */

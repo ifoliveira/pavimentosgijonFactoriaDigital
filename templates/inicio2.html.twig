@@ -1106,7 +1106,14 @@
                 </ul>
               </li>
               <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i data-feather="credit-card" class=" "></i><span class="hide-menu">Contabilidad</span></a>
+
                   <ul aria-expanded="false" class="collapse first-level">
+
+                      <a href="{{ path('admin_contabilidad')}}" class="sidebar-link">
+                              <i class="mdi  mdi-book-open-page-variant"></i>
+                              <span class="hide-menu">Resumen Económico</span>
+                      </a>
+
                       <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-bank"></i><span class="hide-menu">Banco</span></a>
                           <ul aria-expanded="false" class="collapse second-level">
                               <li class="sidebar-item"><a href="{{ path('linkbanco') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Insertar</span></a></li>
@@ -1127,7 +1134,7 @@
                               <li class="sidebar-item"><a href="{{ path('forecast_consulta') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu">Consultar</span></a></li>
                           </ul>
                       </li>
-                    </ul>
+                   </ul>
               </li>
 
               <li class="sidebar-item">
@@ -1220,15 +1227,15 @@
                   <hr />
                   <table class="table table-borderless">
                     <tr>
-                        <td><i class="{{ weathericon[1][1] }}"></i>  {{ "now" | date_modify("+1 day") | format_datetime(locale='es') | date('l')  }}</td>
+                        <td><i class="{{ weathericon[1][1] }}"></i>  {{ "now" | date_modify("+1 day") | format_datetime(locale='es')  }}</td>
                         <td class="text-right font-weight-medium">{{ (weathericon[1][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
                     </tr>
                     <tr>
-                        <td><i class="{{ weathericon[2][1] }}"></i>  {{ "now" | date_modify("+2 day") | format_datetime(locale='es') | date('l')  }}</td>
+                        <td><i class="{{ weathericon[2][1] }}"></i>  {{ "now" | date_modify("+2 day") | format_datetime(locale='es')  }}</td>
                         <td class="text-right font-weight-medium">{{ (weathericon[2][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
                     </tr>
                     <tr>
-                        <td><i class="{{ weathericon[3][1] }}"></i>  {{ "now" | date_modify("+3 day") | format_datetime(locale='es') | date('l')  }}</td>
+                        <td><i class="{{ weathericon[3][1] }}"></i> {{ "now" | date_modify("+3 day") | format_datetime(locale='es')   }} </td>
                         <td class="text-right font-weight-medium">{{ (weathericon[3][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
                     </tr>
                   </table>

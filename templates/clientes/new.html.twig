@@ -43,7 +43,7 @@
                                                 {{ form_help(form.nombreCl) }}
                                             </div>
                                         </div>
-                                        <div class="col-sm-12 col-md-8">
+                                        <div class="col-sm-12 col-md-6">
                                             <div id="apellidos">
                                                     {{ form_label(form.apellidosCl, null, {label_attr: { class: 'control-label col-form-label col-sm-6'}})}}
                                                     {{ form_errors(form.apellidosCl) }}
@@ -51,6 +51,15 @@
                                                     {{ form_help(form.apellidosCl) }}
                                             </div>
                                         </div>
+
+                                        <div class="col-sm-12 col-md-2">
+                                            <div id="dni">
+                                                    {{ form_label(form.dni, null, {label_attr: { class: 'control-label col-form-label col-sm-6'}})}}
+                                                    {{ form_errors(form.dni) }}
+                                                    {{ form_widget(form.dni, {'attr':{'class': 'typeahead form-control', 'placeholder':'D.N.I.'}} )}}
+                                                    {{ form_help(form.dni) }}
+                                            </div>
+                                        </div>                                        
                                     </div>
 
                                     <div class="row">

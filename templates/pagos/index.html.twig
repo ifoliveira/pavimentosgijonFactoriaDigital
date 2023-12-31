@@ -29,6 +29,8 @@
                                                 {% set bancoshuerfanos = [] %}
                                                 {% for banco in bancos %}
                                                         {% set bancoshuerfanos = [{"id" : banco.id, "text" :  banco.fechaBn|date('Y-m-d')  ~ ' Importe : ' ~  banco.importeBn|format_currency('EUR', locale='es')  }]|merge(bancoshuerfanos) %}
+                                                {% else %}
+                                                        {% set bancoshuerfanos = [{"id" : 1, "text" :  "Sin movimientos que conciliar"}] %}                                                
                                                 {% endfor %}                                                 
 
                                                 {% for pago in pagos %}
@@ -51,12 +53,13 @@
                                                     </tr>
                                                 {% else %}
                                                     <tr>
+                                                        {% set pagoshuerfanos = [{"id" : 1, "text" :  "No hay pagos para conciliar"  }] %}                                                    
                                                         <td colspan="7">no records found</td>
                                                     </tr>
                                                 {% endfor %}
                                                 <div data-entry-info='{{pagoshuerfanos ? pagoshuerfanos|json_encode|raw : null }}'>
                                                 <div data-entry-info2='{{bancoshuerfanos ? bancoshuerfanos|json_encode|raw : null }}'>
-                                                   
+                        
                                             </tbody>
                                     </table>
                                 </div>

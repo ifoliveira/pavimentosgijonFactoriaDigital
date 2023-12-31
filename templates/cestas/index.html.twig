@@ -49,16 +49,16 @@
                                                     </td>
                                                     <td>{{ cestar.timestampCs ? cestar.timestampCs|date('Y-m-d H:i:s') : '' }}</td>
                                                     <td>
-                                                        <a class="text-inverse pr-2" data-toggle="tooltip" title="Añadir Pago" name="cerrar_senal" id="{{ cestar.id }}" data-url="{{ path("cestas_finalizar", {'id': cestar.id}) }}">
+                                                        <a class="text-inverse pr-2" data-toggle="tooltip" title="Añadir Pago" name="cerrar_senal" id="{{ cestar.id }}" data-importe ="{{(cestar.importeTotCs - pagado)}}" data-url="{{ path("cestas_finalizar", {'id': cestar.id}) }}">
                                                             <i class="ti-money"></i>                                                        
                                                         </a>
                                                         <a href="{{ path('cesta_tipopago', {'id': cestar.id}) }}" class="text-inverse pr-2"
                                                                 data-toggle="tooltip" title="Cambiar tipo pago">
                                                                 <i class="ti-exchange-vertical"></i>
                                                         </a> 
-                                                        <i class="text-inverse pr-2" data-toggle="tooltip" title="Borrar cesta" name="delete_detalle" id="{{ cestar.id }}">
+                                                        <a class="text-inverse pr-2" data-toggle="tooltip" title="Borrar cesta" name="delete_detalle" id="{{ cestar.id }}">
                                                                 <i class="ti-trash"></i>
-                                                        </i> 
+                                                        </a> 
                                                         {% for detalle in cestar.getdetallecesta|slice(0, 1) %}
                                                             <a href="{{ path('detallecesta_show', {'id': detalle.getId}) }}" class="text-inverse pr-2"
                                                                     data-toggle="tooltip" title="Ver ticket">
@@ -158,6 +158,8 @@
                         </div>
                     </div>
                 </div>
+
+           
     
                 <!-- ============================================================== -->
                 <!-- End PAge Content -->
@@ -204,7 +206,7 @@
         ****************************************/
         $('#default_order2').DataTable({
             "order": [
-                [1, "desc"],[7,"desc"]
+                [1, "desc"],[6,"desc"]
             ]
         });
 
@@ -212,7 +214,7 @@
         *      Eliminar un cesta                *
         *****************************************/
 
-        $(document).on('click', 'i[name="delete_detalle"]' , async function(event) {
+        $(document).on('click', 'a[name="delete_detalle"]' , async function(event) {
             let id = this.id;
                 console.log (id);
 
@@ -303,9 +305,10 @@
         $(document).on('click', 'a[name="cerrar_senal"]' ,async function(event) {
 
             let url = this.dataset.url;
-            console.log(url);
+            let importe = this.dataset.importe;
+
          // Datos de la fila seleccionada en la lista de productos
-            const inputValue = 1
+            const inputValue = importe;
             const inputStep = 1
 
          // Pop up importe a abonar

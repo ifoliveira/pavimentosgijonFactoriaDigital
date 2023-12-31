@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Encuesta index{% endblock %}
+
+{% block body %}
+    <h1>Encuesta index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>P1</th>
+                <th>P2</th>
+                <th>P3</th>
+                <th>P4</th>
+                <th>P5</th>
+                <th>P6</th>
+                <th>P7</th>
+                <th>P8</th>
+                <th>P9</th>
+                <th>P10</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for encuestum in encuestas %}
+            <tr>
+                <td>{{ encuestum.id }}</td>
+                <td>{{ encuestum.fecha ? encuestum.fecha|date('Y-m-d') : '' }}</td>
+                <td>{{ encuestum.cliente }}</td>
+                <td>{{ encuestum.p1 }}</td>
+                <td>{{ encuestum.p2 }}</td>
+                <td>{{ encuestum.p3 }}</td>
+                <td>{{ encuestum.p4 }}</td>
+                <td>{{ encuestum.p5 }}</td>
+                <td>{{ encuestum.p6 }}</td>
+                <td>{{ encuestum.p7 }}</td>
+                <td>{{ encuestum.p8 }}</td>
+                <td>{{ encuestum.p9 }}</td>
+                <td>{{ encuestum.p10 }}</td>
+                <td>
+                    <a href="{{ path('app_encuesta_show', {'id': encuestum.id}) }}">show</a>
+                    <a href="{{ path('app_encuesta_edit', {'id': encuestum.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="14">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_encuesta_new') }}">Create new</a>
+{% endblock %}

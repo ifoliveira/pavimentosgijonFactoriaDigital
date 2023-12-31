@@ -26,20 +26,16 @@ class BancoRepository extends ServiceEntityRepository
 
     public function totalBanco()
       {
-            
-
         $conn = $this->getEntityManager()->getConnection();
 
-        $sql = '
-            SELECT sum(importe_bn), max(fecha_bn) FROM banco p
-            ';
+        $sql = 'SELECT sum(importe_bn), max(fecha_bn) FROM banco p';
         $stmt = $conn->prepare($sql);
         $stmt->executeQuery();
 
         // returns an array of arrays (i.e. a raw data set)
         return $conn->fetchAssociative('SELECT sum(importe_bn), max(fecha_bn) FROM banco p');
         
-    }
+      }
 
     public function ventamesBanco()
     {
@@ -52,8 +48,6 @@ class BancoRepository extends ServiceEntityRepository
         GROUP BY YEAR(fecha_bn) , MONTH(fecha_bn);
             ';
      
-//'        $stmt = $conn->prepare($sql);
-//        $stmt->execute();
         // returns an array of arrays (i.e. a raw data set)
         return $conn->fetchAllAssociative($sql);
 
@@ -76,6 +70,21 @@ class BancoRepository extends ServiceEntityRepository
         return $conn->fetchAssociative($sql);
 
     }
+
+    public function ventasBanco()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT sum(importe_bn) as importe FROM banco p
+        WHERE categoria_bn = 3
+          AND YEAR(fecha_bn) = YEAR(CURDATE());
+            ';
+
+        // returns an array of arrays (i.e. a raw data set)
+        return $conn->fetchAssociative($sql);
+
+    }    
 
     public function fechamaxima()
     {
