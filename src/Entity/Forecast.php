@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ForecastRepository;
 use Doctrine\ORM\Mapping as ORM;
+USE App\Entity\Banco;
 
 /**
  * @ORM\Entity(repositoryClass=ForecastRepository::class)
@@ -52,6 +53,25 @@ class Forecast
      * @ORM\Column(type="string", length=10)
      */
     private $estadoFr;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=banco::class)
+     */
+    private $banco;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $timestamp;
+
+    public function __construct()
+    {
+        $this->setEstadoFr('P');
+        $this->setTimestamp(new \DateTime());
+        $this->setFijovarFr('V');
+
+    }
+
 
     public function getId(): ?int
     {
@@ -138,6 +158,30 @@ class Forecast
     public function setEstadoFr(string $estadoFr): self
     {
         $this->estadoFr = $estadoFr;
+
+        return $this;
+    }
+
+    public function getBanco(): ?banco
+    {
+        return $this->banco;
+    }
+
+    public function setBanco(?banco $banco): self
+    {
+        $this->banco = $banco;
+
+        return $this;
+    }
+
+    public function getTimestamp(): ?\DateTimeInterface
+    {
+        return $this->timestamp;
+    }
+
+    public function setTimestamp(?\DateTimeInterface $timestamp): self
+    {
+        $this->timestamp = $timestamp;
 
         return $this;
     }

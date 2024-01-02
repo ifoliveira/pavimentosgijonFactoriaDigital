@@ -42,8 +42,10 @@
 
 # Build data
 /build/
+/public_html/Tickets/.*
+/public_html/Nordigen/.*
 /public_html/Tickets/
-/public_html/Nordigen
+/public_html/Nordigen/
 
 # Composer PHAR
 /composer.phar
@@ -64,6 +66,7 @@
 .spa*
 /access*
 /logs/*
+!/templates/logs/
 /etc/*
 error*
 /mail/*

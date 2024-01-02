@@ -1,10 +1,40 @@
-{% extends 'pages.html.twig' %}
+{% extends 'inicio2.html.twig' %}
+{% block eltiempo %} {% endblock %}
 {% form_theme form 'fields.html.twig' %}
 {% block title %}New Forecast{% endblock %}
 {% block cabecera %} Forecast {% endblock %}
 {% block breadcrumb %}
-<li class="breadcrumb-item">Forecast</li> 
-<li class="breadcrumb-item active">Nuevo</li>
+    <li class="breadcrumb-item"><a href="{{ path("forecast_consulta") }}">Forecast</a></li>
+    <li class="breadcrumb-item active">Nuevo</li>
 {% endblock %}
-{% block tablas %}{% endblock %}
+{% block cardbody1 %}
+                <!-- ============================================================== -->
+                <!-- End Bread crumb and right sidebar toggle -->
+                <!-- ============================================================== -->
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+                <!-- row -->
+                    <div class="card-body">
+
+                    <div class="col-sm-12 col-lg-6">
+                        <div class="card">
+                            {{ form_start(form) }}
+                                
+                                    <div class="card-body">
+                                    <h6 class="card-subtitle"></code></h6>
+                                    <div class="action-form">
+                                        <div class="form-group mb-0 text-left">
+                                            <button type="submit"  class="btn btn-info waves-effect waves-light">{{ button_label|default('Save') }}</button>
+                                        </div>
+                                    </div>
+                                    <hr>
+                               
+                            {{ form_end(form) }}
+                                 </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End row -->
+{% endblock %}
 

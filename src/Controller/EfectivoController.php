@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * @Route("/admin/efectivo")
@@ -94,4 +95,32 @@ class EfectivoController extends AbstractController
 
         return $this->redirectToRoute('efectivo_index');
     }
+
+    /**
+     * @Route("/delete/fila", name="efectivo_delete_ajax", methods={"GET","POST"})
+     */
+    public function deleteajax(Request $request): JsonResponse
+    {
+        // Funcion para borrar registro de producto de una efectivo determinada
+        // Obtener ID del cesta
+        $datos = $request->query->get('id');
+
+        // get EntityManager
+        $em = $this->getDoctrine()->getManager();
+        // Obtener cesta
+        $efectivo = $em->getRepository('App\Entity\Efectivo')->find($datos);
+        if (is_object($efectivo)){
+        // Borrado del detalle
+            
+            $em->remove($efectivo);
+            $em->flush();
+
+        }
+
+
+        $response = new JsonResponse();
+
+        return $response;
+
+    }     
 }

@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\EfectivoRepository;
 use App\Repository\TiposmovimientoRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use app\Entity\Tiposmovimiento;
 
@@ -44,6 +46,22 @@ class Efectivo
      * @ORM\Column(type="datetime")
      */
     private $timestampEf;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="efectivos", cascade={"persist","remove"})
+     */
+    private $presupuestoef;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Pagos::class, mappedBy="efectivoPg" , cascade={"persist","remove"})
+     */
+    private $pagos;
+
+
+    public function __toString()
+    {
+        return strval($this->id);
+    }    
 
     public function getId(): ?int
     {
@@ -113,5 +131,48 @@ class Efectivo
     public function __construct()
     {
       $this->timestampEf = new \DateTime();
+      $this->pagos = new ArrayCollection();
+    }
+
+    public function getPresupuestoef(): ?presupuestos
+    {
+        return $this->presupuestoef;
+    }
+
+    public function setPresupuestoef(?presupuestos $presupuestoef): self
+    {
+        $this->presupuestoef = $presupuestoef;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Pagos>
+     */
+    public function getPagos(): Collection
+    {
+        return $this->pagos;
+    }
+
+    public function addPago(Pagos $pago): self
+    {
+        if (!$this->pagos->contains($pago)) {
+            $this->pagos[] = $pago;
+            $pago->setEfectivoPg($this);
+        }
+
+        return $this;
+    }
+
+    public function removePago(Pagos $pago): self
+    {
+        if ($this->pagos->removeElement($pago)) {
+            // set the owning side to null (unless already changed)
+            if ($pago->getEfectivoPg() === $this) {
+                $pago->setEfectivoPg(null);
+            }
+        }
+
+        return $this;
     }
 }

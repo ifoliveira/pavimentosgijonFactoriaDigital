@@ -14,7 +14,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
+use App\MisClases\ManoObraClass;
+use App\MisClases\EconomicoPresu;
 
 /**
  * @Route("/admin/clientes")
@@ -62,6 +63,9 @@ class ClientesController extends AbstractController
             $presupuesto->setTicket($cesta);
             $entityManager->persist($presupuesto);
             $entityManager->flush();
+
+            $manoobra = new ManoObraClass($entityManager);
+            $manoobra->IniciarPresupuesto($presupuesto);
     
 
             $micarpeta =  $this->getParameter("presupuestoDir") . '/' . $cliente->getNombreCl() . ' ' . $presupuesto->getFechainiPe()->format('Y-m-d') .'/fotos';

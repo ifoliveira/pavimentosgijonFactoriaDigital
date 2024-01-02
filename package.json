@@ -1,0 +1,31 @@
+{
+  "name": "a",
+  "version": "1.0.0",
+  "description": "Web App Pavimentos Gijón",
+  "main": "index.js",
+  "dependencies": {
+    "gulp": "^4.0.2",
+    "gulp-sass": "^5.1.0"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-npm-dist": "^1.0.4",
+    "gulp-rename": "^2.0.0",
+    "gulp-uglify": "^3.0.2",
+    "sass": "^1.62.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ifoliveira/pavimentosgijonFactoriaDigital.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ifoliveira/pavimentosgijonFactoriaDigital/issues"
+  },
+  "homepage": "https://github.com/ifoliveira/pavimentosgijonFactoriaDigital#readme"
+}

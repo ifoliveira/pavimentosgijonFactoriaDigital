@@ -20,7 +20,7 @@ class Productos
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="text", nullable=true)
      */
     private $descripcion_Pd;
 
@@ -49,6 +49,11 @@ class Productos
      * @ORM\JoinColumn(name="tipo_pd_id", referencedColumnName="id")
      */
     private $tipo_pd_id;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $obsoleto;
 
     public function __construct()
     {
@@ -138,5 +143,17 @@ class Productos
     {
         
         return $this->descripcion_Pd;
+    }
+
+    public function isObsoleto(): ?bool
+    {
+        return $this->obsoleto;
+    }
+
+    public function setObsoleto(?bool $obsoleto): self
+    {
+        $this->obsoleto = $obsoleto;
+
+        return $this;
     }
 }

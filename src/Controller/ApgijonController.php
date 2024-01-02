@@ -57,6 +57,26 @@ class ApgijonController extends AbstractController
         ]);
     }
 
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * @Route("/img-route/{img}", name="img_route")
      * A route with one parameter
@@ -72,22 +92,11 @@ class ApgijonController extends AbstractController
  
         if (file_exists($filename)) {
             //return a new BinaryFileResponse with the file name
-            $entityManager = $this->getDoctrine()->getManager();
-
-            $log = new Logs();
-            $log->setIdLog(1);
-            $log->setFecha(new \DateTime());
-            $log->setDescripcion('Quieren el PDF' . $filename );
-    
-            // tell Doctrine you want to (eventually) save the Product (no queries yet)
-            $entityManager->persist($log);
-    
-            // actually executes the queries (i.e. the INSERT query)
-            $entityManager->flush();
-            return new BinaryFileResponse($filename);
+           return new BinaryFileResponse($filename);
         } else {
             return new JsonResponse(null, 404);
         }
     }
+
 
 }

@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Encuesta{% endblock %}
+
+{% block body %}
+    <h1>Encuesta</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ encuestum.id }}</td>
+            </tr>
+            <tr>
+                <th>Fecha</th>
+                <td>{{ encuestum.fecha ? encuestum.fecha|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Cliente</th>
+                <td>{{ encuestum.cliente }}</td>
+            </tr>
+            <tr>
+                <th>P1</th>
+                <td>{{ encuestum.p1 }}</td>
+            </tr>
+            <tr>
+                <th>P2</th>
+                <td>{{ encuestum.p2 }}</td>
+            </tr>
+            <tr>
+                <th>P3</th>
+                <td>{{ encuestum.p3 }}</td>
+            </tr>
+            <tr>
+                <th>P4</th>
+                <td>{{ encuestum.p4 }}</td>
+            </tr>
+            <tr>
+                <th>P5</th>
+                <td>{{ encuestum.p5 }}</td>
+            </tr>
+            <tr>
+                <th>P6</th>
+                <td>{{ encuestum.p6 }}</td>
+            </tr>
+            <tr>
+                <th>P7</th>
+                <td>{{ encuestum.p7 }}</td>
+            </tr>
+            <tr>
+                <th>P8</th>
+                <td>{{ encuestum.p8 }}</td>
+            </tr>
+            <tr>
+                <th>P9</th>
+                <td>{{ encuestum.p9 }}</td>
+            </tr>
+            <tr>
+                <th>P10</th>
+                <td>{{ encuestum.p10 }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_encuesta_index') }}">back to list</a>
+
+    <a href="{{ path('app_encuesta_edit', {'id': encuestum.id}) }}">edit</a>
+
+    {{ include('encuesta/_delete_form.html.twig') }}
+{% endblock %}

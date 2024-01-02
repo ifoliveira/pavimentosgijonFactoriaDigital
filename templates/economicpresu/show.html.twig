@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Economicpresu{% endblock %}
+
+{% block body %}
+    <h1>Economicpresu</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ economicpresu.id }}</td>
+            </tr>
+            <tr>
+                <th>ConceptoEco</th>
+                <td>{{ economicpresu.conceptoEco }}</td>
+            </tr>
+            <tr>
+                <th>ImporteEco</th>
+                <td>{{ economicpresu.importeEco }}</td>
+            </tr>
+            <tr>
+                <th>DebehaberEco</th>
+                <td>{{ economicpresu.debehaberEco }}</td>
+            </tr>
+            <tr>
+                <th>AplicaEco</th>
+                <td>{{ economicpresu.aplicaEco }}</td>
+            </tr>
+            <tr>
+                <th>EstadoEco</th>
+                <td>{{ economicpresu.estadoEco }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_economicpresu_index') }}">back to list</a>
+
+    <a href="{{ path('app_economicpresu_edit', {'id': economicpresu.id}) }}">edit</a>
+
+    {{ include('economicpresu/_delete_form.html.twig') }}
+{% endblock %}

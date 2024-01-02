@@ -33,12 +33,12 @@ class Presupuestos
     private $userPe;
 
     /**
-     * @ORM\Column(type="date")
+     * @ORM\Column(type="date", nullable=true)
      */
     private $fechainiPe;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="float", nullable=true)
      */
     private $costetotPe;
 
@@ -53,28 +53,23 @@ class Presupuestos
     private $descuaetoPe;
 
     /**
-     * @ORM\Column(type="string", length=20)
+     * @ORM\Column(type="string", length=20, nullable=true)
      */
     private $tipopagototPE;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="float", nullable=true)
      */
     private $importesnalPe;
 
     /**
-     * @ORM\Column(type="string", length=20)
+     * @ORM\Column(type="string", length=20, nullable=true)
      */
     private $tipopagosnalPe;
-   
-     /**
-     * @ORM\Column(type="string", length=20)
-     */
-    private $ticketsnalId;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\Cestas", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\OneToOne(targetEntity="App\Entity\Cestas",orphanRemoval=true, cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
      */
     private $ticket;
 
@@ -90,12 +85,12 @@ class Presupuestos
     private $clientePe;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
      */
     private $timestampModPe;
 
     /**
-     * @ORM\OneToMany(targetEntity=ManoObra::class, mappedBy="presupuestoMo", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=ManoObra::class, mappedBy="presupuestoMo", cascade={"persist","remove"}, orphanRemoval=true)
      * @ORM\OrderBy({"presupuestoMo" = "ASC","categoriaMo" = "ASC"})
      */
     private $manoObra;
@@ -106,9 +101,26 @@ class Presupuestos
     private $importemanoobra;
 
     /**
-     * @ORM\OneToMany(targetEntity=Cestas::class, mappedBy="prespuestoCs")
+     * @ORM\OneToMany(targetEntity=Cestas::class, mappedBy="prespuestoCs", cascade={"persist","remove"}, orphanRemoval=true)
+     * @ORM\JoinColumn(name="ticket_id", referencedColumnName="id", onDelete="SET NULL")
      */
     private $cestas;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Economicpresu::class, mappedBy="idpresuEco", orphanRemoval=true, cascade={"persist","remove"})
+     * @ORM\OrderBy({"estadoEco" = "ASC"})
+     */
+    private $economicpresus;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Efectivo::class, mappedBy="presupuestoef" , orphanRemoval=true, cascade={"persist","remove"})
+     */
+    private $efectivos;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $impmanoobraPagado;
 
     public function __construct()
     {
@@ -121,6 +133,8 @@ class Presupuestos
         $this->setImportetotPe(0);
         $this->manoObra = new ArrayCollection();
         $this->cestas = new ArrayCollection();
+        $this->economicpresus = new ArrayCollection();
+        $this->efectivos = new ArrayCollection();
 
     }
 
@@ -358,6 +372,78 @@ class Presupuestos
                 $cesta->setPrespuestoCs(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Economicpresu>
+     */
+    public function getEconomicpresus(): Collection
+    {
+        return $this->economicpresus;
+    }
+
+    public function addEconomicpresu(Economicpresu $economicpresu): self
+    {
+        if (!$this->economicpresus->contains($economicpresu)) {
+            $this->economicpresus[] = $economicpresu;
+            $economicpresu->setIdpresuEco($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEconomicpresu(Economicpresu $economicpresu): self
+    {
+        if ($this->economicpresus->removeElement($economicpresu)) {
+            // set the owning side to null (unless already changed)
+            if ($economicpresu->getIdpresuEco() === $this) {
+                $economicpresu->setIdpresuEco(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Efectivo>
+     */
+    public function getEfectivos(): Collection
+    {
+        return $this->efectivos;
+    }
+
+    public function addEfectivo(Efectivo $efectivo): self
+    {
+        if (!$this->efectivos->contains($efectivo)) {
+            $this->efectivos[] = $efectivo;
+            $efectivo->setPresupuestoef($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEfectivo(Efectivo $efectivo): self
+    {
+        if ($this->efectivos->removeElement($efectivo)) {
+            // set the owning side to null (unless already changed)
+            if ($efectivo->getPresupuestoef() === $this) {
+                $efectivo->setPresupuestoef(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getImpmanoobraPagado(): ?float
+    {
+        return $this->impmanoobraPagado;
+    }
+
+    public function setImpmanoobraPagado(?float $impmanoobraPagado): self
+    {
+        $this->impmanoobraPagado = $impmanoobraPagado;
 
         return $this;
     }

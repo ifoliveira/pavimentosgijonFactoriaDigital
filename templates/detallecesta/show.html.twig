@@ -56,8 +56,8 @@
                                                     <td class="text-center">{{ numero }}</td>
                                                     <td>{{ detalle.productoDc.getDescripcionPd }}</td>
                                                     <td class="text-right">{{ detalle.cantidadDc }}</td>
-                                                    <td class="text-right"> {{ detalle.pvpDc }} </td>
-                                                    <td class="text-right"> {{ detalle.pvpDc * detalle.cantidadDc }} </td>
+                                                    <td class="text-right"> {{ detalle.pvpDc|format_currency('EUR', locale='es') }} </td>
+                                                    <td class="text-right"> {{ (detalle.pvpDc * detalle.cantidadDc) |format_currency('EUR', locale='es')}} </td>
                                                 </tr>
                                                 {% set total = (detalle.pvpDc * detalle.cantidadDc) + total  %}
                                             {% endfor %}
@@ -70,7 +70,7 @@
                                       <!--    <p>Sub - Total amount: 0</p>
                                         <p>vat (10%) : 0 </p>
                                         <hr>-->
-                                        <h3><b>Total :</b> {{ total }} €</h3>
+                                        <h3><b>Total :</b> {{ total|format_currency('EUR', locale='es') }} </h3>
                                     </div>
                                     <div class="clearfix"></div>
                                     <hr>

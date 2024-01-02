@@ -5,19 +5,24 @@ namespace App\Controller;
 use App\MisClases\CestaUser;
 use App\Entity\Cestas;
 use App\Entity\Detallecesta;
+use App\Entity\Efectivo;
+use App\Entity\Pagos;
 use App\Form\CestasType;
 use App\Repository\CestasRepository;
 use App\Repository\EstadocestasRepository;
+use App\Repository\BancoRepository;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\EscposImage;
-use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 use App\MisClases\item;
+use App\Repository\TiposmovimientoRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
+use App\MisClases\GenerarPago;
 // Incluir los espacios de nombres requeridos por Dompdf
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -27,14 +32,24 @@ use Dompdf\Options;
  */
 class CestasController extends AbstractController
 {
+
+    protected $em;
+
+    public function __construct( EntityManagerInterface $em )
+    {
+        $this->em = $em;
+    }
+
     /**
      * @Route("/", name="cestas_index", methods={"GET"})
      */
     public function index(CestasRepository $cestasRepository): Response
     {
+        $ticketspendientes = $cestasRepository->ticketssnal();
+
         return $this->render('cestas/index.html.twig', [
             'cestas' => $cestasRepository->ticketshoy(),
-            'cestasnal'=> $cestasRepository->ticketssnal(),
+            'cestasnal'=> $ticketspendientes,
         ]);
     }
 
@@ -48,9 +63,8 @@ class CestasController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($cesta);
-            $entityManager->flush();
+            $this->em->persist($cesta);
+            $this->em->flush();
 
             return $this->redirectToRoute('cestas_index');
         }
@@ -80,7 +94,7 @@ class CestasController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('cestas_index');
         }
@@ -97,9 +111,9 @@ class CestasController extends AbstractController
     public function delete(Request $request, Cestas $cesta): Response
     {
         if ($this->isCsrfTokenValid('delete'.$cesta->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($cesta);
-            $entityManager->flush();
+
+            $this->em->remove($cesta);
+            $this->em->flush();
         }
 
         return $this->redirectToRoute('cestas_index');
@@ -113,20 +127,16 @@ class CestasController extends AbstractController
         // Funcion para borrar registro de producto de una cesta determinada
         // Obtener ID del cesta
         $datos = $request->query->get('id');
-        // get EntityManager
-        $em = $this->getDoctrine()->getManager();
         // Obtener cesta
-        $cesta = $em->getRepository('App\Entity\Cestas')->find($datos);
+        $cesta = $this->em->getRepository('App\Entity\Cestas')->find($datos);
 
         // Borrado del detalle
-        $em->remove($cesta);
-        $em->flush();
+        $this->em->remove($cesta);
+        $this->em->flush();
 
         $response = new JsonResponse();
 
         return $response;
-
-
 
     }  
 
@@ -291,10 +301,12 @@ class CestasController extends AbstractController
      */
     public function imprimir(Request $request, Cestas $cesta): jsonResponse
     {
-        // get EntityManager
-        $em = $this->getDoctrine()->getManager();
-        $cestauser = new CestaUser($em);
 
+        // get EntityManager
+       
+        $cestauser = new CestaUser($this->em);
+
+ 
         // valores de data ajax
         $tipopago = $request->query->get('tipopago');
         $importe = ('SI' == $request->query->get('espresu')) ? $request->query->get('importe') : $cestauser->getImporteTot($cesta->getId());
@@ -350,72 +362,11 @@ class CestasController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/senal", name="cesta_senal", methods={"GET","POST"})
-     */
-    public function cestasenal(Request $request, Cestas $cesta, CestasRepository $cestasRepository): Response
-    {
- 
-        // Funcion encargada de duplicar la cesta en cuanto a productos para cerrar compra con señal
-        $entityManager = $this->getDoctrine()->getManager();
-
-        
-        // Creamos objeto detalle de cesta, con el usuario conectado y los metodos de CestaUser
-        $user = $this->getUser();
-        $tienecesta = $cestasRepository->findBy(
-            ['userCs' => $user->getId(),
-            'estadoCs' => '1'],
-        );
-
-        if (!$tienecesta){ 
-            $cestaini = new Cestas();
-            $cestaini->setUserCs($user->getId()); 
-            $entityManager->persist($cestaini);
-            $entityManager->flush();
-        };
-
-        $tienecesta = $cestasRepository->findBy(
-            ['userCs' => $user->getId(),
-            'estadoCs' => '1'],
-        );
-
-        $detalles = $cesta->getdetallecesta();
-        foreach ($cesta->getdetallecesta() as $detalles){
-           
-            $detcesta = new Detallecesta;
-            $detcesta->setCestaDc($tienecesta[0]);
-            $detcesta->setproductoDc($detalles->getproductoDc());
-            $detcesta->setCantidadDc($detalles->getCantidadDc());
-            $detcesta->setPrecioDc($detalles->getPrecioDc());
-            $detcesta->setpvpDc($detalles->getpvpDc()); 
-            $detcesta->setTextoDc($detalles->getTextoDc()); 
-            
-            // Insertamos en la tabla el detalle
-            $entityManager->persist($detcesta);
-            
-         }
-
-         var_dump($cesta->getDescuentoCs());
-         $tienecesta[0]->setImporteTotCs($cesta->getDescuentoCs());
-         $tienecesta[0]->setDescuentoCs($cesta->getImporteTotCs());
-         $entityManager->persist($tienecesta[0]);
-
-
-         $cesta->setEstadoCs(2);
-         $entityManager->persist($cesta);
-
-         $entityManager->flush();
-         return $this->redirectToRoute('cestas_show', array ('id' => $tienecesta[0]->getId()));
-
-    }  
-
-    /**
      * @Route("/{id}/tipopago", name="cesta_tipopago", methods={"GET","POST"})
      */
     public function cestatipopago(Request $request, Cestas $cesta,CestasRepository $cestasRepository): Response
     {
  
-        // Funcion encargada de invertir el tipo de pago
-        $entityManager = $this->getDoctrine()->getManager();
 
         if($cesta->getTipopagoCs() == 'Tarjeta') {
 
@@ -425,8 +376,8 @@ class CestasController extends AbstractController
             $cesta->setTipopagoCs('Tarjeta');
         }
 
-         $entityManager->persist($cesta);
-         $entityManager->flush();
+        $this->em->persist($cesta);
+        $this->em->flush();
 
          return $this->redirectToRoute('cestas_index');
 
@@ -436,45 +387,67 @@ class CestasController extends AbstractController
     /**
      * @Route("/{id}/finalizar", name="cestas_finalizar")
      */
-    public function finalizar(Request $request, Cestas $cestas, CestasRepository $cestasRepository,EstadocestasRepository $estadocestasRepository): Response
+    public function finalizar(Request $request, Cestas $cestas, TiposmovimientoRepository $tiposmovimientoRepository): Response
     {   
 
         $tipopago = $request->query->get('tipopago');
         $numticket = $request->query->get('numticket'); 
         $importetot = $request->query->get('importe'); 
         $importesnal = $request->query->get('importesnal'); 
-     
-        // Cambiamos el estado de la cesta del presupuesto para que sea actual
+        $pagado = $importesnal;
 
-        $entityManager = $this->getDoctrine()->getManager();
+     // Cambiamos el estado de la cesta del presupuesto para que sea actual
 
-        $cestas->setEstadoCs(2);
+        // Si el importe abonado (señal) es 0 el ticket no pendiente 
+        if ($cestas->getEstadoCs() == 1) {
+            if ($importesnal == 0) {
+                $cestas->setEstadoCs(2);
+            } else {
+                $cestas->setEstadoCs(3);
+            }
 
-
-        if (floatval($cestas->getDescuentoCs() == 0)) {
             $cestas->setImporteTotCs($importetot);
-        }
-        if (floatval($importesnal) != 0) {
-            $cestas->setImporteTotCs($importesnal);
-            $cestas->setDescuentoCs($importetot-$importesnal);
-            $cestas->setEstadoCs(9);
-        }
+            $cestas->setTipopagoCs($tipopago);
+            $cestas->setNumticketCs($numticket);
+            $cestas->setFechaCs(new \DateTime());
+            
 
-        $cestas->setTipopagoCs($tipopago);
-        $cestas->setNumticketCs($numticket);
-        $cestas->setFechaCs(new \DateTime());
+        } else {
+
+            foreach ($cestas->getPagos() as &$valor) {
+                $pagado = $pagado + $valor->getImportePg();
+            }
+
+            if ($pagado == $cestas->getImporteTotCs()) {
+                $cestas->setEstadoCs(2);
+            } 
+        }    
+        
         $cestas->setTimestampCs(new \DateTime());
-        $entityManager->persist($cestas);
-        $entityManager->flush();
+        $this->em->persist($cestas);
 
+        // Creamos un pago con lo que llegue en la señal
+
+
+        $generarPago = New GenerarPago($this->em);
+
+        if ($importesnal == 0) {  
+            $importe = $importetot;
+        } else {
+            $importe = $importesnal;
+        }        
+
+        $generarPago->ticketPagoFinal($cestas, $importe, $tipopago, $tiposmovimientoRepository);
+        
+        $this->em->flush();  
 
         $response = new JsonResponse();
 
         // Envía una respuesta de texto
         return $response->setData("OK");
-      
-
     }
+
+
 
     /**
      * @Route("/{id}/deletelogico", name="delete_logico")
@@ -484,10 +457,10 @@ class CestasController extends AbstractController
     
         // Cambiamos el estado de la cesta del presupuesto para que sea actual
 
-        $entityManager = $this->getDoctrine()->getManager();
+        
         $cestas->setEstadoCs(3);
-        $entityManager->persist($cestas);
-        $entityManager->flush();
+        $this->em->persist($cestas);
+        $this->em->flush();
         $response = new JsonResponse();
 
         // Envía una respuesta de texto
@@ -514,15 +487,51 @@ class CestasController extends AbstractController
         $cesta->setNumticketCs($datos[4]);
         $cesta->setTimestampCs(new \DateTime());
  
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($cesta);
-        $entityManager->flush();
+        $this->em->persist($cesta);
+        $this->em->flush();
 
         $jsonData[0]= $datos;
 
         return new jsonResponse($jsonData); 
 
     }  
+
+    /**
+     * @Route("/conciliar/{id}", name="conciliar_cesta", methods={"GET"})
+     */
+    public function conciliar(Cestas $cesta, BancoRepository $bancoRepository): Response
+    {
+   
+        return $this->render('cestas/conciliar.html.twig', [
+            'cesta' => $cesta,
+            'bancos' => $bancoRepository->findAll(),
+        ]);
+    }    
+    /**
+     * @Route("/{id}/{idbanco}/conciliar", name="cestas_conciliar", methods={"GET","POST"})
+     */
+    public function conciliar_banco(Cestas $cesta, BancoRepository $bancoRepository, int $idbanco): Response
+    {
+        
+        $banco = $bancoRepository->findOneBy(array('id' => $idbanco));
+
+        if ($cesta->getImporteTotCs() != $banco->getImporteBn()){
+
+            $banconuevo = clone $banco;  
+            $banconuevo->setImporteBn($cesta->getImporteTotCs());
+            $importenuevo= $banco->getImporteBn() - $cesta->getImporteTotCs();
+            $banco->setImporteBn($importenuevo);
+
+            $this->em->persist($banconuevo);
+
+        }
+
+          
+
+        $this->em->flush();
+
+        return $this->redirectToRoute('cestas_index');
+    }
 
  
 

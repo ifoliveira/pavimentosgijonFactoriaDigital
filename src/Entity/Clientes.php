@@ -25,22 +25,22 @@ class Clientes
     private $nombreCl;
 
     /**
-     * @ORM\Column(type="string", length=150)
+     * @ORM\Column(type="string", length=150, nullable=true)
      */
     private $apellidosCl;
 
     /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=100, nullable=true)
      */
     private $ciudadCl;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $direccionCl;
 
     /**
-     * @ORM\Column(type="string", length=9)
+     * @ORM\Column(type="string", length=9, nullable=true)
      */
     private $telefono1Cl;
 
@@ -55,7 +55,7 @@ class Clientes
     private $emailCl;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
      */
     private $timestampaltaCl;
 
@@ -63,6 +63,11 @@ class Clientes
      * @ORM\OneToMany(targetEntity=Presupuestos::class, mappedBy="clientePe")
      */
     private $presupuestosCl;
+
+    /**
+     * @ORM\Column(type="string", length=9, nullable=true)
+     */
+    private $dni;
 
     public function __construct()
     {
@@ -172,6 +177,10 @@ class Clientes
         return $this;
     }
 
+    public function __toString()
+    {
+        return $this->getNombreCl() . ' ' . $this->getApellidosCl() ;
+    }
     /**
      * @return Collection|presupuestos[]
      */
@@ -198,6 +207,18 @@ class Clientes
                 $presupuestosCl->setClientePe(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDni(): ?string
+    {
+        return $this->dni;
+    }
+
+    public function setDni(?string $dni): self
+    {
+        $this->dni = $dni;
 
         return $this;
     }

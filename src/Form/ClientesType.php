@@ -27,6 +27,8 @@ class ClientesType extends AbstractType
                 'label' => 'Dirección' ))
             ->add('telefono1Cl',null ,  array(
                 'label' => 'Telefono' ))
+            ->add('dni',null ,  array(
+                    'label' => 'D.N.I.' ))                
             ->add('telefono2Cl')
             ->add('emailCl')
         ;

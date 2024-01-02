@@ -1,0 +1,182 @@
+{% extends 'basePresu.html.twig' %}
+{% block body %}
+
+                {% set total = 0 %}
+                {% set numero = 1 %}
+                                                  
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card card-body printableArea">
+                            <div class="row justify-content-md-center">
+                                    <div class="col-lg-6 justify-content-md-center">
+                                        <img class="rounded mx-auto d-block" src="{{ asset('img/Cabecera-A4.jpg') }}" alt="Cabecera A4">
+                                        <br/>
+                                    </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="pull-left col-6">
+                                    <div class ="row col-6 border-bottom">
+                                        <h1 align="center">{{tipo}}</h1>
+                                    </div>
+                                    <div class ="row col-6  mt-4">
+                                        <div class ="col-lg-4"> 
+                                            <h1 align="center">Total</h1>
+                                            <h1 align="center"> {{ (presupuesto.importetotPe + presupuesto.importemanoobra)|format_currency('EUR', locale='es')  }}</h1>
+                                        </div>
+                                        <div class ="col-lg-4">
+                                        <h1 align="center">Fecha</h1>
+                                        <h2 align="center"> #002300{{ presupuesto.id }}#</h1>
+                                        </div>
+                                        <div class ="col-lg-4">
+                                        <h1 align="center">Número</h1>
+                                        <h2 align="center"> #002300{{ presupuesto.id }}#</h1>
+                                        </div>    
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                                <div class="col-md-6" >
+                                        <address >
+                                            <h4 class="font-bold d-inline-flex p-2" style="background-color: green">{{presupuesto.clientePe.nombreCl}} {{presupuesto.clientePe.apellidosCl}}</h4>
+                                            <p class="text-muted ml-4">{{presupuesto.clientePe.direccionCl}}</p>
+                                            <p class="mt-4"><b>Telefono :</b> <i class="fa fa-phone"></i> {{ presupuesto.clientePe.telefono1Cl }}</p>
+                                            {% if tipo == "PRESUPUESTO" %}
+                                            <p class="mt-4"><b>Fecha :</b> <i class="fa fa-calendar"></i> {{ "now"|date("m/d/Y") }}</p>
+                                            <p class="font-bold">
+                                            
+                                            {% endif %}
+                                            </p>
+                                        </address>
+                                </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="table-responsive mt-5" style="clear: both;">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center" scope="col">#</th>
+                                                    <th scope="col">Descripción</th>
+                                                    <th class="text-right" scope="col">Cantidad</th>
+                                                    <th class="text-right" scope="col">{% if precios == 'S' %}Coste unidad {% endif %}</th>
+                                                    <th class="text-right" scope="col">{% if precios == 'S' %}Total{% endif %}</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                            {% for detalle in presupuesto.ticket.detallecesta %}
+                                                <tr stylw='line-height: 10px'>
+                                                    <td class="text-center">{{ numero }}</td>
+                                                    <td>{{ detalle.productoDc.descripcionPd }}</td>
+                                                    <td class="text-right">{{ detalle.cantidadDc }} </td>
+                                                    <td class="text-right"> {% if precios == 'S' %}{{ detalle.pvpDc  |format_currency('EUR', locale='es')  }}{% endif %} </td>
+                                                    <td class="text-right"> {% if precios == 'S' %}{{ (detalle.cantidadDc * detalle.pvpDc ) |format_currency('EUR', locale='es')  }}{% endif %}</td>
+
+                                                    {% set total = (detalle.cantidadDc * detalle.pvpDc) + total %}  
+                                                    {% set numero = numero + 1 %} 
+                                                </tr>
+                                             {% else %}
+                                                 <tr>
+                                                     <td colspan="8">no records found</td>
+                                                 </tr>
+                                             {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="pull-right mt-4 text-right">
+                                        <!-- <p>Sub - Total : {{ (total) |format_currency('EUR', locale='es')  }}</p>
+                                         <hr>-->
+                                        <p><h2><b>Materiales</b> I.V.A. Incluido : {{ (total) |format_currency('EUR', locale='es')  }}</h2>
+                                    </div>
+
+                                    <div class="clearfix"></div>
+
+                                </div>
+                            </div>
+                            <div class="row">
+                                {% if tipo == "FACTURA SIMPLIFICADA" %}
+                
+                                <div class="col-md-12">
+                                    <table class="table table-hover">
+                                          <thead>
+                                                <tr>
+                                                    <th ></th>
+                                                    <th >Fecha</th>
+                                                    <th >Adelanto</th>
+                                                    <th >Total</th>
+                                                    <th >Resto</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>{{ "now"|date("m/d/Y") }} *</th>
+                                                    <th class="">{{ (presupuesto.importesnalPe) |format_currency('EUR', locale='es')  }}</th>
+                                                    <th class="">{{ (presupuesto.importetotPe) |format_currency('EUR', locale='es')  }}</th>
+                                                    <th class="">{{ (presupuesto.importetotPe - presupuesto.importesnalPe ) |format_currency('EUR', locale='es')  }}</th>
+                                                </tr>
+                                            </tbody>
+                                    </table>
+                                </div>
+                                            
+
+
+                            </div>
+                            <hr>
+                            <h6> * Este documento rectifica toda aquel con referencia ##002100{{ presupuesto.id }}## y fecha previa 
+                                 {% else %}
+                            </div>
+                            <hr>
+                                {% endif %}
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="table-responsive mt-5" style="clear: both;">
+                                    <h2 class="fs-1 fw-bold"><i class="fa fa-wrench fs-1"></i>&nbsp;&nbsp;   Mano de obra</h2>
+                                        <ul>
+                                        {% set anterior = "" %}
+                                        {% for manodeobra in presupuesto.manoObra %}
+                                            {% if manodeobra.categoriaMo.TipoTm != anterior %}
+                                                {% if not loop.first %}  
+
+                                                    </ul>
+                                                </li>
+                                                <br/>
+                                                {% endif %}
+                                                <li scope="col"><h3>{{ manodeobra.categoriaMo.TipoTm}}</h3>
+                                                    <ul>
+                                                        <li align="left">{{ manodeobra.textoMo}}</li>
+                                                                
+                                            {% else %}
+                                                        <li align="left">{{ manodeobra.textoMo}}</li>
+                                            {% endif %}
+
+                                            {% if  loop.last %}     
+                                                    </ul>
+                                                </li>
+                                            {% endif %}
+
+                                            {% set anterior = manodeobra.categoriaMo.TipoTm %}
+                                        {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+
+{% endblock %}
+    {% block jsbl %}
+    {% endblock %}
+{% block jscustom %}
+
+{% endblock %}

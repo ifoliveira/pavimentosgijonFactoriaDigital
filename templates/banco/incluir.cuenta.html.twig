@@ -1,37 +1,14 @@
-{% extends 'base.html.twig' %}
-{% block title %}Hello AdminProController!{% endblock %}
+{% extends 'inicio2.html.twig' %}
+{% block eltiempo %} {% endblock %}
 {% block stylesheets %}
+           {{ parent() }}    
             <!-- This page plugin CSS -->
             <link href="{{ asset('assets/libs/c3/c3.min.css') }}" rel="stylesheet">
             <!-- Custom CSS -->
-            <link href="{{ asset('dist/css/style.css') }}" rel="stylesheet">
+<!-- <link href="{{ asset('dist/css/style.css') }}" rel="stylesheet">-->
 {% endblock %}
-{% block body %}
-        <!-- ============================================================== -->
-        <!-- Page wrapper  -->
-        <!-- ============================================================== -->
-        <div class="page-wrapper">
-            <!-- ============================================================== -->
-            <!-- Container fluid  -->
-            <!-- ============================================================== -->
-            <div class="container-fluid">
-                <!-- ============================================================== -->
-                <!-- Bread crumb and right sidebar toggle -->
-                <!-- ============================================================== -->
-                <div class="row page-titles">
-                    <div class="col-md-5 col-12 align-self-center">
-                        <h3 class="text-themecolor mb-0">Bancos Activos y Cuentas</h3>
-                    </div>
-                    <div class="col-md-7 col-12 align-self-center d-none d-md-flex justify-content-end">
-                        <ol class="breadcrumb mb-0 p-0 bg-transparent">
-                            <li class="breadcrumb-item"><a href="{{ path('admin_pro')}}">Home</a></li>
-                            <li class="breadcrumb-item active">Banco</li>
-                        </ol>
-                    </div>
-                </div>
-                <!-- ============================================================== -->
-                <!-- End Bread crumb and right sidebar toggle -->
-                <!-- ============================================================== -->
+{% block cardbody1 %}
+
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
@@ -42,31 +19,31 @@
                     {% for bank in bancosJSON %}
                         {% if bank.Activo == "Si" %}
                         <div class="col-md-6 col-lg-4 col-xl-3 d-flex align-items-stretch">
-                        <div class="card w-100">
-                            <div class="p-3 d-flex align-items-stretch h-100">
-                            <div class="row">
-                            <div class="col-4 col-xl-2 col-md-3 d-flex align-items-center">
-                                <a  href="#" id="Consultar"  data-banco="{{ bank.id  }}" data-index="x">
-                                    <img width="300" height="300" src="{{ bank.logo }}"class="rounded img-fluid"/>
-                                </a>
-                            </div>
-                            <div
-                            class="col-8 col-xl-10 col-md-9 d-flex align-items-center"
-                            >
-                            <div>
+                            <div class="card w-100">
+                                <div class="p-3 d-flex align-items-stretch h-100">
+                                <div class="row">
+                                <div class="col-4 col-xl-2 col-md-3 d-flex align-items-center">
+                                    <a  href="#" id="Consultar"  data-banco="{{ bank.id  }}" data-index="x">
+                                        <img width="300" height="300" src="{{ bank.logo }}"class="rounded img-fluid"/>
+                                    </a>
+                                </div>
+                                <div
+                                class="col-8 col-xl-10 col-md-9 d-flex align-items-center"
+                                >
+                                <div>
 
-                            
-                                {% for cuenta in bank.Cuentas %}
-                                <a href="#" id="Movimientos" data-banco="{{ bank.id }}" data-index="x" class="font-weight-medium fs-4 link lh-sm">{{ cuenta.IBAN }}  <br/>       </a>
-                                {% else %}
-                                  <a href="#" id="Consultar"  data-banco="{{ bank.id }}" data-index="x" class="font-weight-medium fs-4 link lh-sm">Sin cuentas</a>
-                                {% endfor %}
+                                
+                                    {% for cuenta in bank.Cuentas %}
+                                        <a href="#" id="Movimientos" data-banco="{{ bank.id }}" data-index="x" class="font-weight-medium fs-4 link lh-sm">{{ cuenta.IBAN }}  <br/>       </a>
+                                    {% else %}
+                                        <a href="#" id="Consultar"  data-banco="{{ bank.id }}" data-index="x" class="font-weight-medium fs-4 link lh-sm">Sin cuentas</a>
+                                    {% endfor %}
 
+                                </div>
+                                </div>
+                                </div>
+                                </div>
                             </div>
-                            </div>
-                            </div>
-                            </div>
-                        </div>
                         </div>
                         {% endif %}
                     {% endfor %}

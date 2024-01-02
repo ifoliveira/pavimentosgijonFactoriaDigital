@@ -29,7 +29,7 @@ class nordigen
         {
             $client = HttpClient::create(); 
 
-            $response = $client->request('GET', 'https://ob.nordigen.com/api/v2/accounts/'. $account . '/balances/', [
+            $response = $client->request('GET', 'https://ob.gocardless.com/api/v2/accounts/'. $account . '/balances/', [
  
                 'headers' => [
                     'Accept' => '' . $this->hAccept .'',
@@ -51,7 +51,7 @@ class nordigen
         {
             $client = HttpClient::create();    
 
-            $response = $client->request('POST', 'https://ob.nordigen.com/api/v2/requisitions/', [
+            $response = $client->request('POST', 'https://ob.gocardless.com/api/v2/requisitions/', [
      
                 'headers' => [
                      'Accept' => '' . $this->hAccept .'',
@@ -76,7 +76,7 @@ class nordigen
         {
             $client = HttpClient::create(); 
 
-            $response = $client->request('GET', 'https://ob.nordigen.com/api/v2/accounts/'. $account . '/transactions/?date_from=' . $fechaini .'&date_to='. $fechafin .'' , 
+            $response = $client->request('GET', 'https://ob.gocardless.com/api/v2/accounts/'. $account . '/transactions/?date_from=' . $fechaini .'&date_to='. $fechafin .'' , 
             [
                 'timeout' => 120,
                 'headers' => [
@@ -98,7 +98,7 @@ class nordigen
         {
             $client = HttpClient::create(); 
 
-            $response = $client->request('GET', 'https://ob.nordigen.com/api/v2/accounts/'. $account . '/details/', [
+            $response = $client->request('GET', 'https://ob.gocardless.com/api/v2/accounts/'. $account . '/details/', [
  
                 'headers' => [
                     'Accept' => '' . $this->hAccept .'',
@@ -117,7 +117,7 @@ class nordigen
         public function getAccounts($bankRef)
         {
             $client = HttpClient::create(); 
-            $response = $client->request('GET', 'https://ob.nordigen.com/api/v2/requisitions/'. $bankRef . '/', [
+            $response = $client->request('GET', 'https://ob.gocardless.com/api/v2/requisitions/'. $bankRef . '/', [
      
                 'headers' => [
                     'Accept' => '' . $this->hAccept .'',
@@ -136,7 +136,7 @@ class nordigen
         {
  
             $client = HttpClient::create(); 
-            $response = $client->request('POST', 'https://ob.nordigen.com/api/v2/token/new/', [
+            $response = $client->request('POST', 'https://ob.gocardless.com/api/v2/token/new/', [
             'headers' => [
             'Accept' => '' . $this->hAccept .'',
             ],
@@ -152,7 +152,7 @@ class nordigen
         public function restoreToken($refresh, $secret_id, $secret_key)
         {
             $client = HttpClient::create(); 
-            $response = $client->request('POST', 'https://ob.nordigen.com/api/v2/token/refresh/', [
+            $response = $client->request('POST', 'https://ob.gocardless.com/api/v2/token/refresh/', [
             'headers' => [
             'Accept' => '' . $this->hAccept .'',
             ],
@@ -160,7 +160,7 @@ class nordigen
             ]); 
             $contentType = $response->getHeaders(false)['content-type'][0];
 
-            switch ($response->getStatusCodei) {
+            switch ($response->getStatusCode()) {
                 case 401:
                     unset($response);
                     return $this->newToken($secret_id, $secret_key);
@@ -195,11 +195,12 @@ class nordigen
         {
             $tipo = new tiposmovimiento;
             $concepto = explode(" ", $line);
-            $gastofijo = array("GIJONESAS,", "COTIZACION", "TELECABLE", "LOBO", "Aguas", "IMPUESTOS","COREEDP", "Coffe");
-            $ventas= array("TPV", "ORDENANTE");
-            $proveedor=array("COMERCIAL", "GME", "CAMACHO","MEDITERRANEA","COREL.","    EUROMUEBLES","CORE1y1", "COREMOGAR", "KASSANDRA", "DUPLACH", "SARIEGO");
-            $comision = array ("COMISION", "COMISIONES");
+            $gastofijo = array("RCBO.ASESORIAS", "COTIZACION", "RCBO.TGSS", "INTERNET", "3528642972", "BSSG","RCBO.TOTALENERGIES");
+            $ventas= array("TRF.", "ORDENANTE", "FACTURACION");
+            $proveedor=array("TJ-MATERIALES","TJ-ELECTRO", "RCBO.CEMEVISA","RCBO.DUPLACH","RCBO.ROYO","RCBO.DELBA","RCBO.SUMESA","RCBO.COMERCIAL", "RCBO.MAMPARAS", "RCBO.CAMACHO","RCBO.MEDITERRANEA","RCBO.ANTONIO","RCBO.SUMESA","RCBO.INDUSTRIA", "RCBO.ESPACIO", "RCBO.GME");
+            $comision = array ("DESCUENTOS", "COMISIONES");
             $otros = array("5540XXXXXXXX5018");
+
     
             foreach ($gastofijo as &$valor) {
                 if (in_array($valor, $concepto)) {

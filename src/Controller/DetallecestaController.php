@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Detallecesta;
+use App\Entity\Cestas;
 use App\Form\DetallecestaType;
 use App\MisClases\CestaUser;
 use App\Repository\DetallecestaRepository;
@@ -103,12 +104,14 @@ class DetallecestaController extends AbstractController
         // Funcion para borrar registro de producto de una cesta determinada
         // Obtener ID del detalle
         $datos = $request->query->get('id');
+        
 
         // get EntityManager
         $em = $this->getDoctrine()->getManager();
         // Obtener detalle
         $detalle = $em->getRepository('App\Entity\Detallecesta')->find($datos);
         // Borrado del detalle
+        $cesta = $detalle->getCestaDc();
         $em->remove($detalle);
         $em->flush();
 
@@ -118,9 +121,13 @@ class DetallecestaController extends AbstractController
         $response->setStatusCode(200);
         $cestauser = new CestaUser($em);
 
+
         // Cantidad total de elementos en la cesta
         $user = $this->getUser();
         $cant = $cestauser->getCantidadTot($user->getId());
+        $cesta->setImporteTotCs($cestauser->getImporteTot($cesta->getId()));
+        $em->persist($cesta);
+        $em->flush();
 
         return $response->setData(['template' => $template, 'cantidad' => $cant]);
 
@@ -150,10 +157,14 @@ class DetallecestaController extends AbstractController
         
         // Creamos objeto detalle de cesta, con el usuario conectado y los metodos de CestaUser
         $user = $this->getUser();
+        $cestaactual = new Cestas();
         $cestauser = new CestaUser($entityManager);
+        $cestaactual = $cestauser->getCesta($cestaId);
+        $importeact = $cestaactual->getImporteTotCs();
+        $cestaactual->setImporteTotCs($importeact + ($importe * $cantidad));
 
         $detcesta = new Detallecesta;
-        $detcesta->setCestaDc($cestauser->getCesta($cestaId));
+        $detcesta->setCestaDc($cestaactual);
         $detcesta->setproductoDc($this->getDoctrine()->getRepository('App\Entity\Productos')->find($producto[0]));
         $detcesta->setCantidadDc($cantidad);
         $detcesta->setPrecioDc($coste);

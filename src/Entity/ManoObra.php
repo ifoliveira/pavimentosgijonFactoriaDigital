@@ -23,7 +23,7 @@ class ManoObra
     private $tipoMo;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", nullable=true)
      */
     private $textoMo;
 
@@ -38,11 +38,20 @@ class ManoObra
      */
     private $categoriaMo;
 
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $coste;
+
     public function __toString()
     {
         return $this->getPresupuestoMo()->getClientePe()->getDireccionCl();
     }
 
+    public function getIdPresu()
+    {
+        return $this->getPresupuestoMo()->getId();
+    }    
 
     public function getId(): ?int
     {
@@ -93,6 +102,18 @@ class ManoObra
     public function setCategoriaMo(?TipoManoObra $categoriaMo): self
     {
         $this->categoriaMo = $categoriaMo;
+
+        return $this;
+    }
+
+    public function getCoste(): ?float
+    {
+        return $this->coste;
+    }
+
+    public function setCoste(?float $coste): self
+    {
+        $this->coste = $coste;
 
         return $this;
     }

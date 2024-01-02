@@ -11,8 +11,10 @@ use App\MisClases\Importar_Ticket;
 use App\MisClases\Meteo;
 use App\Repository\DetallecestaRepository;
 use App\Repository\CestasRepository;
+use App\Repository\EconomicpresuRepository;
 use App\Repository\EfectivoRepository;
 use App\Repository\ForecastRepository;
+use App\Repository\PagosRepository;
 use App\Repository\TiposmovimientoRepository;
 use Doctrine\DBAL\Types\FloatType;
 use Doctrine\ORM\Mapping\Id;
@@ -42,6 +44,7 @@ class AdminProController extends AbstractController
         $ventahistefect = $cestasRepository->ventaefetotal()["ventatotalef"];
         $efectivototal = $efectivoRepository->totalefectivo();
         $manoobratotal = intval($efectivoRepository->manoobraEfectivo()["sum(importe_ef)"]) + intval($bancoRepository->manoobraBanco()["importe"]) ;
+
 
         $forecast = $forecastRepository->findBy(
             ['estadoFr' => 'P'],
@@ -75,6 +78,55 @@ class AdminProController extends AbstractController
     }
 
     /**
+     * @Route("/admin/contabilidad", name="admin_contabilidad")
+     */
+    public function contabilidad(Request $request,EconomicpresuRepository $economicpresuRepository,  DetallecestaRepository $detallecestaRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
+    {
+        $ventas = 0;
+        $pagos = 0;
+        $cobrosMo = $economicpresuRepository->cobrototal()["cobrototalMo"];
+        $pagosMo = $economicpresuRepository->pagototal()["pagototalMo"];
+        $pendientecobroMo = $economicpresuRepository->pendienteCobro()["cobropdteMo"];
+        $pendientepagoMo = $economicpresuRepository->pendientePago()["pagopdteMo"];
+        $bancototal = $bancoRepository->totalBanco();
+        $efectivototal = $efectivoRepository->totalefectivo();
+        $ventasefectivo = $efectivoRepository->ventasEfectivo();
+        $ventasbanco = $bancoRepository->ventasBanco();
+        $ventastotal = $ventasefectivo["sum(importe_ef)"] + $ventasbanco["importe"];
+        $beneficio = $detallecestaRepository->beneficioTotal();
+        $ticketspdte = $cestasRepository->ticketssnal();
+        foreach ($ticketspdte as $ticket){
+            $ventas = $ticket->getImporteTotCs() + $ventas;
+            foreach ($ticket->getPagos() as $pago){
+                $pagos = $pago->getImportePg() + $pagos;
+            }
+        }
+        $pendiente = $ventas - $pagos;
+
+
+        $forecast = $forecastRepository->findBy(
+            ['estadoFr' => 'P'],
+            ['fechaFr' => 'ASC'],
+        );
+
+        $response = $this->render('admin_pro/contabilidad.html.twig', [
+            'controller_name' => 'AdminProController',
+            'bancototal' => $bancototal,
+            'efectivototal' => $efectivototal,
+            'ventastotal' => $ventastotal,
+            'beneficio' => $beneficio,
+            'pendiente' => $pendiente,
+            'cobrosMo' => $cobrosMo,
+            'pagosMo' => $pagosMo,
+            'pendientecobroMo' => $pendientecobroMo,
+            'pendientepagoMo' => $pendientepagoMo,
+
+        ]);
+             
+        return $response;
+    }
+
+    /**
      * @Route("/admin/C43", name="insert_C43", methods={"GET","POST"})
      */
     public function contactAction(Request $request , DetallecestaRepository $detallecestaRepository)
@@ -95,12 +147,11 @@ class AdminProController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Los datos están en un array con los keys "name", "email", y "message"
             $data = $form->getData();
-
-                try {
-                              $data['fichero_C43']->move($directorio, "C43" . $ficheros . ".txt");
-                          } catch (FileException $e) {
+            try {
+                 $data['fichero_C43']->move($directorio, "C43" . $ficheros . ".txt");
+                } catch (FileException $e) {
                             // unable to upload the photo, give up
-                         }
+                }
             return $this->redirectToRoute('insert_C43');
         }
 

@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pavimentos Gijón</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta content="" name="keywords">
+  <meta content="" name="description">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/images/favicon.png')}}">
+  <link href="{{ asset('img/apple-touch-icon.png')}}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,500,600,700,700i|Montserrat:300,400,500,600,700" rel="stylesheet">
+{% form_theme form 'fields.html.twig' %}
+{% block stylesheets %}
+  <!-- Bootstrap CSS File -->
+   <link href="{{ asset('asset/lib/bootstrap/css/bootstrap.min.css') }}" type="text/css" rel="stylesheet" />
+
+  <!-- Libraries CSS Files -->
+   <link href="{{ asset('asset/lib/font-awesome/css/font-awesome.min.css') }}" type="text/css" rel="stylesheet" />
+   <link href="{{ asset('asset/lib/animate/animate.min.css') }}" type="text/css" rel="stylesheet" />
+   <link href="{{ asset('asset/lib/ionicons/css/ionicons.min.css') }}" type="text/css" rel="stylesheet" />
+   <link href="{{ asset('asset/lib/owlcarousel/assets/owl.carousel.min.css') }}" type="text/css" rel="stylesheet" />
+   <link href="{{ asset('asset/lib/lightbox/css/lightbox.min.css') }}" type="text/css" rel="stylesheet" />
+   <link href="{{ asset('assets/libs/jquery-steps/jquery.steps.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/libs/jquery-steps/steps.css') }}" rel="stylesheet" />
+    <!-- Custom CSS -->   
+    <!-- Custom CSS -->
+    <link href="{{ asset('dist/css/style.min.css') }}" type="text/css" rel="stylesheet" />
+
+  <!-- Main Stylesheet File -->
+  <link href="{{ asset('asset/css/style.css') }}" type="text/css" rel="stylesheet" />
+{% endblock %}
+  <!-- =======================================================
+    Theme Name: Rapid
+    Theme URL: https://bootstrapmade.com/rapid-multipurpose-bootstrap-business-template/
+    Author: BootstrapMade.com
+    License: https://bootstrapmade.com/license/
+  ======================================================= -->
+</head>
+
+
+{% block header %}
+
+{% endblock %}
+
+<body>
+
+  <section id="intro" class="clearfix">
+
+
+    <div class="container d-flex">
+
+      
+      <div class="row col-md-12 align-self-center">
+           <div class="card  col-md-12">
+                    {{ form_start(form) }}
+                    
+                    {{ form_end(form) }}           
+     <!--              <div class="border-bottom title-part-padding">
+                    <h4 class="card-title mb-0">Ayúdenos a mejorar</h4>
+                    </div>
+                    <div class="card-body wizard-content">
+                    <h6 class="card-subtitle mb-3"></h6>
+                        <form id="encuestaForm" >
+                            <div class="question">
+                                <h4 for="q1">¿Como conociste Pavimentos Gijón?</h4>
+
+                                    
+                                    <div class="col-md-12">
+                                        <input
+                                            name="q1"
+                                            type="radio"
+                                            id="radio_01"
+                                            value="1"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_01">Busqueda por internet </label>
+                                    </div>
+
+                                        <div class="col-md-12">
+                                        <input
+                                            name="q1"
+                                            type="radio"
+                                            id="radio_02"
+                                            value="2"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_02">Recomendación de un amigo / familiar</label>
+                                        </div>                                        
+
+                                        <div class="col-md-12">
+                                        <input
+                                            name="q1"
+                                            type="radio"
+                                            id="radio_03"
+                                            value="3"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_03">Suelo caminar por la avenida Schultz</label>
+                                        </div>       
+
+                                        <div class="col-md-12">
+                                        <input
+                                            name="q1"
+                                            type="radio"
+                                            id="radio_04"
+                                            value="4"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_04">Otros</label>
+                                        </div>                                          
+
+                            </div>
+                            <hr>
+                            <div class="question hidden" id="q2">
+                                <h4 for="q2">De 1 a 10 ¿Como de satisfecho estuviste con la atención recibida?</h4>
+
+                                    
+                                    <div class="col-md-12">
+                                        <label> Muy insatisfecho -</label>
+                                        <input
+                                            name="q2"
+                                            type="radio"
+                                            id="radio_10"
+                                            value="1"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_10">1</label>
+                                        <input
+                                            name="q2"
+                                            type="radio"
+                                            id="radio_11"
+                                            value="2"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_11">2</label>         
+                                        <input
+                                            name="q2"
+                                            type="radio"
+                                            id="radio_12"
+                                            value="3"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_12">3</label>     
+                                        <input
+                                            name="q2"
+                                            type="radio"
+                                            id="radio_13"
+                                            value="4"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_13">4</label>     
+                                        <input
+                                            name="q2"
+                                            type="radio"
+                                            id="radio_14"
+                                            value="5"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_14">5</label>     
+                                        <input
+                                            name="q2"
+                                            type="radio"
+                                            id="radio_15"
+                                            value="6"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_15">6</label>     
+                                        <input
+                                            name="q2"
+                                            type="radio"
+                                            id="radio_16"
+                                            value="7"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_16">7</label>     
+                                        <input
+                                            name="q2"
+                                            type="radio"
+                                            id="radio_17"
+                                            value="8"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_17">8</label>     
+                                        <input
+                                            name="q2"
+                                            type="radio"
+                                            id="radio_18"
+                                            value="9"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_18">9</label>     
+                                        <input
+                                            name="q2"
+                                            type="radio"
+                                            id="radio_19"
+                                            value="10"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_19">10 - </label>   
+                                        <label> Muy satisfecho </label>  
+                                                                                                                                                                                                                                                                                                                                                                                                           
+                                    </div>
+                                </div>
+                            <hr>
+                            <div class="question hidden" id="q3">
+                                <h4 for="q3">¿y con el presupuesto?</h4>
+                                    <div class="col-md-12">
+                                        <label> Muy insatisfecho -</label>
+                                        <input
+                                            name="q3"
+                                            type="radio"
+                                            id="radio_20"
+                                            value="1"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_20">1</label>
+                                        <input
+                                            name="q3"
+                                            type="radio"
+                                            id="radio_21"
+                                            value="2"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_21">2</label>         
+                                        <input
+                                            name="q3"
+                                            type="radio"
+                                            id="radio_22"
+                                            value="3"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_22">3</label>     
+                                        <input
+                                            name="q3"
+                                            type="radio"
+                                            id="radio_23"
+                                            value="4"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_23">4</label>     
+                                        <input
+                                            name="q3"
+                                            type="radio"
+                                            id="radio_24"
+                                            value="5"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_24">5</label>     
+                                        <input
+                                            name="q3"
+                                            type="radio"
+                                            id="radio_25"
+                                            value="6"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_25">6</label>     
+                                        <input
+                                            name="q3"
+                                            type="radio"
+                                            id="radio_26"
+                                            value="7"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_26">7</label>     
+                                        <input
+                                            name="q3"
+                                            type="radio"
+                                            id="radio_27"
+                                            value="8"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_27">8</label>     
+                                        <input
+                                            name="q3"
+                                            type="radio"
+                                            id="radio_28"
+                                            value="9"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_28">9</label>     
+                                        <input
+                                            name="q3"
+                                            type="radio"
+                                            id="radio_29"
+                                            value="10"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_29">10 - </label>   
+                                        <label> Muy satisfecho </label>  
+                                                                                                                                                                                                                                                                                                                                                                                                           
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="question hidden" id="q4">
+                                <h4 for="q4">¿Aceptaste el presupuesto?</h4>
+                                    <div class="col-md-12">
+                                        <input
+                                            name="q4"
+                                            type="radio"
+                                            id="radio_30"
+                                            value="Si"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_30">Si</label>
+                                        <input
+                                            name="q4"
+                                            type="radio"
+                                            id="radio_31"
+                                            value="No"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_31">No</label>         
+
+                                        <input
+                                            name="q4"
+                                            type="radio"
+                                            id="radio_32"
+                                            value="N/A"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_32">Finalmente no hice la reforma</label>                                                 
+                                        
+                                                                                                                                                                                                                                                                                                                                                                                                           
+                                    </div>
+                                </div>
+                            <hr>
+                            <div class="question hidden" id="q5">
+                                <h4 for="q5">¿Que valoraste mejor? (puedes marcar más de una)</h4>
+                                
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Precio"
+                                            name="group4"
+                                            type="checkbox"
+                                            id="md_checkbox_01"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_01">Precio</label>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Confianza"
+                                            name="group4"
+                                            type="checkbox"
+                                            id="md_checkbox_02"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_02">Confianza</label>                                    
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Profesionalidad"
+                                            name="group4"
+                                            type="checkbox"
+                                            id="md_checkbox_03"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_03">Profesionalidad</label>                                    
+                                    </div>                                    
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Atención"
+                                            name="group4"
+                                            type="checkbox"
+                                            id="md_checkbox_04"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_04">Atención</label>                                    
+                                    </div>                                    
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Claridad en el presupuesto"
+                                            name="group4"
+                                            type="checkbox"
+                                            id="md_checkbox_05"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_05">Claridad en el presupuesto</label>                                    
+                                    </div>    
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Tiempo de espera para iniciar la reforma"
+                                            name="group4"
+                                            type="checkbox"
+                                            id="md_checkbox_06"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_06">Tiempo de espera para iniciar la reforma</label>                                    
+                                    </div>    
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Tiempo total realización de la reforma"
+                                            name="group4"
+                                            type="checkbox"
+                                            id="md_checkbox_07"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_07">Tiempo total realización de la reforma</label>                                    
+                                    </div>  
+
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Calidad de los materiales"
+                                            name="group4"
+                                            type="checkbox"
+                                            id="md_checkbox_08"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_08">Calidad de los materiales</label>                                    
+                                    </div>   
+
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Nos habían recomendado"
+                                            name="group4"
+                                            type="checkbox"
+                                            id="md_checkbox_09"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_09">Nos habían recomendado</label>                                    
+                                    </div>                                                                                                                                                 
+                                </div>
+
+                            <hr>
+                            <div class="question hidden" id="q6">
+                                <h4 for="q6">¿Que valoraste peor? (puedes marcar más de una)</h4>
+                                
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Precio"
+                                            name="group5"
+                                            type="checkbox"
+                                            id="md_checkbox_11"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_11">Precio</label>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Confianza"
+                                            name="group5"
+                                            type="checkbox"
+                                            id="md_checkbox_12"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_12">Confianza</label>                                    
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Profesionalidad"
+                                            name="group5"
+                                            type="checkbox"
+                                            id="md_checkbox_13"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_13">Profesionalidad</label>                                    
+                                    </div>                                    
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Atención"
+                                            name="group5"
+                                            type="checkbox"
+                                            id="md_checkbox_14"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_14">Atención</label>                                    
+                                    </div>                                    
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Claridad en el presupuesto"
+                                            name="group5"
+                                            type="checkbox"
+                                            id="md_checkbox_15"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_15">Claridad en el presupuesto</label>                                    
+                                    </div>    
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Tiempo de espera para iniciar la reforma"
+                                            name="group5"
+                                            type="checkbox"
+                                            id="md_checkbox_16"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_16">Tiempo de espera para iniciar la reforma</label>                                    
+                                    </div>    
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Tiempo total realización de la reforma"
+                                            name="group5"
+                                            type="checkbox"
+                                            id="md_checkbox_17"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_17">Tiempo total realización de la reforma</label>                                    
+                                    </div>  
+
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "Calidad de los materiales"
+                                            name="group5"
+                                            type="checkbox"
+                                            id="md_checkbox_18"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_18">Calidad de los materiales</label>                                    
+                                    </div>   
+
+                                    <div class="col-md-5">
+                                        <input
+                                            value = "No tenías referencias de nuestro trabajo"
+                                            name="group5"
+                                            type="checkbox"
+                                            id="md_checkbox_19"
+                                            class="material-inputs chk-col-red"
+                                            checked
+                                        />
+                                    <label for="md_checkbox_19">No tenías referencias de nuestro trabajo</label>                                    
+                                    </div>                                                                                                                                                 
+                                </div>
+                                <hr>
+                                <div class="question hidden" id="q7">
+                                <h4 for="q7">Nos recomendarías para una reforma (1 - No nunca o 10 - Si lo hago habitualmente)</h4>
+                                    <div class="col-md-12">
+                                        <label> No recomendaría -</label>
+                                        <input
+                                            name="q7"
+                                            type="radio"
+                                            id="radio_40"
+                                            value="1"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_40">1</label>
+                                        <input
+                                            name="q7"
+                                            type="radio"
+                                            id="radio_41"
+                                            value="2"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_41">2</label>         
+                                        <input
+                                            name="q7"
+                                            type="radio"
+                                            id="radio_42"
+                                            value="3"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_42">3</label>     
+                                        <input
+                                            name="q7"
+                                            type="radio"
+                                            id="radio_43"
+                                            value="4"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_43">4</label>     
+                                        <input
+                                            name="q7"
+                                            type="radio"
+                                            id="radio_44"
+                                            value="5"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_44">5</label>     
+                                        <input
+                                            name="q7"
+                                            type="radio"
+                                            id="radio_45"
+                                            value="6"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_45">6</label>     
+                                        <input
+                                            name="q7"
+                                            type="radio"
+                                            id="radio_46"
+                                            value="7"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_46">7</label>     
+                                        <input
+                                            name="q7"
+                                            type="radio"
+                                            id="radio_47"
+                                            value="8"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_47">8</label>     
+                                        <input
+                                            name="q7"
+                                            type="radio"
+                                            id="radio_48"
+                                            value="9"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_48">9</label>     
+                                        <input
+                                            name="q7"
+                                            type="radio"
+                                            id="radio_49"
+                                            value="10"
+                                            class="material-inputs radio-col-red"
+                                            checked
+                                        />
+                                        <label for="radio_49">10 - </label>   
+                                        <label> Si lo he hecho ya </label>  
+                                                                                                                                                                                                                                                                                                                                                                                                           
+                                    </div>
+                                </div>                                
+                                <hr>      
+
+                           
+                            <button type="button" onclick="submitForm()">Enviar</button>
+                             </div>
+                        </div>
+                        </form>-->
+            </div>
+        </div>
+        </div>
+    </div>
+  </section><!-- #intro -->
+    <!-- -------------------------------------------------------------- -->
+    <!-- All Jquery -->
+    <!-- -------------------------------------------------------------- -->
+    <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}"></script>
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="{{ asset('assets/libs/popper.js/dist/umd/popper.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <!-- apps -->
+    <script src="{{ asset('dist/js/app.min.js') }}"></script>
+    <script src="{{ asset('dist/js/app.init.js') }}"></script>
+    <script src="{{ asset('dist/js/app-style-switcher.js') }}"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="{{ asset('assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
+    <!--Wave Effects -->
+    <script src="{{ asset('dist/js/waves.js') }}"></script>
+    <!--Menu sidebar -->
+    <script src="{{ asset('dist/js/sidebarmenu.js') }}"></script>
+    <!--Custom JavaScript -->
+    <script src="{{ asset('dist/js/feather.min.js') }}"></script>
+    <script src="{{ asset('dist/js/custom.min.js') }}"></script>  
+<script>
+    function submitForm() {
+
+        var selected = '';    
+        $('input[name="group5"]').each(function(){
+            if (this.checked) {
+                selected += $(this).val()+', ';
+            }
+        }); 
+        // Puedes personalizar la lógica de envío del formulario aquí
+        alert("¡Encuesta enviada! Gracias por participar." + selected + "" );
+    }
+
+    function resetForm() {
+        const q2 = document.getElementById('q2');
+        const q3 = document.getElementById('q3');
+        const q4 = document.getElementById('q4');
+        const q5 = document.getElementById('q5');
+        const q6 = document.getElementById('q6');
+        const q7 = document.getElementById('q7');
+
+        q2.classList.add('invisible');
+        q3.classList.add('invisible');
+        q4.classList.add('invisible');
+        q5.classList.add('invisible');
+        q6.classList.add('invisible');
+        q7.classList.add('invisible');
+
+        // Desmarcar todos los radio buttons
+        const radioButtons = document.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach(button => button.checked = false);
+
+        // Desmarcar todos los checkboxes
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => checkbox.checked = false);
+    }
+
+    document.addEventListener('DOMContentLoaded', resetForm);
+
+    // Lógica para mostrar preguntas condicionales
+    const form = document.getElementById('encuestaForm');
+
+    form.addEventListener('change', function () {
+        const q1Value = form.querySelector('input[name="q1"]:checked');
+        const q2Value = form.querySelector('input[name="q2"]:checked');
+        const q3Value = form.querySelector('input[name="q3"]:checked');
+        const q4Value = form.querySelector('input[name="q4"]:checked');
+        const q5Value = form.querySelector('input[name="q5"]:checked');
+        const q6Value = form.querySelector('input[name="q6"]:checked');
+        
+        const q2 = form.querySelector('#q2');
+        const q3 = form.querySelector('#q3');
+        const q4 = form.querySelector('#q4');
+        const q5 = form.querySelector('#q5');
+        const q6 = form.querySelector('#q6');
+        const q7 = form.querySelector('#q7');
+
+        
+        if (q1Value) {
+            q2.classList.remove('invisible');
+
+            if (q2Value) {
+                q3.classList.remove('invisible');
+                if (q3Value) {
+                    q4.classList.remove('invisible');
+
+                if (q4Value) {
+                    q5.classList.remove('invisible');
+                    q6.classList.remove('invisible');
+                    q7.classList.remove('invisible'); 
+
+                }
+                }
+            }                            
+        } else {
+            // Desmarcar todos los radio buttons
+            const radioButtons = document.querySelectorAll('input[name="q3"]');
+            radioButtons.forEach(button => button.checked = false);                   
+            q2.classList.add('invisible');
+            q3.classList.add('invisible');
+            q4.classList.add('invisible');
+            q5.classList.add('invisible');
+            q6.classList.add('invisible');
+            q7.classList.add('invisible');
+        }
+
+
+    });
+</script>
+
+</body>
+</html>

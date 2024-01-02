@@ -14,19 +14,29 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\User;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/productos")
  */
 class ProductosController extends AbstractController
 {
+
+    protected $em;
+
+    public function __construct( EntityManagerInterface $em )
+    {
+        $this->em = $em;
+    }
+
     /**
      * @Route("/", name="productos_index", methods={"GET"})
      */
     public function index(ProductosRepository $productosRepository, CestasRepository $cestasRepository): Response
     {
         $user = $this->getUser();
-        $entityManager = $this->getDoctrine()->getManager();
+
         $tienecesta = $cestasRepository->findBy(
             ['userCs' => $user->getId(),
             'estadoCs' => '1'],
@@ -36,14 +46,14 @@ class ProductosController extends AbstractController
             $cesta = new Cestas();
             $cesta->setUserCs($user->getId());
             
-            $entityManager->persist($cesta);
-            $entityManager->flush();
+            $this->em->persist($cesta);
+            $this->em->flush();
         };
 
-        $datos = new CestaUser($entityManager);
+        $datos = new CestaUser($this->em);
 
         return $this->render('productos/index.html.twig', [
-            'productos' => $productosRepository->findAll(),
+            'productos' => $productosRepository->findBy(array('obsoleto' => '0')),
             'cestaId'   => $datos->getCestaUser($user->getId()),
         ]);
     }
@@ -68,9 +78,9 @@ class ProductosController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($producto);
-            $entityManager->flush();
+
+            $this->em->persist($producto);
+            $this->em->flush();
 
             return $this->redirectToRoute('productos_index');
         }
@@ -100,7 +110,7 @@ class ProductosController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('productos_index');
         }
@@ -117,11 +127,29 @@ class ProductosController extends AbstractController
     public function delete(Request $request, Productos $producto): Response
     {
         if ($this->isCsrfTokenValid('delete'.$producto->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($producto);
-            $entityManager->flush();
+            $this->em->remove($producto);
+            $this->em->flush();
         }
 
         return $this->redirectToRoute('productos_index');
     }
+
+ /**
+     * @Route("/actualiza/obsoleto", name="invierte_obsoleto", methods={"GET","POST"})
+     */
+    public function ajaxinscS(Request $request): jsonResponse
+    {
+        $id  = $request->query->get('id');
+        $producto = $this->em->getRepository('App\Entity\Productos')->findOneBy(['id' => $id]);
+        // Producto y cantidad a añadir
+        $producto->setObsoleto(!$producto->isObsoleto());
+
+        $this->em->flush();
+
+        $response = new JsonResponse();
+
+        return $response;
+
+
+    }         
 }

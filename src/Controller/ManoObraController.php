@@ -11,6 +11,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 
@@ -38,8 +39,7 @@ class ManoObraController extends AbstractController
 
         $entityManager = $this->getDoctrine()->getManager();
         $presupuesto = $presupuestosRepository->findBy(
-            ['id' => $presu,
-            ],
+            ['id' => $presu,],
         );
 
         $presupuesto[0]->addManoObra($manoObra);
@@ -95,7 +95,7 @@ class ManoObraController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getDoctrine()->getManager()->flush();
 
-            return $this->redirectToRoute('mano_obra_index');
+            return $this->redirectToRoute('presupuestos_show', array('id' => $manoObra->getIdPresu() ));
         }
 
         return $this->render('mano_obra/edit.html.twig', [
@@ -117,4 +117,25 @@ class ManoObraController extends AbstractController
 
         return $this->redirectToRoute('mano_obra_index');
     }
+
+   /**
+     * @Route("/delete/fila", name="manoobra_delete_ajax", methods={"GET","POST"})
+     */
+    public function deleteajax(Request $request): JsonResponse
+    {
+        // Funcion para borrar registro de producto de una cesta determinada
+        // Obtener ID del cesta
+        $datos = $request->query->get('id');
+        // get EntityManager
+        $em = $this->getDoctrine()->getManager();
+        // Obtener cesta
+        $manoobra = $em->getRepository('App\Entity\ManoObra')->find($datos);
+        // Borrado del detalle
+        $em->remove($manoobra);
+        $em->flush();
+
+        $response = new JsonResponse();
+
+        return $response;
+    }      
 }

@@ -19,18 +19,14 @@ class EfectivoRepository extends ServiceEntityRepository
         parent::__construct($registry, Efectivo::class);
     }
 
-
     public function totalefectivo()
     {
         $conn = $this->getEntityManager()->getConnection();
 
-        $sql = '
-            SELECT sum(importe_ef) as efectivototal  FROM efectivo p
-            ';
-        $stmt = $conn->prepare($sql)->executeQuery();
+        $sql = 'SELECT sum(importe_ef) as efectivototal  FROM efectivo p';
 
         // returns an array of arrays (i.e. a raw data set)
-        return $stmt->fetchAssociative();
+        return $conn->fetchAssociative($sql);
 
     }
 
@@ -39,43 +35,29 @@ class EfectivoRepository extends ServiceEntityRepository
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = '
-        SELECT sum(importe_ef)   FROM efectivo p
+        SELECT sum(importe_ef) FROM efectivo p
         WHERE tipoEf = 1
           AND YEAR(fecha_ef) = YEAR(CURDATE());
             ';
-        $stmt = $conn->prepare($sql)->executeQuery();
 
         // returns an array of arrays (i.e. a raw data set)
-        return $stmt->fetch();
+        return $conn->fetchAssociative($sql);
 
     }
 
-    // /**
-    //  * @return Efectivo[] Returns an array of Efectivo objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function ventasEfectivo()
     {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('e.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $conn = $this->getEntityManager()->getConnection();
 
-    /*
-    public function findOneBySomeField($value): ?Efectivo
-    {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
+        $sql = '
+        SELECT sum(importe_ef) FROM efectivo p
+        WHERE tipoEf = 3
+          AND YEAR(fecha_ef) = YEAR(CURDATE());
+            ';
+
+        // returns an array of arrays (i.e. a raw data set)
+        return $conn->fetchAssociative($sql);
+
+    }    
+
 }

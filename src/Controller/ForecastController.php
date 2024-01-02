@@ -11,20 +11,30 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/forecast")
  */
 class ForecastController extends AbstractController
 {
+
+    protected $em;
+
+    public function __construct( EntityManagerInterface $em )
+    {
+        $this->em = $em;
+    }
+
     /**
      * @Route("/", name="forecast_index", methods={"GET"})
      */
     public function index(ForecastRepository $forecastRepository, BancoRepository $bancoRepository, DetallecestaRepository $detallecestaRepository): Response
     {
-        return $this->render('forecast/index.html.twig', [
-            'forecasts' => $forecastRepository->findByEstadoFr("P"),
-            'bancos' => $bancoRepository->findAll(),
+        return $this->render('forecast/conciliar.html.twig', [
+            'pagos' => $forecastRepository->findBy(['estadoFr' => "P"], ['fechaFr' => 'DESC']),
+            'bancos' => $bancoRepository->findBy(['categoria_Bn' => ['4', '2', '11'], 'conciliado' => null], ['fecha_Bn' => 'DESC']),
         ]);
     }
 
@@ -38,6 +48,62 @@ class ForecastController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route("/conciliar/idBanco/crear", name="forecast_crearBanco", methods={"GET"})
+     */
+    public function crearIdBanco(Request $request, BancoRepository $bancoRepository): JsonResponse
+    {    
+        $bancoId = $request->query->get('banco');
+        $banco = $bancoRepository->findOneBy(array('id' => $bancoId));
+        $banco->setConciliado(true);   
+        $forecast = New Forecast();
+        $forecast->setEstadoFr('C');
+        $forecast->setTipoFr($banco->getCategoriaBn());
+        $forecast->setFijovarFr('V');
+        $forecast->setOrigenFr("Banco");
+        $forecast->setImporteFr($banco->getImporteBn());
+        $forecast->setTimestamp(new \DateTime());
+        $forecast->setBanco($banco);
+        $forecast->setConceptoFr($banco->getConceptoBn());
+        $forecast->setFechaFr($banco->getFechaBn());
+
+
+        $this->em->persist($forecast);
+        $this->em->persist($banco);
+        $this->em->flush();
+
+        $response = new JsonResponse();
+
+        return $response;
+
+    }    
+
+    /**
+     * @Route("/conciliar/{id}", name="forecast_conc", methods={"GET"})
+     */
+    public function conciliarPagos(Request $request, Forecast $forecast, BancoRepository $bancoRepository): JsonResponse
+    {    
+        $bancoId = $request->query->get('banco');
+        $banco = $bancoRepository->findOneBy(array('id' => $bancoId));
+        $banco->setConciliado(true);   
+        $forecast->setEstadoFr('C');
+        $forecast->setImporteFr($banco->getImporteBn());
+        if ($forecast->getTimestamp() == NULL){
+
+            $forecast->setTimestamp(new \DateTime());
+
+        }
+        $forecast->setBanco($banco);
+        $this->em->persist($forecast);
+        $this->em->persist($banco);
+        $this->em->flush();
+
+        $response = new JsonResponse();
+
+        return $response;
+
+    }
+         
 
     /**
      * @Route("/new", name="forecast_new", methods={"GET","POST"})
@@ -49,9 +115,9 @@ class ForecastController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($forecast);
-            $entityManager->flush();
+
+            $this->em->persist($forecast);
+            $this->em->flush();
 
             return $this->redirectToRoute('forecast_index');
         }
@@ -83,7 +149,7 @@ class ForecastController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('forecast_index');
         }
@@ -101,9 +167,9 @@ class ForecastController extends AbstractController
 
     {
         if ($this->isCsrfTokenValid('delete'.$forecast->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($forecast);
-            $entityManager->flush();
+            
+            $this->em->remove($forecast);
+            $this->em->flush();
         }
 
         return $this->redirectToRoute('forecast_index');
@@ -114,9 +180,9 @@ class ForecastController extends AbstractController
      */
     public function conciliar(Request $request, Forecast $forecast,  DetallecestaRepository $detallecestaRepository, string $estado): Response
     {
-        $entityManager = $this->getDoctrine()->getManager();
+
         $forecast->setEstadoFr($estado);
-        $entityManager->flush();
+        $this->em->flush();
 
         return $this->redirectToRoute('forecast_index');
     }

@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Economicpresu index{% endblock %}
+
+{% block body %}
+    <h1>Economicpresu index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>ConceptoEco</th>
+                <th>ImporteEco</th>
+                <th>DebehaberEco</th>
+                <th>AplicaEco</th>
+                <th>EstadoEco</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for economicpresu in economicpresus %}
+            <tr>
+                <td>{{ economicpresu.id }}</td>
+                <td>{{ economicpresu.conceptoEco }}</td>
+                <td>{{ economicpresu.importeEco }}</td>
+                <td>{{ economicpresu.debehaberEco }}</td>
+                <td>{{ economicpresu.aplicaEco }}</td>
+                <td>{{ economicpresu.estadoEco }}</td>
+                <td>
+                    <a href="{{ path('app_economicpresu_show', {'id': economicpresu.id}) }}">show</a>
+                    <a href="{{ path('app_economicpresu_edit', {'id': economicpresu.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_economicpresu_new') }}">Create new</a>
+{% endblock %}

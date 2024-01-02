@@ -6,6 +6,8 @@ use App\Repository\CestasRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Banco;
+use App\Entity\Detallecesta;
 
 /**
  * @ORM\Entity(repositoryClass=CestasRepository::class)
@@ -60,19 +62,20 @@ class Cestas
     private $timestampCs;
 
     /**
-     * @ORM\OneToMany(targetEntity=Detallecesta::class, mappedBy="cestaDc")
+     * @ORM\OneToMany(targetEntity=Detallecesta::class, mappedBy="cestaDc" , orphanRemoval=true, cascade={"persist","remove"})
      */
     private $detallecesta;
 
     /**
      * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="cestas")
+     * @ORM\JoinColumn(name="prespuesto_cs_id", referencedColumnName="id", onDelete="SET NULL")
      */
     private $prespuestoCs;
 
     /**
-     * @ORM\Column(type="float", nullable=true)
+     * @ORM\OneToMany(targetEntity=Pagos::class, mappedBy="cesta", orphanRemoval=true)
      */
-    private $importePagoCs;
+    private $pagos;
 
     public function __construct()
     {
@@ -84,8 +87,19 @@ class Cestas
         $this->setNumticketCs("");
         $this->setEstadoCs(1);
         $this->setTimestampCs(new \DateTime());
+        $this->pagos = new ArrayCollection();
 
     }
+
+    /**
+     * __clone
+     * @return void
+     */
+    
+    public function __clone()
+    {
+        $this->id = null;
+    }    
 
     public function getId(): ?int
     {
@@ -188,6 +202,18 @@ class Cestas
         return $this;
     }
 
+    public function getPresupuetoId(): ?int
+    {
+        if (is_null($this->getPrespuestoCs())){
+
+            return 0;
+            
+        } else {
+
+           return $this->getPrespuestoCs()->getId();
+        }
+    }
+
     public function __toString()
     {
         return strval($this->id);
@@ -199,17 +225,6 @@ class Cestas
     public function getdetallecesta(): Collection
     {
         return $this->detallecesta;
-    }
-
-
-    public function adddetallecesta(Detallecesta $detallecesta): self
-    {
-        if (!$this->detallecesta->contains($detallecesta)) {
-            $this->detallescesta[] = $detallecesta;
-            $detallecesta->getCestaDc($this);
-        }
-
-        return $this;
     }
 
     public function removedetallescesta(Detallecesta $detallecesta): self
@@ -236,14 +251,32 @@ class Cestas
         return $this;
     }
 
-    public function getImportePagoCs(): ?float
+    /**
+     * @return Collection<int, Pagos>
+     */
+    public function getPagos(): Collection
     {
-        return $this->importePagoCs;
+        return $this->pagos;
     }
 
-    public function setImportePagoCs(?float $importePagoCs): self
+    public function addPago(Pagos $pago): self
     {
-        $this->importePagoCs = $importePagoCs;
+        if (!$this->pagos->contains($pago)) {
+            $this->pagos[] = $pago;
+            $pago->setCesta($this);
+        }
+
+        return $this;
+    }
+
+    public function removePago(Pagos $pago): self
+    {
+        if ($this->pagos->removeElement($pago)) {
+            // set the owning side to null (unless already changed)
+            if ($pago->getCesta() === $this) {
+                $pago->setCesta(null);
+            }
+        }
 
         return $this;
     }

@@ -271,11 +271,14 @@ class Banks_N43
     {
         $tipo = new tiposmovimiento;
         $concepto = explode(" ", $line);
-        $gastofijo = array("GIJONESAS,", "COTIZACION", "TELECABLE", "LOBO", "Aguas", "IMPUESTOS","COREEDP");
-        $ventas= array("TPV", "ORDENANTE");
-        $proveedor=array("CORECOMERCIAL", "COREGME", "CORECAMACHO","COREMEDITERRANEA","COREL.","COREEUROMUEBLES","CORE1y1", "COREMOGAR", "KASSANDRA");
-        $comision = array ("COMISION", "COMISIONES");
+        $gastofijo = array("RCBO.ASESORIAS", "COTIZACION", "RCBO.TGSS", "INTERNET", "TRF. PERIODICA 3528642972", "RECIBO BSSG","RCBO.TOTALENERGIES");
+        $ventas= array("TRF.", "ORDENANTE", "FACTURACION COMERCIO");
+        $proveedor=array("RCBO.DUPLACH","RCBO.ROYO","RCBO.DELBA","RCBO.SUMESA","RCBO.COMERCIAL", "RCBO.MAMPARAS", "RCBO.CAMACHO","RCBO.MEDITERRANEA","RCBO.ANTONIO","RCBO.SUMESA","RCBO.INDUSTRIA", "RCBO.ESPACIO", "RCBO.GME");
+        $comision = array ("DESCUENTOS", "COMISIONES");
         $otros = array("5540XXXXXXXX5018");
+
+        var_dump($concepto);
+        die;
 
         foreach ($gastofijo as &$valor) {
             if (in_array($valor, $concepto)) {

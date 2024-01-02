@@ -1,46 +1,8 @@
-{% extends 'base.html.twig' %}
-{% block title %}Hello AdminProController!{% endblock %}
-{% block stylesheets %}
-            <!-- This page plugin CSS -->
-            <link href="../../assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-            <link href="{{ asset('assets/libs/c3/c3.min.css') }}" rel="stylesheet">
-            <!-- Custom CSS -->
-            <link href="{{ asset('dist/css/style.css') }}" rel="stylesheet">
-{% endblock %}
+{% extends 'inicio2.html.twig' %}
+{% block eltiempo %} {% endblock %}
+{% block cabecera %} Banco {% endblock %}
+{% block cardbody1 %}
 
-{% block javascripts %}
-            <link href="../../assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-            <link href="../../dist/js/pages/chartist/chartist-init.css" rel="stylesheet">
-            <link href="../../assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.css" rel="stylesheet">
-{% endblock %}
-
-
-{% block body %}
-        <!-- ============================================================== -->
-        <!-- Page wrapper  -->
-        <!-- ============================================================== -->
-        <div class="page-wrapper">
-            <!-- ============================================================== -->
-            <!-- Container fluid  -->
-            <!-- ============================================================== -->
-            <div class="container-fluid">
-                <!-- ============================================================== -->
-                <!-- Bread crumb and right sidebar toggle -->
-                <!-- ============================================================== -->
-                <div class="row page-titles">
-                    <div class="col-md-5 col-12 align-self-center">
-                        <h3 class="text-themecolor mb-0">Banco</h3>
-                    </div>
-                    <div class="col-md-7 col-12 align-self-center d-none d-md-flex justify-content-end">
-                        <ol class="breadcrumb mb-0 p-0 bg-transparent">
-                            <li class="breadcrumb-item"><a href="{{ path('admin_pro')}}">Home</a></li>
-                            <li class="breadcrumb-item active">Banco</li>
-                        </ol>
-                    </div>
-                </div>
-                <!-- ============================================================== -->
-                <!-- End Bread crumb and right sidebar toggle -->
-                <!-- ============================================================== -->
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
@@ -71,7 +33,7 @@
                                                 <td>{{ banco.categoriaBn }}</td>
                                                 <td>{{ banco.conceptoBn }}</td>
                                                 <td align="center">{{ banco.fechaBn ? banco.fechaBn|date('Y-m-d') : '' }}</td>
-                                                <td align="right">{{ banco.importeBn|number_format(2) }}</td>
+                                                <td align="right">{{ banco.importeBn|format_currency('EUR', locale='es') }}</td>
                                                 <td>
                                                         <a href="{{ path('banco_edit', {'id': banco.id}) }}">edit</a>
                                                         <a href="{{ path('banco_transferencia', {'id' : banco.id}) }}" class="text-inverse" title="Transferencia" data-toggle="tooltip">
@@ -86,10 +48,7 @@
                                         {% endfor %}
                                         </tbody>
                                         <tfoot>
-                                            <tr>
-                                                <th colspan="4" style="text-align:right">Total:</th>
-                                                <th></th>
-                                            </tr>
+
                                         </tfoot>
                                     </table>
                                     <a href="{{ path('banco_new') }}">Create new</a>
@@ -134,15 +93,18 @@
 
 {% block jscustom %}
     <!--This page plugins -->
-    <script src="../../assets/libs/datatables/media/js/jquery.dataTables.min.js"></script>
-    <script src="../../dist/js/pages/datatable/custom-datatable.js"></script>
+
+    <!--This page plugins -->
+    <script src="{{ asset('assets/extra-libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/datatables.net-bs4/js/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/datatable-basic.init.js') }}"></script>
     <script language = "javascript">
             //=============================================//
             //    Footer callback                          //
             //=============================================//
             $('#footer').DataTable({
                 "order": [
-                            [0, "desc"]
+                            [3, "desc"]
                          ],
                 "footerCallback": function(row, data, start, end, display) {
                     var api = this.api(),

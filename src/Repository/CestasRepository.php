@@ -26,14 +26,15 @@ class CestasRepository extends ServiceEntityRepository
         $sql = '
         SELECT sum(importe_tot_cs), month(fecha_cs) as mes FROM cestas p
         WHERE tipopago_cs = "Efectivo"
+         AND  estado_cs = 2
         AND YEAR(fecha_cs) = YEAR(CURDATE())
         GROUP BY MONTH (fecha_cs);
             ';
-        $stmt = $conn->prepare($sql)->executeQuery();
-
+        //$stmt = $conn->prepare($sql);
+        //$stmt->execute();
 
         // returns an array of arrays (i.e. a raw data set)
-        return $stmt->fetchAllAssociative();
+        return $conn->fetchAllAssociative($sql);
 
     }
 
@@ -46,10 +47,11 @@ class CestasRepository extends ServiceEntityRepository
         SELECT sum(importe_tot_cs) as ventatotalef FROM cestas p
         WHERE tipopago_cs = "Efectivo";
             ';
-        $stmt = $conn->prepare($sql)->executeQuery();
+        //$stmt = $conn->prepare($sql);
+        //$stmt->execute();
 
-        // returns an array of arrays (i.e. a raw data set)
-        return $stmt->fetch();
+
+        return $conn->fetchAssociative($sql);
 
     }
 
@@ -64,8 +66,7 @@ class CestasRepository extends ServiceEntityRepository
         $query = $entityManager->createQuery(
             'SELECT p
             FROM App\Entity\Cestas p
-            WHERE p.estadoCs < 5
-              AND p.estadoCs > 1');
+            WHERE p.estadoCs = 2');
 
         // returns an array of Product objects
         return $query->getResult();
@@ -83,7 +84,7 @@ class CestasRepository extends ServiceEntityRepository
         $query = $entityManager->createQuery(
             'SELECT p
             FROM App\Entity\Cestas p
-            WHERE p.estadoCs = 9');
+            WHERE p.estadoCs = 3');
 
         // returns an array of Product objects
         return $query->getResult();
