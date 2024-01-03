@@ -143,8 +143,12 @@
                                                                         {% set manoobrapdte = economicos.importeEco %}
                                                                     {% endif %}
                                                                 {% endif %}
-                                                            {% endfor %}                                                            
-                                                    {{ (pagado + (presupuesto.importemanoobra - manoobrapdte) )  |format_currency('EUR', locale='es')  }}</td>
+                                                            {% endfor %}  
+                                                         {% if presupuesto.EstadoPe.id == 9 or presupuesto.EstadoPe.id == 10 %}                                                           
+                                                            {{ (pagado + (presupuesto.importemanoobra - manoobrapdte) )  |format_currency('EUR', locale='es')  }}</td>
+                                                        {% else %}
+                                                            {{ 0 |format_currency('EUR', locale='es') }} </td>
+                                                        {% endif %}                                                        
 
                                                         {% if presupuesto.EstadoPe.id == 9 or presupuesto.EstadoPe.id == 10 %} 
                                                             <td align="right">{{ (presupuesto.importetotPe + presupuesto.importemanoobra - pagado - (presupuesto.importemanoobra - manoobrapdte )) |format_currency('EUR', locale='es') }} </td>
