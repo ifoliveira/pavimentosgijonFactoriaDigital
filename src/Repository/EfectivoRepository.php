@@ -23,7 +23,8 @@ class EfectivoRepository extends ServiceEntityRepository
     {
         $conn = $this->getEntityManager()->getConnection();
 
-        $sql = 'SELECT sum(importe_ef) as efectivototal  FROM efectivo p';
+        $sql = 'SELECT sum(importe_ef) as efectivototal  FROM efectivo p
+                 WHERE fecha_ef >= "2024-01-01"';
 
         // returns an array of arrays (i.e. a raw data set)
         return $conn->fetchAssociative($sql);

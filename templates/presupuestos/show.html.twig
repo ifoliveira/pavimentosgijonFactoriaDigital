@@ -648,7 +648,7 @@
 
 
                         {% endif %}
-                        {% if presupuesto.EstadoPe.id < 9 %}
+                        {% if presupuesto.EstadoPe.id < 9 or presupuesto.EstadoPe.id == 12 %}
                         <div class="card">
                             <div class="card-body">
                                     {{ form_start(formestadopr) }}

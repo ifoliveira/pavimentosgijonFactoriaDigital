@@ -34,7 +34,7 @@ class ForecastController extends AbstractController
     {
         return $this->render('forecast/conciliar.html.twig', [
             'pagos' => $forecastRepository->findBy(['estadoFr' => "P"], ['fechaFr' => 'DESC']),
-            'bancos' => $bancoRepository->findBy(['categoria_Bn' => ['4', '2', '11'], 'conciliado' => null], ['fecha_Bn' => 'DESC']),
+            'bancos' => $bancoRepository->findBy(['categoria_Bn' => ['4', '2', '11'], 'conciliado' => "0"], ['fecha_Bn' => 'DESC']),
         ]);
     }
 

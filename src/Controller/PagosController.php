@@ -34,7 +34,7 @@ class PagosController extends AbstractController
     {
         return $this->render('pagos/index.html.twig', [
             'pagos'  => $pagosRepository->findBy(['tipoPg' => 'Tarjeta', 'bancoPg' => null]),
-            'bancos' => $bancoRepository->findBy(['categoria_Bn' => '3', 'conciliado' => null]),
+            'bancos' => $bancoRepository->findBy(['categoria_Bn' => '3', 'conciliado' => '0']),
         ]);
     }    
 

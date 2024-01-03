@@ -18,9 +18,7 @@ class Encuesta
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
-     * @ORM\Column(type="uuid", unique=true))
      * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=UuidV4Generator::class)
      */
     private $id;
 
