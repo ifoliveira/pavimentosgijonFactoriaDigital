@@ -75,7 +75,6 @@ class EconomicpresuRepository extends ServiceEntityRepository
         SELECT sum(importe_eco) as cobropdteMo FROM economicpresu p
         WHERE aplica_eco = "M"
           AND estado_eco = "1"
-          AND YEAR(timestamp) = YEAR(CURDATE());
             ';
 
         return $conn->fetchAssociative($sql);
@@ -91,7 +90,6 @@ class EconomicpresuRepository extends ServiceEntityRepository
         SELECT sum(importe_eco) as pagopdteMo FROM economicpresu p
         WHERE aplica_eco = "E"
           AND estado_eco = "1"
-        AND YEAR(timestamp) = YEAR(CURDATE());
             ';
 
         return $conn->fetchAssociative($sql);
