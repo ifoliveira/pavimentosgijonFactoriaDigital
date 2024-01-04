@@ -18,7 +18,7 @@ class Encuesta
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
-     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\Column(type="integer")
      */
     private $id;
 
@@ -94,7 +94,7 @@ class Encuesta
     }
 
 
-    public function getId(): ?UuidInterface
+    public function getId(): ?int
     {
         return $this->id;
     }

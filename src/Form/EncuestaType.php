@@ -126,7 +126,8 @@ class EncuestaType extends AbstractType
                             ])   
 
                            ->add('Enviar_formulario', SubmitType::class, [
-                                'attr' => ['class' => 'save'],                                                                                                                               
+                                'attr' => ['class' => 'save'],   
+                                'label' => 'Enviar encuesta'                                                                                                                            
                                 ])   
 
         ;
