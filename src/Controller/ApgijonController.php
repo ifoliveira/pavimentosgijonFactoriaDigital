@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Consultas;
+use DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -9,6 +11,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Form\LogsType;
 use App\Entity\Logs;
+use App\Form\ConsultasType;
+use App\Repository\ConsultasRepository;
 use Symfony\Component\HttpFoundation\Request;
 
 class ApgijonController extends AbstractController
@@ -50,32 +54,125 @@ class ApgijonController extends AbstractController
             ]);
         }
         
-        return $this->render('apgijon/index.html.twig', [
+        return $this->render('apgijon/principal.html.twig', [
             'controller_name' => 'ApgijonController',
             'form' => $form->createView(),
             'cookies'=> 'No mostrar'
         ]);
     }
 
-	
+    /**
+     * @Route("/nosotros", name="aboutus")
+     */
+    public function aboutus(Request $request): Response
+    {
+        return $this->render('apgijon/nosotros.html.twig', [
+            'controller_name' => 'ApgijonController',
+        ]);
+    } 
 
+    /**
+     * @Route("/reforma-integral-banos-gijon", name="integral")
+     */
+    public function integral(Request $request, ConsultasRepository $consultasRepository): Response
+    {
 
+        $consulta = new Consultas();
 
+        $form = $this->createForm(ConsultasType::class, $consulta);
 
+        $form->handleRequest($request);
 
+        if ($form->isSubmitted() && $form->isValid()) {
 
+            $consulta = $form->getData();
+  
+            $consulta->setTimestamp(New DateTime());
+            $consulta->setatencion(false);
 
+            $consultasRepository->add($consulta, true);
 
+            return $this->redirectToRoute('integral', [], Response::HTTP_SEE_OTHER);
+        }   
 
+        return $this->render('apgijon/integral.html.twig', [
+            'controller_name' => 'ApgijonController',
+            'form' => $form->createView()
 
+        ]);
+    }     
 
+    /**
+     * @Route("/reforma-banos-gijon/blog", name="blog")
+     */
+    public function blog(Request $request): Response
+    {
+        
+        return $this->render('apgijon/blog.html.twig', [
+            'controller_name' => 'ApgijonController'
 
+        ]);
+    } 
 
+    /**
+     * @Route("/cambio-banera-ducha-gijon", name="platoducha")
+     */
+    public function platoducha(Request $request, ConsultasRepository $consultasRepository): Response
+    {
 
+        $consulta = new Consultas();
 
+        $form = $this->createForm(ConsultasType::class, $consulta);
 
+        $form->handleRequest($request);
 
+        if ($form->isSubmitted() && $form->isValid()) {
 
+            $consulta = $form->getData();
+  
+            $consulta->setTimestamp(New DateTime());
+            $consulta->setatencion(false);
+
+            $consultasRepository->add($consulta, true);
+
+            return $this->redirectToRoute('integral', [], Response::HTTP_SEE_OTHER);
+        }   
+
+        return $this->render('apgijon/platoducha.html.twig', [
+            'controller_name' => 'ApgijonController',
+            'form' => $form->createView()
+        ]);
+    }   
+
+    /**
+     * @Route("/contacto", name="contacto")
+     */
+    public function contacto(Request $request, ConsultasRepository $consultasRepository): Response
+    {
+
+        $consulta = new Consultas();
+
+        $form = $this->createForm(ConsultasType::class, $consulta);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $consulta = $form->getData();
+  
+            $consulta->setTimestamp(New DateTime());
+            $consulta->setatencion(false);
+
+            $consultasRepository->add($consulta, true);
+
+            return $this->redirectToRoute('contacto', [], Response::HTTP_SEE_OTHER);
+        }        
+
+        return $this->render('apgijon/contacto.html.twig', [
+            'controller_name' => 'ApgijonController',
+            'form' => $form->createView(),
+        ]);
+    }   
 
     /**
      * @Route("/img-route/{img}", name="img_route")
