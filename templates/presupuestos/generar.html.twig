@@ -22,6 +22,10 @@
 
                 {% set numero = 1 %}
                 {% set facturapagada = false %}
+                {% set pagado = 0 %}
+                {% for pagos in presupuesto.ticket.pagos %}
+                   {% set pagado = pagos.importePg + pagado %}
+                {% endfor %}                
                                                   
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
@@ -175,13 +179,7 @@
                                                     <th class="text-center">{{ ((presupuesto.importetotPe)-((presupuesto.importetotPe)/1.21)) |format_currency('EUR', locale='es')  }}</th>
                                                     <th class="text-center">{{ (presupuesto.importetotPe) |format_currency('EUR', locale='es')  }}</th>
                                             {% if tipo == "FACTURA SIMPLIFICADA" %}
-                                                 {% set pagado = 0 %}
                                                 {% if (presupuesto.importetotPe - presupuesto.importesnalPe ) != 0 %}
-
-                                                    {% for pagos in presupuesto.ticket.pagos %}
-                                                        {% set pagado = pagos.importePg + pagado %}
-                                                    {% endfor %}
-
                                                     <th class="text-center">{{ (pagado) |format_currency('EUR', locale='es')  }}</th>
                                                     <th class="text-center"><h2>{{ (presupuesto.importetotPe - pagado ) |format_currency('EUR', locale='es')  }}</h2></th>
                                                 {% endif %}
@@ -192,12 +190,10 @@
                                 </div>
                             </div>
 
-                             {% if tipo == "FACTURA SIMPLIFICADA" and facturapagada == false %}<h6> * Este documento rectifica toda aquel con referencia ##002100{{ presupuesto.id }}## y fecha previa   {% endif %}
-                                {% else %}
+                                {% if tipo == "FACTURA SIMPLIFICADA" and facturapagada == false %}<h6> * Este documento rectifica toda aquel con referencia ##002100{{ presupuesto.id }}## y fecha previa   {% endif %}
+                            {% else %}
                                  
                             </div>
-
-
                             <div class="row">
                                 <div class="col-md-8">
                                     <div class="table-responsive mt-5" style="clear: both;">
@@ -239,9 +235,10 @@
                             </div>
 
                             {% if tipo == "FACTURA SIMPLIFICADA" or tipo == "FACTURA FINAL"  %}
-                            <p></p>
+                                <p></p>
                             {% else %}
-                                <p> * Importe final. Posibilidad de financiar a 12 meses sin intereses <b>{{(financiacion.obtenermensualidad(2)|format_currency('EUR', locale='es'))}} / mes</b> - Sujeto a aprobación por RuralFinance</p>
+                                <p> * Importe final. Posibilidad de financiar a 12 meses sin intereses <b>{{(financiacion.obtenermensualidad(2)|format_currency('EUR', locale='es'))}} / mes</b> - Sujeto a aprobación por RuralFinance <br>
+                                    * Importe abonado actualmente <b>{{ (pagado) |format_currency('EUR', locale='es')  }}</b> resto total <b>{{ (total - pagado) |format_currency('EUR', locale='es')  }}</b> 
                             {% endif %}
                             {% endif %}   
                         </div>

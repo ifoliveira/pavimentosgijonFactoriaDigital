@@ -103,6 +103,9 @@
                                         <div class="card-body">
                                              <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'FACTURA SIMPLIFICADA'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura CON precios</a>
                                              <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'FACTURA SIMPLIFICADA'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura SIN precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'PRESUPUESTO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto CON precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'PRESUPUESTO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto SIN precios</a>
+                                        </div>
                                         </div>
                                     </div>
                         {% endif %}
@@ -811,7 +814,27 @@
         *****************************************/
          $(document).on('click', 'button[id="Finalizar"]' , function(event) {
 
-            $.ajax({  
+            const swalWithBootstrapButtons =  Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'mr-2 btn btn-danger'
+                },
+                buttonsStyling: false,
+            })
+
+            swalWithBootstrapButtons.fire({
+                title: 'Se finalizará el presupuesto',
+                text: "Se finalizará el presupuesto y y no se podrán hacer más acciones sobre él",
+                type: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Adelante',
+                cancelButtonText: 'Noooo',
+                reverseButtons: true
+            }).then((result) => {
+                
+                if (result.value) {
+
+                    $.ajax({  
                     url:        '{{ path("presupuestos_finalizar", {id:presupuesto.id  }) }}',  
                     type:       'GET',   
                     data:        ({}),
@@ -825,6 +848,11 @@
                         alert(textStatus);  
                     }  
                     });
+                }
+            })
+
+
+
 
 
          })
