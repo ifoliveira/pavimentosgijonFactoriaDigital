@@ -1,0 +1,120 @@
+@charset "utf-8";
+/* CSS Document */
+
+/* 
+	Template Name: 
+*/
+
+/* Medium Devices, Desktops */
+@media (max-width: 991px) {
+.sticky-wrapper {
+	height: auto !important;
+}
+.sticky-wrapper .header-lover {
+	position: relative !important;
+}
+.header-lover .navbar-nav {
+	background-color: #fbfaf8;
+	z-index: 99;
+	position: relative;
+}
+.header-lover .dropdown-menu {
+	border-radius: 0px;
+}
+.header-lover .navbar .nav-item {
+	border-bottom: 1px solid rgba(0,0,0,0.1);
+	width: 100%;
+}
+.header-lover .navbar .nav-item .nav-link {
+	padding: 14px 16px;
+}
+.is-sticky .header-lover .navbar .nav-item .nav-link {
+	color: #000;
+}
+.header-lover .navbar-nav {
+	align-items: start;
+}
+.header-lover .navbar .nav-item:last-child {
+	border-bottom: 0px;
+}
+.counter-area .row .col:first-child, .counter-area .row .col:nth-child(2) {
+	border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+.about-text h2 {
+	font-size: 30px;
+	line-height: 35px;
+}
+}
+
+/* Small Devices, Tablets */
+@media (max-width: 767px) {
+.header-contact {
+	text-align: center;
+}
+.header-hours {
+	text-align: center;
+	margin-top: 10px;
+}
+.slider .carousel-caption h5 {
+	font-size: 24px;
+	line-height: 24px;
+}
+.slider .carousel-control-next, .slider .carousel-control-prev {
+	display: none;
+}
+.call-us-text {
+	font-size: 30px;
+}
+.comments-block ul li ul {
+	margin-left: 0px;
+}
+}
+
+/* Extra Small Devices, Phones */
+@media (max-width: 575px) {
+.header-upper {
+	padding: 15px 0px;
+}
+.slider .carousel-caption {
+	padding: 70px 0;
+}
+.banner-img {
+	margin-top: 10px;
+}
+.counter-area .row .col:nth-child(3) {
+	border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+.blog-item-content {
+	padding: 15px;
+}
+.blog-item ul li a {
+	font-size: 10px;
+}
+.footer-contact li, .footer-link li {
+	width: 100%;
+	text-align: left;
+	margin-right: 0px !important;
+}
+.footer-contact li a, .footer-link li a {
+	padding: 0px;
+}
+.footer-link {
+	border-top: 1px solid rgba(0,0,0,0.1);
+	padding-top: 15px;
+}
+.project-info {
+	padding: 20px;
+}
+.blog-post-meta {
+	left: 10px;
+	bottom: 10px;
+	padding: 10px;
+}
+.comments-block ul li .d-flex {
+	display: inline-block !important;
+}
+.comments-block ul li .d-flex .flex-shrink-0 {
+	padding-right: 0px;
+	margin-bottom: 15px;
+}
+}

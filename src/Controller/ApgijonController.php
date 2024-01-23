@@ -103,7 +103,38 @@ class ApgijonController extends AbstractController
     }     
 
     /**
-     * @Route("/reforma-banos-gijon/blog", name="blog")
+     * @Route("/reforma-bano-gijon/tendencias", name="tendencias")
+     */
+    public function tendencias(Request $request, ConsultasRepository $consultasRepository): Response
+    {
+
+        $consulta = new Consultas();
+
+        $form = $this->createForm(ConsultasType::class, $consulta);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $consulta = $form->getData();
+  
+            $consulta->setTimestamp(New DateTime());
+            $consulta->setatencion(false);
+
+            $consultasRepository->add($consulta, true);
+
+            return $this->redirectToRoute('integral', [], Response::HTTP_SEE_OTHER);
+        }   
+
+        return $this->render('apgijon/tendencia.html.twig', [
+            'controller_name' => 'ApgijonController',
+            'form' => $form->createView()
+
+        ]);
+    }       
+
+    /**
+     * @Route("/reforma-bano-gijon/blog", name="blog")
      */
     public function blog(Request $request): Response
     {
