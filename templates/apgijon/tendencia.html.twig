@@ -38,52 +38,7 @@
 <!-- ================ Preloader end ================ --> 
 
 <!-- ================ Header ================ -->
-<header> 
-  <!-- header upper -->
-  <div class="header-upper">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-6 col-md-6">
-          <ul class="list-inline header-contact">
-            <li class="list-inline-item"><a href="mailto:buzon@pavimentosgijon.es"><strong>E:</strong> buzon@pavimentosgijon.es</a></li>
-            <li class="list-inline-item"><a href="tel:985391326"><strong>T:</strong> 985 391 356</a></li>
-          </ul>
-        </div>
-        <div class="col-lg-6 col-md-6">
-          <div class="header-hours list-inline"><strong>Horario:</strong> Lun-Vie 10:15 a 13:00 - 16:30 a 19:30 </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- header upper end --> 
-  <!-- header lover -->
-  <div class="header-lover">
-    <div class="container">
-      <nav class="navbar navbar-expand-lg"> 
-        <!-- logo --> 
-        <a class="navbar-brand" href="{{ path('homepage')}}"><img src="img/logo.png" alt=""></a> 
-        <!-- logo end -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbars01" aria-controls="navbars01" aria-expanded="false" aria-label="Toggle navigation"> <span></span> <span></span> <span></span> </button>
-        <div class="collapse navbar-collapse" id="navbars01">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item "> <a class="nav-link" href="{{ path('homepage')}}" >Inicio</a> </li>
-            <li class="nav-item"> <a class="nav-link" href="{{ path('aboutus')}}">Nosotros</a> </li>
-            <li class="nav-item dropdown active"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown01" role="button" data-bs-toggle="dropdown" aria-expanded="false">Servicios</a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown01">
-                <li><a class="dropdown-item" href="{{ path('integral')}}">Reforma Integral</a></li>
-                <li><a class="dropdown-item" href="{{ path('platoducha')}}">Bañera por ducha</a></li>
-              </ul>
-            </li>
-            <li class="nav-item"> <a class="nav-link" href="{{ path('blog')}}">Blog</a>
-            </li>
-            <li class="nav-item"> <a class="nav-link"  href="{{ path('contacto')}}">Contacto</a> </li>
-          </ul>
-        </div>
-      </nav>
-    </div>
-  </div>
-  <!-- header lover end --> 
-</header>
+  {% include 'apgijon/header.html.twig' %}
 <!-- ================ Header end ================ -->   
 
 <!-- ================ inner page header ================ -->
@@ -106,8 +61,12 @@
 <!-- ================ Blog post page ================ -->
 <div class="blog-post-page pt-70 pb-40">
   <div class="container">
+    <div class="inner-page-title-c">
+      <h2> Artículo sobre reformas de baños </h2>
+      <br>
+    </div>   
     <div class="row">
-<div class="col-lg-3">
+    <div class="col-lg-3">
         <aside> 
           <!-- sidebar widget -->
           <div class="s-sidebar-widget mb-30">
@@ -212,36 +171,7 @@
 
 
 <!-- ================ Footer area ================ -->
-<footer class="footer-main"> 
-  <!-- footer upper -->
-  <div class="footer-upper pt-40 pb-30">
-    <div class="container"> 
-      <!-- footer contact -->
-      <ul class="footer-contact list-inline">
-        <li class="list-inline-item"><a href="https://maps.app.goo.gl/WJDtn32tn7yT33LA6" target="_blank"><strong>D:</strong> Avenida de Schultz 28 Bajo Gijón, 33209 Asturias</a></li>
-        <li class="list-inline-item"><a href="mailto:buzon@pavimentosgijon.es"><strong>E:</strong> buzon@pavimentosgijon.es</a></li>
-        <li class="list-inline-item"><a href="tel:985391326"><strong>T:</strong> 985 391 356</a></li>
-      </ul>
-      <!-- footer contact end --> 
-      <!-- footer link -->
-      <ul class="footer-link list-inline">
-        <li class="list-inline-item"><a href="{{ path('homepage')}}">Inicio</a></li>
-        <li class="list-inline-item"><a href="{{ path('aboutus')}}">Nosotros</a></li>
-        <li class="list-inline-item"><a href="{{ path('blog')}}">Blog</a></li>
-        <li class="list-inline-item"><a href="{{ path('contacto')}}">Contacta</a></li>
-      </ul>
-      <!-- footer link end --> 
-    </div>
-  </div>
-  <!-- footer upper end --> 
-  <!-- footer copyright -->
-  <div class="footer-copyright text-center">
-    <div class="container">
-      <p class="mb-0">© <span class="current-year"></span> All Rights Reserved.</p>
-    </div>
-  </div>
-  <!-- footer copyright end --> 
-</footer>
+  {% include 'apgijon/footer.html.twig' %}
 <!-- ================ Footer area end ================ --> 
 <!-- ================ Top scroll ================ --> 
 <a href="#" class="scroll-top"><i class="bi bi-capslock"></i></a> 
