@@ -24,4 +24,20 @@ class SitemapController extends AbstractController
 
         return $response;
     }
+
+
+    #[Route('/robots.txt', name: 'robots')]
+    public function robots()
+    {
+        // find published blog posts from db
+
+        $response = new Response(
+            $this->renderView('./sitemaps/robots.html.twig'),
+            200
+        );
+        $response->headers->set('Content-Type', 'text');
+
+        return $response;
+    }
+
 }
