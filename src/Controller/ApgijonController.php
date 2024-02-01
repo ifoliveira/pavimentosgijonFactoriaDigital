@@ -103,6 +103,37 @@ class ApgijonController extends AbstractController
     }     
 
     /**
+     * @Route("/reforma-bano-gijon/precio-cambio-bañera-por-ducha", name="blogcosteplato")
+     */
+    public function blogcosteplato(Request $request, ConsultasRepository $consultasRepository): Response
+    {
+
+        $consulta = new Consultas();
+
+        $form = $this->createForm(ConsultasType::class, $consulta);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $consulta = $form->getData();
+  
+            $consulta->setTimestamp(New DateTime());
+            $consulta->setatencion(false);
+
+            $consultasRepository->add($consulta, true);
+
+            return $this->redirectToRoute('integral', [], Response::HTTP_SEE_OTHER);
+        }   
+
+        return $this->render('apgijon/blogcosteplato.html.twig', [
+            'controller_name' => 'ApgijonController',
+            'form' => $form->createView()
+
+        ]);
+    }   
+
+    /**
      * @Route("/reforma-bano-gijon/platosdeducha", name="blogplato")
      */
     public function blogplato(Request $request, ConsultasRepository $consultasRepository): Response
