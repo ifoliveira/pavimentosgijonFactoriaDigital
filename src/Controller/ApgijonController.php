@@ -193,6 +193,37 @@ class ApgijonController extends AbstractController
 
         ]);
     }    
+    
+    /**
+     * @Route("/reforma-bano-gijon/ahorra-reforma-bano", name="ahorrar")
+     */
+    public function blogahorro(Request $request, ConsultasRepository $consultasRepository): Response
+    {
+
+        $consulta = new Consultas();
+
+        $form = $this->createForm(ConsultasType::class, $consulta);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $consulta = $form->getData();
+  
+            $consulta->setTimestamp(New DateTime());
+            $consulta->setatencion(false);
+
+            $consultasRepository->add($consulta, true);
+
+            return $this->redirectToRoute('integral', [], Response::HTTP_SEE_OTHER);
+        }   
+
+        return $this->render('apgijon/blogahorro.html.twig', [
+            'controller_name' => 'ApgijonController',
+            'form' => $form->createView()
+
+        ]);
+    }       
 
     /**
      * @Route("/reforma-bano-gijon/reforma-bano-completa-que-incluye", name="guiacompleta")
