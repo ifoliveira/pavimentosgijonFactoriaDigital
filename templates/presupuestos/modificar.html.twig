@@ -254,6 +254,7 @@
                 const inputValue = 1
                 const inputValue2 = data[4]
                 const inputValue3 = data[3]
+                const inputValue4 = 0
                 const inputStep = 1
                 const inputStep2 = 1
                 const inputText = ""
@@ -269,7 +270,9 @@
                     <h2> PVP </h2>
                     <input type="number" value="${inputValue2}" step="${inputStep2}" class="swal2-input" id="range-value2">
                     <h2> Coste </h2>
-                    <input type="number" value="${inputValue3}" step="${inputStep2}" class="swal2-input" id="range-value3">`,
+                    <input type="number" value="${inputValue3}" step="${inputStep2}" class="swal2-input" id="range-value3">
+                    <h2> Descuento </h2>
+                    <input type="number" value="${inputValue4}" step="${inputStep2}" class="swal2-input" id="range-value4">`,
 
                 }).then((result) => {
                     if (result.value) {
@@ -282,18 +285,20 @@
                         importe = inputNumber2.value;
                         const inputNumber3 = Swal.getContent().querySelector('#range-value3');
                         coste = inputNumber3.value;
-                        insert_line(data,cantidad,importe,coste,cestaId,texto);
+                        const inputNumber4 = Swal.getContent().querySelector('#range-value4');
+                        descuento = inputNumber4.value;                        
+                        insert_line(data,cantidad,importe,coste,cestaId,texto,descuento);
                     }
                 })
 
          })
 
-        function insert_line(producto,cantidad,importe,coste,cesta,texto) 
+        function insert_line(producto,cantidad,importe,coste,cesta,texto,descuento) 
         {
             $.ajax({  
                url:        '{{path("detallecesta_new") }}',   
                type:       'GET',   
-               data:        ({producto: producto, cantidad:cantidad, importe:importe, coste:coste, cesta:cesta, texto:texto}),
+               data:        ({producto: producto, cantidad:cantidad, importe:importe, coste:coste, cesta:cesta, texto:texto, descuento:descuento}),
                dataType:   'json',  
                async:      true,  
                

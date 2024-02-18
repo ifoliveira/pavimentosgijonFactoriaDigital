@@ -58,7 +58,13 @@ class CestaUser {
     public function getImporteTot( $cestaId )
     {
         $item = $this->em->getRepository(Detallecesta::class)->imptotalCesta($this->getCesta($cestaId));
-        return $item ? $item : null;
+        return $item ? round($item,2) : null;
+    }
+
+    public function getDescuentoTot( $cestaId )
+    {
+        $item = $this->em->getRepository(Detallecesta::class)->descuentoCesta($this->getCesta($cestaId));
+        return $item ? round($item,2) : null;
     }
 
     public function getCantidadTot( $cestaId )

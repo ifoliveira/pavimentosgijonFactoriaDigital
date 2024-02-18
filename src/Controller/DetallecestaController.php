@@ -149,6 +149,7 @@ class DetallecestaController extends AbstractController
         $coste = $request->query->get('coste');
         $cestaId = $request->query->get('cesta');
         $texto = $request->query->get('texto');
+        $descuento = $request->query->get('descuento');
 
         if ($texto=="") {
             $texto = NULL;
@@ -169,6 +170,7 @@ class DetallecestaController extends AbstractController
         $detcesta->setCantidadDc($cantidad);
         $detcesta->setPrecioDc($coste);
         $detcesta->setTextoDc($texto);
+        $detcesta->setDescuentoDc($descuento);
        // $detcesta->setpvpDc($producto[4]);
         if ($importe != 0){
             $detcesta->setpvpDc($importe); 

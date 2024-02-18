@@ -23,6 +23,8 @@
                 {% set numero = 1 %}
                 {% set facturapagada = false %}
                 {% set pagado = 0 %}
+                {% set descuento_total = 0 %}
+                {% set descuento  = false %}
                 {% for pagos in presupuesto.ticket.pagos %}
                    {% set pagado = pagos.importePg + pagado %}
                 {% endfor %}                
@@ -79,7 +81,7 @@
                                                     <th class="text-center"><h2>{{ total |format_currency('EUR', locale='es')  }}*    </h2></th>                                                
                                                 {% endif %}
                                                     <td class="text-center">{{ "now"|date("d/m/Y") }}</td>
-                                                    <td class="text-center">#002300{{ presupuesto.id }}#</td>
+                                                    <td class="text-center">#002400{{ presupuesto.id }}#</td>
                                                     <td colspan="4"> </td>
                                                     <th colspan="2" class="text-end"> Dirección :</th>
                                                     <td class="text-left" colspan="2" style="padding-left: 10px">{{presupuesto.clientePe.direccionCl}}</td>
@@ -103,7 +105,7 @@
                                                     <th class="text-center" scope="col"></th>
                                                     <th scope="col">Descripción</th>
                                                     <th class="text-center" scope="col">Cantidad</th>
-                                                    <th class="text-center" style = "text-align: center" scope="col">{% if precios == 'S' %}Coste unidad {% endif %}</th>
+                                                    <th class="text-center" style = "text-align: center" scope="col">{% if precios == 'S' %}Coste unidad{% endif %}</th>
                                                     <th class="text-center" scope="col">{% if precios == 'S' %}Total{% endif %}</th>
                                                 </tr>
                                             </thead>
@@ -114,8 +116,8 @@
                                                     <td class="text-center"></td>
                                                     <td>{{ detalle.productoDc.descripcionPd }} {{detalle.textoDc}}</td>
                                                     <td class="text-center">{{ detalle.cantidadDc }} </td>
-                                                    <td class="text-end"> {% if precios == 'S' %}{{ detalle.pvpDc  |format_currency('EUR', locale='es')  }} {% endif %}</td>
-                                                    <td class="text-end"> {% if precios == 'S' %}{{ (detalle.cantidadDc * detalle.pvpDc ) |format_currency('EUR', locale='es')  }}{% endif %}</td>
+                                                    <td class="text-end"> {% if precios == 'S' %}{{ (detalle.pvpDc)  |format_currency('EUR', locale='es') }} {% if (detalle.descuentoDc) != 0 %} <b>- {{(detalle.descuentoDc) |number_format(2, '.', ',')  }} %</b>   {% set descuento  = true %} {% endif %} {% endif %}</td>
+                                                    <td class="text-end"> {% if precios == 'S' %}{{ (detalle.cantidadDc * (detalle.pvpDc  - (detalle.pvpDc * detalle.descuentoDc / 100 )) ) |format_currency('EUR', locale='es')  }}{% endif %}</td>
 
                                                     {% set numero = numero + 1 %} 
                                                 </tr>
@@ -129,11 +131,24 @@
                                                 <tr>
                                                 {% if facturapagada == false %}
                                                     {% if precios == 'S' %}
+                                                        {% if descuento == true %}
+                                                            <td  class="text-end" colspan="4"> <b>Descuento Total : </b>
+                                                            <td  class="text-end" colspan="2    "> <b> - {{ (descuentototal) |format_currency('EUR', locale='es')  }}</b></td>
+                                                        {% endif %}</td>
+                                                    {% endif %}
+                                                {% endif %}                                                
+                                                </tr>
+                                                <tr>
+                                                {% if facturapagada == false %}
+                                                    {% if precios == 'S' %}
+                                                        {% if descuento == true %}
+
+                                                        {% endif %}
+
                                                         <td  class="text-end" colspan="4"> <b>Materiales I.V.A. Incluido : </b></td>
                                                         <td  class="text-end" colspan="2    "> <b>{{ (subtotal) |format_currency('EUR', locale='es')  }}</b></td>
                                                     {% else %}
                                                         <td  class="text-center" colspan="3"> <b>Materiales I.V.A. Incluido : {{ (subtotal) |format_currency('EUR', locale='es')  }}</b></td>
-
                                                     {% endif %}
                                                 {% endif %}
                                                     
@@ -238,7 +253,11 @@
                                 <p></p>
                             {% else %}
                                 <p> * Importe final. Posibilidad de financiar a 12 meses sin intereses <b>{{(financiacion.obtenermensualidad(2)|format_currency('EUR', locale='es'))}} / mes</b> - Sujeto a aprobación por RuralFinance <br>
-                                    * Importe abonado actualmente <b>{{ (pagado) |format_currency('EUR', locale='es')  }}</b> resto total <b>{{ (total - pagado) |format_currency('EUR', locale='es')  }}</b> 
+                                {% if tipo != "PRESUPUESTO" %}
+                                    * Importe abonado actualmente <b>{{ (pagado) |format_currency('EUR', locale='es')  }}</b> resto total <b>{{ (total - pagado) |format_currency('EUR', locale='es')  }}</b> </p>
+                                {% else %}
+                                </p>
+                                {% endif %}
                             {% endif %}
                             {% endif %}   
                         </div>

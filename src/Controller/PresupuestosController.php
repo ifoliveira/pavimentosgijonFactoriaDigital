@@ -269,7 +269,7 @@ class PresupuestosController extends AbstractController
 
             if ($estado == 7 ) {
 
-                $presupuesto->setImportetotPe($detallecestaRepository->imptotalCesta($presupuesto->getTicket()->getId()));
+                $presupuesto->setImportetotPe(round($detallecestaRepository->imptotalCesta($presupuesto->getTicket()->getId()),2));
             }
 
             $presupuesto->setEstadoPe($estadocesta);
@@ -425,6 +425,7 @@ class PresupuestosController extends AbstractController
         $cestauser = new CestaUser($this->em);
         // Producto y cantidad a añadir
         $subtotal = $cestauser->getImporteTot($presupuesto->getTicket()->getId());
+        $descuentototal = $cestauser->getDescuentoTot($presupuesto->getTicket()->getId()); 
         $total = $subtotal + $presupuesto->getImportemanoobra();
 
         $financiacion = new FinanciacionClass($total, 12);
@@ -435,7 +436,8 @@ class PresupuestosController extends AbstractController
             'tipo' => $tipo,
             'financiacion' => $financiacion,
             'total' => $total,
-            'subtotal' => $subtotal
+            'subtotal' => $subtotal,
+            'descuentototal' => $descuentototal
         ]);
     }
 
@@ -751,7 +753,7 @@ class PresupuestosController extends AbstractController
         // Producto y cantidad a añadir
         $importe = $cestauser->getImporteTot($presupuesto->getTicket()->getId());
 
-        $presupuesto->setImportetotPe($importe);
+        $presupuesto->setImportetotPe(round($importe,2));
 
         $this->em->flush();
 

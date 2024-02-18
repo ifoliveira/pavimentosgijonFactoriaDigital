@@ -25,10 +25,20 @@ class DetallecestaRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('dc')
             ->andWhere('dc.cestaDc = :cestaDc')
             ->setParameter('cestaDc', $value)
-            ->select('SUM (dc.cantidadDc * dc.pvpDc) as TotalDetalle')
+            ->select('SUM (dc.cantidadDc * (dc.pvpDc - (dc.pvpDc * dc.descuentoDc /100))) as TotalDetalle')
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function descuentoCesta($value)
+    {
+        return $this->createQueryBuilder('dc')
+            ->andWhere('dc.cestaDc = :cestaDc')
+            ->setParameter('cestaDc', $value)
+            ->select('SUM (dc.cantidadDc * (dc.pvpDc * dc.descuentoDc /100)) as TotalDescuento')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }    
 
     public function cantotalCesta($value)
     {
