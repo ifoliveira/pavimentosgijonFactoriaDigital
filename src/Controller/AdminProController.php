@@ -92,9 +92,6 @@ class AdminProController extends AbstractController
         $pendientepagoMo = $economicpresuRepository->pendientePago()["pagopdteMo"];
         $bancototal = $bancoRepository->totalBanco();
         $efectivototal = $efectivoRepository->totalefectivo();
-        $ventasefectivo = $efectivoRepository->ventasEfectivo();
-        $ventasbanco = $bancoRepository->ventasBanco();
-        $ventastotal = $ventasefectivo["sum(importe_ef)"] + $ventasbanco["importe"];
         $beneficio = $detallecestaRepository->beneficioTotal();
         $ticketspdte = $cestasRepository->ticketssnal();
         foreach ($ticketspdte as $ticket){
@@ -106,16 +103,10 @@ class AdminProController extends AbstractController
         $pendiente = $ventas - $pagos;
 
 
-        $forecast = $forecastRepository->findBy(
-            ['estadoFr' => 'P'],
-            ['fechaFr' => 'ASC'],
-        );
-
         $response = $this->render('admin_pro/contabilidad.html.twig', [
             'controller_name' => 'AdminProController',
             'bancototal' => $bancototal,
             'efectivototal' => $efectivototal,
-            'ventastotal' => $ventastotal,
             'beneficio' => $beneficio,
             'pendiente' => $pendiente,
             'cobrosMo' => $cobrosMo,

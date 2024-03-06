@@ -70,7 +70,7 @@ class DetallecestaRepository extends ServiceEntityRepository
         ON cesta_dc_id = p.id
         WHERE YEAR(timestamp_dc) = YEAR(CURDATE())
           AND precio_dc <> 0
-          AND estado_cs <> 11;
+          AND estado_cs = 2;
             ';
 
         // returns an array of arrays (i.e. a raw data set)

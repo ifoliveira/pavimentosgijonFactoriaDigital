@@ -322,6 +322,7 @@
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
+                                             {% set importeapagar = 0 %}
                                             <tbody>
                                              {% for economicos in economic %}
                                                 {% if  economicos.aplicaEco != 'M' %}
@@ -331,8 +332,10 @@
                                                             <td>{{ economicos.conceptoEco}}</td>
                                                             {% if economicos.debehaberEco == 'D'  %}
                                                                 <td align="right">{{ (economicos.importeEco * -1)|format_currency('EUR', locale='es')}}</td>
+                                                                {% set importeapagar = (economicos.importeEco * -1) + importeapagar %}
                                                             {% else %}
                                                                 <td align="right">{{ economicos.importeEco|format_currency('EUR', locale='es')}}</td>
+                                                                {% set importeapagar = (economicos.importeEco) + importeapagar %}
                                                             {% endif %}
 
                                                             {% if economicos.estadoEco == '1' %}
@@ -372,6 +375,12 @@
                                                 {% endif %}
                                             {% endfor %}
                                             </tbody>
+                                            <tfoot>
+                                                <td>Total mano de obra</td>
+                                                <td>{{ manoobratotal|format_currency('EUR', locale='es')  }}</td>
+                                                <td>{{ importeapagar |format_currency('EUR', locale='es')}}</td>
+                                                <td>{{(manoobratotal + importeapagar) |format_currency('EUR', locale='es')}}</td>
+                                            </tfoot>
                                         </table>
                                 </div>   
                             </div>
@@ -391,6 +400,9 @@
                                                 <th>Precio</th>
                                                 <th>Unidades</th>
                                                 <th>PVP</th>
+                                                <th>Coste</th>
+                                                <th>Beneficio</th>
+                                                <th>%</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -399,8 +411,10 @@
                                                 <td>{{ detalle.productoDc.descripcionPd }}</td>
                                                 <td align="right">{{ detalle.pvpDc |format_currency('EUR', locale='es') }}</td>
                                                 <td align="center">{{ detalle.cantidadDC}}</td>
-                                                
                                                 <td align="right">{{ (detalle.cantidadDC * detalle.pvpDc)|format_currency('EUR', locale='es') }}</td>
+                                                <td align="right">{{ (detalle.precioDC * detalle.cantidadDc)|format_currency('EUR', locale='es') }}</td>
+                                                <td align="right">{{ ((detalle.cantidadDC * detalle.pvpDc) - (detalle.precioDC * detalle.cantidadDc))|format_currency('EUR', locale='es') }}</td>
+                                                <td align="right">{{ (((detalle.cantidadDC * detalle.pvpDc) - (detalle.precioDC * detalle.cantidadDc))  / (detalle.pvpDc * detalle.cantidadDc))|format_percent_number }}</td>
                                             </tr>
                                         {% else %}
                                             <tr>
@@ -412,6 +426,9 @@
                                             <tr>
                                                 <th colspan="3" style="text-align:right">Total:</th>
                                                 <th style="text-align:right">{{project.getImporteTot(cestaId)|format_currency('EUR', locale='es')  }}</th>
+                                                <th style="text-align:right">{{project.getPrecioTot(cestaId)|format_currency('EUR', locale='es')  }}</th>
+                                                <th style="text-align:right">{{(project.getImporteTot(cestaId) - project.getPrecioTot(cestaId))|format_currency('EUR', locale='es')  }}</th>
+                                                <th style="text-align:right">{{(((project.getImporteTot(cestaId) - project.getPrecioTot(cestaId)) ) / (project.getImporteTot(cestaId)))|format_percent_number  }}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
