@@ -35,6 +35,7 @@ class Banks_N43
      */
     const TYPE_DEBIT = 'debit';
 
+
     /**
      * Representa un abono en tu cuenta
      */

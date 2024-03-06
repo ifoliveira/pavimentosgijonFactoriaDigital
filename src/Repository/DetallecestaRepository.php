@@ -78,6 +78,28 @@ class DetallecestaRepository extends ServiceEntityRepository
 
     }       
 
+    /**
+     * @return Detallecesta[]
+     */
+    public function detallescestaactual()
+    {
+        $entityManager = $this->getEntityManager();
+        $fechaEspecifica = new \DateTime('2024-01-01');
+
+        $query = $entityManager->createQuery(
+            'SELECT a
+               FROM App\Entity\detallecesta a INNER JOIN App\Entity\cestas p
+                WHERE a.cestaDc = p.id
+                AND p.estadoCs = 2  
+                AND a.precioDc = 0              
+                AND a.timestampDc >= :fecha ');
+        $query->setParameter('fecha', $fechaEspecifica);
+
+        // returns an array of Product objects
+        return $query->getResult();
+
+    }
+
     // /**
     //  * @return Detallecesta[] Returns an array of Detallecesta objects
     //  */

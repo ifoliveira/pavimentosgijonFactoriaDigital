@@ -25,6 +25,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 
 
 class AdminProController extends AbstractController
@@ -120,11 +122,37 @@ class AdminProController extends AbstractController
             'pagosMo' => $pagosMo,
             'pendientecobroMo' => $pendientecobroMo,
             'pendientepagoMo' => $pendientepagoMo,
+            'cestas' => $detallecestaRepository->detallescestaactual(),
 
         ]);
              
         return $response;
     }
+
+    /**
+     * @Route("/admin/importe/ajax", name="detalle_precio", methods={"GET","POST"})
+     */
+    public function importeajax(Request $request): jsonResponse
+    {
+        $jsonData = array();
+        
+        $id = $request->query->get('id');
+        $importe = $request->query->get('importe');
+        $entityManager = $this->getDoctrine()->getManager();
+                
+        $actualizar = $entityManager->getRepository('App\Entity\Detallecesta')->findOneBy(['id'=> $id]);
+
+        //actualizamos la cantidad
+        $actualizar->setprecioDc($importe);
+        $entityManager->persist($actualizar);
+        $entityManager->flush();
+
+        //Volver a crear apartado del loop de la pantalla
+        $jsonData[0]= $id;
+
+        return new jsonResponse($jsonData); 
+
+    }      
 
     /**
      * @Route("/admin/C43", name="insert_C43", methods={"GET","POST"})

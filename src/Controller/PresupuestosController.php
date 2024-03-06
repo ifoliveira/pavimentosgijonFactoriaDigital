@@ -555,6 +555,7 @@ class PresupuestosController extends AbstractController
 
         $presupuesto->setEstadoPe($estadocesta);
         $presupuesto->setImpmanoobraPagado(0);
+        $presupuesto->setFechainiPe(new \DateTime());
         $presupuesto->getTicket()->setPrespuestoCs($presupuesto);
         $presupuesto->getTicket()->setImporteTotCs($detallecestaRepository->imptotalCesta($presupuesto->getTicket()));
         $presupuesto->getTicket()->setDescuentoCs(0);
