@@ -1,0 +1,20 @@
+
+{% block title %}Resultado OCR{% endblock %}
+
+{% block body %}
+<h1>Texto extraído</h1>
+<p>{{ text.fechaVencimiento }}</p>
+<p>{{ text.importeTotal}}</p>
+{% for producto in text.producto %}
+            <tr>
+                <td>{{ producto.codigo }}</td>
+                <td>{{ producto.cantidad }}</td>
+                <td>{{ producto.descripcion }}</td>
+                <td>{{ producto.precio }}</td>
+                <td>{{ producto.precio2 }}</td>
+                <td>{{ producto.precio3 }}</td>
+            </tr>
+        {% endfor %}
+
+<p>{{ completo  }}</p>
+{% endblock %}
