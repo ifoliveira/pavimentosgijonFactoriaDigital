@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+        {% set meses = {'January': 'Ene', 'February': 'Feb', 'March': 'Mar', 'April': 'Abr', 'May': 'May', 'June': 'Jun', 'July': 'Jul', 'August': 'Ago', 'September': 'Sep', 'October': 'Oct', 'November': 'Nov', 'December': 'Dic'} %}
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="reformas de baños, Gijón, diseño de baños, remodelación de cuartos de baño, accesorios de baños, decoración de interiores, presupuesto gratuito, azulejos para baños, platos de ducha, sanitarios, grifería de baño, instalación de bañeras, renovación de cuartos de baño, expertos en baños, calidad en reformas." name="keywords">
+<meta content="Explora nuestro blog para obtener ideas inspiradoras sobre cambios de bañera por ducha, reformas de baños y soluciones creativas para tu espacio. Descubre consejos prácticos, tendencias de diseño y experiencias de clientes que te ayudarán a transformar tu baño de manera asequible y rápida. ¡Inspírate y comienza tu viaje hacia un baño renovado hoy mismo!." name="description">
+<meta property="og:image" content="https://www.pavimentosgijon.es/assets/images/logo.png" /> 
+<meta property="og:title" content="Reformas integrales baños Gijón"/>
+<meta property="og:url" content="https://www.pavimentosgijon.es/" />
+<meta property="og:site_name" content="Tienda de baño en gijón" />
+<meta property="og:type" content="mainpage" />
+
+<!-- page title -->
+<title>Blog de reformas de baños |  Pavimentos Gijón</title>
+<!-- favicon -->
+<link rel="icon" type="image/png" sizes="16x16" href="{{ asset('/img/favicon.png')}}">
+<!-- bootstrap core CSS -->
+<link href="{{ asset('/Light-HTML/css/bootstrap.min.css')}}" rel="stylesheet" >
+<!-- bootstrap icons -->
+<link href="{{ asset('/Light-HTML/css/bootstrap-icons.css')}}" rel="stylesheet">
+<!-- owl carousel -->
+<link href="{{ asset('/Light-HTML/css/owl.carousel.min.css')}}" rel="stylesheet">
+<link href="{{ asset('/Light-HTML/css/owl.theme.default.min.css')}}" rel="stylesheet">
+<!-- venobox css -->
+<link href="{{ asset('/Light-HTML/css/venobox.css')}}" rel="stylesheet">
+<!-- custom styles for this template -->
+<link href="{{ asset('/Light-HTML/css/custom.css')}}" rel="stylesheet">
+<link href="{{ asset('/Light-HTML/css/responsive.css')}}" rel="stylesheet">
+<link href="{{ asset('/Light-HTML/css/helper.css')}}" rel="stylesheet">
+</head>
+
+<body>
+<!-- ================ Preloader ================ -->
+<div id="preloader">
+  <div class="spinner-grow" role="status"> <span class="visually-hidden">Loading...</span> </div>
+</div>
+<!-- ================ Preloader end ================ --> 
+
+<!-- ================ Header ================ -->
+  {% include 'apgijon/header.html.twig' %}
+<!-- ================ Header end ================ --> 
+
+<!-- ================ inner page header ================ -->
+<div class="inner-page-title inner-page-header-bg">
+  <div class="container">
+    <div class="inner-page-title-c">
+      <h1>Blog Reformas de baños</h1>
+      <div class="breadcrumb-box"> 
+        <!-- breadcrumb -->
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ path('homepage')}}"><i class="bi bi-house"></i> Inico</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Blog</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ================ inner page header end ================ --> 
+
+<!-- ================ Blog area ================ -->
+<div class="blog-area pt-70 pb-40">
+  <div class="container">
+    <div class="inner-page-title-c">
+      <h2> Artículos sobre reformas de baños </h2>
+      <br>
+    </div>  
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1">
+    
+    {% for post in posts %}
+
+        {% set blogImage = post.images|filter(image => image.imageType == 'blog')|first %}
+        {% set fecha = post.publishedAt|date('j F') %}
+        {% set mes_en = post.publishedAt|date('F') %}
+
+    <!-- blog item -->
+      <div class="col mb-30"> 
+         <div class="blog-item">
+          <div class="blog-item-img"><img src="{{ asset('/Light-HTML/img/blog/'~ blogImage.filePath)}}" alt="{{blogImage.alt}}"> <a href="{{ path('blog_show', {'slug': post.slug})}}" class="read-more"><i class="bi bi-arrow-right"></i></a> 
+          </div>
+          <div class="blog-item-content">
+              <h6><a href="{{ path('blog_show', {'slug': post.slug})}}">{{post.headerH3}}</a></h6>
+              <p>{{post.headerH4}}</p>
+              <ul class="list-inline">
+                <li class="list-inline-item"><a href="{{ path('homepage')}}"><strong>By:</strong> Pav. Gijón</a></li>
+                <li class="list-inline-item"><a href="{{ path('integral')}}"><strong>Tag:</strong> Integrales</a></li>
+                <li class="list-inline-item"><a ><strong>Post:</strong> {{ post.publishedAt|date('j') }} {{ meses[mes_en] }}, <span class="current-year"></span></a></li>
+              </ul>
+          </div>
+        </div>
+        </div>
+
+        {% if loop.index % 3 == 0 and not loop.last %}
+            </div>
+            <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1">  
+        {% endif %}
+    {% endfor %}
+      </div>
+    </div>    
+  </div>
+</div>
+<!-- ================ Blog area end ================ --> 
+
+<!-- ================ Footer area ================ -->
+  {% include 'apgijon/footer.html.twig' %}
+<!-- ================ Footer area end ================ --> 
+
+<!-- ================ Top scroll ================ --> 
+<a href="#" class="scroll-top"><i class="bi bi-capslock"></i></a> 
+<!-- ================ Top scroll end ================ -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<!-- js files --> 
+<script src="{{ asset('/Light-HTML/js/jquery-3.6.0.min.js')}}"></script> 
+<script src="{{ asset('/Light-HTML/js/bootstrap.bundle.min.js')}}"></script> 
+<!-- counter js --> 
+<script src="{{ asset('/Light-HTML/js/jquery-1.10.2.min.js')}}"></script> 
+<script src="{{ asset('/Light-HTML/js/waypoints.min.js')}}"></script> 
+<script src="{{ asset('/Light-HTML/js/jquery.counterup.min.js')}}"></script> 
+<!-- venobox js --> 
+<script src="{{ asset('/Light-HTML/js/venobox.min.js')}}"></script> 
+<!-- owl carousel --> 
+<script src="{{ asset('/Light-HTML/js/owl.carousel.min.js')}}"></script> 
+<!-- sticky js --> 
+<script src="{{ asset('/Light-HTML/js/jquery.sticky.js')}}"></script> 
+<!-- script js --> 
+<script src="{{ asset('/Light-HTML/js/custom.js')}}"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8B9E41FY"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WH8B9E41FY');
+</script>
+<script language = "javascript">
+    $(document).ready(function(){   
+
+
+    // Obtener la URL actual en Symfony y normalizarla
+    var urlActual = "{{ url(app.request.attributes.get('_route')) | replace({'https://127.0.0.1:8000': '', 'https://www.pavimentosgijon.es': ''}) }}";
+    
+    // Obtener todas las etiquetas <a> con la clase "nav-link"
+    var enlacesNav = document.querySelectorAll('a.nav-link');
+
+    // Recorrer los enlaces y agregar la clase "active" al enlace correspondiente
+    enlacesNav.forEach(function(enlace) {
+        // Obtener el atributo "href" del enlace y normalizarlo
+        var hrefEnlace = enlace.getAttribute('href');
+        console.log(hrefEnlace);
+        console.log(urlActual);
+        // Comparar el atributo "href" con la URL actual
+        if (urlActual == hrefEnlace) {
+
+           console.log("coincide");
+            // Si hay coincidencia, agregar la clase "active" al enlace
+            var liPadre = enlace.parentNode;
+            liPadre.classList.add('active');            
+
+        }
+    });
+    
+
+
+      });  
+</script> 
+</body>
+</html>

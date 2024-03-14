@@ -1,19 +1,29 @@
 <!DOCTYPE html>
 <html lang="es">
+{% set headerImage = post.images|filter(image => image.imageType == 'header')|first %}
+{% set ogimage = post.images|filter(image => image.imageType == 'ogimage')|first %}
+{% set meses = {'January': 'Enero', 'February': 'Febrero', 'March': 'Marzo', 'April': 'Abril', 'May': 'Mayo', 'June': 'Junio', 'July': 'Julio', 'August': 'Agosto', 'September': 'Septiembre', 'October': 'Octubre', 'November': 'Noviembre', 'December': 'Diciembre'} %}
+{% set fecha = post.publishedAt|date('j F') %}
+{% set mes_en = post.publishedAt|date('F') %}
+
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta content="Precio reforma de baño, coste reformar baño en Asturias,  Gijón, diseño de baños, remodelación de cuartos de baño, accesorios de baños, decoración de interiores, presupuesto gratuito, azulejos para baños, platos de ducha, sanitarios, grifería de baño, instalación de bañeras, renovación de cuartos de baño, expertos en baños, calidad en reformas." name="keywords">
-<meta content="¿Cuánto cuesta reformar un baño en Gijón en 2024?, Guía de precios para Asturias" name="description">
-<meta property="og:image" content="https://www.pavimentosgijon.es/assets/images/logo.png" /> 
-<meta property="og:title" content="Coste cambio de bañera por ducha en Gijón"/>
+<meta content="reformas de baños, Gijón, diseño de baños, remodelación de cuartos de baño, accesorios de baños, decoración de interiores, presupuesto gratuito, azulejos para baños, platos de ducha, sanitarios, grifería de baño, instalación de bañeras, renovación de cuartos de baño, expertos en baños, calidad en reformas." name="keywords">
+<meta content="{{post.metaDescription}}" name="description">
+{% if headerImage %}
+  <meta property="og:image" content="https://www.pavimentosgijon.es/assets/images/" ~ ogimage.filePath /> 
+{% else %}
+  <meta property="og:image" content="https://www.pavimentosgijon.es/assets/images/logo.png" /> 
+{% endif %}
+<meta property="og:title" content="{{post.title}}"/>
 <meta property="og:url" content="https://www.pavimentosgijon.es/" />
-<meta property="og:site_name" content="Tienda de baño en gijón" />
+<meta property="og:site_name" content="Blog reformas de baño" />
 <meta property="og:type" content="mainpage" />
 
 <!-- page title -->
-<title>¿Cuánto cuesta reformar un baño en Gijón en 2024? Guía de precios para Asturias</title>
+<title> {{ post.title }}</title>
 <!-- favicon -->
 <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('/img/favicon.png')}}">
 <!-- bootstrap core CSS -->
@@ -30,6 +40,7 @@
 <link href="{{ asset('/Light-HTML/css/responsive.css')}}" rel="stylesheet">
 <link href="{{ asset('/Light-HTML/css/helper.css')}}" rel="stylesheet">
 </head>
+
 <body>
 <!-- ================ Preloader ================ -->
 <div id="preloader">
@@ -45,12 +56,12 @@
 <div class="inner-page-title inner-page-header-bg">
   <div class="container">
     <div class="inner-page-title-c">
-      <h1>¿Cuánto cuesta reformar un baño en Gijón en 2024?</h1>
+      <h1>{{ post.headerH1 }}</h1>
       <div class="breadcrumb-box"> 
         <!-- breadcrumb -->
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ path('homepage')}}"><i class="bi bi-house"></i> Inicio</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Precio reforma de baño</li>
+          <li class="breadcrumb-item active" aria-current="page">{{ post.title }}</li>
         </ol>
       </div>
     </div>
@@ -62,7 +73,7 @@
 <div class="blog-post-page pt-70 pb-40">
   <div class="container">
     <div class="inner-page-title-c">
-      <h2>Reforma de baño en Gijón, ¿de que depende el precio?</h2>
+      <h2>{{ post.headerH2 }}</h2>
       <br>
     </div>   
     <div class="row">
@@ -126,30 +137,17 @@
       <div class="col-lg-9"> 
         <!-- blog post content -->
         <div class="blog-post-content mb-40">
-          <div class="blog-post-img mb-20"><img src="{{ asset('/Light-HTML/img/blog/Coste-reforma1100X600.jpg')}}" alt="Precio de reforma de baño Pavimentos Gijón">
+        {% if headerImage %}
+          <div class="blog-post-img mb-20"><img src="{{ asset('/Light-HTML/img/blog/'~ headerImage.filePath)}}" alt="{{headerImage.alt}}">
+        {% endif %}
             <ul class="list-inline blog-post-meta">
-              <li class="list-inline-item"><a href="#">21 Febrero, <span class="current-year"></span></a></li>
-              <li class="list-inline-item"><a href="#">Reformar Baño</a></li>
+              <li class="list-inline-item"><a href="#">{{ post.publishedAt|date('j') }} {{ meses[mes_en] }}, <span class="current-year"></span></a></li>
+              <li class="list-inline-item"><a href="#">Plato de ducha</a></li>
               <li class="list-inline-item"><a href="#"><i class="bi bi-chat-right-dots"></i> 0</a></li>
             </ul>
           </div>
-          <h6 class="mb-20">¿Cuánto cuesta reformar un baño en Gijón en 2024?</h6>
-
-            <p>El coste de reformar un baño en Gijón varía según los materiales que elijas, incluyendo desde los azulejos hasta los sanitarios y la mampara. Aunque el precio de la mano de obra se mantiene relativamente estable, un coste demasiado bajo podría indicar una calidad de materiales no acorde al precio. Es crucial considerar el valor total de la reforma, ya que no solo mejora la estética de tu hogar, sino que también puede aumentar significativamente su valor en el mercado. Esta inversión no solo embellece tu espacio, sino que también puede ser decisiva en la valoración de tu propiedad o en una futura venta.</a></p>
-
-            <p><b>Suelos y paredes</b> Al renovar suelos y paredes de tu baño en Gijón, considera que necesitarás entre 25 a 35 metros cuadrados de azulejos y entre 4 a 6 metros cuadrados para el suelo. Es importante calcular bien las cantidades para evitar faltantes al finalizar la obra. Los precios de materiales de buena calidad varían entre 20 y 35 euros por metro cuadrado, lo que te garantiza un acabado moderno y duradero. Elegir correctamente te asegura no solo un baño con estilo, sino también una inversión que añade valor a tu hogar.</p>
-
-            <p><b>Sanitarios</b> En la elección de sanitarios para tu baño en Gijón, un factor clave es decidir si incluirás o no un bidé, adaptándolo a tus necesidades y espacio. Un inodoro de calidad, que garantiza durabilidad y confort, tiene un precio de partida de alrededor de 450 euros. Invertir menos podría comprometer la calidad y la satisfacción a largo plazo. Seleccionar sanitarios de buena calidad no solo mejora la experiencia diaria en tu baño, sino que también contribuye al valor estético y funcional de tu hogar.</p>
-
-            <p><b>Mueble y espejo</b> Al seleccionar el mueble y espejo para tu baño, los precios pueden variar significativamente, desde unos 400 euros hasta superar los 1000 euros. La clave aquí es la calidad. Dado que el baño es un entorno húmedo, es vital elegir muebles duraderos que resistirán la humedad sin deteriorarse. Invertir en muebles de alta calidad asegura no solo una mayor durabilidad sino también una estética atractiva que realza el valor de tu espacio.</p>
-
-            <p><b>Mano de obra</b> La mano de obra en la reforma de tu baño, que incluye servicios de fontanería, albañilería, electricidad, pintura, y posiblemente escayolista, generalmente ronda los 2000 euros. Es crucial elegir profesionales de confianza que se dediquen a realizar un trabajo meticuloso más que a finalizar rápidamente. Un trabajo bien hecho no se mide por la velocidad, sino por la calidad y atención al detalle. Además, asegurarte de que los profesionales puedan ser localizados después de la obra es fundamental. Esto garantiza soporte en caso de que surjan averías, ya que puede ser complicado encontrar a alguien dispuesto a corregir problemas de trabajos no realizados por ellos mismos. Elegir al equipo correcto no solo es una inversión en tu hogar, sino también en tu tranquilidad futura.</p>
-
-            <p><b>El coste variará entre 6000 - 7500 Euros </b>
-            Además de los aspectos ya mencionados, hay otros elementos que pueden afectar el precio final de la reforma de tu baño, como la mampara, griferías y radiadores toalleros, entre otros. Considerando todos estos factores, el coste de renovar un baño de tamaño estándar, entre 4 y 5 metros cuadrados, suele rondar los 6000 euros si optamos por elementos de calidad. Sin embargo, este precio puede aumentar hasta los 7500 euros o más cuando se seleccionan diseños exclusivos o elementos personalizados como muebles o mamparas a medida. La clave está en encontrar el equilibrio perfecto entre calidad, funcionalidad y estética para garantizar que la inversión en tu baño no solo mejore tu día a día, sino que también añada valor a tu hogar.</p>
-
-            <p><b>Conclusión</b> En resumen, renovar tu baño es una inversión significativa que no solo mejora la funcionalidad y estética de tu espacio personal, sino que también aumenta el valor de tu propiedad. Elegir materiales de calidad, junto con profesionales de confianza, asegura que tu renovación sea duradera y satisfactoria. Si estás pensando en darle a tu baño el cambio que merece, pero no sabes por dónde empezar o cómo ajustarte a tu presupuesto, ¡nosotros podemos ayudarte! <a href="{{ path('contacto')}}">Contacta con nosotros </a> para obtener asesoramiento personalizado y descubre cómo transformar tu baño en el refugio perfecto que siempre has soñado. </a> </p>
-
+          <h6 class="mb-20">{{post.headerH3}}</h6>
+            {{post.content |raw}}
       </div>
       
     </div>
