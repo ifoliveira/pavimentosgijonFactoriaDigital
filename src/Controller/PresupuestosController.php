@@ -416,9 +416,9 @@ class PresupuestosController extends AbstractController
 
 
     /**
-     * @Route("/{id}/{precios}/{tipo}/generar", name="presupuestos_generar", methods={"GET","POST"})
+     * @Route("/{id}/{precios}/{tipo}/{estado}/generar", name="presupuestos_generar", methods={"GET","POST"})
      */
-    public function generar(Request $request, string $precios, Presupuestos $presupuesto, string $tipo): Response
+    public function generar(Request $request, string $precios, Presupuestos $presupuesto, string $tipo, string $estado): Response
     {
        
 
@@ -437,7 +437,8 @@ class PresupuestosController extends AbstractController
             'financiacion' => $financiacion,
             'total' => $total,
             'subtotal' => $subtotal,
-            'descuentototal' => $descuentototal
+            'descuentototal' => $descuentototal,
+            'estado' => $estado
         ]);
     }
 

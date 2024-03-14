@@ -66,8 +66,8 @@
                         {% if presupuesto.EstadoPe.id == 6 or presupuesto.EstadoPe.id == 7 %}
                                     <div class="card">
                                         <div class="card-body">
-                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'PRESUPUESTO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto CON precios</a>
-                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'PRESUPUESTO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto SIN precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'PRESUPUESTO', estado : 'NOACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto CON precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'PRESUPUESTO', estado : 'NOACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto SIN precios</a>
                                         </div>
                                     </div>
                         {% endif %}
@@ -84,8 +84,8 @@
 
                                     <div class="card">
                                         <div class="card-body">
-                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'PRESUPUESTO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto CON precios</a>
-                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'PRESUPUESTO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto SIN precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'PRESUPUESTO', estado : 'NOACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto CON precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'PRESUPUESTO', estado : 'NOACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto SIN precios</a>
                                         </div>
                                     </div>
                         {% endif %}
@@ -101,10 +101,10 @@
                                     </div>
                                     <div class="card">
                                         <div class="card-body">
-                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'FACTURA SIMPLIFICADA'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura CON precios</a>
-                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'FACTURA SIMPLIFICADA'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura SIN precios</a>
-                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'PRESUPUESTO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto CON precios</a>
-                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'PRESUPUESTO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto SIN precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'FACTURA SIMPLIFICADA', estado : 'ACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura CON precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'FACTURA SIMPLIFICADA', estado : 'ACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura SIN precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'PRESUPUESTO', estado : 'ACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto CON precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'PRESUPUESTO', estado : 'ACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto SIN precios</a>
                                         </div>
                                     </div>
                         {% endif %}
@@ -113,8 +113,8 @@
 
                                     <div class="card">
                                         <div class="card-body">
-                                            <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'FACTURA FINAL'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura SIN precios</a>
-                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'FACTURA FINAL'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura CON precios</a>
+                                            <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'FACTURA FINAL', estado : 'ACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura SIN precios</a>
+                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'FACTURA FINAL', estado : 'ACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura CON precios</a>
                                         </div>
                                     </div>
                         {% endif %}
@@ -795,11 +795,11 @@
 
                 if (accept) {
             // Pop up con datos del producto
-                   location.href = "{{ path('presupuestos_generar', {id: presupuesto.id, 'precios' : 'S', 'tipo' : 'PRESUPUESTO' }) }}";
+                   location.href = "{{ path('presupuestos_generar', {id: presupuesto.id, 'precios' : 'S', 'tipo' : 'PRESUPUESTO', 'estado' : 'NOACEPTADO' }) }}";
                    return;
                     
                 } 
-                location.href = "{{ path('presupuestos_generar', {id: presupuesto.id, 'precios' : 'N',  'tipo' : 'PRESUPUESTO' }) }}";
+                location.href = "{{ path('presupuestos_generar', {id: presupuesto.id, 'precios' : 'N',  'tipo' : 'PRESUPUESTO', 'estado' : 'NOACEPTADO'}) }}";
 
 
         })
