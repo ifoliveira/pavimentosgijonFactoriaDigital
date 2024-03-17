@@ -1,19 +1,29 @@
 <!DOCTYPE html>
 <html lang="es">
+{% set headerImage = post.images|filter(image => image.imageType == 'header')|first %}
+{% set ogimage = post.images|filter(image => image.imageType == 'ogimage')|first %}
+{% set meses = {'January': 'Enero', 'February': 'Febrero', 'March': 'Marzo', 'April': 'Abril', 'May': 'Mayo', 'June': 'Junio', 'July': 'Julio', 'August': 'Agosto', 'September': 'Septiembre', 'October': 'Octubre', 'November': 'Noviembre', 'December': 'Diciembre'} %}
+{% set fecha = post.publishedAt|date('j F') %}
+{% set mes_en = post.publishedAt|date('F') %}
+
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta content="reformas de baños, Gijón, diseño de baños, remodelación de cuartos de baño, accesorios de baños, decoración de interiores, presupuesto gratuito, azulejos para baños, platos de ducha, sanitarios, grifería de baño, instalación de bañeras, renovación de cuartos de baño, expertos en baños, calidad en reformas." name="keywords">
-<meta content="Suelos hidráulicos en reformas de baños una solución diferente." name="description">
-<meta property="og:image" content="https://www.pavimentosgijon.es/assets/images/logo.png" /> 
-<meta property="og:title" content="Reformas integrales baños Gijón"/>
+<meta content="{{post.metaDescription}}" name="description">
+{% if headerImage %}
+  <meta property="og:image" content="https://www.pavimentosgijon.es/assets/images/" ~ ogimage.filePath /> 
+{% else %}
+  <meta property="og:image" content="https://www.pavimentosgijon.es/assets/images/logo.png" /> 
+{% endif %}
+<meta property="og:title" content="{{post.title}}"/>
 <meta property="og:url" content="https://www.pavimentosgijon.es/" />
-<meta property="og:site_name" content="Tienda de baño en gijón" />
+<meta property="og:site_name" content="Blog reformas de baño" />
 <meta property="og:type" content="mainpage" />
 
 <!-- page title -->
-<title>Suelos hidraúlicos en baños</title>
+<title> {{ post.title }}</title>
 <!-- favicon -->
 <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('/img/favicon.png')}}">
 <!-- bootstrap core CSS -->
@@ -30,6 +40,7 @@
 <link href="{{ asset('/Light-HTML/css/responsive.css')}}" rel="stylesheet">
 <link href="{{ asset('/Light-HTML/css/helper.css')}}" rel="stylesheet">
 </head>
+
 <body>
 <!-- ================ Preloader ================ -->
 <div id="preloader">
@@ -45,12 +56,12 @@
 <div class="inner-page-title inner-page-header-bg">
   <div class="container">
     <div class="inner-page-title-c">
-      <h1>Baldosas Hidraúlicas en Baños</h1>
+      <h1>{{ post.headerH1 }}</h1>
       <div class="breadcrumb-box"> 
         <!-- breadcrumb -->
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ path('homepage')}}"><i class="bi bi-house"></i> Inicio</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Hidraúlicos blog reformas de baños</li>
+          <li class="breadcrumb-item active" aria-current="page">{{ post.title }}</li>
         </ol>
       </div>
     </div>
@@ -62,7 +73,7 @@
 <div class="blog-post-page pt-70 pb-40">
   <div class="container">
     <div class="inner-page-title-c">
-      <h2>Descubre las Ventajas de Incorporar Mosaicos Hidráulicos en tu Baño</h2>
+      <h2>{{ post.headerH2 }}</h2>
       <br>
     </div>   
     <div class="row">
@@ -126,29 +137,17 @@
       <div class="col-lg-9"> 
         <!-- blog post content -->
         <div class="blog-post-content mb-40">
-          <div class="blog-post-img mb-20"><img src="{{ asset('/Light-HTML/img/blog/suelos-hidraulicos-banos.jpeg')}}" alt="Suelo hidraulico reforma de baño en Pavimentos Gijón en Asturias">
+        {% if headerImage %}
+          <div class="blog-post-img mb-20"><img src="{{ asset('/Light-HTML/img/blog/'~ headerImage.filePath)}}" alt="{{headerImage.alt}}">
+        {% endif %}
             <ul class="list-inline blog-post-meta">
-              <li class="list-inline-item"><a href="#">29 Enero, <span class="current-year"></span></a></li>
-              <li class="list-inline-item"><a href="#">Integral</a></li>
+              <li class="list-inline-item"><a href="#">{{ post.publishedAt|date('j') }} {{ meses[mes_en] }}, <span class="current-year"></span></a></li>
+              <li class="list-inline-item"><a href="#">Plato de ducha</a></li>
               <li class="list-inline-item"><a href="#"><i class="bi bi-chat-right-dots"></i> 0</a></li>
             </ul>
           </div>
-          <h6 class="mb-20">Mosaicos hidráulicos: 7 Ventajas Destacadas</h6>
-              <p>
-                 Descubre la versatilidad y encanto de los mosaicos hidráulicos, elementos fundamentales que aportan personalidad y distinción a tu baño. Su fácil instalación y mantenimiento los convierten en la elección ideal, generando contrastes visuales que definen el espacio sin barreras. Además, su durabilidad, compatibilidad con suelo radiante y precio accesible hacen de los mosaicos hidráulicos la opción más completa para transformar tu baño en un oasis de estilo y resistencia.</p>
-              <p>Los mosaicos hidráulicos no solo son elementos decorativos, sino también fundamentales para la funcionalidad y estética del hogar.</p>
-              <p><strong>Definición de Espacio sin Barreras:</strong> Los mosaicos hidráulicos delimitan y rentabilizan el espacio, creando contrastes y sensación de amplitud sin necesidad de tabiques.</p>
-
-              <p><strong>Fácil Instalación y Mantenimiento:</strong> Su instalación es sencilla, requiere pocos materiales adicionales, genera poco desorden y es fácil de limpiar, ofreciendo mucho a cambio de poco esfuerzo.</p>
-              <p><strong>Durabilidad Sobresaliente:</strong> Los mosaicos hidráulicos destacan por su durabilidad, adecuados para interiores, exteriores y hasta en condiciones extremas, siendo rentables a lo largo del tiempo.</p>
-
-              <p><strong>Personalidad y Versatilidad:</strong> Aportan personalidad al espacio y son versátiles, pudiendo revestir suelos, paredes, barandillas, cabeceros y más, con una variedad de diseños disponibles.</p>
-              <p><strong>Estética y Belleza:</strong> Estéticamente bellos, los mosaicos hidráulicos añaden un toque de belleza a cualquier espacio, siendo una elección que se ha mantenido vigente desde el siglo XIX.</p>
-
-              <p><strong>Compatibilidad con Suelo Radiante:</strong> Compatible con suelo radiante, permitiendo una instalación profesional y ofreciendo resistencia, especialmente adecuado para patios interiores o salones centrales.</p>
-
-              <p><strong>Variedad y Precio Accesible:</strong> Ofrecen una amplia variedad de estilos y son más accesibles en términos de instalación y precio en comparación con suelos radiantes, siendo una inversión atractiva a largo plazo.</p>
-              <p>Concluyendo, la elección de mosaicos hidráulicos para tu baño no solo aporta un toque estético único, sino también durabilidad, versatilidad y una amplia variedad de diseños. Si buscas transformar por completo tu baño y agregar un toque distintivo, considera la opción de mosaicos hidráulicos. En Azulejos y Pavimentos Gijón, estamos listos para ayudarte a llevar a cabo la reforma integral de tu baño. Descubre cómo podemos convertir tu visión en realidad. ¡Haz clic <a href="{{ path('integral')}}"> aquí </a> para solicitar tu presupuesto personalizado y dar el primer paso hacia el baño de tus sueños!</p>
+          <h6 class="mb-20">{{post.headerH3}}</h6>
+            {{post.content |raw}}
       </div>
       
     </div>

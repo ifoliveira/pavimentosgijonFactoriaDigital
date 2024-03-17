@@ -28,6 +28,16 @@ class Image
      */
     private $post;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $imageType;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $alt;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -53,6 +63,30 @@ class Image
     public function setPost(?post $post): self
     {
         $this->post = $post;
+
+        return $this;
+    }
+
+    public function getImageType(): ?string
+    {
+        return $this->imageType;
+    }
+
+    public function setImageType(?string $imageType): self
+    {
+        $this->imageType = $imageType;
+
+        return $this;
+    }
+
+    public function getAlt(): ?string
+    {
+        return $this->alt;
+    }
+
+    public function setAlt(?string $alt): self
+    {
+        $this->alt = $alt;
 
         return $this;
     }
