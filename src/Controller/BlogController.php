@@ -53,7 +53,7 @@ class BlogController extends AbstractController
     }
 
     /**
-     * @Route("/reforma-bano-gijon/casa/blog", name="blog")
+     * @Route("/reforma-bano-gijon/", name="blog")
      */
     public function mainBlog(PostRepository $postRepository): Response
     {
