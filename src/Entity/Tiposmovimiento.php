@@ -39,6 +39,11 @@ class Tiposmovimiento
      */
     private $forecasts;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $patronBusqueda;
+
     public function __construct()
     {
         $this->efectivo = new ArrayCollection();
@@ -154,6 +159,18 @@ class Tiposmovimiento
                 $forecast->setTipoFr(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPatronBusqueda(): ?string
+    {
+        return $this->patronBusqueda;
+    }
+
+    public function setPatronBusqueda(?string $patronBusqueda): self
+    {
+        $this->patronBusqueda = $patronBusqueda;
 
         return $this;
     }

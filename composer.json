@@ -16,6 +16,7 @@
         "knplabs/knp-snappy-bundle": "^1.9",
         "laminas/laminas-code": "^4.6",
         "laminas/laminas-zendframework-bridge": "^1.6",
+        "phpoffice/phpspreadsheet": "^2.0",
         "sensio/framework-extra-bundle": "^6.2",
         "symfony/asset": "5.4.*",
         "symfony/cache": "5.4.*",
