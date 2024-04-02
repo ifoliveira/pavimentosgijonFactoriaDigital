@@ -3,8 +3,8 @@ namespace App\MisClases\Factory;
 
 class ProviderAFCInvoiceDecipher implements InvoiceDecipherStrategy {
     public function decipher(string $text): array {
-        $data = []; // Array para almacenar los datos extraídos
-
+        $data =  []; // Array para almacenar los datos extraídos
+        $data['proveedor'] = 'Antonio Fdz Castellanos';
         // Extracción de la fecha de vencimiento
         $patternVencimiento = '/Ve ncimie ntos\s*:\s*(\d{2}\/\d{2}\/\d{2})/';
         if (preg_match($patternVencimiento, $text, $matchesVencimiento)) {

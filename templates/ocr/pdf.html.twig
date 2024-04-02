@@ -1,16 +1,14 @@
 
-
 {% extends 'inicio2.html.twig' %}
 {% block eltiempo %} {% endblock %}
 {% block cabecera %} Sube una imagen para extraer el texto {% endblock %}
 {% block breadcrumb %} <li class="breadcrumb-item active">Efectivo</li>{% endblock %}
 {% block title %}Logs{% endblock %}
 {% block cardbody1 %}
+    <h1>Subir archivo PDF</h1>
 
-
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button type="submit" class="btn btn-primary">Procesar imagen</button>
-{{ form_end(form) }}
+    {{ form_start(form) }}
+        {{ form_row(form.pdfFile) }}
+        <button class="btn">Subir</button>
+    {{ form_end(form) }}
 {% endblock %}
-
