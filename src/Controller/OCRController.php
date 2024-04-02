@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use App\MisClases\Factory\InvoiceDecipherStrategyFactory;
 use App\Repository\TiposmovimientoRepository;
 use DateTime;
-use App\Form\Type\PdfUploadType;
+use App\Form\pdfUploadType;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
