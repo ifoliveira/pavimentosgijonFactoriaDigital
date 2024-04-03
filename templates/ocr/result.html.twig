@@ -38,9 +38,9 @@
                                                     <td>{{ producto.codigo }}</td>
                                                     <td>{{ producto.cantidad }}</td>
                                                     <td>{{ producto.descripcion }}</td>
-                                                    <td>{{ producto.precio }}</td>
-                                                    <td>{{ producto.precio2 }}</td>
-                                                    <td>{{ producto.precio3 }}</td>                                                    
+                                                    <td>{{ (producto.precio * 1.262) |format_currency('EUR', locale='es')}}</td>
+                                                    <td>{{ producto.descuento }}</td>
+                                                    <td>{{ (producto.precio * 1.262 * (1 + (producto.descuento / 100)))|format_currency('EUR', locale='es') }}</td>                                                    
                                                     <td><button onclick="insertarProducto({{ producto|json_encode() }}, this)">Insertar</button></td>
                                                 </tr>
                                             {% else %}
@@ -50,9 +50,10 @@
                                             {% endfor %}
                                             </tbody>
                                         <tfoot>
-
+                                       
                                         </tfoot>
                                     </table>
+                                     {{completo}}    
 
                                 </div>
                             </div>

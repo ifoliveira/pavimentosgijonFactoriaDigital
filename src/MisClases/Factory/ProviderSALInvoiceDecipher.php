@@ -1,30 +1,32 @@
 <?php
 namespace App\MisClases\Factory;
 
-class ProviderAFCInvoiceDecipher implements InvoiceDecipherStrategy {
+class ProviderSALInvoiceDecipher implements InvoiceDecipherStrategy {
     public function decipher(string $text): array {
         $data =  []; // Array para almacenar los datos extraídos
         $data['proveedor'] = 'Antonio Fdz Castellanos';
         // Extracción de la fecha de vencimiento
-        $patternVencimiento = '/Vencimientos[\s=]*[^\w]*(\d{2}\/\d{2}\/\d{2})\s+([\d,]+\.\d{2})/';
+        $patternImporte = '/(\d+,\d{2})\s*EUR/';
 
 
-        if (preg_match($patternVencimiento, $text, $matches)) {
-   
-            $partes = explode('/', $matches[1]);
-
-            // Añadir "20" al año para convertirlo de dos a cuatro dígitos
-            $partes[2] = '20' . $partes[2];
-            
-            // Reconstruir la fecha
-            $fechaFormateada = implode('/', $partes);
-
-            $data['fechaVencimiento'] =  $fechaFormateada; // Esto captura la fecha
-                       
-            $data['importeTotal'] =  floatval(str_replace(',', '.', str_replace('.', ',', $matches[2]))); // Esto captura el importe
+        if (preg_match($patternImporte, $text, $matches)) {
+                     
+            $data['importeTotal'] =  floatval(str_replace(',', '.', str_replace('.', ',', $matches[1]))); // Esto captura el importe
         } else {
-            $data['fechaVencimiento'] = 'No especificada';
-            $data['importeTotal'] = 'No especificada';
+
+            $data['importeTotal'] = 'No especificada kas';
+        }
+
+        $patternImporte = '/Fecha Salida:\s(\d{2}\/\d{2}\/\d{4})\s+/';
+
+
+        if (preg_match($patternImporte, $text, $matches)) {
+                     
+            $data['fechaVencimiento'] =  $matches[1]; // Esto captura el importe
+
+        } else {
+
+            $data['fechaVencimiento'] = 'No especificada kas';
         }
 
         $patternProductos = '/(.*?)\s+(\d{1,2}\.\d{2})\s+(.+?)\s+(\d+\.\d{2})\s+(\d+\.\d{2})\s+(\d+\.\d{2})/';

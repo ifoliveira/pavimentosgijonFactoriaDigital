@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Clientes;
 use App\Entity\Estadocestas;
 use App\Entity\Cestas;
+use App\Entity\Consultas;
 use App\Entity\Presupuestos;
 use App\Form\ClientesType;
 use App\Form\PresupuestosType;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\MisClases\ManoObraClass;
 use App\MisClases\EconomicoPresu;
+use App\Repository\ConsultasRepository;
 
 /**
  * @Route("/admin/clientes")
@@ -25,10 +27,11 @@ class ClientesController extends AbstractController
     /**
      * @Route("/", name="clientes_index", methods={"GET"})
      */
-    public function index(ClientesRepository $clientesRepository): Response
+    public function index(ClientesRepository $clientesRepository, ConsultasRepository $consultasRepository): Response
     {
         return $this->render('clientes/index.html.twig', [
             'clientes' => $clientesRepository->findAll(),
+            'consultas' => $consultasRepository->findAll(),
         ]);
     }
 

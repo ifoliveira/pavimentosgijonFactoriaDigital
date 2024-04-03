@@ -13,7 +13,13 @@ class InvoiceDecipherStrategyFactory {
             case 'ProviderGME':
                 return new ProviderGMEInvoiceDecipher();
             case 'ProviderCRM':
-                return new ProviderCRMInvoiceDecipher();                
+                return new ProviderCRMInvoiceDecipher();      
+            case 'ProviderKAS':
+                return new ProviderKASInvoiceDecipher();           
+            case 'ProviderSAL':
+                return new ProviderSALInvoiceDecipher();       
+            case 'ProviderROY':
+                return new ProviderROYInvoiceDecipher();                                                   
             default:
                 throw new \Exception("No decipher strategy found for identifier: $identifier");
         }

@@ -32,71 +32,6 @@ class OCRController extends AbstractController
         $this->em = $em;
     }
 
-
-    /**
-     * @Route("/", name="app_ocr")
-     */
-    public function index(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        // Crear un formulario simple para subir archivos
-        $form = $this->createFormBuilder()
-            ->add('file', FileType::class)
-            ->getForm();
-    
-        $form->handleRequest($request);
-        
-        if ($form->isSubmitted() && $form->isValid()) {
-            $file = $form->get('file')->getData(); // Obtener el archivo subido
-            if ($file) {
-                $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $newFilename = $originalFilename.'-'.uniqid().'.'.$file->guessExtension();
-    
-                // Mover el archivo al directorio donde lo procesaremos
-                try {
-                    $file->move(
-                        $this->getParameter('kernel.project_dir').'/public_html/uploads',
-                        $newFilename
-                    );
-    
-                    // Procesar el archivo con Tesseract OCR
-                    $ocr = new TesseractOCR('../public_html/uploads/'.$newFilename);
-                    $text = $ocr->lang('eng')->run(); // Asegúrate de configurar el idioma correcto
-                    // Identifica al proveedor a partir del texto OCR o alguna otra lógica
-                    $providerIdentifier = null;
-
-                    // Verificar si el texto contiene 'GME'
-                    if (strpos($text, 'GME') !== false) {
-                        $providerIdentifier = 'ProviderGME';
-                    } elseif (strpos($text, 'CASTELLANOS') !== false) {
-                        $providerIdentifier = 'ProviderAFC';
-                    } elseif (strpos($text, 'KASSANDRA') !== false) {
-                        $providerIdentifier = 'ProviderGME';
-                    } elseif (strpos($text, 'Cromados Modernos') !== false) {
-                        $providerIdentifier = 'ProviderCRM';
-                    }
-
-
-                    $strategy = InvoiceDecipherStrategyFactory::create($providerIdentifier);
-                    $invoiceData = $strategy->decipher($text);                 
-    
-                    // Aquí podrías hacer algo con el texto extraído, como guardarlo en la base de datos
-                    // Pero por ahora, solo lo enviaremos de vuelta a la vista
-                } catch (FileException $e) {
-                    // Manejar excepción si algo sale mal durante la carga del archivo
-                }
-            }
-    
-            return $this->render('ocr/result.html.twig', [
-                'text' => $invoiceData ?? 'No se pudo procesar el texto.',
-                'completo' => $text
-            ]);
-        }
-    
-        return $this->render('ocr/index.html.twig', [
-            'form' => $form->createView(),
-        ]);
-    }
-
     /**
      * @Route("/pdf", name="app_ocr")
      */
@@ -121,7 +56,20 @@ class OCRController extends AbstractController
                     $pdfPath = '../public_html/uploads' . '/' . $newFilename;
                     $outputImagePath = '../public_html/uploads' . '/' . $originalFilename . '.jpg';
 
-                    $process = new Process(['convert', '-density', '300', $pdfPath, $outputImagePath]);
+                    $process = new 
+                    Process([
+                        'convert',
+                        '-density', '300',
+                        '-colorspace', 'gray',
+                        '-sharpen', '0x1.0',
+                        '-trim', // Esto recorta los márgenes automáticamente
+                        '+repage', // Restablece la página a tamaño completo después del recorte
+                        $pdfPath,
+                        '-background', 'white', // Fondo blanco para evitar bordes transparentes
+                        '-alpha', 'remove', // Elimina el canal alfa si es que lo hay
+                        '-quality', '100', // Máxima calidad para imágenes resultantes
+                        $outputImagePath
+                    ]);
                     $process->run();
 
                     if (!$process->isSuccessful()) {
@@ -134,7 +82,36 @@ class OCRController extends AbstractController
                     // manejar excepción si algo ocurre durante la subida del archivo
                 }
 
-                // Redirigir o manejar la lógica post subida
+                // Procesar el archivo con Tesseract OCR
+                $ocr = new TesseractOCR($outputImagePath);
+                $text = $ocr->lang('spa')->run(); // Asegúrate de configurar el idioma correcto
+                // Identifica al proveedor a partir del texto OCR o alguna otra lógica
+                $providerIdentifier = null;
+
+                // Verificar si el texto contiene 'GME'
+                if (strpos($text, 'GME') !== false) {
+                    $providerIdentifier = 'ProviderGME';
+                } elseif (strpos($text, 'FDEZ CAS') !== false) {
+                    $providerIdentifier = 'ProviderAFC';
+                } elseif (strpos($text, 'KASSANDRA') !== false) {
+                    $providerIdentifier = 'ProviderKAS';
+                } elseif (strpos($text, 'Cromados Modernos') !== false) {
+                    $providerIdentifier = 'ProviderCRM';
+                } elseif (strpos($text, 'SALGAR') !== false) {
+                    $providerIdentifier = 'ProviderSAL';
+                } elseif (strpos($text, 'ROYO SPAIN') !== false) {
+                    $providerIdentifier = 'ProviderROY';
+                }
+
+
+                $strategy = InvoiceDecipherStrategyFactory::create($providerIdentifier);
+                $invoiceData = $strategy->decipher($text);   
+                
+                return $this->render('ocr/result.html.twig', [
+                    'text' => $invoiceData ?? 'No se pudo procesar el texto.',
+                    'completo' => $text
+                ]);                
+
             }
         }
 
@@ -155,9 +132,15 @@ class OCRController extends AbstractController
         $producto = new Productos();
         $producto->setStockPd($data['cantidad']);
         $producto->setDescripcionPd($data['descripcion']);
-
-        $producto->setPrecioPd($data['precio']);
-        $producto->setPvpPd($data['precio'] * 1.40);
+        $precio = $data['precio']*1.262;
+        $precio = round($precio,2);
+        $producto->setPrecioPd($precio);
+        $pvp = $data['precio']* 1.262 * (1 + ($data['descuento'] / 100));
+        $pvp = round($pvp,2);
+        $ajustes = [-0.01, -0.05, -0.10, -0.20];
+        $ajusteSeleccionado = $ajustes[array_rand($ajustes)];
+        $pvp =ceil($pvp) + 1  + $ajusteSeleccionado;
+        $producto->setPvpPd($pvp);
 
         $this->em->persist($producto);
         $this->em->flush();
@@ -183,9 +166,10 @@ class OCRController extends AbstractController
          $formato = 'd/m/Y'; // El formato en que se proporciona la fecha
 
          // Crear el objeto DateTime con el formato específico
-         $fecha = DateTime::createFromFormat($formato, $data['fechaVencimiento']);         
-         
+         $fecha = DateTime::createFromFormat($formato, $data['fechaVencimiento']);    
+        
          $forecast->setFechaFr($fecha);
+
          $forecast->setImporteFr($data['importeTotal']);
           $this->em->persist($forecast);
          $this->em->flush();

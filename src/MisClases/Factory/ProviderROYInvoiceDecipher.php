@@ -1,12 +1,12 @@
 <?php
 namespace App\MisClases\Factory;
 
-class ProviderGMEInvoiceDecipher implements InvoiceDecipherStrategy {
+class ProviderROYInvoiceDecipher implements InvoiceDecipherStrategy {
     public function decipher(string $text): array {
-        $data = []; // Array para almacenar los datos extraídos
-        $data['proveedor'] = 'GME';
+        $data =  []; // Array para almacenar los datos extraídos
+        $data['proveedor'] = 'Antonio Fdz Castellanos';
         // Extracción de la fecha de vencimiento
-        $patternVencimiento = '/VENCIMIENTOS[\s=]*[^\w]*(\d{2}\/\d{2}\/\d{4})\s+([\d.,]+)/';
+        $patternVencimiento = '/(\d{2}\/\d{2}\/\d{4})\s+([\d.,]+)/';
 
 
         if (preg_match($patternVencimiento, $text, $matches)) {
@@ -18,25 +18,26 @@ class ProviderGMEInvoiceDecipher implements InvoiceDecipherStrategy {
             $data['importeTotal'] = 'No especificada';
         }
 
-        $patternProductos = "/(\d+)\s(.*?)\s(\d+)\s(\d{1,3}(?:,\d{2,3})?(?:\.\d{2})?)\s(\d{1,3}(?:,\d{2,3})?(?:\.\d{2})?)/";
+
+        $patternProductos = '/(.*?)\s+(\d+,\d{2})\s*(-\d+,\d{2})\s*(\d+,\d{2})/';
 
         preg_match_all($patternProductos, $text, $matchesProductos, PREG_SET_ORDER);
-        
+
         $productosDetalles = [];
         
         foreach ($matchesProductos as $producto) {
+                        
             $productosDetalles[] = [
                 'codigo' => $producto[1],
-                'cantidad' => $producto[3],
-                'descripcion' => trim($producto[2]), // Elimina espacios en blanco adicionales
-                'precio' => floatval(str_replace(',', '.', str_replace('.', '', $producto[4]))) , // Elimina espacios en blanco adicionales
-                'descuento' => floatval(60),
-      
+                'cantidad' => floatval(1),
+                'descripcion' => $producto[1],
+                'precio' => floatval(str_replace(',', '.', str_replace('.', '', $producto[4]))),
+                'descuento' => floatval(str_replace(',', '.', str_replace('.', '', $producto[3])))*-1,
 
             ];
         }       
-        
-        
+
+
         $data['producto'] = $productosDetalles;
 
         return $data; // Devuelve los datos extraídos
