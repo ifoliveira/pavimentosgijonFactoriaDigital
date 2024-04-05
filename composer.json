@@ -13,6 +13,7 @@
         "doctrine/orm": "^2.8",
         "dompdf/dompdf": "^2.0",
         "friendsofphp/proxy-manager-lts": "^1.0",
+        "guzzlehttp/guzzle": "^7.8",
         "knplabs/knp-snappy-bundle": "^1.9",
         "laminas/laminas-code": "^4.6",
         "laminas/laminas-zendframework-bridge": "^1.6",

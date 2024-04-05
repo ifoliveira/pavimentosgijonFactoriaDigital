@@ -18,6 +18,8 @@ use DateTime;
 use App\Form\pdfUploadType;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+use GuzzleHttp\Client;
 
 /**
  * @Route("/admin/ocr")
@@ -26,11 +28,127 @@ class OCRController extends AbstractController
 {
 
     protected $em;
+    private HttpClientInterface $client;
 
-    public function __construct( EntityManagerInterface $em )
+    public function __construct(HttpClientInterface $client, EntityManagerInterface $em )
     {
         $this->em = $em;
+        $this->client = $client;
     }
+
+    /**
+     * @Route("/ocrAPI", name="api_ocr")
+     */
+
+     public function process(Request $request): Response
+     {
+
+        $form = $this->createForm(pdfUploadType::class);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+
+         // Obtener el archivo del request, asumiendo que el campo se llama 'file'
+         $file = $form['pdfFile']->getData();
+         if (!$file) {
+             return $this->json(['error' => 'No file provided'], Response::HTTP_BAD_REQUEST);
+         }
+ 
+         // Leer el contenido del archivo
+         $fileData = file_get_contents($file->getPathname());
+ 
+         $client = new Client();
+         try {
+            $response = $client->request('POST', 'https://api.ocr.space/parse/image', [
+                'headers' => ['apiKey' => 'K84053679088957'],
+                'multipart' => [
+                    [
+                        'name'     => 'file',
+                        'contents' => fopen($file->getPathname(), 'r'),
+                        'filename' => $file->getClientOriginalName(),
+                    ],
+                    [
+                        'name' => 'OCREngine',
+                        'contents' => '2'
+                    ],
+                    [
+                        'name' => 'isTable',
+                        'contents' => 'true'
+                    ],
+                    [
+                        'name' => 'isOverlayRequired',
+                        'contents' => 'true'
+                    ],
+                ],
+            ]);
+
+             $statusCode = $response->getStatusCode();
+             $content = $response->getBody()->getContents();
+     
+  
+
+            $data = json_decode($content, true);
+
+             // Localizar la fecha de vencimiento
+             $fechaVencimiento = "";
+             foreach ($data['ParsedResults'][0]['TextOverlay']['Lines'] as $line) {
+                 if (strpos($line['LineText'], 'VENCIMIENTOS') !== false) {
+                     $fechaVencimiento = $line['LineText'];
+                     break;
+                 }
+             }
+
+             echo $fechaVencimiento . "\n";
+        // Extraer los productos
+        $productos = [];
+        $leftPositionThreshold = 125; // Umbral para la posición 'Left' de los productos
+        
+        
+        foreach ($data['ParsedResults'][0]['TextOverlay']['Lines'] as $line) {
+            if (isset($line['Words'][0]) && abs($line['Words'][0]['Left'] - $leftPositionThreshold) < 10) {
+                // Concatenamos todas las palabras de la línea para formar la descripción del producto
+                $altura = $line['MinTop'];
+                $descripcion = "";
+        
+                foreach ($data['ParsedResults'][0]['TextOverlay']['Lines'] as $innerLine) {
+                    if (abs($innerLine['MinTop'] - $altura) < 10) { // 10 es el umbral para considerar la misma altura
+                        // Agregar la descripción de estas líneas al mismo producto
+                        $descripcion .= " " . array_reduce($innerLine['Words'], function ($carry, $word) {
+                            return $carry . " " . $word['WordText'];
+                        }, '');
+                    }
+                }
+                                
+                $productos[] = trim($descripcion) . " " . $altura;
+            }
+        }        
+
+        echo "Productos:\n";
+        foreach ($productos as $producto) {
+            echo $producto . "\n";
+        }
+             
+
+
+             
+           if ($statusCode == 200) {
+                 return new Response($content, Response::HTTP_OK, ['Content-Type' => 'application/json']);
+             } else {
+                 // Si la API devuelve un error, también devolvemos ese contenido como JSON
+                 return new Response($content, $statusCode, ['Content-Type' => 'application/json']);
+             } 
+
+         } catch (\Exception $e) {
+             return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+         }
+        }
+
+        return $this->render('ocr/pdf.html.twig', [
+            'form' => $form->createView(),
+        ]);         
+     }
+
+
 
     /**
      * @Route("/pdf", name="app_ocr")
