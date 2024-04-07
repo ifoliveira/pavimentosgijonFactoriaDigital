@@ -1,0 +1,31 @@
+{% extends 'inicio2.html.twig' %}
+{% block eltiempo %} {% endblock %}
+
+{% block cardbody1 %}
+    <h1>Create a new Post</h1>
+    {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button type="submit">Save Post</button>
+    {{ form_end(form) }}
+{% endblock %}
+{% block jscustom %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var container = document.querySelector('#images-container');
+            var addImageButton = document.getElementById('add-image');
+
+            addImageButton.addEventListener('click', function() {
+                var index = container.querySelectorAll('.image-form-group').length;
+                var prototype = container.getAttribute('data-prototype');
+                var newForm = prototype.replace(/__name__/g, index);
+
+                var newFormContainer = document.createElement('div');
+                newFormContainer.classList.add('image-form-group');
+                newFormContainer.setAttribute('data-index', index);
+                newFormContainer.innerHTML = newForm;
+
+                container.appendChild(newFormContainer);
+            });
+        });
+    </script>
+{% endblock %}

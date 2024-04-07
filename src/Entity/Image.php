@@ -23,7 +23,7 @@ class Image
     private $filePath;
 
     /**
-     * @ORM\ManyToOne(targetEntity=post::class, inversedBy="images")
+     * @ORM\ManyToOne(targetEntity=post::class, inversedBy="images",cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      */
     private $post;

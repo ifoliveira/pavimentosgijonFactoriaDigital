@@ -1,0 +1,10 @@
+{% extends 'inicio2.html.twig' %}
+{% block eltiempo %} {% endblock %}
+
+{% block cardbody1 %}
+    <h1>Upload a file</h1>
+    {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button type="submit">Upload</button>
+    {{ form_end(form) }}
+{% endblock %}

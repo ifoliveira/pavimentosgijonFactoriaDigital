@@ -46,6 +46,11 @@ services:
         class: App\MisClases\CestaUser
         arguments: 
             - '@doctrine.orm.entity_manager'
+
+    App\MisClases\FileUploader:
+        arguments:
+            $targetDirectory: '%kernel.project_dir%/public_html/Light-HTML/img/blog'
+
     
     #App\EventListener\ExceptionListener:
     #    tags:
