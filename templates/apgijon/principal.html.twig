@@ -25,11 +25,11 @@
 <link href="{{ asset('/Light-HTML/css/owl.carousel.min.css')}}" rel="stylesheet">
 <link href="{{ asset('/Light-HTML/css/owl.theme.default.min.css')}}" rel="stylesheet">
 <!-- venobox css -->
-<link href="{{ asset('/Light-HTML/css/venobox.css')}}" rel="stylesheet">
+<link href="{{ asset('/Light-HTML/css/venobox.css')}}" rel="stylesheet" rel="preload">
 <!-- custom styles for this template -->
 <link href="{{ asset('/Light-HTML/css/custom.css')}}" rel="stylesheet">
 <link href="{{ asset('/Light-HTML/css/responsive.css')}}" rel="stylesheet">
-<link href="{{ asset('/Light-HTML/css/helper.css')}}" rel="stylesheet">
+<link href="{{ asset('/Light-HTML/css/helper.css')}}" rel="stylesheet" rel="preload">
 </head>
 
 <body>
@@ -73,7 +73,7 @@
                 <p>En Pavimentos Gijón, nos especializamos en la transformación de espacios de baño, ofreciendo servicios especializados para reemplazar tu antigua bañera con una ducha elegante y funcional.</p>
                 <a class="btn-style-1" href="{{ path('platoducha')}}">Ver más <i class="bi bi-arrow-right"></i></a> </div>
               <div class="col-lg-6 col-md-6 col-sm-6">
-                <div class="banner-img"><img fetchpriority="low"  src="{{ asset('/Light-HTML/img/slider/Plato de ducha.webp')}}" alt="Cambio bañera por ducha realizada por Pavimentos gijón"></div>
+                <div class="banner-img"><img loading="lazy"  src="{{ asset('/Light-HTML/img/slider/Plato de ducha.webp')}}" alt="Cambio bañera por ducha realizada por Pavimentos gijón"></div>
               </div>
             </div>
           </div>
@@ -89,7 +89,7 @@
                 <p>Descubre la elegancia funcional para tu baño: Mamparas, Muebles, Espejos y Accesorios de calidad excepcional en Pavimentos Gijón. Transforma tu espacio personal con nuestra selección cuidadosamente elegida</p>
                 <a class="btn-style-1" href="#">Ver más <i class="bi bi-arrow-right"></i></a> </div>
               <div class="col-lg-6 col-md-6 col-sm-6">
-                <div class="banner-img"><img fetchpriority="low"  src="{{ asset('/Light-HTML/img/slider/Accesorios.webp')}}" alt="Mueble de baño casa de Mibaño, proveedor de Pavimentos gijón"></div>
+                <div class="banner-img"><img loading="lazy" src="{{ asset('/Light-HTML/img/slider/Accesorios.webp')}}" alt="Mueble de baño casa de Mibaño, proveedor de Pavimentos gijón"></div>
               </div>
             </div>
           </div>
@@ -327,10 +327,10 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <!-- js files --> 
-<script src="{{ asset('/Light-HTML/js/jquery-3.6.0.min.js')}}"></script> 
+<script src="{{ asset('/Light-HTML/js/jquery-3.6.0.min.js')}}" rel="preload"></script> 
 <script src="{{ asset('/Light-HTML/js/bootstrap.bundle.min.js')}}"></script> 
 <!-- counter js --> 
-<script src="{{ asset('/Light-HTML/js/jquery-1.10.2.min.js')}}"></script> 
+<script src="{{ asset('/Light-HTML/js/jquery-1.10.2.min.js')}}" rel="preload"></script> 
 <script src="{{ asset('/Light-HTML/js/waypoints.min.js')}}"></script> 
 <script src="{{ asset('/Light-HTML/js/jquery.counterup.min.js')}}"></script> 
 <!-- venobox js --> 
@@ -340,7 +340,7 @@
 <!-- sticky js --> 
 <script src="{{ asset('/Light-HTML/js/jquery.sticky.js')}}"></script> 
 <!-- script js --> 
-<script src="{{ asset('/Light-HTML/js/custom.js')}}"></script>
+<script src="{{ asset('/Light-HTML/js/custom.js')}}" rel="preload"></script>
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8B9E41FY"></script>
