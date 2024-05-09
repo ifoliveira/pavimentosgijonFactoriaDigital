@@ -78,7 +78,7 @@ class ProductosController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
+            $producto->setObsoleto(false);
             $this->em->persist($producto);
             $this->em->flush();
 
