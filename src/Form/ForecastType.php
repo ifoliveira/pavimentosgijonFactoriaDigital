@@ -24,9 +24,9 @@ class ForecastType extends AbstractType
             ->add('importeFr',null ,  array(
                 'label' => 'Importe' ))
             ->add('origenFr',null ,  array(
-                'label' => 'Efectivo  / Banco' ))
+                'label' => 'Efectivo  / Banco'))
             ->add('tipoFr',null ,  array(
-                'label' => 'Tipo ' ))
+                'label' => 'Tipo '))
         ;
     }
 

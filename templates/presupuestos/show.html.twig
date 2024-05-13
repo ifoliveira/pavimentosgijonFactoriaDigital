@@ -144,8 +144,8 @@
                                                      <td>{{ producto.id }}</td>
                                                      <td>{{ producto.tipoPdId}}</td>
                                                      <td>{{ producto.descripcionPd }}</td>
-                                                     <td>{{ producto.precioPd }}</td>
-                                                     <td>{{ producto.pvpPd }}</td>
+                                                     <td align="right">{{ producto.precioPd|format_currency('EUR', locale='es')   }}</td>
+                                                     <td align="right">{{ producto.pvpPd|format_currency('EUR', locale='es')  }}</td>
                                                      <td>{{ producto.stockPd }}</td>
                                                  </tr>
                                              {% else %}
@@ -462,8 +462,8 @@
                                                      <td>{{ producto.id }}</td>
                                                      <td>{{ producto.tipoPdId}}</td>
                                                      <td>{{ producto.descripcionPd }}</td>
-                                                     <td>{{ producto.precioPd }}</td>
-                                                     <td>{{ producto.pvpPd }}</td>
+                                                     <td align="right">{{ producto.precioPd|format_currency('EUR', locale='es')   }}</td>
+                                                     <td align="right">{{ producto.pvpPd|format_currency('EUR', locale='es')  }}</td>
                                                      <td>{{ producto.stockPd }}</td>
                                                  </tr>
                                              {% else %}
@@ -753,7 +753,6 @@
     <script src="{{ asset('dist/js/pages/datatable/custom-datatable.js') }}"></script>
     <script src="{{ asset('dist/js/pages/datatable/datatable-api.init.js') }}"></script>
     <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
-    <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
 
     <!--This page JavaScript -->
     <script src="{{ asset('assets/libs/magnific-popup/dist/jquery.magnific-popup.min.js') }}"></script>
@@ -771,38 +770,6 @@
         var selector = document.querySelector("#loop");
         var cestaId = selector.dataset.cesta
 
-        /****************************************
-        *      Generar presupuesto             *
-        *****************************************/
-
-        $(document).on('click', 'button[id="GENERAR"]' , async function(event) {
-
-           // Datos de la fila seleccionada en la lista de productos
-                var selector = document.querySelector('button[id="Generar"]');
-                var tipo = selector.dataset.tipo;
-                var data = table.row(this).data();
-
-                const { value: accept } =  await Swal.fire({
-                title: 'LISTAR PRECIOS',
-                input: 'checkbox',
-                inputValue: 0,
-                inputPlaceholder:
-                    '¿Quieres que salgan los precios?',
-                confirmButtonText:
-                    'Continuar <i class="fa fa-arrow-right"></i>',
-
-                })
-
-                if (accept) {
-            // Pop up con datos del producto
-                   location.href = "{{ path('presupuestos_generar', {id: presupuesto.id, 'precios' : 'S', 'tipo' : 'PRESUPUESTO', 'estado' : 'NOACEPTADO' }) }}";
-                   return;
-                    
-                } 
-                location.href = "{{ path('presupuestos_generar', {id: presupuesto.id, 'precios' : 'N',  'tipo' : 'PRESUPUESTO', 'estado' : 'NOACEPTADO'}) }}";
-
-
-        })
 
         /****************************************
         *      Nueva Mano de Obra             *
@@ -830,13 +797,16 @@
         *****************************************/
          $(document).on('click', 'button[id="Finalizar"]' , function(event) {
 
-            const swalWithBootstrapButtons =  Swal.mixin({
+        const swalWithBootstrapButtons =  Swal.mixin({
                 customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'mr-2 btn btn-danger'
+                    confirmButton: 'btn btn-success mx-2', // Botón de confirmación
+                    denyButton: 'btn btn-danger mx-2', // Botón de negación
+                    cancelButton: 'btn btn-secondary mx-2' // Botón de cancelación
                 },
-                buttonsStyling: false,
-            })
+                buttonsStyling: false
+            });
+
+
 
             swalWithBootstrapButtons.fire({
                 title: 'Se finalizará el presupuesto',
@@ -844,7 +814,7 @@
                 type: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Adelante',
-                cancelButtonText: 'Noooo',
+                cancelButtonText: 'No',
                 reverseButtons: true
             }).then((result) => {
                 
@@ -904,7 +874,8 @@
                 cancelButtonText: 'Efectivo',
                 reverseButtons: true
             }).then((result) => {
-                const inputNumber = Swal.getContent().querySelector('#range-value');
+                const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');      
+
                 importe = inputNumber.value;
                 if (result.value) {
 
@@ -1093,8 +1064,8 @@
         $('#tbprod').on('click', 'tbody tr[role="row"]', function() {
                 var data = table.row(this).data();
                 const inputValue = 1
-                const inputValue2 = data[4]
-                const inputValue3 = data[3]
+                const inputValue2 = parseFloat(data[4].replace(/,/g, '.')).toFixed(2);
+                const inputValue3 = parseFloat(data[3].replace(/,/g, '.')).toFixed(2);                
                 const inputValue4 = 0
                 const inputStep = 1
                 const inputStep2 = 1
@@ -1102,32 +1073,37 @@
                 const inputValue0 = data[2]
 
                 Swal.fire({
+                showCancelButton: true,  // Activamos el botón de cancelar
+                confirmButtonText: 'Añadir producto',
+                cancelButtonText: 'Cancelar',
                 title: 'Cantidad y PVP',
                 html: `
-                     <h1> "${inputValue0}" </h1>
-                    <input type="text" value="${inputText}" class="swal2-input" id="range-value0" text-align="center">
+                    <h2> ${inputValue0} </h2>
+                    <input type="text" value="${inputText}" class="swal2-input" id="range-value0" style="text-align:center;">
                     <h2> Cantidad </h2>
-                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">
+                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align:center;">
                     <h2> PVP </h2>
-                    <input type="number" value="${inputValue2}" step="${inputStep2}" class="swal2-input" id="range-value2">
+                    <input type="number" value="${inputValue2}" step="${inputStep2}" class="swal2-input" id="range-value2" style="text-align:right;"> €
                     <h2> Coste </h2>
-                    <input type="number" value="${inputValue3}" step="${inputStep2}" class="swal2-input" id="range-value3">
+                    <input type="number" value="${inputValue3}" step="${inputStep2}" class="swal2-input" id="range-value3" style="text-align:right;"> €
                     <h2> Descuento </h2>
-                    <input type="number" value="${inputValue4}" step="${inputStep2}" class="swal2-input" id="range-value4">`,
+                    <input type="number" value="${inputValue4}" step="${inputStep2}" class="swal2-input" id="range-value4" style="text-align:right;"> %`,
 
                 }).then((result) => {
                     if (result.value) {
+
                         var data = table.row(this).data();
-                        const inputText = Swal.getContent().querySelector('#range-value0');
+                        const inputText = Swal.getHtmlContainer().querySelector('#range-value0');
                         texto = inputText.value;
-                        const inputNumber = Swal.getContent().querySelector('#range-value');
+                        const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');
                         cantidad = inputNumber.value;
-                        const inputNumber2 = Swal.getContent().querySelector('#range-value2');
+                        const inputNumber2 = Swal.getHtmlContainer().querySelector('#range-value2');
                         importe = inputNumber2.value;
-                        const inputNumber3 = Swal.getContent().querySelector('#range-value3');
+                        const inputNumber3 = Swal.getHtmlContainer().querySelector('#range-value3');
                         coste = inputNumber3.value;
-                        const inputNumber4 = Swal.getContent().querySelector('#range-value4');
-                        descuento = inputNumber4.value;                        
+                        const inputNumber4 = Swal.getHtmlContainer().querySelector('#range-value4');
+                        descuento = inputNumber4.value;
+
                         insert_line(data,cantidad,importe,coste,cestaId,texto,descuento);
                     }
                 })
@@ -1157,51 +1133,51 @@
         *****************************************/
 
          $(document).on('click', 'button[id="Aceptar"]' , function(event) {
-            const swalWithBootstrapButtons = Swal.mixin({
+
+
+        const swalWithBootstrapButtons =  Swal.mixin({
                 customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'mr-2 btn btn-danger'
+                    confirmButton: 'btn btn-success mx-2', // Botón de confirmación
+                    denyButton: 'btn btn-danger mx-2', // Botón de negación
+                    cancelButton: 'btn btn-secondary mx-2' // Botón de cancelación
                 },
-                buttonsStyling: false,
-            })
+                buttonsStyling: false
+            });
 
-            var selector = document.querySelector('button[id="Aceptar"]');
-            var importe = selector.dataset.importe;
+                var selector = document.querySelector('button[id="Aceptar"]');
+                var importe = selector.dataset.importe;
 
-            const inputValue = Number(importe * 0.30).toFixed(2)
-            const importe2 = Number(importe).toFixed(2)
-            const inputStep = 1
+                const inputValue = Number(importe * 0.30).toFixed(2);
+                const importe2 = Number(importe).toFixed(2);
+                const inputStep = 1;
 
-            swalWithBootstrapButtons.fire({
-                title: 'Importe adelanto',
-                text: "Importe adelanto" ,
-                type: 'warning',
+             swalWithBootstrapButtons.fire({
+                title: 'Método de pago',
+                text: "Selecciona un método de pago",
+                icon: 'warning',
                 html: `
-                    <h2> Cantidad  - ${importe2} €</h2> 
-                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="right">`,
+                        <h2>Cantidad - ${importe2} €</h2>
+                        <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align: right;">`,                
+                showDenyButton: true, // Asegúrate de que esto esté habilitado
                 showCancelButton: true,
                 confirmButtonText: 'Tarjeta',
-                cancelButtonText: 'Efectivo',
+                denyButtonText: 'Efectivo', // Texto para el botón de negación
+                cancelButtonText: 'Cancelar',
                 reverseButtons: true
-            }).then((result) => {
-                const inputNumber = Swal.getContent().querySelector('#range-value');
-                importe = inputNumber.value;
-                if (result.value) {
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const inputNumber = document.querySelector('#range-value').value;
+                        aceptar_presu(inputNumber, "Tarjeta");
+                    } else if (result.isDenied) {
+                        const inputNumber = document.querySelector('#range-value').value;
+                        aceptar_presu(inputNumber, "Efectivo");
+                    } else {
+                        // Operación cancelada
+                        console.log('Operación cancelada por el usuario');
+                    }
+                });
 
-                  aceptar_presu(importe, "Tarjeta"); 
-
-
-                } else if (
-                    // Read more about handling dismissals
-                    result.dismiss === Swal.DismissReason.cancel
-                ) {
-
-                    aceptar_presu(importe, "Efectivo"); 
-                }
-
-            })
-
-         })
+            });
 
 
 
@@ -1232,9 +1208,10 @@
         *****************************************/
 
         $(document).on('click', 'i[name="plus-minus"]' , function(event) {
+            console.log ("ooo");
             let id = this.id;
             this.dataset.cantidad;
-
+            
             let cantidad = this.dataset.cantidad;
 
             if (this.classList.contains("fa-minus-circle")){
@@ -1317,39 +1294,33 @@
 
             })
 
+            Swal.fire({
+                            title: 'IMPORTE',
+                            text: "Importe total" ,
+                            type: 'question',
+                            html: `<h2>Importe a abonar</h2>
+                                <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align: center;">`,
+                            showCancelButton: true, // Mostrar botón de cancelar
+                            confirmButtonText: 'Modificar',
+                            cancelButtonText: 'Pagar',
+                            reverseButtons: true
+                        }).then((result) => {
+                            if (result.isConfirmed) { // Revisar si el botón confirmar fue presionado
+                                const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');
+                                const importe = inputNumber.value;
+                                actualiza_importe(id,importe); 
+                                // Continuamos con la segunda parte, ahora como función separada
 
+                            } else if (
+                                // Read more about handling dismissals
+                                result.dismiss === Swal.DismissReason.cancel
+                            ) {
+                            pagar_economic(id,importe,"Efectivo"); 
+                            }
+                        });
 
-
-            swalWithBootstrapButtons.fire({
-             
-             
-                title: 'IMPORTE',
-                text: "Importe total" ,
-                type: 'question',
-                html: `
-                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="right">`,
-                showCancelButton: true,
-                confirmButtonText: 'Modificar',
-                cancelButtonText: 'Pagar',
-                reverseButtons: true
-                }).then((result) => {
-                const inputNumber = Swal.getContent().querySelector('#range-value');
-                importe = inputNumber.value;
-                if (result.value) {
-
-                  
-                   actualiza_importe(id,importe); 
-                    
-
-                } else if (
-                    // Read more about handling dismissals
-                    result.dismiss === Swal.DismissReason.cancel
-                ) {
-                   pagar_economic(id,importe,"Efectivo"); 
-                }
-
-            })
-            });     
+        });
+ 
 
             function actualiza_importe (id,importe) 
             {
@@ -1416,7 +1387,8 @@
                     cancelButtonText: 'Efectivo',
                     reverseButtons: true
                 }).then((result) => {
-                    const inputNumber = Swal.getContent().querySelector('#range-value');
+                    const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');      
+
                     importe = inputNumber.value;
                     if (result.value) {
                         cobrar_presu(importe, "Tarjeta",id); 
@@ -1435,6 +1407,7 @@
 
         function cobrar_presu(importesenal, tipopago, id) 
         {
+            
             $.ajax({  
                     url:        '{{ path("cobrarpresu", {id:presupuesto.id  }) }}',  
                     type:       'GET',   
@@ -1453,46 +1426,67 @@
         };           
 
             $(document).on('click', 'a[name="ticket_mano"]' , function(event) {
-                const swalWithBootstrapButtons = Swal.mixin({
-                    customClass: {
-                        confirmButton: 'btn btn-success',
-                        cancelButton: 'mr-2 btn btn-danger'
-                    },
-                    buttonsStyling: false,
-                })
                 let importe = this.dataset.importe;  
                 let id = this.id;        
 
-                const inputValue = Number(importe).toFixed(2)
-                const importe2 = Number(importe).toFixed(2)
-                const inputStep = 1
+                 const inputValue = Number(importe).toFixed(2);
+                    
+                const inputStep = 1;
 
-                swalWithBootstrapButtons.fire({
-                    title: 'Mano de obra',
-                    text: "Pendiente" ,
-                    type: 'warning',
-                    html: `
-                        <h2> Cantidad  - ${importe2} €</h2> 
-                        <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="right">`,
-                    showCancelButton: true,
-                    confirmButtonText: 'Tarjeta',
-                    cancelButtonText: 'Efectivo',
-                    reverseButtons: true
-                }).then((result) => {
-                    const inputNumber = Swal.getContent().querySelector('#range-value');
-                    importe = inputNumber.value;
-                    if (result.value) {
-                        cobrar_mano(importe, "Tarjeta",id); 
-                    } else if (
-                        // Read more about handling dismissals
-                        result.dismiss === Swal.DismissReason.cancel
-                    ) {
-                        cobrar_mano(importe, "Efectivo",id);
-                    }
+                Swal.fire({
+                            title: 'Mano de obra',
+                            html: `<h2>Importe a abonar</h2>
+                                <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align: center;">`,
+                            showCancelButton: true, // Mostrar botón de cancelar
+                            confirmButtonText: 'Aceptar',
+                            cancelButtonText: 'Cancelar',
+                            reverseButtons: true
+                        }).then((result) => {
+                            if (result.isConfirmed) { // Revisar si el botón confirmar fue presionado
+                                const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');
+                                const importe = inputNumber.value;
 
-            })
+                                // Continuamos con la segunda parte, ahora como función separada
+                                seleccionarMetodoDePago(importe);
+                            }
+                        });
+                        importe = Number(importe).toFixed(2);
+                        // Función para manejar la selección del método de pago
+                        async function seleccionarMetodoDePago(importe) {
+                            const swalWithBootstrapButtons = await Swal.mixin({
+                                    customClass: {
+                                        confirmButton: 'btn btn-success mx-2', // Botón de confirmación
+                                        denyButton: 'btn btn-danger mx-2', // Botón de negación
+                                        cancelButton: 'btn btn-secondary mx-2' // Botón de cancelación
+                                    },
+                                    buttonsStyling: false
+                                });
 
-         })
+                            await swalWithBootstrapButtons.fire({
+                                title: 'Método de pago',
+                                text: "Selecciona un método de pago",
+                                icon: 'warning',
+                                showDenyButton: true, // Asegúrate de que esto esté habilitado
+                                showCancelButton: true,
+                                confirmButtonText: 'Tarjeta',
+                                denyButtonText: 'Efectivo', // Texto para el botón de negación
+                                cancelButtonText: 'Cancelar',
+                                reverseButtons: true
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    cobrar_mano(importe, "Tarjeta",id); 
+                                } else if (result.isDenied) {
+                                    cobrar_mano(importe, "Efectivo",id);
+                                } else {
+                                    // Operación cancelada
+                                    console.log('Operación cancelada por el usuario');
+                                }
+                            });
+
+                
+
+         };
+        });
 
         function cobrar_mano(importe, tipopago, id) 
         {
@@ -1583,56 +1577,65 @@
 
             let url = this.dataset.url;
             let importe = this.dataset.importe;   
-            console.log(url);
+
          // Datos de la fila seleccionada en la lista de productos
             const inputValue = importe
             const inputStep = 1
 
          // Pop up importe a abonar
-            await Swal.fire({
-                    title: 'Pago ticket',
-                    html: `
-                        <h2> Importe a abonar </h2>
-                        <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="center">`,
+        // Inicialización del primer SweetAlert con entrada para el importe
+        Swal.fire({
+            title: 'Pago del ticket',
+            html: `<h2>Importe a abonar</h2>
+                <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align: center;">`,
+            showCancelButton: true, // Mostrar botón de cancelar
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) { // Revisar si el botón confirmar fue presionado
+                const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');
+                const senal = inputNumber.value;
 
-                    }).then((result) => {
-                        if (result.value) {
-         // Llamamos al insert line
-                            const inputNumber = Swal.getContent().querySelector('#range-value');
-                            senal = inputNumber.value;
+                // Continuamos con la segunda parte, ahora como función separada
+                seleccionarMetodoDePago(senal);
+            }
+        });
 
-                        }
-                    })
-
+        // Función para manejar la selección del método de pago
+        async function seleccionarMetodoDePago(senal) {
             const swalWithBootstrapButtons = await Swal.mixin({
-                customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'mr-2 btn btn-danger'
-                },
-                buttonsStyling: false,
-            })
+                    customClass: {
+                        confirmButton: 'btn btn-success mx-2', // Botón de confirmación
+                        denyButton: 'btn btn-danger mx-2', // Botón de negación
+                        cancelButton: 'btn btn-secondary mx-2' // Botón de cancelación
+                    },
+                    buttonsStyling: false
+                });
 
             await swalWithBootstrapButtons.fire({
-                title: 'Metodo de pago',
+                title: 'Método de pago',
                 text: "Selecciona un método de pago",
-                type: 'warning',
+                icon: 'warning',
+                showDenyButton: true, // Asegúrate de que esto esté habilitado
                 showCancelButton: true,
                 confirmButtonText: 'Tarjeta',
-                cancelButtonText: 'Efectivo',
+                denyButtonText: 'Efectivo', // Texto para el botón de negación
+                cancelButtonText: 'Cancelar',
                 reverseButtons: true
-                })
-                
-                .then((result) => {
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    ticket_finalizar("Tarjeta", "", 0, senal, url);
+                } else if (result.isDenied) {
+                    ticket_finalizar("Efectivo", "", 0, senal, url);
+                } else {
+                    // Operación cancelada
+                    console.log('Operación cancelada por el usuario');
+                }
+            });
 
-                    if (result.value) {
-                        ticket_finalizar("Tarjeta", "", 0 , senal, url) 
-                    } else if (
-                        // Read more about handling dismissals
-                        result.dismiss === Swal.DismissReason.cancel
-                    ) {
-                        ticket_finalizar("Efectivo", "", 0, senal, url) 
-                    }
-                })
+        }
+
 
             })
         

@@ -479,7 +479,6 @@ class CestasController extends AbstractController
         $datos = $request->query->get('cesta');
         $cesta = new Cestas;
         $cesta->setEstadoCs(2);
-        $cesta->setUserCs(1);
         $cesta->setFechaCs(date_create ($datos[0]));
         $cesta->setImporteTotCs($datos[1]);
         $cesta->setDescuentoCs($datos[2]);

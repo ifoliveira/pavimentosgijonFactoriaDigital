@@ -36,25 +36,25 @@ class ProductosController extends AbstractController
     public function index(ProductosRepository $productosRepository, CestasRepository $cestasRepository): Response
     {
         $user = $this->getUser();
-
-        $tienecesta = $cestasRepository->findBy(
-            ['userCs' => $user->getId(),
+        $cesta = new Cestas();
+ 
+        $tienecesta = $cestasRepository->findOneBy(
+            ['userAdmin' => $user,
             'estadoCs' => '1'],
         );
 
         if (!$tienecesta){ 
             $cesta = new Cestas();
-            $cesta->setUserCs($user->getId());
-            
+            $cesta->setUserAdmin($user);
             $this->em->persist($cesta);
             $this->em->flush();
+        } else {
+            $cesta = $tienecesta;
         };
-
-        $datos = new CestaUser($this->em);
 
         return $this->render('productos/index.html.twig', [
             'productos' => $productosRepository->findBy(array('obsoleto' => '0')),
-            'cestaId'   => $datos->getCestaUser($user->getId()),
+            'cestaId'   => $cesta->getId(),
         ]);
     }
 

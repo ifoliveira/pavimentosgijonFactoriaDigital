@@ -21,10 +21,13 @@ class Banco1Type extends AbstractType
                 'label' => 'Importe' ))
             ->add('concepto_Bn',null ,  array(
                 'label' => 'Concepto' ))
+              
             ->add('fecha_Bn', DateType::class, array(
                 'widget' => 'single_text',
                 'html5' => false,
                 'label' => 'Fecha del ticket'))
+            ->add('conciliado',null ,  array(
+                    'label' => 'Conciliado' ))                  
         ;
     }
 

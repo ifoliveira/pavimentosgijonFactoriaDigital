@@ -78,6 +78,7 @@ class BankController extends AbstractController
                         $banco->setConceptoBn($data[2]);
                         $banco->setFechaBn($fechaObj);
                         $banco->setImporteBn(floatval($data[3]));
+                        $banco->setConciliado(false);
                         $banco->setTimestampBn(new \DateTime()); // Usamos la fecha y hora actual
                         $this->em->persist($banco);
                         $bancos[] = $banco;

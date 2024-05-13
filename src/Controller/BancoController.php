@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Doctrine\ORM\EntityManagerInterface;
 
 
 
@@ -26,6 +27,15 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 class BancoController extends AbstractController
 {
+
+    protected $em;
+
+    public function __construct( EntityManagerInterface $em )
+    {
+        $this->em = $em;
+    }
+
+
     /**
      * @Route("/", name="banco_index", methods={"GET"})
      */
@@ -46,9 +56,8 @@ class BancoController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($banco);
-            $entityManager->flush();
+            $this->em->persist($banco);
+            $this->em->flush();
 
             return $this->redirectToRoute('banco_index');
         }
@@ -58,60 +67,7 @@ class BancoController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-
-    /**
-     * @Route("/N43", name="N43")
-     */
-    public function N43(BancoRepository $bancoRepository, DetallecestaRepository $detallecestaRepository): Response
-    {
-        $directorio = $this->getParameter("c43Dir");
-        $contador = 0;
-
-        $ficheros  =  sprintf("%02d", (count(scandir($directorio, 1)) - 2));
-        do {
-            $nombrefic = '/C43' . sprintf("%02d",$contador) . '.txt';
-
-            $fichero = file_get_contents($directorio .'/'.$nombrefic);
-        
-            // informamos cabeceara del ficheor csv 
-            $datosC43 = new Banks_N43();
-
-            $datosC43->parse($fichero);
-
-            foreach ($datosC43->accounts as $cuentas){
-                foreach ($cuentas->entries as $valor){
-            // Buscamos la descripcion del tipo        
-                    $entityManager = $this->getDoctrine()->getManager();
-                    $tipo = $entityManager->getRepository(Tiposmovimiento::class)->findOneBy(
-                        ['descripcionTm' => $valor->banco->getCategoriaBn()->getdescripcionTm()]
-                    );
-
-            // Si existe la movemos a objeto banco e insertamo solo banco        
-                    if ($tipo) {
-                        $valor->banco->setCategoriaBn($tipo);
-                    }else{
-            // Si no existe la insertamos tambien en el tipo            
-                    $entityManager->persist($valor->banco->getCategoriaBn());
-                    }
-
-                    $entityManager->persist($valor->banco);
-                    $entityManager->flush();
-                } 
-            }
-            unlink($directorio .'/'. $nombrefic);
-            $contador++;
-        }while($contador < $ficheros);
-        
-
-        // Borra el fichero
-        //   unlink($directorio .'/C43.txt');
-
-       return $this->render('banco/index.html.twig', [
-        'bancos' => $bancoRepository->findAll(),
-         ]);
-
-    }
-
+    
     /**
      * @Route("/{id_Bn}", name="banco_show", methods={"GET"})
      */
@@ -131,7 +87,7 @@ class BancoController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('banco_index');
         }
@@ -148,9 +104,9 @@ class BancoController extends AbstractController
     public function delete(Request $request, Banco $banco, DetallecestaRepository $detallecestaRepository): Response
     {
         if ($this->isCsrfTokenValid('delete'.$banco->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($banco);
-            $entityManager->flush();
+            
+            $this->em->remove($banco);
+            $this->em->flush();
         }
 
         return $this->redirectToRoute('banco_index');
@@ -161,10 +117,9 @@ class BancoController extends AbstractController
      */
     public function conciliar(Request $request, Banco $banco,  EfectivoRepository $efectivoRepository, TiposmovimientoRepository $tiposmovimientoRepository): Response
     {
-        $entityManager = $this->getDoctrine()->getManager();
-        
+                
         // Buscamos la descripcion del tipo        
-        $tipo = $entityManager->getRepository(Tiposmovimiento::class)->findOneBy(
+        $tipo = $this->em->getRepository(Tiposmovimiento::class)->findOneBy(
             ['descripcionTm' => 'Transferencia']
             );
 
@@ -175,11 +130,11 @@ class BancoController extends AbstractController
         $efectivo->setImporteEf($banco->getImporteBn() * -1);
         $efectivo->setFechaEf(new \DateTime());    
 
-        $entityManager->persist($efectivo);
+        $this->em->persist($efectivo);
 
         // Si existe la movemos a objeto banco e insertamo solo banco        
         $banco->setCategoriaBn($tipo);
-        $entityManager->flush();
+        $this->em->flush();
 
         return $this->redirectToRoute('banco_index');
     }
@@ -189,7 +144,7 @@ class BancoController extends AbstractController
      */
     public function movimientos(Request $request,  BancoRepository $bancoRepository): Response
     {
-        $entityManager = $this->getDoctrine()->getManager();
+        
 
         $bancoid = $request->query->get('banco');
         $fechaini = $bancoRepository->fechamaxima()["fechamaxima"];
@@ -223,7 +178,7 @@ class BancoController extends AbstractController
                                 $date_time = date_create_from_format('Y-m-d\TH:i:sP', $movimiento->bookingDate."T15:52:01+00:00");
                                 $banco->setFechaBn($date_time);
 
-                                $tipo = $entityManager->getRepository(Tiposmovimiento::class)->findOneBy(
+                                $tipo = $this->em->getRepository(Tiposmovimiento::class)->findOneBy(
                                     ['descripcionTm' => $apibank->concepto($movimiento->remittanceInformationUnstructured)->getDescripcionTm()]
                                 );
 
@@ -241,8 +196,8 @@ class BancoController extends AbstractController
 
                                 $bancosarray[] = $banco;
 
-                                $entityManager->persist($banco);
-                                $entityManager->flush();
+                                $this->em->persist($banco);
+                                $this->em->flush();
                                 $banco = new Banco();
                         }
                     };
@@ -368,31 +323,6 @@ class BancoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/refrescar/cuentas", name="refreshcuentas", methods={"GET","POST"})
-     */
-    public function ajasxrefrescta(Request $request): Response
-    {   
-        $entityManager = $this->getDoctrine()->getManager();
-
-        $directorio = $this->getParameter("nordigen");
-        $nombrefic = 'bancos.json';
-        $data = file_get_contents($directorio .'/'.$nombrefic);
-        $bancos = json_decode($data, true);
-
-        // Actualizamos JSON credencias
-        $credenciales['acceso'] = $decoded_json->access;           
-        $credenciales['restaurar'] = $decoded_json->refresh;
-        $newJsonString = json_encode($credenciales);
-        file_put_contents($directorio .'/'.$nombrefic . '', $newJsonString);        
-
-        return $this->render('banco/incluir.cuenta.html.twig', [
-            'bancosJSON' => $bancos,
-            'movimientos' => "sin movimientos",
-        ]);
-
-    } 
-
 
 
     /**
@@ -400,7 +330,6 @@ class BancoController extends AbstractController
      */
     public function ajaxinsclink(Request $request): Response
     {   
-        $entityManager = $this->getDoctrine()->getManager();
 
         $directorio = $this->getParameter("nordigen");
         $nombrefic = 'bancos.json';
@@ -471,37 +400,6 @@ class BancoController extends AbstractController
 
             ]);
 
-        //$response = $client->request('GET', 'https://ob.nordigen.com/api/v2/requisitions/b6acff02-1c0c-4fc3-8a22-cde8cb53b9ef/', [
-
-        //   'headers' => [
-        //    'Accept' => 'application/json',
-        //    'Authorization' =>  'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjU4NzM3MDIxLCJqdGkiOiI1NGY0OTNjNWFmMDQ0ZWRlYTk0NzE2ODliMmFmYTFmMyIsImlkIjoxMzU0MCwic2VjcmV0X2lkIjoiMzI3ZWM5OTUtZWQ1YS00NDM0LThmNDctMzZiNjg3ZWE1YjY4IiwiYWxsb3dlZF9jaWRycyI6WyIwLjAuMC4wLzAiLCI6Oi8wIl19.pYnu-IF-UCo2WfgtFUFqapNFK4ggQUpOksAgvLq0Tuo',
-        //  ],
-        //   ]);
-
-       //$response = $client->request('POST', 'https://ob.nordigen.com/api/v2/requisitions/', [
-
-        //    'headers' => [
-       //     'Accept' => 'application/json',
-       //     'Authorization' =>  'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjU4NzM3MDIxLCJqdGkiOiI1NGY0OTNjNWFmMDQ0ZWRlYTk0NzE2ODliMmFmYTFmMyIsImlkIjoxMzU0MCwic2VjcmV0X2lkIjoiMzI3ZWM5OTUtZWQ1YS00NDM0LThmNDctMzZiNjg3ZWE1YjY4IiwiYWxsb3dlZF9jaWRycyI6WyIwLjAuMC4wLzAiLCI6Oi8wIl19.pYnu-IF-UCo2WfgtFUFqapNFK4ggQUpOksAgvLq0Tuo',
-       //    ],
-       //     'body'=> ['redirect'=>'https://localhost/admin', 'institution_id'=>'BANCSABADELL_BSABESBB'],
-       //    ]);
-
-        //$response = $client->request('GET', 'https://ob.nordigen.com/api/v2/institutions/?country=es', [
-
-        //   'headers' => [
-        //       'Accept' => 'application/json',
-        //       'Authorization' =>  'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjU4NzM3MDIxLCJqdGkiOiI1NGY0OTNjNWFmMDQ0ZWRlYTk0NzE2ODliMmFmYTFmMyIsImlkIjoxMzU0MCwic2VjcmV0X2lkIjoiMzI3ZWM5OTUtZWQ1YS00NDM0LThmNDctMzZiNjg3ZWE1YjY4IiwiYWxsb3dlZF9jaWRycyI6WyIwLjAuMC4wLzAiLCI6Oi8wIl19.pYnu-IF-UCo2WfgtFUFqapNFK4ggQUpOksAgvLq0Tuo',
-        //   ],
-        //    ]); 
-
-        //$response = $client->request('POST', 'https://ob.nordigen.com/api/v2/token/new/', [
-        //'headers' => [
-        //'Accept' => 'application/json',
-        //],
-        //'body'=> ['secret_id'=>'327ec995-ed5a-4434-8f47-36b687ea5b68', 'secret_key'=>'6dc733f46205e5aedde588f0f70b0f8bfa5a2b4debfed990db2bd76e3698fc75cc67daef836fc6538b99b7890cbffc75555f81f2fba3f51a9c157013b39d75c8'],
-        //]); 
       
         $contentType = $response->getHeaders()['content-type'][0];
 

@@ -249,44 +249,58 @@
         *       Insertar un producto      *
         ****************************************/
 
-        $('#tbprod').on('click', 'tbody tr[role="row"]', function() {
+$('#tbprod').on('click', 'tbody tr[role="row"]', function() {
+
+            // Datos de la fila seleccionada en la lista de productos
                 var data = table.row(this).data();
+                var res = data[4].split("&");
+                var res1 = data[3].split("&");
+
                 const inputValue = 1
-                const inputValue2 = data[4]
-                const inputValue3 = data[3]
+                const inputValue2 =  res[0].replace(/,/g, '.')
+                const inputValue3 = res1[0].replace(/,/g, '.')
                 const inputValue4 = 0
                 const inputStep = 1
                 const inputStep2 = 1
                 const inputText = ""
                 const inputValue0 = data[2]
-
+                
+            // Pop up con datos del producto
                 Swal.fire({
+                showCancelButton: true,  // Activamos el botón de cancelar
+                confirmButtonText: 'Añadir producto',
+                cancelButtonText: 'Cancelar',
                 title: 'Cantidad y PVP',
                 html: `
-                     <h1> "${inputValue0}" </h1>
-                    <input type="text" value="${inputText}" class="swal2-input" id="range-value0" text-align="center">
+                    <h2> ${inputValue0} </h2>
+                    <input type="text" value="${inputText}" class="swal2-input" id="range-value0" style="text-align:center;">
                     <h2> Cantidad </h2>
-                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value">
+                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align:center;">
                     <h2> PVP </h2>
-                    <input type="number" value="${inputValue2}" step="${inputStep2}" class="swal2-input" id="range-value2">
+                    <input type="number" value="${inputValue2}" step="${inputStep2}" class="swal2-input" id="range-value2" style="text-align:right;"> €
                     <h2> Coste </h2>
-                    <input type="number" value="${inputValue3}" step="${inputStep2}" class="swal2-input" id="range-value3">
+                    <input type="number" value="${inputValue3}" step="${inputStep2}" class="swal2-input" id="range-value3" style="text-align:right;"> €
                     <h2> Descuento </h2>
-                    <input type="number" value="${inputValue4}" step="${inputStep2}" class="swal2-input" id="range-value4">`,
+                    <input type="number" value="${inputValue4}" step="${inputStep2}" class="swal2-input" id="range-value4" style="text-align:right;"> %`,
 
                 }).then((result) => {
+
                     if (result.value) {
+            // Llamamos al insert line
+
                         var data = table.row(this).data();
-                        const inputText = Swal.getContent().querySelector('#range-value0');
+                        const inputText = Swal.getHtmlContainer().querySelector('#range-value0');
                         texto = inputText.value;
-                        const inputNumber = Swal.getContent().querySelector('#range-value');
+                        const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');
                         cantidad = inputNumber.value;
-                        const inputNumber2 = Swal.getContent().querySelector('#range-value2');
+                        const inputNumber2 = Swal.getHtmlContainer().querySelector('#range-value2');
                         importe = inputNumber2.value;
-                        const inputNumber3 = Swal.getContent().querySelector('#range-value3');
+                        const inputNumber3 = Swal.getHtmlContainer().querySelector('#range-value3');
                         coste = inputNumber3.value;
-                        const inputNumber4 = Swal.getContent().querySelector('#range-value4');
-                        descuento = inputNumber4.value;                        
+                        const inputNumber4 = Swal.getHtmlContainer().querySelector('#range-value4');
+                        descuento = inputNumber4.value;
+      
+               
                         insert_line(data,cantidad,importe,coste,cestaId,texto,descuento);
                     }
                 })
@@ -328,6 +342,50 @@
                success: function(response) {  
                    location.reload();  
 
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            });  
+        };  
+
+
+        /****************************************
+        *       Sumar o restar un producto      *
+        *****************************************/
+
+        $(document).on('click', 'i[name="plus-minus"]' , function(event) {
+            let id = this.id;
+ 
+            let cantidad = this.dataset.cantidad;
+
+            if (this.classList.contains("fa-minus-circle")){
+                cantidad--;
+            }else{
+                cantidad++;
+            };
+
+            if (cantidad==0) {
+                delete_line(id);     
+            }else{
+                actualiza_line(id, cantidad);
+            }
+
+        })
+
+
+        function actualiza_line(id,cantidad) 
+        {
+            $.ajax({  
+               url:        '../../detallecesta/plusminus/ajax',  
+               type:       'GET',   
+               data:        ({cantidad: cantidad ,id: id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) {  
+                   $('#loop').html(response.template);
+                   //document.querySelector("span[name='cantidad']").innerText     =  response.cantidad;
                },  
                error : function(xhr, textStatus, errorThrown) {  
                   alert(textStatus);  

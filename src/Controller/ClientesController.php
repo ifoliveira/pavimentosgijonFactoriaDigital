@@ -60,7 +60,7 @@ class ClientesController extends AbstractController
       // Creamos la cesta para el presupuesto y la señal 
             $user = $this->getUser();
             $cesta = new Cestas();
-            $cesta->setUserCs($user->getId());
+            $cesta->setUserAdmin($user);
             $cesta->setEstadoCs(11);
             $entityManager->persist($cesta);
             $presupuesto->setTicket($cesta);

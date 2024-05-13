@@ -19,7 +19,7 @@
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title">Productos</h4>
-                                <h6 class="card-subtitle">Para añadir productos seleccionar en la lista</h6>
+                                <h6 class="card-subtitle">Para añadir productos seleccionar en la lista {{cestaId}}</h6>
                                 <div class="table-responsive">
                                     <table id="tbprod" class="table table-striped table-bordered text-inputs-searching">
                                          <thead>
@@ -66,7 +66,7 @@
                     <!-- Column -->
                     <div class="col-md-3 col-lg-3">
                         <div class="card">
-                            <div class="card-body" id="loop" data-cesta="{{ project.getCestaUser(app.user).getId }}" data-dirtk="{{ ticketsDir }}">
+                            <div class="card-body" id="loop" data-cesta="{{ cestaId }}" data-dirtk="{{ ticketsDir }}">
                                 {% include 'productos/loop.html.twig' %}
                             </div>
                             <div class="card-body">
@@ -114,7 +114,7 @@
     
     <script src="{{ asset('dist/js/pages/datatable/datatable-api.init.js') }}"></script>
     <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
-    <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
+ 
 
     <script language = "javascript">
 
@@ -150,33 +150,40 @@
                 
             // Pop up con datos del producto
                 Swal.fire({
+                showCancelButton: true,  // Activamos el botón de cancelar
+                confirmButtonText: 'Añadir producto',
+                cancelButtonText: 'Cancelar',
                 title: 'Cantidad y PVP',
                 html: `
                     <h2> ${inputValue0} </h2>
-                    <input type="text" value="${inputText}" class="swal2-input" id="range-value0" text-align="center">
+                    <input type="text" value="${inputText}" class="swal2-input" id="range-value0" style="text-align:center;">
                     <h2> Cantidad </h2>
-                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="center">
+                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align:center;">
                     <h2> PVP </h2>
-                    <input type="number" value="${inputValue2}" step="${inputStep2}" class="swal2-input" id="range-value2">
+                    <input type="number" value="${inputValue2}" step="${inputStep2}" class="swal2-input" id="range-value2" style="text-align:right;"> €
                     <h2> Coste </h2>
-                    <input type="number" value="${inputValue3}" step="${inputStep2}" class="swal2-input" id="range-value3">
+                    <input type="number" value="${inputValue3}" step="${inputStep2}" class="swal2-input" id="range-value3" style="text-align:right;"> €
                     <h2> Descuento </h2>
-                    <input type="number" value="${inputValue4}" step="${inputStep2}" class="swal2-input" id="range-value4">`,
+                    <input type="number" value="${inputValue4}" step="${inputStep2}" class="swal2-input" id="range-value4" style="text-align:right;"> %`,
 
                 }).then((result) => {
+
                     if (result.value) {
             // Llamamos al insert line
+
                         var data = table.row(this).data();
-                        const inputText = Swal.getContent().querySelector('#range-value0');
+                        const inputText = Swal.getHtmlContainer().querySelector('#range-value0');
                         texto = inputText.value;
-                        const inputNumber = Swal.getContent().querySelector('#range-value');
+                        const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');
                         cantidad = inputNumber.value;
-                        const inputNumber2 = Swal.getContent().querySelector('#range-value2');
+                        const inputNumber2 = Swal.getHtmlContainer().querySelector('#range-value2');
                         importe = inputNumber2.value;
-                        const inputNumber3 = Swal.getContent().querySelector('#range-value3');
+                        const inputNumber3 = Swal.getHtmlContainer().querySelector('#range-value3');
                         coste = inputNumber3.value;
-                        const inputNumber4 = Swal.getContent().querySelector('#range-value4');
-                        descuento = inputNumber4.value;                        
+                        const inputNumber4 = Swal.getHtmlContainer().querySelector('#range-value4');
+                        descuento = inputNumber4.value;
+      
+               
                         insert_line(data,cantidad,importe,coste,cestaId,texto,descuento);
                     }
                 })
@@ -258,7 +265,8 @@
         
 
         function delete_line(id) 
-        {
+        {   
+            console.log("llamada a delete");
             $.ajax({  
                url:        '{{path("detallecesta_delete")}}',  
                type:       'GET',   
@@ -268,6 +276,7 @@
                
                success: function(response) {  
                    $('#loop').html(response.template);
+   
                    document.querySelector("span[name='cantidad']").innerText     =  response.cantidad;
                },  
                error : function(xhr, textStatus, errorThrown) {  
@@ -316,33 +325,39 @@
 
             // Datos de la fila seleccionada en la lista de productos
                 var data = table.row(this).data();
-                const inputValue = 1
+                const inputValue = 75
                 const inputStep = 1
                 var senal = 0
 
-                const { value: accept } =  await Swal.fire({
+            // Primer SweetAlert para confirmar si es señal
+            const { value: accept } = await Swal.fire({
+                showCancelButton: true,  // Activamos el botón de cancelar
+                cancelButtonText: 'Cancelar',                    
                 title: 'SEÑAL',
                 input: 'checkbox',
                 inputValue: 0,
-                inputPlaceholder:
-                    '¿Es el pago de una señal?',
-                confirmButtonText:
-                    'Continuar <i class="fa fa-arrow-right"></i>',
+                inputPlaceholder: '¿Es el pago de una señal?',
+                confirmButtonText: 'Continuar <i class="fa fa-arrow-right"></i>',
+            });
 
-                })
+            // Si el usuario presiona Cancelar, 'accept' será undefined
+            if (accept === undefined) {
+                return; // Salimos de la función si el usuario cancela
+            }
+                        
 
-                if (accept) {
+            if (accept) {
             // Pop up importe señal
-                     await Swal.fire({
+                    await Swal.fire({
                     title: 'Importe Señal',
                     html: `
-                        <h2> Importe Señal </h2>
-                        <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="center">`,
+                        <h2> Importe señal </h2>
+                        <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align:right;"> €`
 
                     }).then((result) => {
                         if (result.value) {
             // Llamamos al insert line
-                            const inputNumber = Swal.getContent().querySelector('#range-value');
+                            const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');            
                             senal = inputNumber.value;
 
                         }
@@ -350,34 +365,37 @@
 
                 } 
 
-            const swalWithBootstrapButtons = await Swal.mixin({
+        const swalWithBootstrapButtons = await Swal.mixin({
                 customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'mr-2 btn btn-danger'
+                    confirmButton: 'btn btn-success mx-2', // Botón de confirmación
+                    denyButton: 'btn btn-danger mx-2', // Botón de negación
+                    cancelButton: 'btn btn-secondary mx-2' // Botón de cancelación
                 },
-                buttonsStyling: false,
-            })
+                buttonsStyling: false
+            });
 
             await swalWithBootstrapButtons.fire({
-                title: 'Metodo de pago',
+                title: 'Método de pago',
                 text: "Selecciona un método de pago",
-                type: 'warning',
+                icon: 'warning',
+                showDenyButton: true, // Asegúrate de que esto esté habilitado
                 showCancelButton: true,
                 confirmButtonText: 'Tarjeta',
-                cancelButtonText: 'Efectivo',
+                denyButtonText: 'Efectivo', // Texto para el botón de negación
+                cancelButtonText: 'Cancelar',
                 reverseButtons: true
             }).then((result) => {
-                if (result.value) {
-                    ticket_pdf("Tarjeta", senal) 
-                } else if (
-                    // Read more about handling dismissals
-                    result.dismiss === Swal.DismissReason.cancel
-                ){
-                    ticket_pdf("Efectivo", senal) 
+                if (result.isConfirmed) {
+                    ticket_pdf("Tarjeta", senal);
+                } else if (result.isDenied) {
+                    ticket_pdf("Efectivo", senal);
+                } else {
+                    // Operación cancelada
+                    console.log('Operación cancelada por el usuario');
                 }
-            })
+            });
 
-         })
+         });
 
         function ticket_script(tipopago, importesnal) 
         {

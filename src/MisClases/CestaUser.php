@@ -5,6 +5,7 @@ namespace App\MisClases;
 use Doctrine\ORM\EntityManager;
 use App\Entity\Cestas;
 use App\Entity\Detallecesta;
+use PhpParser\Node\Expr\Cast\Double;
 
 class CestaUser {
 
@@ -13,13 +14,6 @@ class CestaUser {
     public function __construct( EntityManager $em )
     {
         $this->em = $em;
-    }
-
-
-    public function getCestaUser($token)
-    {
-        $item = $this->em->getRepository(Cestas::class)->findOneBy(array('userCs' => $token,'estadoCs'=> '1'));
-        return $item ? $item : null;
     }
 
 
@@ -58,7 +52,7 @@ class CestaUser {
     public function getImporteTot( $cestaId )
     {
         $item = $this->em->getRepository(Detallecesta::class)->imptotalCesta($this->getCesta($cestaId));
-        return $item ? round($item,2) : null;
+        return $item ? round($item,2) : doubleval(0);
     }
 
     public function getDescuentoTot( $cestaId )

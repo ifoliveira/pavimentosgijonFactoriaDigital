@@ -119,7 +119,7 @@ class ForecastController extends AbstractController
             $this->em->persist($forecast);
             $this->em->flush();
 
-            return $this->redirectToRoute('forecast_index');
+            return $this->redirectToRoute('forecast_new');      
         }
 
         return $this->render('forecast/new.html.twig', [

@@ -42,9 +42,15 @@ class Admin implements UserInterface
      */
     private $presupuestos;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Cestas::class, mappedBy="userAdmin")
+     */
+    private $cestas;
+
     public function __construct()
     {
         $this->presupuestos = new ArrayCollection();
+        $this->cestas = new ArrayCollection();
     }
 
     public function __toString()
@@ -156,6 +162,36 @@ class Admin implements UserInterface
             // set the owning side to null (unless already changed)
             if ($presupuesto->getUserPe() === $this) {
                 $presupuesto->setUserPe(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Cestas>
+     */
+    public function getCestas(): Collection
+    {
+        return $this->cestas;
+    }
+
+    public function addCesta(Cestas $cesta): self
+    {
+        if (!$this->cestas->contains($cesta)) {
+            $this->cestas[] = $cesta;
+            $cesta->setUserAdmin($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCesta(Cestas $cesta): self
+    {
+        if ($this->cestas->removeElement($cesta)) {
+            // set the owning side to null (unless already changed)
+            if ($cesta->getUserAdmin() === $this) {
+                $cesta->setUserAdmin(null);
             }
         }
 

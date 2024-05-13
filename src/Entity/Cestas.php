@@ -22,11 +22,6 @@ class Cestas
     private $id;
 
     /**
-     * @ORM\Column(type="integer")
-     */
-    private $userCs;
-
-    /**
      * @ORM\Column(type="date")
      */
     private $fechaCs;
@@ -77,6 +72,11 @@ class Cestas
      */
     private $pagos;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Admin::class, inversedBy="cestas")
+     */
+    private $userAdmin;
+
     public function __construct()
     {
         $this->detallecesta = new ArrayCollection();
@@ -104,18 +104,6 @@ class Cestas
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getUserCs(): ?int
-    {
-        return $this->userCs;
-    }
-
-    public function setUserCs(int $userCs): self
-    {
-        $this->userCs = $userCs;
-
-        return $this;
     }
 
     public function getFechaCs(): ?\DateTimeInterface
@@ -277,6 +265,18 @@ class Cestas
                 $pago->setCesta(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUserAdmin(): ?Admin
+    {
+        return $this->userAdmin;
+    }
+
+    public function setUserAdmin(?Admin $userAdmin): self
+    {
+        $this->userAdmin = $userAdmin;
 
         return $this;
     }

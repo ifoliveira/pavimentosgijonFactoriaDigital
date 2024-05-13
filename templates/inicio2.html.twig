@@ -441,7 +441,7 @@
                             class="user-img position-relative d-inline-block"
                           >
                             <img
-                              src="../../assets/images/users/1.jpg"
+                              src="{{ asset('images/user/1.jpg') }}"
                               alt="user"
                               class="rounded-circle w-100"
                             />
@@ -494,7 +494,7 @@
                             class="user-img position-relative d-inline-block"
                           >
                             <img
-                              src="../../assets/images/users/2.jpg"
+                              src="{{ asset('images/users/2.jpg') }}"
                               alt="user"
                               class="rounded-circle w-100"
                             />
@@ -544,7 +544,7 @@
                             class="user-img position-relative d-inline-block"
                           >
                             <img
-                              src="../../assets/images/users/3.jpg"
+                              src="{{ asset('images/users/3.jpg') }}"
                               alt="user"
                               class="rounded-circle w-100"
                             />
@@ -594,7 +594,7 @@
                             class="user-img position-relative d-inline-block"
                           >
                             <img
-                              src="../../assets/images/users/4.jpg"
+                              src="{{ asset('images/users/4.jpg') }}"
                               alt="user"
                               class="rounded-circle w-100"
                             />
@@ -919,18 +919,10 @@
                     dropdown-menu dropdown-menu-end dropdown-menu-animate-up
                   "
                 >
-                  <a class="dropdown-item" href="#"
-                    ><i class="flag-icon flag-icon-in"></i> India</a
-                  >
-                  <a class="dropdown-item" href="#"
-                    ><i class="flag-icon flag-icon-fr"></i> French</a
-                  >
-                  <a class="dropdown-item" href="#"
-                    ><i class="flag-icon flag-icon-cn"></i> China</a
-                  >
-                  <a class="dropdown-item" href="#"
-                    ><i class="flag-icon flag-icon-de"></i> Dutch</a
-                  >
+                  <a class="dropdown-item" href="#"><i class="flag-icon flag-icon-in"></i> India</a>
+                  <a class="dropdown-item" href="#"><i class="flag-icon flag-icon-fr"></i> French</a>
+                  <a class="dropdown-item" href="#"><i class="flag-icon flag-icon-cn"></i> China</a>
+                  <a class="dropdown-item" href="#"><i class="flag-icon flag-icon-de"></i> Dutch</a>
                 </div>
               </li>
               <!-- -------------------------------------------------------------- -->
@@ -945,7 +937,7 @@
                   aria-expanded="false"
                 >
                   <img
-                    src="../../assets/images/users/1.jpg"
+                    src="{{ asset('images/users/1.jpg')}}""
                     alt="user"
                     width="30"
                     class="profile-pic rounded-circle"
@@ -972,7 +964,8 @@
                   >
                     <div class="">
                       <img
-                        src="../../assets/images/users/1.jpg"
+                        src="{{ asset('images/users/1.jpg')}}""
+                    alt="user"
                         alt="user"
                         class="rounded-circle"
                         width="60"
@@ -1120,7 +1113,6 @@
                               <li class="sidebar-item"><a href="{{ path('uploadBank') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Insertar</span></a></li>
                               <li class="sidebar-item"><a href="{{ path('banco_index') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu"> Consultar</span></a></li>
                               <li class="sidebar-item"><a href="{{ path('forecast_index') }}" class="sidebar-link"><i class="mdi mdi-link-variant"></i><span class="hide-menu">Conciliar</span></a></li>
-                              <li class="sidebar-item"><a href="{{ path('incluir_banco') }}" class="sidebar-link"><i class="mdi mdi-link-variant"></i><span class="hide-menu">Acceso a Bancos</span></a></li>
                           </ul>
                       </li>
                       <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-cash-multiple"></i><span class="hide-menu">Efectivo</span></a>
@@ -1281,7 +1273,7 @@
                       <div class="mt-3 d-flex">
                         <div class="me-3">
                           <img
-                            src="../../assets/images/users/profile.png"
+                            src="{{ asset('images/users/profile.png"
                             alt="user"
                             width="40"
                             class="rounded-circle"
@@ -1304,7 +1296,7 @@
                       <div class="mt-3 d-flex">
                         <div class="me-3">
                           <img
-                            src="../../assets/images/users/4.jpg"
+                            src="{{ asset('images/users/4.jpg"
                             alt="user"
                             width="40"
                             class="rounded-circle"
@@ -1327,7 +1319,7 @@
                       <div class="mt-3 d-flex">
                         <div class="me-3">
                           <img
-                            src="../../assets/images/users/2.jpg"
+                            src="{{ asset('images/users/2.jpg"
                             alt="user"
                             width="40"
                             class="rounded-circle"
@@ -1753,7 +1745,7 @@
                   >
                     <span class="user-img position-relative d-inline-block">
                       <img
-                        src="../../assets/images/users/1.jpg"
+                        src="{{ asset('images/users/1.jpg')}}"
                         alt="user"
                         class="rounded-circle w-100"
                       />
@@ -1791,7 +1783,7 @@
                   >
                     <span class="user-img position-relative d-inline-block">
                       <img
-                        src="../../assets/images/users/2.jpg"
+                        src="{{ asset('images/users/2.jpg')}}"
                         alt="user"
                         class="rounded-circle w-100"
                       />
@@ -1829,7 +1821,7 @@
                   >
                     <span class="user-img position-relative d-inline-block">
                       <img
-                        src="../../assets/images/users/3.jpg"
+                        src="{{ asset('images/users/3.jpg')}}"
                         alt="user"
                         class="rounded-circle w-100"
                       />
@@ -1867,7 +1859,7 @@
                   >
                     <span class="user-img position-relative d-inline-block">
                       <img
-                        src="../../assets/images/users/4.jpg"
+                        src="{{ asset('images/users/4.jpg')}}"
                         alt="user"
                         class="rounded-circle w-100"
                       />
@@ -1908,7 +1900,7 @@
                   >
                     <span class="user-img position-relative d-inline-block">
                       <img
-                        src="../../assets/images/users/5.jpg"
+                        src="{{ asset('images/users/5.jpg')}}"
                         alt="user"
                         class="rounded-circle w-100"
                       />
@@ -1949,7 +1941,7 @@
                   >
                     <span class="user-img position-relative d-inline-block">
                       <img
-                        src="../../assets/images/users/6.jpg"
+                        src="{{ asset('images/users/6.jpg')}}"
                         alt="user"
                         class="rounded-circle w-100"
                       />
@@ -1990,7 +1982,7 @@
                   >
                     <span class="user-img position-relative d-inline-block">
                       <img
-                        src="../../assets/images/users/7.jpg"
+                        src="{{ asset('images/users/7.jpg')}}"
                         alt="user"
                         class="rounded-circle w-100"
                       />
@@ -2031,7 +2023,7 @@
                   >
                     <span class="user-img position-relative d-inline-block">
                       <img
-                        src="../../assets/images/users/8.jpg"
+                        src="{{ asset('images/users/8.jpg')}}"
                         alt="user"
                         class="rounded-circle w-100"
                       />
@@ -2093,7 +2085,7 @@
                   <img
                     class="rounded-circle"
                     alt="user"
-                    src="../../assets/images/users/2.jpg"
+                    src="{{ asset('images/users/2.jpg')}}"
                   />
                 </div>
                 <div class="sl-right">
@@ -2108,7 +2100,7 @@
                   <img
                     class="rounded-circle"
                     alt="user"
-                    src="../../assets/images/users/1.jpg"
+                    src="{{ asset('images/users/1.jpg')}}"
                   />
                 </div>
                 <div class="sl-right">
@@ -2142,7 +2134,7 @@
                   <img
                     class="rounded-circle"
                     alt="user"
-                    src="../../assets/images/users/4.jpg"
+                    src="{{ asset('images/users/4.jpg')}}"
                   />
                 </div>
                 <div class="sl-right">
@@ -2157,7 +2149,7 @@
                   <img
                     class="rounded-circle"
                     alt="user"
-                    src="../../assets/images/users/6.jpg"
+                    src="{{ asset('images/users/6.jpg')}}"
                   />
                 </div>
                 <div class="sl-right">

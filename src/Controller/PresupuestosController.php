@@ -106,7 +106,6 @@ class PresupuestosController extends AbstractController
             $user = $this->getUser();
             $presupuesto->setUserPe($user);
             $cesta = new Cestas();
-            $cesta->setUserCs(1);
             $cesta->setEstadoCs(11);
             $this->em->persist($cesta);
             $presupuesto->setTicket($cesta);            
