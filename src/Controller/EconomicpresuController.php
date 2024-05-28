@@ -153,11 +153,9 @@ class EconomicpresuController extends AbstractController
         
         $id = $request->query->get('id');
         $importe = $request->query->get('importe');
-        $modo = $request->query->get('modo');
-        $aplica = $request->query->get('aplica');
         $entityManager = $this->getDoctrine()->getManager();
-        $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $id]);        
-   
+        $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $id]);     
+
         // Generamos movimiento efectivo
         $efectivo = new Efectivo();
         $efectivo->setTipoEf($entityManager->getRepository('App\Entity\Tiposmovimiento')->findOneBy(['descripcionTm'=> 'Mano de Obra']));
@@ -168,8 +166,7 @@ class EconomicpresuController extends AbstractController
         $entityManager->persist($efectivo );
         $entityManager->flush();
 
-        //actualizamos la cantidad
-
+        
         //$actualizar->setImporteEco($actualizar->getImporteEco() + ($importe));
 
         if (($actualizar->getImporteEco() - ($importe)) == 0 || $actualizar->getImporteEco()== 0 ) {

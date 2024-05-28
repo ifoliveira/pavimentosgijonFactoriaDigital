@@ -1315,6 +1315,8 @@
                                 // Read more about handling dismissals
                                 result.dismiss === Swal.DismissReason.cancel
                             ) {
+                                const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');
+                                const importe = inputNumber.value;                                
                             pagar_economic(id,importe,"Efectivo"); 
                             }
                         });
