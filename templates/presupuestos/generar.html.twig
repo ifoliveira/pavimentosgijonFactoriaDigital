@@ -164,7 +164,7 @@
                             </div>
 
                             <div class="row">
-                                {% if tipo == "FACTURA SIMPLIFICADA" or tipo == "FACTURA FINAL" or (tipo == "PRESUPUESTO" and estado == "ACEPTADO") %}
+                                {% if tipo == "FACTURA SIMPLIFICADA" or tipo == "FACTURA FINAL" %}
                                 <div class="col-md-12">
                                     <table class="table table-hover">
                                           <thead>
@@ -212,9 +212,9 @@
                                 </div>
                             </div>
 
-                                {% if tipo == "FACTURA SIMPLIFICADA" and facturapagada == false %}<h6> * Este documento rectifica toda aquel con referencia ##002100{{ presupuesto.id }}## y fecha previa   {% endif %}
-                            {% else %}
-                                 
+                             {% if tipo == "FACTURA SIMPLIFICADA" and facturapagada == false %}<h6> * Este documento rectifica toda aquel con referencia ##002100{{ presupuesto.id }}## y fecha previa   {% endif %}
+                            {% endif %}
+                            {% if tipo == "PRESUPUESTO" %}     
                             </div>
                             <div class="row">
                                 <div class="col-md-8">
@@ -255,7 +255,7 @@
                                 </div>
 
                             </div>
-
+                            {% endif %} 
                             {% if tipo == "FACTURA SIMPLIFICADA" or tipo == "FACTURA FINAL" or (tipo == "PRESUPUESTO" and estado == "ACEPTADO") %}
                                 <p></p>
                             {% else %}
@@ -266,7 +266,7 @@
                                 </p>
                                 {% endif %}
                             {% endif %}
-                            {% endif %}   
+                              
                         </div>
                         <hr>
                                            
