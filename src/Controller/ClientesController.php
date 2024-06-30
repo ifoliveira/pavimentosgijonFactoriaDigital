@@ -18,12 +18,24 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\MisClases\ManoObraClass;
 use App\MisClases\EconomicoPresu;
 use App\Repository\ConsultasRepository;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/clientes")
  */
 class ClientesController extends AbstractController
 {
+
+
+    protected $em;
+
+    public function __construct( EntityManagerInterface $em )
+    {
+        $this->em = $em;
+    }
+
+
     /**
      * @Route("/", name="clientes_index", methods={"GET"})
      */
@@ -52,8 +64,8 @@ class ClientesController extends AbstractController
 
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($cliente);
+  
+            $this->em->persist($cliente);
             $user = $this->getUser();
             $presupuesto->setUserPe($user);
             $presupuesto->setClientePe($cliente);
@@ -62,12 +74,12 @@ class ClientesController extends AbstractController
             $cesta = new Cestas();
             $cesta->setUserAdmin($user);
             $cesta->setEstadoCs(11);
-            $entityManager->persist($cesta);
+            $this->em->persist($cesta);
             $presupuesto->setTicket($cesta);
-            $entityManager->persist($presupuesto);
-            $entityManager->flush();
+            $this->em->persist($presupuesto);
+            $this->em->flush();
 
-            $manoobra = new ManoObraClass($entityManager);
+            $manoobra = new ManoObraClass($this->em);
             $manoobra->IniciarPresupuesto($presupuesto);
     
 
@@ -122,11 +134,33 @@ class ClientesController extends AbstractController
     public function delete(Request $request, Clientes $cliente): Response
     {
         if ($this->isCsrfTokenValid('delete'.$cliente->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($cliente);
-            $entityManager->flush();
+            $this->em->remove($cliente);
+            $this->em->flush();
         }
 
         return $this->redirectToRoute('clientes_index');
     }
+
+ 
+
+    /**
+     * @Route("/delete/consulta", name="consulta_delete_ajax", methods={"GET","POST"})
+     */
+    public function deleteconsultaajax(Request $request): JsonResponse
+    {
+        // Funcion para borrar registro de producto de una cesta determinada
+        // Obtener ID del cesta
+        $datos = $request->query->get('id');
+        // Obtener cesta
+        $consulta = $this->em->getRepository('App\Entity\Consultas')->find($datos);
+
+        // Borrado del detalle
+        $this->em->remove($consulta);
+        $this->em->flush();
+
+        $response = new JsonResponse();
+
+        return $response;
+
+    }      
 }

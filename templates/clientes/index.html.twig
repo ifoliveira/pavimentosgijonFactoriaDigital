@@ -20,7 +20,6 @@
                                                 <th>Email</th>
                                                 <th>Telefono</th>
                                                 <th>Pregunta</th>
-
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
@@ -31,9 +30,10 @@
                                                 <td>{{ consulta.email }}</td>
                                                 <td>{{ consulta.telefono }}</td>
                                                 <td>{{ consulta.pregunta }}</td>
-
                                                 <td>
-
+                                                            <a class="text-inverse pr-2" data-toggle="tooltip" title="Borrar forecast" name="delete_detalle" id="{{ consulta.id }}">
+                                                                <i class="ti-trash"></i>
+                                                            </a>  
                                                 </td>
                                             </tr>
                                         {% else %}
@@ -143,5 +143,69 @@
     <script src="{{ asset('assets/extra-libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/extra-libs/datatables.net-bs4/js/dataTables.responsive.min.js') }}"></script>
     <script src="{{ asset('dist/js/pages/datatable/datatable-basic.init.js') }}"></script>
+    <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>    
+
+ <script language = "javascript">
+        /****************************************
+        *      Eliminar un consulta             *
+        *****************************************/
+
+        $(document).on('click', 'a[name="delete_detalle"]' , async function(event) {
+            let id = this.id;
+            console.log (id);
+
+            // Pop up con datos del producto
+                Swal.fire({
+                showCancelButton: true,  // Activamos el botón de cancelar
+                confirmButtonText: 'Borrar consulta',
+                cancelButtonText: 'Cancelar',
+                title: "Borrado consulta  " + id + "" ,
+                }).then((result) => {
+
+                    if (result.value) {
+            // Llamamos al insert line
+
+                       delete_line(id);
+                    }
+                })
+        });
+
+        function delete_line(id) 
+        {
+            $.ajax({  
+               url:        '{{path("consulta_delete_ajax")}}',  
+               type:       'GET',   
+               data:        ({id: id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) { 
+                    let timerInterval
+                    Swal.fire({
+                    type: 'success',
+                    title: 'Se ha borrado correctamente!',
+                    html: 'Se cerrara en breve',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    willClose: () => {
+                        clearInterval(timerInterval)
+                    }
+                    }).then((result) => {
+                    /* Read more about handling dismissals below */
+                    if (result.dismiss === Swal.DismissReason.timer) {
+                        location.reload();
+                    }
+                    })
+                   
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            }); 
+        };  
+
+
+    </script> 
 
 {% endblock %}
