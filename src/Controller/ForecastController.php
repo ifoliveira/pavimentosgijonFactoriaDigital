@@ -176,6 +176,28 @@ class ForecastController extends AbstractController
     }
 
     /**
+     * @Route("/delete/fila", name="forecast_delete_ajax", methods={"GET","POST"})
+     */
+    public function deleteforecastajax(Request $request): JsonResponse
+    {
+        // Funcion para borrar registro de producto de una cesta determinada
+        // Obtener ID del cesta
+        $datos = $request->query->get('id');
+        // Obtener cesta
+        $forecast = $this->em->getRepository('App\Entity\Forecast')->find($datos);
+
+        // Borrado del detalle
+        $this->em->remove($forecast);
+        $this->em->flush();
+
+        $response = new JsonResponse();
+
+        return $response;
+
+    }  
+
+
+    /**
      * @Route("/{id}/{estado}/conciliar", name="forecast_conciliar", methods={"GET","POST"})
      */
     public function conciliar(Request $request, Forecast $forecast,  DetallecestaRepository $detallecestaRepository, string $estado): Response

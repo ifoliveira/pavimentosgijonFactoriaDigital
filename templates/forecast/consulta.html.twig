@@ -43,6 +43,9 @@
                                                         <td align="right">{{ forecast.importeFr|format_currency('EUR', locale='sp') }}</td>
                                                         <td>
                                                             <a href="{{ path('forecast_edit', {'id': forecast.id}) }}">edit</a>
+                                                            <a class="text-inverse pr-2" data-toggle="tooltip" title="Borrar forecast" name="delete_detalle" id="{{ forecast.id }}">
+                                                                <i class="ti-trash"></i>
+                                                            </a>                                                             
                                                         </td>
                                                     </tr>
                                                 {% else %}
@@ -98,6 +101,7 @@
     <script src="{{ asset('assets/extra-libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/extra-libs/datatables.net-bs4/js/dataTables.responsive.min.js') }}"></script>
     <script src="{{ asset('dist/js/pages/datatable/datatable-basic.init.js') }}"></script>
+    <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
     <script language = "javascript">
             //=============================================//
             //    Footer callback                          //
@@ -141,6 +145,66 @@
                     );
                 }
             });
+
+        /****************************************
+        *      Eliminar un forecast             *
+        *****************************************/
+
+        $(document).on('click', 'a[name="delete_detalle"]' , async function(event) {
+            let id = this.id;
+            console.log (id);
+
+            // Pop up con datos del producto
+                Swal.fire({
+                showCancelButton: true,  // Activamos el botón de cancelar
+                confirmButtonText: 'Borrar forecast',
+                cancelButtonText: 'Cancelar',
+                title: "Borrado forecast  " + id + "" ,
+                }).then((result) => {
+
+                    if (result.value) {
+            // Llamamos al insert line
+
+                       delete_line(id);
+                    }
+                })
+        });
+
+        function delete_line(id) 
+        {
+            $.ajax({  
+               url:        '{{path("forecast_delete_ajax")}}',  
+               type:       'GET',   
+               data:        ({id: id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) { 
+                    let timerInterval
+                    Swal.fire({
+                    type: 'success',
+                    title: 'Se ha borrado correctamente!',
+                    html: 'Se cerrara en breve',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    willClose: () => {
+                        clearInterval(timerInterval)
+                    }
+                    }).then((result) => {
+                    /* Read more about handling dismissals below */
+                    if (result.dismiss === Swal.DismissReason.timer) {
+                        location.reload();
+                    }
+                    })
+                   
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            }); 
+        };  
+
 
     </script> 
 
