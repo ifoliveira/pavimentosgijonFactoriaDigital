@@ -56,7 +56,8 @@ class PresupuestosController extends AbstractController
         $query = $presupuestosRepository->createQueryBuilder('p')
             ->where('p.estadoPe < :estado')
             ->setParameter('estado', '10')
-            ->orderBy('p.estadoPe', 'DESC')
+            ->addOrderBy('p.estadoPe', 'DESC')
+            ->addOrderBy('p.clientePe', 'ASC')
             ->getQuery();
         
             
