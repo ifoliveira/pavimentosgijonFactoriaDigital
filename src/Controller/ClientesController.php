@@ -20,6 +20,7 @@ use App\MisClases\EconomicoPresu;
 use App\Repository\ConsultasRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Validator\Constraints\IsFalse;
 
 /**
  * @Route("/admin/clientes")
@@ -43,7 +44,7 @@ class ClientesController extends AbstractController
     {
         return $this->render('clientes/index.html.twig', [
             'clientes' => $clientesRepository->findAll(),
-            'consultas' => $consultasRepository->findAll(),
+            'consultas' => $consultasRepository->findBy(array('atencion' => false)),
         ]);
     }
 
@@ -163,4 +164,28 @@ class ClientesController extends AbstractController
         return $response;
 
     }      
+
+    /**
+     * @Route("/hide/consulta", name="consulta_hide_ajax", methods={"GET","POST"})
+     */
+    public function hideconsultaajax(Request $request): JsonResponse
+    {
+        // Funcion para borrar registro de producto de una cesta determinada
+        // Obtener ID del cesta
+        $datos = $request->query->get('id');
+        // Obtener cesta
+        $consulta = $this->em->getRepository('App\Entity\Consultas')->find($datos);
+
+        // Borrado del detalle
+
+        $consulta->setAtencion(true);
+        $this->em->persist($consulta);
+        $this->em->flush();
+
+        $response = new JsonResponse();
+
+        return $response;
+
+    }  
+
 }

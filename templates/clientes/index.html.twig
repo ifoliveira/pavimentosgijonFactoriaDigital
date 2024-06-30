@@ -156,19 +156,26 @@
 
             // Pop up con datos del producto
                 Swal.fire({
+                showDenyButton: true, // Asegúrate de que esto esté habilitado
                 showCancelButton: true,  // Activamos el botón de cancelar
+                confirmButtonText: 'Borrar consulta',
+                denyButtonText: 'Ocultar', // Texto para el botón de negación
+                cancelButtonText: 'Cancelar',                
                 confirmButtonText: 'Borrar consulta',
                 cancelButtonText: 'Cancelar',
                 title: "Borrado consulta  " + id + "" ,
+                
                 }).then((result) => {
-
-                    if (result.value) {
-            // Llamamos al insert line
-
-                       delete_line(id);
-                    }
-                })
+                if (result.isConfirmed) {
+                    delete_line(id);
+                } else if (result.isDenied) {
+                    atencion_line(id);
+                } else {
+                    // Operación cancelada
+                    console.log('Operación cancelada por el usuario');
+                }
         });
+         });
 
         function delete_line(id) 
         {
@@ -204,6 +211,42 @@
                }  
             }); 
         };  
+
+
+        function atencion_line(id) 
+        {
+            $.ajax({  
+               url:        '{{path("consulta_hide_ajax")}}',  
+               type:       'GET',   
+               data:        ({id: id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) { 
+                    let timerInterval
+                    Swal.fire({
+                    type: 'success',
+                    title: 'Se ha ocultado correctamente!',
+                    html: 'Se cerrara en breve',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    willClose: () => {
+                        clearInterval(timerInterval)
+                    }
+                    }).then((result) => {
+                    /* Read more about handling dismissals below */
+                    if (result.dismiss === Swal.DismissReason.timer) {
+                        location.reload();
+                    }
+                    })
+                   
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            }); 
+        };          
 
 
     </script> 
