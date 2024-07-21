@@ -28,7 +28,7 @@ class ManoObra
     private $textoMo;
 
     /**
-     * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="manoObra", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity=Presupuestos::class, inversedBy="manoObra", fetch="EAGER", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      */
     private $presupuestoMo;

@@ -63,7 +63,7 @@ class PresupuestosController extends AbstractController
             
         $products = $query->getResult();
 
-        return $this->render('presupuestos/index.html.twig', [
+        return $this->render('presupuestos/index2.html.twig', [
             'presupuestos' => $query->getResult(),
             'estados' => $estados,
         ]);

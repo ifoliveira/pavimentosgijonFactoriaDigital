@@ -79,9 +79,9 @@ class Presupuestos
     private $manoobraPe;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Clientes::class, inversedBy="presupuestosCl")
-     * @ORM\JoinColumn(nullable=false)
-     */
+     * @ORM\ManyToOne(targetEntity=Clientes::class, inversedBy="presupuestosCl", fetch="EAGER")
+     * @ORM\JoinColumn(name="cliente_pe_id", referencedColumnName="id", onDelete="SET NULL")
+     */    
     private $clientePe;
 
     /**
@@ -303,6 +303,7 @@ class Presupuestos
     {
         return $this->getClientePe()->getDireccionCl();
     }
+
 
     /**
      * @return Collection|ManoObra[]
