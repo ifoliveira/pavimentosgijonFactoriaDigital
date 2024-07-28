@@ -292,44 +292,31 @@
             const importe2 = 0;
             const inputStep = 1;
 
-            const swalWithBootstrapButtons = Swal.mixin({
-                customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'mr-2 btn btn-danger',
-                    denyButton: 'mr-2 btn btn-danger'
-                },
-                buttonsStyling: false,
+            console.log(inputValue);
 
-            })
-
-            swalWithBootstrapButtons.fire({
-            
-             
-                title: 'IMPORTE',
-                text: "Importe coste" ,
-                type: 'question',
+            // Pop up con datos del producto
+            Swal.fire({
+                showCancelButton: true,  // Activamos el botón de cancelar
+                confirmButtonText: 'Cambiar coste',
+                cancelButtonText: 'Cancelar',
+                title: 'Modificar importe',
                 html: `
-                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="right">`,
-                showCancelButton: true,
-                confirmButtonText: 'Modificar',
-                cancelButtonText: 'Pagar',
-                reverseButtons: true
+                    <h2> Importe </h2>
+                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align:right;"> €`
+
                 }).then((result) => {
-                const inputNumber = Swal.getContent().querySelector('#range-value');
-                importe = inputNumber.value;
-                if (result.value) {
 
-                    actualiza_importe(id,importe); 
+                    if (result.value) {
+            // Llamamos al insert line
 
-                } else if (
-                    // Read more about handling dismissals
-                    result.dismiss === Swal.DismissReason.cancel
-                ) {
-
-                }
-
-            })
-            });     
+                        const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');
+                        importe = inputNumber.value;
+      
+               
+                        actualiza_importe(id,importe); 
+                    }
+                })
+        })                
 
             function actualiza_importe (id,importe) 
             {

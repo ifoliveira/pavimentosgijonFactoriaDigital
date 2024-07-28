@@ -457,9 +457,15 @@ class CestasController extends AbstractController
     
         // Cambiamos el estado de la cesta del presupuesto para que sea actual
 
-        
-        $cestas->setEstadoCs(3);
-        $this->em->persist($cestas);
+       // Obtener los detalles de la cesta
+       $detallecestas = $cestas->getdetallecesta();
+
+       // Eliminar cada detalle de la cesta
+       foreach ($detallecestas as $detallecesta) {
+           $cestas->removedetallescesta($detallecesta);
+           $this->em->remove($detallecesta); // También eliminamos el detalle de la base de datos
+       }
+
         $this->em->flush();
         $response = new JsonResponse();
 
