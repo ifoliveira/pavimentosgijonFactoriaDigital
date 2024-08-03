@@ -327,7 +327,20 @@ class PresupuestosController extends AbstractController
             if ($actualizar) {
                 $actualizar->setimporteEco($presupuesto->getimportemanoobra()-$presupuesto->getImpmanoobraPagado());
                 $this->em->persist($actualizar);
-                }
+            } else {
+
+                $neweconomic = New Economicpresu();
+                $neweconomic->setIdpresuEco($presupuesto);
+                $neweconomic->setConceptoEco("Mano de Obra");
+                $neweconomic->setimporteEco($presupuesto->getimportemanoobra()-$presupuesto->getImpmanoobraPagado());
+                $neweconomic->setDebehaberEco("H");
+                $neweconomic->setAplicaEco("M");
+                $neweconomic->setEstadoEco(1);
+                $neweconomic->setTimestamp(New \DateTime());
+                $this->em->persist($neweconomic);
+                
+            
+            }
 
             $this->em->flush();
 
@@ -429,10 +442,13 @@ class PresupuestosController extends AbstractController
         $total = $subtotal + $presupuesto->getImportemanoobra();
 
         $financiacion = new FinanciacionClass($total, 12);
+        $economic = $presupuesto->getEconomicpresus();
+
 
         return $this->render('presupuestos/generar.html.twig', [
             'presupuesto' => $presupuesto,
             'precios' => $precios,
+            'economic' => $economic,
             'tipo' => $tipo,
             'financiacion' => $financiacion,
             'total' => $total,

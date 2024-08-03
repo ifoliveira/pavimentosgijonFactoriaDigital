@@ -26,7 +26,21 @@
                 {% set descuento  = false %}
                 {% for pagos in presupuesto.ticket.pagos %}
                    {% set pagado = pagos.importePg + pagado %}
-                {% endfor %}                
+                {% endfor %}      
+
+                {% set manoobrapdte = 0 %}
+                {% set manoobratotal = 0 %}
+                {% set idmanoobra = 0 %}
+                {% for economicos in economic %}                                                
+                    {% if economicos.aplicaEco == 'M' %}
+                        {% set manoobratotal = manoobratotal + economicos.importeEco%}
+                        {% if economicos.estadoEco == '1'%}
+                            {% set idmanoobra = economicos.id %}
+                            {% set manoobrapdte = economicos.importeEco %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
                                                   
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
@@ -164,7 +178,6 @@
                             </div>
 
                             <div class="row">
-                                {% if tipo == "FACTURA SIMPLIFICADA" or tipo == "FACTURA FINAL" %}
                                 <div class="col-md-12">
                                     <table class="table table-hover">
                                           <thead>
@@ -173,11 +186,11 @@
                                                     <th class="text-center"></th>
                                                     <th class="text-center"></th>
                                              {% endif %}
+                                             {% if tipo == "FACTURA SIMPLIFICADA" or (tipo == "PRESUPUESTO" and estado == "ACEPTADO") %}
                                                     <th class="text-center"><b>Fecha</b></th>
                                                     <th class="text-center"><b>Subtotal sin I.V.A</b></th>
                                                     <th class="text-center"><b>I.V.A.</b></th>
                                                     <th class="text-center"><b>Total</b></th>
-                                            {% if tipo == "FACTURA SIMPLIFICADA" or (tipo == "PRESUPUESTO" and estado == "ACEPTADO") %}
                                                 {% if (presupuesto.importetotPe - presupuesto.importesnalPe ) != 0 %}
                                                     <th class="text-center"><b>Adelanto</b></th>
                                                     <th class="text-center"><b>Resto</b></th>
@@ -190,18 +203,20 @@
                                             {% if tipo == "FACTURA FINAL" %}
                                                     <th class="text-center"></th>
                                                     <th class="text-center"></th>
-                                             {% endif %}                                                
-
+                                            {% endif %}                                                
+                                            {% if tipo == "FACTURA SIMPLIFICADA" or (tipo == "PRESUPUESTO" and estado == "ACEPTADO") %}
                                                     <th class="text-center">{{ "now"|date("m/d/Y") }}  {% if tipo == "FACTURA SIMPLIFICADA" and facturapagada == false %} * {% endif %}</th>
                                                     <th class="text-center">{{ ((presupuesto.importetotPe)/1.21) |format_currency('EUR', locale='es')  }}</th>
                                                     <th class="text-center">{{ ((presupuesto.importetotPe)-((presupuesto.importetotPe)/1.21)) |format_currency('EUR', locale='es')  }}</th>
                                                     <th class="text-center">{{ (presupuesto.importetotPe) |format_currency('EUR', locale='es')  }}</th>
-                                            {% if tipo == "FACTURA SIMPLIFICADA" or (tipo == "PRESUPUESTO" and estado == "ACEPTADO") %}
+                                            
                                                 {% if (presupuesto.importetotPe - presupuesto.importesnalPe ) != 0 %}
-                                                    <th class="text-center">{{ (pagado) |format_currency('EUR', locale='es')  }}</th>
+                                                    
                                                     {% if tipo == "PRESUPUESTO" and estado == "ACEPTADO" %}
-                                                        <th class="text-center"><h2>{{ (total - pagado ) |format_currency('EUR', locale='es')  }}</h2></th>
+                                                        <th class="text-center">{{ (pagado + (manoobratotal - manoobrapdte)) |format_currency('EUR', locale='es')  }}</th>
+                                                        <th class="text-center"><h2>{{ (total - pagado - (manoobratotal - manoobrapdte)) |format_currency('EUR', locale='es')  }}</h2></th>
                                                     {% else %}
+                                                        <th class="text-center">{{ (pagado) |format_currency('EUR', locale='es')  }}</th>
                                                         <th class="text-center"><h2>{{ (presupuesto.importetotPe - pagado ) |format_currency('EUR', locale='es')  }}</h2></th>
                                                     {% endif %}
                                                 {% endif %}
@@ -213,7 +228,7 @@
                             </div>
 
                              {% if tipo == "FACTURA SIMPLIFICADA" and facturapagada == false %}<h6> * Este documento rectifica toda aquel con referencia ##002100{{ presupuesto.id }}## y fecha previa   {% endif %}
-                            {% endif %}
+ 
                             {% if tipo == "PRESUPUESTO" %}     
                             </div>
                             <div class="row">

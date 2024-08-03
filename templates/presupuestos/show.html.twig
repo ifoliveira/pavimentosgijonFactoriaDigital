@@ -75,7 +75,7 @@
 
                                     <div class="card">
                                         <div class="card-body">
-                                            <button id="Aceptar" class="btn btn-rounded btn-outline-success " data-importe="{{presupuesto.importetotPe}}">Aceptar</button>
+                                            <button id="Aceptar" class="btn btn-rounded btn-outline-success" data-manoobra="{{presupuesto.importemanoobra}}" data-importe="{{presupuesto.importetotPe}}">Aceptar</button>
                                             <button id="Rechazar" class="btn btn-rounded btn-outline-danger " data-importe="{{presupuesto.importetotPe}}">Rechazar</button>
                                             <a href="{{ path('presupuestos_modificar', {id: presupuesto.id}) }}"  class="btn btn-rounded btn-outline-success "> Modificar</a>                                            
                                             <a href="{{ path('presupuestos_modificar_manoobra', {id: presupuesto.id}) }}"  class="btn btn-rounded btn-outline-success "> Modificar Mano Obra</a>                                                            
@@ -1146,9 +1146,13 @@
 
                 var selector = document.querySelector('button[id="Aceptar"]');
                 var importe = selector.dataset.importe;
+                var manoobra = selector.dataset.manoobra;
+                var total = Number(importe) + Number(manoobra);
 
-                const inputValue = Number(importe * 0.30).toFixed(2);
+                const inputValue = Number(total * 0.40).toFixed(2);
                 const importe2 = Number(importe).toFixed(2);
+                const manoobra2 = Number(manoobra).toFixed(2);
+                const total2  = Number(total).toFixed(2);
                 const inputStep = 1;
 
              swalWithBootstrapButtons.fire({
@@ -1156,7 +1160,9 @@
                 text: "Selecciona un método de pago",
                 icon: 'warning',
                 html: `
-                        <h2>Cantidad - ${importe2} €</h2>
+                        <h4>Materiales - ${importe2} €</h4>
+                        <h4>Mano obra - ${manoobra2} €</h4>
+                        <h2>Total - ${total2} €</h2>
                         <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align: right;">`,                
                 showDenyButton: true, // Asegúrate de que esto esté habilitado
                 showCancelButton: true,
