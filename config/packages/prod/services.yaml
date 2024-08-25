@@ -1,0 +1,3 @@
+services:
+    Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener:
+        class: null
