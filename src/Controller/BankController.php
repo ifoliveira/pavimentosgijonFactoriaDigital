@@ -72,8 +72,7 @@ class BankController extends AbstractController
                     $data = [];
                     foreach ($cellIterator as $cell) {
                         $data[] = $cell->getValue();
-                        var_dump($data[0]);
-                        die;
+
                     }
 
                     $fechaStr = $data[0]; // '20/3/2024'
