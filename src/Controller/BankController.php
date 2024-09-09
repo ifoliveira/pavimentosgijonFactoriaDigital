@@ -52,17 +52,28 @@ class BankController extends AbstractController
 
                 foreach ($sheet->getRowIterator() as $row) {
 
+                    $cellIterator = $row->getCellIterator();
+                    $cellIterator->setIterateOnlyExistingCells(false); // Loop all cells, even if they are empty
+
                     if ($firstRow) {
-                        $firstRow = false; // Desactiva la bandera para las próximas iteraciones
+
+                        $data = [];
+                        foreach ($cellIterator as $cell) {
+                            $data[] = $cell->getValue();
+                        }
+                        if (str_starts_with($data[0], 'Fecha')) {
+                            $firstRow = false; // Desactiva la bandera para las próximas iteraciones
+                        }
                         continue; // Salta el resto del código en esta iteración y pasa a la siguiente fila
                     }
 
-                    $cellIterator = $row->getCellIterator();
-                    $cellIterator->setIterateOnlyExistingCells(false); // Loop all cells, even if they are empty
+
                     
                     $data = [];
                     foreach ($cellIterator as $cell) {
                         $data[] = $cell->getValue();
+                        var_dump($data[0]);
+                        die;
                     }
 
                     $fechaStr = $data[0]; // '20/3/2024'
