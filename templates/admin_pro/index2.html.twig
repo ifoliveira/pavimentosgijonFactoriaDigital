@@ -22,26 +22,9 @@
                                     <h5 class="text-muted mb-0">Gijón</h5>
                                     <h3>{{ "now"|date("F jS \\a\\t g:ia")  }}</h3>
                                     <div class="d-flex mt-3">
-                                        <div class="display-5 text-info"><i class="{{ weathericon[0][1] }}"></i></div>
-                                        <div class="ml-3">
-                                            <h2 class="mb-0">{{ weathericon[0][0]|round(1, 'floor')  }} ° C</h2>
-                                            <h6>{{ weathericon[0][2] }}</h6>
-                                        </div>
                                     </div>
                                     <hr>
                                     <table class="table table-borderless">
-                                        <tr>
-                                            <td><i class="{{ weathericon[1][1] }}"></i>  {{ "now" | date_modify("+1 day") | date('l') }}</td>
-                                            <td class="text-right font-weight-medium">{{ (weathericon[1][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
-                                        </tr>
-                                        <tr>
-                                            <td><i class="{{ weathericon[2][1] }}"></i> {{ "now" | date_modify("+2 day") | date('l') }}</td>
-                                            <td class="text-right font-weight-medium">{{ (weathericon[2][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
-                                        </tr>
-                                        <tr>
-                                            <td><i class="{{ weathericon[3][1] }}"></i> {{ "now" | date_modify("+3 day") | date('l') }}</td>
-                                            <td class="text-right font-weight-medium">{{ (weathericon[3][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
-                                        </tr>
                                     </table>
                                     <hr class="mt-0">
                                 </div>

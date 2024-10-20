@@ -1219,36 +1219,6 @@
               <!-- Mobile toggle button -->
               <div class="scrollable position-relative" style="height: calc(100vh - 50px)">
               {% block eltiempo %}
-                <div class="px-3 pt-3">
-                  <h5 class="text-muted mb-0">Gijón (Asturias)</h5>
-                  <hr />
-                  <h3>{{ "now"|format_datetime(locale='es', timezone='Europe/Madrid')  }}</h3>
-                  <div class="d-flex mt-3">
-                    <div class="display-5 text-info">
-                      <i class="{{ weathericon[0][1] }}"></i>
-                    </div>
-                    <div class="ms-3">
-                      <h2 class="mb-0">{{ weathericon[0][0]|round(1, 'floor')  }} ° C</h2>
-                      <h6>{{ weathericon[0][2] }}</h6>
-                    </div>
-                  </div>
-                  <hr />
-                  <table class="table table-borderless">
-                    <tr>
-                        <td><i class="{{ weathericon[1][1] }}"></i>  {{ "now" | date_modify("+1 day") | format_datetime(locale='es')  }}</td>
-                        <td class="text-right font-weight-medium">{{ (weathericon[1][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
-                    </tr>
-                    <tr>
-                        <td><i class="{{ weathericon[2][1] }}"></i>  {{ "now" | date_modify("+2 day") | format_datetime(locale='es')  }}</td>
-                        <td class="text-right font-weight-medium">{{ (weathericon[2][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
-                    </tr>
-                    <tr>
-                        <td><i class="{{ weathericon[3][1] }}"></i> {{ "now" | date_modify("+3 day") | format_datetime(locale='es')   }} </td>
-                        <td class="text-right font-weight-medium">{{ (weathericon[3][0]|round(1, 'floor'))|number_format(1)  }} ° C</td>
-                    </tr>
-                  </table>
-                  <hr class="mt-0" />
-                </div>
                {% endblock %} 
       
                 {# <div class="p-3">

@@ -36,9 +36,7 @@ class AdminProController extends AbstractController
      */
     public function index(Request $request, TiposmovimientoRepository $tiposmovimientoRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
     {
-        $meteo = new Meteo;
-        $iconweather = $meteo->icon();
-        
+       
 
         $bancototal = $bancoRepository->totalBanco();
         $ventasmestotal= $bancoRepository->ventamesBanco();
@@ -69,7 +67,6 @@ class AdminProController extends AbstractController
             'gastos' => $efectivototal,
             'forecast' => $forecast,
             'manoobratotal' => $manoobratotal,
-            'weathericon' => $iconweather,
             'cookies' => $cookies,
 
         ]);
@@ -144,65 +141,6 @@ class AdminProController extends AbstractController
         return new jsonResponse($jsonData); 
 
     }      
-
-    /**
-     * @Route("/admin/C43", name="insert_C43", methods={"GET","POST"})
-     */
-    public function contactAction(Request $request , DetallecestaRepository $detallecestaRepository)
-    {
-        $directorio = $this->getParameter("c43Dir");
-        $contador = 0;
-
-        $ficheros  =  sprintf("%02d", (count(scandir($directorio, 1)) - 2));
-
-        $defaultData = array('message' => 'Escribe un mensaje aquí');
-
-        $form = $this->createFormBuilder($defaultData)
-            ->add('fichero_C43', FileType::class)
-            ->getForm();
-    
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Los datos están en un array con los keys "name", "email", y "message"
-            $data = $form->getData();
-            try {
-                 $data['fichero_C43']->move($directorio, "C43" . $ficheros . ".txt");
-                } catch (FileException $e) {
-                            // unable to upload the photo, give up
-                }
-            return $this->redirectToRoute('insert_C43');
-        }
-
-        do {
-            $nombrefic = $directorio . '/C43' . sprintf("%02d",$contador) . '.txt';
-
-            if (file_exists($nombrefic)) {
-                
-                $fichero = file_get_contents($nombrefic);
-        
-                // informamos cabeceara del ficheor csv 
-                $datosC43 = new Banks_N43();
-            
-                $datosC43->parse($fichero);
-
-                foreach ($datosC43->accounts as $cuentas){
-                    foreach ($cuentas->entries as $valor){
-                        $bancos[] = $valor->banco;
-                        }}
-            } else {
-
-                    $bancos = new Banco();
-            }
-                 $contador++;
-            }while($contador < $ficheros);
-            
-        return $this->render('banco/new.html.twig', [
-           'bancos' => $bancos,
-            'form' => $form->createView(),
-        ]);
-    }
-
 
     /**
      * @Route("/admin/importarTk", name="importarTk", methods={"GET","POST"})
