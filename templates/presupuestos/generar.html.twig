@@ -97,7 +97,7 @@
                                                 {% else %}
                                                     <th class="text-center"><h2>{{ total |format_currency('EUR', locale='es')  }}*    </h2></th>                                                
                                                 {% endif %}
-                                                    <td class="text-center">{{ "now"|date("d/m/Y") }}</td>
+                                                    <td class="text-center">{{ presupuesto.FechainiPe|date("d/m/Y") }}</td>
                                                     <td class="text-center">#002400{{ presupuesto.id }}#</td>
                                                     <td colspan="4"> </td>
                                                     <th colspan="2" class="text-end"> Dirección :</th>
