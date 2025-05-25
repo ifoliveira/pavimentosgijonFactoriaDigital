@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "be2ee96fd02e02a63738d92791f07112",
+    "content-hash": "8c74ce4a68b58d292ea50825893aa149",
     "packages": [
         {
             "name": "composer/package-versions-deprecated",
@@ -3514,6 +3514,57 @@
             "time": "2023-02-24T14:57:12+00:00"
         },
         {
+            "name": "smalot/pdfparser",
+            "version": "v2.12.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/smalot/pdfparser.git",
+                "reference": "8440edbf58c8596074e78ada38dcb0bd041a5948"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/smalot/pdfparser/zipball/8440edbf58c8596074e78ada38dcb0bd041a5948",
+                "reference": "8440edbf58c8596074e78ada38dcb0bd041a5948",
+                "shasum": ""
+            },
+            "require": {
+                "ext-iconv": "*",
+                "ext-zlib": "*",
+                "php": ">=7.1",
+                "symfony/polyfill-mbstring": "^1.18"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Smalot\\PdfParser\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Sebastien MALOT",
+                    "email": "sebastien@malot.fr"
+                }
+            ],
+            "description": "Pdf parser library. Can read and extract information from pdf file.",
+            "homepage": "https://www.pdfparser.org",
+            "keywords": [
+                "extract",
+                "parse",
+                "parser",
+                "pdf",
+                "text"
+            ],
+            "support": {
+                "issues": "https://github.com/smalot/pdfparser/issues",
+                "source": "https://github.com/smalot/pdfparser/tree/v2.12.0"
+            },
+            "time": "2025-03-31T13:16:09+00:00"
+        },
+        {
             "name": "symfony/asset",
             "version": "v5.4.21",
             "source": {
@@ -4968,16 +5019,16 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v5.4.23",
+            "version": "v5.4.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "617c98e46b54e43ca76945a908b1749bb82f4478"
+                "reference": "63d93fd99523b9608929a38172da3365a6c0821c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/617c98e46b54e43ca76945a908b1749bb82f4478",
-                "reference": "617c98e46b54e43ca76945a908b1749bb82f4478",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/63d93fd99523b9608929a38172da3365a6c0821c",
+                "reference": "63d93fd99523b9608929a38172da3365a6c0821c",
                 "shasum": ""
             },
             "require": {
@@ -5003,6 +5054,7 @@
                 "guzzlehttp/promises": "^1.4",
                 "nyholm/psr7": "^1.0",
                 "php-http/httplug": "^1.0|^2.0",
+                "php-http/message-factory": "^1.0",
                 "psr/http-client": "^1.0",
                 "symfony/dependency-injection": "^4.4|^5.0|^6.0",
                 "symfony/http-kernel": "^4.4.13|^5.1.5|^6.0",
@@ -5038,7 +5090,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v5.4.23"
+                "source": "https://github.com/symfony/http-client/tree/v5.4.37"
             },
             "funding": [
                 {
@@ -5054,7 +5106,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-04-20T13:04:04+00:00"
+            "time": "2024-02-28T15:18:15+00:00"
         },
         {
             "name": "symfony/http-client-contracts",

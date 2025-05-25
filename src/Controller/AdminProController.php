@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\MisClases\FacturaPdfToJsonService;
 
 
 
@@ -154,5 +155,38 @@ class AdminProController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route("/admin/test/factura", name="test_factura", methods={"GET","POST"})
+     */
+    public function testFactura(FacturaPdfToJsonService $servicio): JsonResponse
+    {
+        // Cambia esta ruta por un archivo real de tu proyecto
+        $rutaPdf = __DIR__ . '/../../var/facturas/FACTURA_TEST.pdf';
+
+        // Ejecutar el servicio
+        $resultado = $servicio->procesarFacturaPdf($rutaPdf);
+
+        // Mostrar el resultado en el navegador
+        return $this->json($resultado);
+    }    
+
+   /**
+     * @Route("/admin/test/mock-factura", name="test_mock_factura", methods={"GET","POST"})
+     */
+
+    public function testMock(): JsonResponse
+    {
+        $json = file_get_contents(__DIR__ . '/../../var/facturas/factura_mock.json');
+        $datos = json_decode($json, true);
+    
+        // Aquí es donde harás tu lógica real:
+        // Ejemplo: recorrer artículos
+        foreach ($datos['vencimientos'] as $vencimiento) {
+            dump($vencimiento['fecha'], $vencimiento['importe']);
+        }
+            die;
+        // Mostrar como JSON
+        return $this->json($datos);
+    }    
 
 }

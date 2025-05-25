@@ -8,6 +8,7 @@ parameters:
     presupuestoDir: "%kernel.project_dir%/public_html/Presupuestos"
     ticketsDir: "%kernel.project_dir%/public_html/Tickets"
     nordigen: "%kernel.project_dir%/public_html/Nordigen"
+    openai.api_key: '%env(OPENAI_API_KEY)%'    
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -41,6 +42,10 @@ services:
         arguments:
             $nordigen: "%kernel.project_dir%/public_html/Nordigen"
             $accept: ""
+
+    App\MisClases\FacturaPdfToJsonService:
+        arguments:
+            $openaiApiKey: '%openai.api_key%'
 
     project:
         class: App\MisClases\CestaUser
