@@ -126,7 +126,7 @@ class Presupuestos
     {
 
         $this->setFechainiPe(new \DateTime());
-        $this->setTimestampModPe(new \DateTime());
+        $this->setTimestampModPe(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
 
         $this->setCostetotPe(0);
         $this->setDescuaetoPe(0);

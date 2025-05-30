@@ -409,8 +409,8 @@ class CestasController extends AbstractController
             $cestas->setImporteTotCs($importetot);
             $cestas->setTipopagoCs($tipopago);
             $cestas->setNumticketCs($numticket);
-            $cestas->setFechaCs(new \DateTime());
-            
+            $cestas->setFechaCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
+
 
         } else {
 

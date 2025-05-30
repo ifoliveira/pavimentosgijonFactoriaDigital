@@ -46,36 +46,38 @@
         {% endif %}
       </div>
     </div>
-<hr>
-    <h2>Artículos detectados</h2>
-    {% if articulos is defined and articulos|length > 0 %}
-      <form method="post" action="{{ path('guardar_articulos') }}">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Descripción</th>
-              <th>Precio</th>
-              <th>PVP</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for articulo in articulos %}
-              <tr>
-                <td>{{ articulo.codigo }}</td>
-                <td>{{ articulo.descripcion }}</td>
-                <td>{{ (articulo.importe_final|floatval_euro * 1.262)|number_format(2, ',', '.') }} €</td>
-                <td>{{ (articulo.importe_final|floatval_euro * 1.262 * 1.40)|number_format(2, ',', '.') }} €</td>
 
-              </tr>
-              <input type="hidden" name="articulos[]" value='{{ articulo|json_encode|e('html_attr') }}'>
-            {% endfor %}
-          </tbody>
-        </table>
-        <button type="submit" class="btn btn-success">Guardar todos los artículos</button>
-      </form>
-    {% else %}
-      <p>No se encontraron artículos.</p>
-    {% endif %}    
+<hr>
+    <h2>Productos detectados</h2>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Descripción</th>
+      <th>Precio coste</th>
+      <th>PVP</th>
+      <th>Cantidad</th>
+      <th>Tipo</th>
+      <th>Guardar</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for form in productos_forms %}
+      <tr>
+        {{ form_start(form, { attr: { class: 'd-inline' } }) }}
+          <td>{{ form_widget(form.descripcion_Pd) }}</td>
+          <td>{{ form_widget(form.precio_Pd) }}</td>
+          <td>{{ form_widget(form.pvp_Pd) }}</td>
+          <td>{{ form_widget(form.stock_Pd) }}</td>
+          <td>{{ form_widget(form.tipo_pd_id) }}</td>
+          <td>
+            <button class="btn btn-sm btn-success">💾</button>
+          </td>
+        {{ form_end(form) }}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
   {% endif %}
 {% endblock %}

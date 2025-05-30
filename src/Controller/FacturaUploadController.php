@@ -17,6 +17,7 @@ use App\Form\ForecastType;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Productos;
 use App\Entity\Tipoproducto;
+use App\Form\ProductosType;
 
 
 
@@ -48,7 +49,9 @@ class FacturaUploadController extends AbstractController
         $pdfFilename = null;
         $session = $request->getSession();
         $formLoop = [];
+        $productosForms = [];
      
+        
       
         if ($request->isMethod('POST') && $request->files->has('factura')) {
             /** @var UploadedFile $pdfFile */
@@ -67,9 +70,9 @@ class FacturaUploadController extends AbstractController
 
                     // Procesar el PDF con OpenAI
                     $ruta = $this->getParameter('kernel.project_dir') . '/public_html/var/facturas/' . $pdfFilename;
-                    $datos = $servicio->procesarFacturaPdf($ruta);
-                    //$json = file_get_contents($this->getParameter('kernel.project_dir') . '/public_html/var/facturas/factura_mock.json');
-                    //$datos = json_decode($json, true);
+                    //$datos = $servicio->procesarFacturaPdf($ruta);
+                    $json = file_get_contents($this->getParameter('kernel.project_dir') . '/public_html/var/facturas/factura_mock.json');
+                    $datos = json_decode($json, true);
 
                     $session->set('factura_datos', $datos);
                     $session->set('factura_pdf', $pdfFilename);
@@ -130,13 +133,39 @@ class FacturaUploadController extends AbstractController
         } else {
             $this->addFlash('warning', 'No hay vencimientos disponibles para procesar.');
         }
+               
+        $productosForms = [];
+
+        foreach ($datos['articulos'] ?? [] as $i => $articulo) {
+            $producto = new Productos();
+            $producto->setDescripcionPd($articulo['descripcion']);
+            $producto->setPrecioPd((float)($articulo['importe_final']) * 1.262);
+            $producto->setPvpPd((float)($articulo['importe_final']) * 1.262 * 1.40);
+            $producto->setStockPd((int) $articulo['cantidad']);
+            $producto->setFecAltaPd(new \DateTime());
+            $producto->setObsoleto(false);
+        
+            $form = $formFactory->createNamed("producto_$i", ProductosType::class, $producto);
+            $form->handleRequest($request);
+        
+            if ($form->isSubmitted() && $form->isValid()) {
+                $this->em->persist($producto);
+                $this->em->flush();
+        
+                $this->addFlash('success', 'Producto guardado correctamente');
+                return $this->redirectToRoute('factura_subir');
+            }
+        
+            $productosForms[] = $form;
+        }
                 
 
         return $this->render('factura/subir.html.twig', [
             'datos' => $datos,
             'pdfFilename' => $pdfFilename,
             'form_loop' => array_map(fn($f) => $f->createView(), $formLoop),
-            'articulos' => $datos['articulos'] ?? []
+            'articulos' => $datos['articulos'] ?? [],
+            'productos_forms' => array_map(fn($f) => $f->createView(), $productosForms),
                ]);
     }
 

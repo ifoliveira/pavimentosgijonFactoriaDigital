@@ -80,13 +80,13 @@ class Cestas
     public function __construct()
     {
         $this->detallecesta = new ArrayCollection();
-        $this->setFechaCs(new \DateTime());
+        $this->setFechaCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));        
         $this->setImporteTotCs(0);
         $this->setDescuentoCs(0);
         $this->setTipopagoCs("Tarjeta");
         $this->setNumticketCs("");
         $this->setEstadoCs(1);
-        $this->setTimestampCs(new \DateTime());
+        $this->setTimestampCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));        
         $this->pagos = new ArrayCollection();
 
     }

@@ -68,14 +68,17 @@ class ClientesController extends AbstractController
   
             $this->em->persist($cliente);
             $user = $this->getUser();
+
             $presupuesto->setUserPe($user);
             $presupuesto->setClientePe($cliente);
+
       // Creamos la cesta para el presupuesto y la señal 
-            $user = $this->getUser();
             $cesta = new Cestas();
+            $user = $this->getUser();
             $cesta->setUserAdmin($user);
             $cesta->setEstadoCs(11);
             $this->em->persist($cesta);
+    // Creamos el ticket para el presupuesto
             $presupuesto->setTicket($cesta);
             $this->em->persist($presupuesto);
             $this->em->flush();

@@ -1,0 +1,175 @@
+{"numero_factura": "FAG25103-002965",
+
+
+"fecha_factura": "31/03/2025",
+
+
+"cliente": {
+
+
+  "nombre": "ALEJANDRA LUCIA GANCEDO MUÑOZ",
+
+
+  "direccion": "AVDA. SCHULTZ , 28, 33208  GIJON, ASTURIAS, ESPAÑA",
+
+
+  "cif": "53543499M",
+
+
+  "telefono": []
+
+
+},
+
+
+"articulos": [
+
+
+  {
+
+
+    "codigo": "1243008",
+
+
+    "descripcion": "ASA DE 35 ESTRIADA BAHIA PULIDO BRILLO",
+
+
+    "cantidad": "3",
+
+
+    "precio_unitario": "22,00",
+
+
+    "descuento_porcentaje": "40,00",
+
+
+    "importe_final": "39,60"
+
+
+  },
+
+
+  {
+
+
+    "codigo": "1243055",
+
+
+    "descripcion": "ASA DE 35 ESTRIADA BAHIA BLANCO",
+
+
+    "cantidad": "2",
+
+
+    "precio_unitario": "25,00",
+
+
+    "descuento_porcentaje": "40,00",
+
+
+    "importe_final": "30,00"
+
+
+  },
+
+
+  {
+
+
+    "codigo": "1242308",
+
+
+    "descripcion": "TOALLERO REPISA BAHIA PULIDO BRILLO",
+
+
+    "cantidad": "2",
+
+
+    "precio_unitario": "85,00",
+
+
+    "descuento_porcentaje": "40,00",
+
+
+    "importe_final": "102,00"
+
+
+  }
+
+
+],
+
+
+"importe_bruto": "421,20",
+
+
+"base_imponible": "421,20",
+
+
+"iva": {
+
+
+  "porcentaje": "21,00",
+
+
+  "importe": "88,45"
+
+
+},
+
+
+"recargo_equivalencia": {
+
+
+  "porcentaje": null,
+
+
+  "importe": null
+
+
+},
+
+
+"total_factura": "509,65",
+
+
+"forma_pago": "Giro",
+
+
+"vencimientos": [
+
+
+  {
+
+
+    "fecha": "30/04/2025",
+
+
+    "importe": "509,65"
+
+
+  }
+
+
+],
+
+
+"empresa_emisora": {
+
+
+  "nombre": "MEDITERRANEA DEL BAÑO, S.L.",
+
+
+  "cif": "B96289525",
+
+
+  "direccion": "CL OLLERS, 12 P.I. MASIA DEL JUEZ, 46900  TORRENT, Valencia/València"
+
+
+},
+
+
+"cuenta_bancaria": "ES58 2100 6168 0002 0006 5682"
+
+
+}

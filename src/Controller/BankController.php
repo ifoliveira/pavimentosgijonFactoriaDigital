@@ -75,8 +75,38 @@ class BankController extends AbstractController
 
                     }
 
-                    $fechaStr = $data[0]; // '20/3/2024'
-                    $fechaObj = \DateTime::createFromFormat('d/m/Y', $fechaStr);
+                    $fechaStr = trim($data[0]);
+                    $fechaObj = false;
+                    
+                    if (is_numeric($fechaStr)) {
+                        // Separar parte entera (días) y decimal (horas)
+                        $dias = floor($fechaStr);
+                        $fraccionDia = $fechaStr - $dias;
+                    
+                        // Crear fecha base de Excel
+                        $baseDate = \DateTime::createFromFormat('Y-m-d H:i:s', '1899-12-30 00:00:00');
+                    
+                        // Sumar días enteros
+                        $baseDate->modify("+$dias days");
+                    
+                        // Sumar horas, minutos, segundos desde fracción
+                        $segundos = round($fraccionDia * 86400); // 86400 segundos por día
+                        $baseDate->modify("+$segundos seconds");
+                    
+                        $fechaObj = $baseDate;
+                    } else {
+                        try {
+                            $fechaObj = new \DateTime($fechaStr);
+                        } catch (\Exception $e) {
+                            continue; // Saltamos si no se puede parsear
+                        }
+                    }
+                    
+                    // Validamos que se haya obtenido una fecha válida
+                    if (!$fechaObj) {
+                        continue;
+                    }
+                    
                     $fechacomp = $fechaObj->format('Y-m-d');
                     
                     if ($fechacomp > $ultimaFecha)                         {
