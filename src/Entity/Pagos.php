@@ -45,7 +45,7 @@ class Pagos
     private $bancoPg;
 
     /**
-     * @ORM\ManyToOne(targetEntity=efectivo::class, inversedBy="pagos" , cascade={"persist","remove"})
+     * @ORM\ManyToOne(targetEntity=Efectivo::class, inversedBy="pagos" , cascade={"persist","remove"})
      */
     private $efectivoPg;
 
