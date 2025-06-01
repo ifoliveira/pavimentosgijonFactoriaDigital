@@ -145,6 +145,13 @@
                                              {% endfor %}
                                             </tbody>
                                             <tfoot>
+                                                <tr>    
+                                                    <th class="text-center" scope="col"></th>
+                                                    <th class="text-center" scope="col"></th>
+                                                    <th class="text-center"><b>Subtotal</b></th>
+                                                    <th class="text-center"><b>I.V.A. (21%)</b></th>
+                                                    <th class="text-center"><b>Total</b></th>                                                
+                                                </tr>
                                                 <tr>
                                                 {% if facturapagada == false %}
                                                     {% if precios == 'S' %}
@@ -157,16 +164,16 @@
                                                 </tr>
                                                 <tr>
                                                 {% if facturapagada == false %}
-                                                    {% if precios == 'S' %}
+        
                                                         {% if descuento == true %}
 
                                                         {% endif %}
-
-                                                        <td  class="text-end" colspan="4"> <b>Materiales I.V.A. Incluido : </b></td>
-                                                        <td  class="text-end" colspan="2    "> <b>{{ (subtotal) |format_currency('EUR', locale='es')  }}</b></td>
-                                                    {% else %}
-                                                        <td  class="text-center" colspan="3"> <b>Materiales I.V.A. Incluido : {{ (subtotal) |format_currency('EUR', locale='es')  }}</b></td>
-                                                    {% endif %}
+                                                        <td class="text-center" scope="col"></td>
+                                                        <td class="text-center" scope="col"></td>
+                                                        <td  class="text-center" colspan="1"> <b>{{ (subtotal/1.21) |format_currency('EUR', locale='es')  }}</b></td>                                                        
+                                                        <td  class="text-center" colspan="1"> <b>{{ (subtotal -(subtotal/1.21)) |format_currency('EUR', locale='es')  }}</b></td>
+                                                        <td  class="text-end" colspan="1"> <b>{{ (subtotal) |format_currency('EUR', locale='es')  }}</b></td>
+        
                                                 {% endif %}
                                                     
                                                 </tr>                                            

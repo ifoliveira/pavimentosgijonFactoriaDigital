@@ -100,8 +100,19 @@
                                     </div>
                                     <div class="card">
                                         <div class="card-body">
-                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'FACTURA SIMPLIFICADA', estado : 'ACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura CON precios</a>
-                                             <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'FACTURA SIMPLIFICADA', estado : 'ACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Factura SIN precios</a>
+                                            <a href="#"
+                                            class="btn btn-rounded btn-outline-danger btn-generar-factura"
+                                            data-id="{{ presupuesto.id }}"
+                                            data-precios="S">
+                                            Factura CON precios
+                                            </a>
+
+                                            <a href="#"
+                                            class="btn btn-rounded btn-outline-danger btn-generar-factura"
+                                            data-id="{{ presupuesto.id }}"
+                                            data-precios="N">
+                                            Factura SIN precios
+                                            </a>                                        
                                              <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'S', tipo : 'PRESUPUESTO', estado : 'ACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto CON precios</a>
                                              <a href="{{ path('presupuestos_generar', {id: presupuesto.id, precios: 'N', tipo : 'PRESUPUESTO', estado : 'ACEPTADO'}) }}" target="_blank"  class="btn btn-rounded btn-outline-danger "> Presupuesto SIN precios</a>
                                         </div>
@@ -1701,6 +1712,37 @@
         };  
 
 
+        document.querySelectorAll('.btn-generar-factura').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const id = this.dataset.id;
+                const precios = this.dataset.precios;
+
+                Swal.fire({
+                    title: '¿Presupuesto finalizado?',
+                    text: "Selecciona el estado del presupuesto",
+                    icon: 'question',
+                    showDenyButton: true,
+                    confirmButtonText: 'Finalizado',
+                    denyButtonText: 'En curso',
+                    cancelButtonText: 'Cancelar'
+                }).then(result => {
+                    let tipo = null;
+                    let estado = 'ACEPTADO';
+                    if (result.isConfirmed) {
+                        tipo = 'FACTURA FINAL';
+                    } else if (result.isDenied) {
+                        tipo = 'FACTURA SIMPLIFICADA'
+                    }
+
+                    if (estado) {
+                        const url = `/admin/presupuestos/${id}/${precios}/${tipo}/${estado}/generar`;
+                        window.open(url, '_blank');
+                    }
+                });
+            });
+        });
 
     </script>
 {% endblock %}
