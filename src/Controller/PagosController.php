@@ -12,6 +12,7 @@ use App\Repository\PagosRepository;
 use App\Repository\BancoRepository;
 use App\MisClases\GenerarPago;
 use App\Entity\Pagos;
+use App\Entity\Economicpresu;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
@@ -54,6 +55,21 @@ class PagosController extends AbstractController
         return $response;
 
     }
+    /**
+     * @Route("/procesar/{id}", name="pago_procesar", methods={"POST"})
+     */ 
+    public function procesarPago(Economicpresu $economicpresu, EntityManagerInterface $em): JsonResponse
+    {
+        // Simulamos que se marca como pagado
+        $economicpresu->setEstadoEco(2); // o lo que uses para "pagado"
+        $em->flush();
+    
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Pago registrado correctamente'
+        ]);
+    }
+    
      
 
 }

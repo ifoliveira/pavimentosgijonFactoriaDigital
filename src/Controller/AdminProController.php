@@ -10,6 +10,7 @@ use App\Entity\Cestas;
 use App\MisClases\Importar_Ticket;
 use App\MisClases\Meteo;
 use App\Repository\DetallecestaRepository;
+use App\Repository\PresupuestosRepository;
 use App\Repository\CestasRepository;
 use App\Repository\EconomicpresuRepository;
 use App\Repository\EfectivoRepository;
@@ -32,10 +33,29 @@ use App\MisClases\FacturaPdfToJsonService;
 
 class AdminProController extends AbstractController
 {
+
     /**
      * @Route("/admin", name="admin_pro")
      */
-    public function index(Request $request, TiposmovimientoRepository $tiposmovimientoRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
+    public function index(Request $request, PresupuestosRepository $presupuestosRepository): Response
+    {
+
+    // Obtenemos todos los presupuestos para mostrarlos en el dashboard
+    $presupuestos = $presupuestosRepository->findByEstadoPe(9);
+    // Accedemos al primer presupuesto
+    $presupuesto = $presupuestos[0] ?? null;
+
+    return $this->render('admin_pro/dashboard.html.twig', [
+        'presupuestos' => $presupuestos,
+    ]);
+             
+
+    }
+
+    /**
+     * @Route("/admin/flujocaja", name="flujocaja")
+     */
+    public function flujocaja(Request $request, TiposmovimientoRepository $tiposmovimientoRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
     {
        
 

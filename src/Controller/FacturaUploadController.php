@@ -11,6 +11,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use App\Entity\Forecast;
 use App\Entity\Tiposmovimiento;
 use App\Form\ForecastType;
@@ -50,6 +52,7 @@ class FacturaUploadController extends AbstractController
         $session = $request->getSession();
         $formLoop = [];
         $productosForms = [];
+        $usarImagen = $request->request->get('usar_imagen') === '1';
      
         
       
@@ -70,9 +73,37 @@ class FacturaUploadController extends AbstractController
 
                     // Procesar el PDF con OpenAI
                     $ruta = $this->getParameter('kernel.project_dir') . '/public_html/var/facturas/' . $pdfFilename;
-                    //$datos = $servicio->procesarFacturaPdf($ruta);
-                    $json = file_get_contents($this->getParameter('kernel.project_dir') . '/public_html/var/facturas/factura_mock.json');
-                    $datos = json_decode($json, true);
+                    if ($usarImagen) {
+                        // Convertir PDF a imagen
+                        $outputImagePath = str_replace('.pdf', '.jpg', $ruta);
+                    
+                        $process = new Process([
+                            'convert',
+                            '-density', '300',
+                            '-colorspace', 'gray',
+                            '-sharpen', '0x1.0',
+                            '-trim',
+                            '+repage',
+                            $ruta,
+                            '-background', 'white',
+                            '-alpha', 'remove',
+                            '-quality', '100',
+                            $outputImagePath
+                        ]);
+                        $process->run();
+                    
+                        if (!$process->isSuccessful()) {
+                            throw new ProcessFailedException($process);
+                        }
+                    
+                        // Procesar imagen con OpenAI
+                        $datos = $servicio->procesarFacturaPdf($outputImagePath);
+                    } else {
+                        // Procesar el PDF directamente como antes
+                        $datos = $servicio->procesarFacturaPdf($ruta);
+                    }
+                    //$json = file_get_contents($this->getParameter('kernel.project_dir') . '/public_html/var/facturas/factura_mock.json');
+                    //$datos = json_decode($json, true);
 
                     $session->set('factura_datos', $datos);
                     $session->set('factura_pdf', $pdfFilename);

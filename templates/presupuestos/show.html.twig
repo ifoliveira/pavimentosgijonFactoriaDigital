@@ -642,8 +642,36 @@
                                         </table>      
                                      </div>
                                 </div>
-                            </div>
+                            
 
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Pagos Mano de Obra</h4>
+                                        <table id="footer" class="table table-striped table-bordered display" style="width:100%">                                    
+                                            <thead>
+                                                <tr align="center"> 
+                                                    <th>Movimiento</th>
+                                                    <th>Fecha</th>
+                                                    <th>Importe</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>   
+                                               {% for economictar in economic %}
+                                                   {% if economictar.estadoEco == '8' %}
+                                                        <tr>
+                                                                <td>{{ economictar.conceptoEco}}</td>
+                                                                <td> {{ economictar.timestamp|date("Y-M-d")}} </td> 
+                                                                <td class="text-end">{{ economictar.importeEco |format_currency('EUR', locale='es')}}</td>
+                                                        </tr>  
+                                                   {% endif %} 
+                                               {% endfor %}
+
+
+                                            </tbody>
+                                        </table>      
+                                     </div>
+                                </div>
+                            </div>
 
                             <div class="card">
                                 <div class="card-body">
@@ -1327,7 +1355,7 @@
                             ) {
                                 const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');
                                 const importe = inputNumber.value;                                
-                            pagar_economic(id,importe,"Efectivo"); 
+                                pagar_economic(id,importe,"Efectivo"); 
                             }
                         });
 

@@ -39,6 +39,23 @@ class PresupuestosRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+     /**
+      * @return Presupuestos[] Returns an array of Presupuestos objects
+      */
+    
+    public function findByEstadoPe($value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.estadoPe = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->setMaxResults(20)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+
     // /**
     //  * @return Presupuestos[] Returns an array of Presupuestos objects
     //  */

@@ -14,6 +14,7 @@ use App\Entity\Cestas;
 use App\Entity\Tiposmovimiento;
 use App\MisClases\EconomicoPresu;
 use App\MisClases\CestaUser;
+use App\MisClases\PagoManoObraService;
 use App\MisClases\FinanciacionClass;
 use App\Repository\EfectivoRepository;
 use App\Repository\EstadocestasRepository;
@@ -661,6 +662,7 @@ class PresupuestosController extends AbstractController
         $actualizar = $this->em->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $ideconomic]);
 
         if (($actualizar->getImporteEco()-$importe) == 0) {
+            $actualizar->setTimestamp(new \DateTime());
             $actualizar->setImporteEco($importe);
             if ($tipopago == "Efectivo") {           
             $actualizar->setEstadoEco(6); 
@@ -670,6 +672,7 @@ class PresupuestosController extends AbstractController
 
         } else {
             $actualizar->setImporteEco($actualizar->getImporteEco() - ($importe));
+            $actualizar->setTimestamp(new \DateTime());
             $economicnuevo = new economicpresu();
             $economicnuevo = clone $actualizar;
             if ($tipopago == "Efectivo") {                       
@@ -781,6 +784,66 @@ class PresupuestosController extends AbstractController
 
 
     }      
+    /**
+     * @Route("/pago/recibir/{id}", name="pago_recibir", methods={"POST"})
+     */    
 
+    public function recibirPago(Request $request, Presupuestos $presupuesto, EntityManagerInterface $em, TiposmovimientoRepository $tiposmovimientoRepository, EconomicpresuRepository $economicpresuRepository, PagoManoObraService $pagoManoObraService): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $importe = $data['importe'] ?? null;
+        $metodo = $data['metodo'] ?? null;
+      
+        
+        if (!$presupuesto->getId()|| !$importe || !$metodo) {
+            return new JsonResponse(['success' => false, 'message' => 'Datos incompletos'], 400);
+        }
+
+        if (!$presupuesto) {
+            return new JsonResponse(['success' => false, 'message' => 'Presupuesto no encontrado'], 404);
+        }
+        $restante = $presupuesto->getImporteTotPe()+ $presupuesto->getImporteManoObra() - $presupuesto->getTicket()->getTotalPagos() - $presupuesto->getImpmanoobraPagado();
+        $restanteMateriales  = $presupuesto->getImporteTotPe() - $presupuesto->getTicket()->getTotalPagos();
+
+        if ($importe > $restante) {
+
+            return new JsonResponse(['success' => false, 'message' => 'El importe no puede ser mayor que el importe restante'], 400);
+
+        } else  if ($importe > $restanteMateriales & $restanteMateriales > 0) { 
+            // Si el importe es mayor que el resto de materiales, hay que abonar todo lo que queda de materiales y el resto a mano de obra
+
+            $generarPago = New GenerarPago($this->em);
+            $generarPago->ticketPagoFinal($presupuesto->getTicket(), $restanteMateriales, $metodo, $tiposmovimientoRepository);
+
+
+            // Actualizamos el importe de mano de obra pagado
+            $importeaManodeObra = $importe - $restanteMateriales;
+            $result = $pagoManoObraService->registrarPago($presupuesto->getId(), $importeaManodeObra, $metodo);
+            $presupuesto->setImpmanoobraPagado($presupuesto->getImpmanoobraPagado() + $importeaManodeObra);
+            $this->em->persist($presupuesto);
+            $this->em->flush(); 
+
+        } else if ($importe <= $restanteMateriales ) {  
+            // Si el importe es menor o igual que el resto de materiales, se abona todo a materiales
+            $generarPago = New GenerarPago($this->em);
+            $generarPago->ticketPagoFinal($presupuesto->getTicket(), $importe, $metodo, $tiposmovimientoRepository);
+            $this->em->flush();  
+
+        } else {
+            // Si no, se abona todo a mano de obra  
+
+            $result = $pagoManoObraService->registrarPago($presupuesto->getId(), $importe, $metodo);
+            $presupuesto->setImpmanoobraPagado($presupuesto->getImpmanoobraPagado() + $importe);
+            $this->em->persist($presupuesto);
+            $this->em->flush();  
+        }
+
+        $response = new JsonResponse();
+  
+        return new JsonResponse(['success' => true, 'message' => 'Pago registrado']);
+    }    
 
 }
+
+       
+      

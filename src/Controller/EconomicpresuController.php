@@ -166,19 +166,20 @@ class EconomicpresuController extends AbstractController
         $entityManager->persist($efectivo );
         $entityManager->flush();
 
-        
-        //$actualizar->setImporteEco($actualizar->getImporteEco() + ($importe));
 
-        if (($actualizar->getImporteEco() - ($importe)) == 0 || $actualizar->getImporteEco()== 0 ) {
+        if (($actualizar->getImporteEco() - ($importe)) == 0 || $actualizar->getImporteEco()== 0 || ($actualizar->getImporteEco() - ($importe)) < 0 ) {
             $actualizar->setImporteEco($importe);
+            $actualizar->setTimestamp(new \DateTime());
             $actualizar->setEstadoEco(8);    
         } else {
-            $actualizar->setImporteEco($actualizar->getImporteEco() - ($importe));
-            $economicnuevo = new economicpresu();
-            $economicnuevo = clone $actualizar;
-            $economicnuevo->setEstadoEco(8);  
-            $economicnuevo->setImporteEco($importe);  
-            $entityManager->persist($economicnuevo);                   
+                $actualizar->setImporteEco($actualizar->getImporteEco() - ($importe));
+                $actualizar->setTimestamp(new \DateTime());
+                $economicnuevo = new economicpresu();
+                $economicnuevo = clone $actualizar;
+                $economicnuevo->setEstadoEco(8);  
+                $economicnuevo->setImporteEco($importe);  
+                $entityManager->persist($economicnuevo);   
+                          
         };
 
 

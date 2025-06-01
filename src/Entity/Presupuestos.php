@@ -122,6 +122,11 @@ class Presupuestos
      */
     private $impmanoobraPagado;
 
+    /**
+     * @ORM\OneToMany(targetEntity=UsoDeStock::class, mappedBy="presupuesto")
+     */
+    private $usoDeStocks;
+
     public function __construct()
     {
 
@@ -135,6 +140,7 @@ class Presupuestos
         $this->cestas = new ArrayCollection();
         $this->economicpresus = new ArrayCollection();
         $this->efectivos = new ArrayCollection();
+        $this->usoDeStocks = new ArrayCollection();
 
     }
 
@@ -407,6 +413,16 @@ class Presupuestos
         return $this;
     }
 
+    public function getEconomicPagosPdtes(): array
+    {
+
+        return array_filter($this->economicpresus->toArray(), function ($eco) {
+            return $eco->getAplicaEco() == 'E' && $eco->getEstadoEco() == 1;
+        });
+    }
+     
+
+
     /**
      * @return Collection<int, Efectivo>
      */
@@ -445,6 +461,36 @@ class Presupuestos
     public function setImpmanoobraPagado(?float $impmanoobraPagado): self
     {
         $this->impmanoobraPagado = $impmanoobraPagado;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UsoDeStock>
+     */
+    public function getUsoDeStocks(): Collection
+    {
+        return $this->usoDeStocks;
+    }
+
+    public function addUsoDeStock(UsoDeStock $usoDeStock): self
+    {
+        if (!$this->usoDeStocks->contains($usoDeStock)) {
+            $this->usoDeStocks[] = $usoDeStock;
+            $usoDeStock->setPresupuesto($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUsoDeStock(UsoDeStock $usoDeStock): self
+    {
+        if ($this->usoDeStocks->removeElement($usoDeStock)) {
+            // set the owning side to null (unless already changed)
+            if ($usoDeStock->getPresupuesto() === $this) {
+                $usoDeStock->setPresupuesto(null);
+            }
+        }
 
         return $this;
     }

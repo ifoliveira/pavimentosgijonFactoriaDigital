@@ -11,6 +11,12 @@
       <label for="factura">Selecciona un archivo PDF:</label>
       <input type="file" id="factura" name="factura" accept="application/pdf" required>
     </div>
+    <div>
+      <label>
+        <input type="checkbox" name="usar_imagen" value="1">
+        Procesar como imagen (OCR con JPG)
+      </label>
+    </div>    
     <button type="submit">Procesar</button>
   </form>
   <a href="{{ path('factura_nueva') }}" class="btn btn-warning">Nueva factura</a>

@@ -269,6 +269,17 @@ class Cestas
         return $this;
     }
 
+    public function getTotalPagos(): float
+    {
+        $total = 0.0;
+    
+        foreach ($this->pagos as $pago) {
+            $total += $pago->getImportePg(); // Asumiendo que el campo se llama 'monto'
+        }
+    
+        return $total;
+    }    
+
     public function getUserAdmin(): ?Admin
     {
         return $this->userAdmin;

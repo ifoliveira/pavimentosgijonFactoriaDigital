@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\ProductosRepository;
 use App\Repository\TipoproductoRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use app\Entity\Tipoproducto;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -55,10 +57,22 @@ class Productos
      */
     private $obsoleto;
 
+    /**
+     * @ORM\OneToMany(targetEntity=StockItem::class, mappedBy="producto", orphanRemoval=true)
+     */
+    private $stockItems;
+
+    /**
+     * @ORM\OneToMany(targetEntity=UsoDeStock::class, mappedBy="producto", orphanRemoval=true)
+     */
+    private $usoDeStocks;
+
     public function __construct()
     {
 
         $this->setFecAltaPd(new \DateTime());
+        $this->stockItems = new ArrayCollection();
+        $this->usoDeStocks = new ArrayCollection();
     }
 
 
@@ -153,6 +167,66 @@ class Productos
     public function setObsoleto(?bool $obsoleto): self
     {
         $this->obsoleto = $obsoleto;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StockItem>
+     */
+    public function getStockItems(): Collection
+    {
+        return $this->stockItems;
+    }
+
+    public function addStockItems(StockItem $stockItems): self
+    {
+        if (!$this->stockItems->contains($stockItems)) {
+            $this->stockItems[] = $stockItems;
+            $stockItems->setProducto($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStockItems(StockItem $stockItems): self
+    {
+        if ($this->stockItems->removeElement($stockItems)) {
+            // set the owning side to null (unless already changed)
+            if ($stockItems->getProducto() === $this) {
+                $stockItems->setProducto(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UsoDeStock>
+     */
+    public function getUsoDeStocks(): Collection
+    {
+        return $this->usoDeStocks;
+    }
+
+    public function addUsoDeStock(UsoDeStock $usoDeStock): self
+    {
+        if (!$this->usoDeStocks->contains($usoDeStock)) {
+            $this->usoDeStocks[] = $usoDeStock;
+            $usoDeStock->setProducto($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUsoDeStock(UsoDeStock $usoDeStock): self
+    {
+        if ($this->usoDeStocks->removeElement($usoDeStock)) {
+            // set the owning side to null (unless already changed)
+            if ($usoDeStock->getProducto() === $this) {
+                $usoDeStock->setProducto(null);
+            }
+        }
 
         return $this;
     }

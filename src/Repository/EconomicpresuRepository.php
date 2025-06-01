@@ -97,6 +97,21 @@ class EconomicpresuRepository extends ServiceEntityRepository
 
     }      
 
+    public function getImporteManoObraPendiente(int $presupuestoId): float
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->select('SUM(e.importeEco)')
+            ->where('e.aplicaEco = :aplica')
+            ->andWhere('e.estadoEco = :estado')
+            ->andWhere('e.idpresuEco = :presupuestoId')
+            ->setParameters([
+                'aplica' => 'M',
+                'estado' => 1,
+                'presupuestoId' => $presupuestoId
+            ]);
+    
+        return (float) $qb->getQuery()->getSingleScalarResult();
+    }    
 //    /**
 //     * @return Economicpresu[] Returns an array of Economicpresu objects
 //     */

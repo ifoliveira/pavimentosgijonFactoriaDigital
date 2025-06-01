@@ -1,0 +1,243 @@
+{% extends 'inicio2.html.twig' %}
+{% block eltiempo %} {% endblock %}
+{% block stylesheets %}
+            <!-- This page plugin CSS -->
+            <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css') }}" rel="stylesheet">
+            <!-- Custom CSS -->
+            <link href="{{ asset('dist/css/style.min.css') }}" rel="stylesheet">
+            <!-- This page CSS -->
+            <link href="{{ asset('assets/libs/jquery-steps/jquery.steps.css') }}" rel="stylesheet">
+            <link href="{{ asset('assets/libs/jquery-steps/steps.css') }}" rel="stylesheet">
+            <!-- Popup CSS -->
+            <link href="{{ asset('assets/libs/magnific-popup/dist/magnific-popup.css') }}" rel="stylesheet">
+            <!-- This Page CSS -->
+                <link rel="stylesheet" type="text/css" href="{{ asset('assets/libs/summernote/dist/summernote-bs4.css') }}">
+                <link rel="stylesheet" type="text/css" href="{{ asset('assets/extra-libs/prism/prism.css') }}">
+                <link href="{{ asset('dist/css/icons/themify-icons/themify-icons.css') }}" rel="stylesheet">   
+          <!-- This page plugin CSS -->
+          <!-- This Page CSS -->
+                <link rel="stylesheet" type="text/css"  href="{{ asset('assets/libs/select2/dist/css/select2.min.css') }}"/>                     
+{% endblock %}
+{% block cabecera %} Resumen económico {% endblock %}
+{% block breadcrumb %} <li class="breadcrumb-item active">Resumen económico</li>{% endblock %}
+{% block title %}Resumen económico{% endblock %}
+{% block tablas %}{% endblock %}
+{% block cardbody1 %}
+
+        <div class="row">
+        {% for presupuesto in presupuestos %}        
+            <div class="col-md-4 col-lg-4 col-xl-4">
+                <div class="card text-center alert-dismissible fade show alert p-0 card-hover " role="alert" >
+                    <div class="card-body">
+                        <a href="{{ path ('presupuestos_show', { 'id': presupuesto.id  }) }}" class="font-medium link">{{ presupuesto.clientePe.direccionCl}}  ( {{presupuesto.manoobraPe}} )</a></td>
+                        <h5 class="card-title">{{ presupuesto.clientePe.nombreCl }} - {{ presupuesto.clientePe.telefono1Cl }}</h5>
+                        <h5 class="card-text">Pendiente: <td  align="right">{{ (presupuesto.importetotPe + presupuesto.importemanoobra - presupuesto.ticket.TotalPagos - presupuesto.impmanoobraPagado)   |format_currency('EUR', locale='es')  }}</td> </h5>
+                        <p class="card-text">Total: <td  align="right">{{ (presupuesto.importetotPe + presupuesto.importemanoobra)  |format_currency('EUR', locale='es')  }}</td> </p>
+                        <p class="card-text">Total Pagado: <td  align="right">{{ (presupuesto.ticket.TotalPagos + presupuesto.impmanoobraPagado)  |format_currency('EUR', locale='es')  }}</td> </p>
+                    </div>
+                    <div class="d-flex justify-content-between px-3 pb-3">
+                      <a href="#" class=" btn btn-light-warning text-secondary font-weight-medium d-block w-100 mx-1 btn-pagar-obrero" 
+                        data-pagos='{{ presupuesto.economicPagosPdtes|map(p => {
+                                id: p.id,
+                                concepto: p.conceptoEco,
+                                monto: p.importeEco
+                        })|json_encode }}'
+                        data-presupuesto="{{ presupuesto.id }}">
+                        <i class="ti ti-money"></i>
+                        Pagos
+                        <a href="#" 
+                        class="btn btn-light-primary text-secondary font-weight-medium d-block w-100 mx-1 btn-cobros"
+                        data-presupuesto="{{ presupuesto.id }}">
+                        Cobros
+                        </a>
+                    </div>                   
+                </div>
+            </div>
+
+        {% endfor %}                
+        </div>
+
+{% endblock %}
+
+{% block jscustom %}
+
+    <!-- ============================================================== -->
+    <!-- All Jquery -->
+    <!-- ============================================================== -->
+    <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}" ></script>
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="{{ asset('assets/libs/popper.js/dist/umd/popper.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <!-- apps -->
+    <script src="{{ asset('dist/js/app.min.js') }}"></script>
+    <script src="{{ asset('dist/js/app.init.js') }}"></script>
+    <script src="{{ asset('dist/js/app-style-switcher.js') }}"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="{{ asset('assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
+    <!--Wave Effects -->
+    <script src="{{ asset('dist/js/waves.js') }}"></script>
+    <!--Menu sidebar -->
+    <script src="{{ asset('dist/js/sidebarmenu.js') }}"></script>
+    <!--Custom JavaScript -->
+    <script src="{{ asset('dist/js/feather.min.js') }}"></script>
+    <script src="{{ asset('dist/js/custom.min.js') }}"></script>
+    <!--This page plugins -->
+    <script src="{{ asset('assets/libs/datatables/media/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/custom-datatable.js') }}"></script>
+    <script src="{{ asset('dist/js/pages/datatable/datatable-api.init.js') }}"></script>
+    <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
+
+    <!--Custom JavaScript -->
+    
+    <script language = "javascript">    
+        $(document).ready(function(){   
+
+            document.querySelectorAll('.btn-pagar-obrero').forEach(btn => {
+                console.log("Pulsando botón pagar obrero");
+                btn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+            const pagos = JSON.parse(this.dataset.pagos);
+            const presupuestoId = this.dataset.presupuesto;
+
+            let html = '<ul class="list-group">';
+            pagos.forEach(p => {
+                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                            ${p.concepto} 
+                            <button class="btn btn-sm btn-primary pagar-btn" data-id="${p.id}" data-monto="${p.monto}">Pagar ${p.monto}€</button>
+                         </li>`;
+            });
+            html += '</ul>';
+
+            Swal.fire({
+                title: 'Pagos Pendientes',
+                html: html,
+                showConfirmButton: false
+            });
+            Swal.fire({
+                title: 'Pagos Pendientes',
+                html: html,
+                showConfirmButton: false,
+                didOpen: () => {
+                    const container = Swal.getHtmlContainer();
+                    container.querySelectorAll('.pagar-btn').forEach(btn => {
+                        btn.addEventListener('click', function () {
+                            const pagoId = this.dataset.id;
+                            const monto = this.dataset.monto;
+
+                            Swal.fire({
+                                title: 'IMPORTE',
+                                html: `
+                                    <h4>Importe a abonar</h4>
+                                    <input type="number" value="${monto}" step="0.01" class="swal2-input" id="importe-input" style="text-align: center;">
+                                `,
+                                showDenyButton: true,
+                                showCancelButton: true,
+                                confirmButtonText: 'Tarjeta',
+                                denyButtonText: 'Efectivo',
+                                cancelButtonText: 'Cancelar',
+                                reverseButtons: true
+                            }).then((result) => {
+                                const inputNumber = Swal.getHtmlContainer().querySelector('#importe-input');
+                                const importeFinal = inputNumber.value;
+
+                                if (result.isConfirmed) {
+                                    // Pago con tarjeta
+                                    pagar_economic(pagoId, importeFinal, 'Tarjeta');
+                                } else if (result.isDenied) {
+                                    // Pago en efectivo
+                                    pagar_economic(pagoId, importeFinal, 'Efectivo');
+                                }
+                            });
+                        });
+                                            });
+                }
+            });
+        });
+    });
+
+            function pagar_economic(id,importe,modo) 
+            {
+                $.ajax({  
+                url: '/admin/economicpresu/pagar/ajax',
+                type:       'GET',   
+                data:        ({importe:importe, id:id, modo:modo}),
+                dataType:   'json',  
+                async:      true,  
+                
+                success: function(response) {  
+                    location.reload();   
+                },  
+                error : function(xhr, textStatus, errorThrown) {  
+                    alert(textStatus);  
+                }                      
+                });
+            };
+
+            document.querySelectorAll('.btn-cobros').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    const presupuestoId = this.dataset.presupuesto;
+
+                    Swal.fire({
+                        title: 'Recibir Pago',
+                        html: `
+                            <input type="number" class="swal2-input" id="importe-recibido" placeholder="Importe a recibir" step="0.01">
+                        `,
+                        showDenyButton: true,
+                        showCancelButton: true,
+                        confirmButtonText: 'Tarjeta',
+                        denyButtonText: 'Efectivo',
+                        cancelButtonText: 'Cancelar',
+                        reverseButtons: true
+                    }).then(result => {
+                        const input = Swal.getHtmlContainer().querySelector('#importe-recibido');
+                        const importe = input.value;
+
+                        let metodoPago = null;
+
+                        if (result.isConfirmed) {
+                            metodoPago = 'Tarjeta';
+                        } else if (result.isDenied) {
+                            metodoPago = 'Efectivo';
+                        }
+
+                        if (metodoPago) {
+                            fetch('/admin/presupuestos/pago/recibir/' + presupuestoId, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body: JSON.stringify({ 
+                                    importe: importe,
+                                    metodo: metodoPago
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log(data);  
+                                if (data.success) {
+                                    Swal.fire('Éxito', data.message, 'success').then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire('Error', data.message, 'error');
+                                }
+                            })
+                            .catch(() => {
+                                Swal.fire('Error', 'Fallo de red o servidor', 'error');
+                            });
+                        }
+                    });
+                });
+
+            });
+
+});
+</script>
+{% endblock %}
+
