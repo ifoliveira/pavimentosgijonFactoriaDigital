@@ -1,0 +1,154 @@
+{% extends 'inicio2.html.twig' %}
+{% block eltiempo %} 
+{% endblock %}
+{% block stylesheets %}
+        <link href="{{ asset('dist/css/style.min.css') }}" rel="stylesheet">        
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/extra-libs/prism/prism.css') }}">
+        <link href="{{ asset('dist/css/icons/themify-icons/themify-icons.css') }}" rel="stylesheet">   
+          <!-- This page plugin CSS -->
+        <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css') }}" rel="stylesheet">          
+    <style>
+            .table>tbody>tr>td,
+            .table>tbody>tr>th {
+            border: none;
+            }
+    </style>
+{% endblock %}
+{% block cabecera %} Presupuestos {% endblock %}
+{% block breadcrumb %} <li class="breadcrumb-item active">Lista presupuestos</li>{% endblock %}
+{% block title %}Lista presupuestos{% endblock %}
+{% block cardbody1 %}
+
+                {% set numero = 1 %}
+                {% set facturapagada = false %}
+                {% set pagado = 0 %}
+                {% set descuento_total = 0 %}
+                {% set descuento  = false %}
+                {% for pagos in presupuesto.ticket.pagos %}
+                   {% set pagado = pagos.importePg + pagado %}
+                {% endfor %}      
+
+                {% set manoobrapdte = 0 %}
+                {% set manoobratotal = 0 %}
+                {% set idmanoobra = 0 %}
+                {% for economicos in economic %}                                                
+                    {% if economicos.aplicaEco == 'M' %}
+                        {% set manoobratotal = manoobratotal + economicos.importeEco%}
+                        {% if economicos.estadoEco == '1'%}
+                            {% set idmanoobra = economicos.id %}
+                            {% set manoobrapdte = economicos.importeEco %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                                                  
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card card-body printableArea">
+                            <div class="mb-4">
+                                <p><strong>Dirección:</strong> {{ presupuesto }}</p>
+                                <p><strong>Teléfono:</strong> {{ presupuesto }}</p>
+                                <p><strong>Fecha:</strong> {{ presupuesto.FechainiPe|date('d/m/Y') }}</p>
+                                <p><strong>Nº Presupuesto:</strong> {{ presupuesto.id }}</p>
+                            </div>
+
+                            <div class="alert alert-light border-start border-5 border-primary mb-4">
+                                <h4 class="mb-2">Nuestra propuesta de valor</h4>
+                                <p>Reformamos tu baño con materiales modernos y resistentes, mano de obra especializada, limpieza incluida y sin sorpresas en el presupuesto. <strong>¡Transformamos tu espacio para que disfrutes de confort y estilo!</strong></p>
+                            </div>
+
+                            <h3 class="text-primary mt-5 mb-3">🧱 Detalle de materiales</h3>
+                            <table class="table table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th class="text-end">Cantidad</th>
+                                        <th class="text-end">Precio</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in presupuesto.ticket.detallecesta %}
+                                    <tr>
+                                        <td>{{ item.productoDc.descripcionPd }}</td>
+                                        <td class="text-end">{{ item.cantidadDc }}</td>
+                                        <td class="text-end">{{ item.pvpDc|number_format(2, ',', '.') }} €</td>
+                                        <td class="text-end">{{ item.pvpDc|number_format(2, ',', '.') }} €</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <div class="text-end">
+                                <p><strong>Subtotal:</strong> {{ subtotal|number_format(2, ',', '.') }} €</p>
+                                <p><strong>IVA (21%):</strong> {{ subtotal|number_format(2, ',', '.') }} €</p>
+                                <p class="fs-5"><strong>Total:</strong> {{ subtotal|number_format(2, ',', '.') }} €</p>
+                            </div>
+
+                            <h3 class="text-primary mt-5 mb-3">🛠️ Mano de obra</h3>
+                            <ul class="list-group list-group-flush mb-4">
+
+                            </ul>
+
+                            <h3 class="text-primary mt-5 mb-3">✨ Servicios incluidos sin coste adicional</h3>
+                            <ul>
+                                <li>Retirada y gestión de escombros</li>
+                                <li>Limpieza final de obra</li>
+                                <li>Revisión gratuita a los 30 días</li>
+                                <li>Asesoramiento estético en acabados</li>
+                            </ul>
+
+                            <h3 class="text-primary mt-5 mb-3">💳 Formas de pago</h3>
+                            <p>Puedes elegir entre:</p>
+                            <ul>
+                                <li>Pago único al finalizar la reforma</li>
+                                <li>Pago fraccionado: 30% inicio, 40% mitad, 30% final</li>
+                                <li><strong>Financiación sin intereses:</strong> 187,50 €/mes hasta 12 meses (sujeto a aprobación por RuralFinance)</li>
+                            </ul>
+
+                            <div class="bg-light p-3 rounded mt-5">
+                                <h4 class="text-success">💬 Testimonio de cliente</h4>
+                                <blockquote class="blockquote mb-0">
+                                    “Mi baño ahora parece de revista. Muy limpios y profesionales, lo recomendaría sin dudar.”
+                                    <footer class="blockquote-footer mt-2">Marta G. en <cite title="Gijón">Gijón</cite></footer>
+                                </blockquote>
+                            </div>
+                                           
+                        <div class="text-right">
+                            <button class="btn btn-danger" type="submit"> Proceed to payment </button>
+                            <button id="print" class="btn btn-default btn-outline" type="button"> <span><i class="fa fa-print"></i> Print</span> </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- End PAge Content -->
+                <!-- ============================================================== -->
+                <!-- ============================================================== -->
+                <!-- Right sidebar -->
+                <!-- ============================================================== -->
+                <!-- .right-sidebar -->
+                <!-- ============================================================== -->
+                <!-- End Right sidebar -->
+                <!-- ============================================================== -->
+{% endblock %}
+{% block formulario %}{% endblock %}
+{% block jscustom %}
+    <!-- This Page JS -->
+    <script src="{{ asset('dist/js/pages/samplepages/jquery.PrintArea.js') }}"></script>
+    <script>
+    $(function() {
+        $("#print").click(function() {
+            var mode = 'iframe'; //popup
+            var close = mode == "popup";
+            var options = {
+                mode: mode,
+                popClose: close
+            };
+            $("div.printableArea").printArea(options);
+        });
+    });
+    </script>
+{% endblock %}

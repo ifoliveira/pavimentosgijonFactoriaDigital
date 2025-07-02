@@ -446,7 +446,7 @@ class PresupuestosController extends AbstractController
         $economic = $presupuesto->getEconomicpresus();
 
 
-        return $this->render('presupuestos/generar.html.twig', [
+        return $this->render('presupuestos/generar2.html.twig', [
             'presupuesto' => $presupuesto,
             'precios' => $precios,
             'economic' => $economic,
