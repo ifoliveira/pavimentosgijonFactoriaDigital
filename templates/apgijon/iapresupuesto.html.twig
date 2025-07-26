@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="reformas de baños, Gijón, diseño de baños, remodelación de cuartos de baño, accesorios de baños, decoración de interiores, presupuesto gratuito, azulejos para baños, platos de ducha, sanitarios, grifería de baño, instalación de bañeras, renovación de cuartos de baño, expertos en baños, calidad en reformas." name="keywords">
+<meta content="Descubre las mejores reformas de baños en Gijón con nuestro equipo experto. Convierte tu baño en un espacio acogedor y funcional que se adapte a tu estilo de vida. En Pavimentos Gijón, nos especializamos en crear baños que equilibran la comodidad con el diseño, proporcionando soluciones personalizadas para cada hogar en Gijón. Servicios de calidad, diseño personalizado y atención al detalle. Solicita tu presupuesto gratuito hoy mismo." name="description">
+<meta property="og:image" content="https://www.pavimentosgijon.es/assets/images/logo.png" /> 
+<meta property="og:title" content="Reformas integrales baños Gijón"/>
+<meta property="og:url" content="https://www.pavimentosgijon.es/" />
+<meta property="og:site_name" content="Tienda de baño en gijón" />
+<meta property="og:type" content="mainpage" />
+
+<!-- page title -->
+<title>Reformas integral de baños en Gijón | Pavimentos Gijón</title>
+<!-- favicon -->
+<link rel="icon" type="image/png" sizes="16x16" href="{{ asset('/img/favicon.png')}}">
+<!-- bootstrap core CSS -->
+<link href="{{ asset('/Light-HTML/css/bootstrap.min.css')}}" rel="stylesheet" >
+<!-- bootstrap icons -->
+<link href="{{ asset('/Light-HTML/css/bootstrap-icons.css')}}" rel="stylesheet">
+<!-- owl carousel -->
+<link href="{{ asset('/Light-HTML/css/owl.carousel.min.css')}}" rel="stylesheet">
+<link href="{{ asset('/Light-HTML/css/owl.theme.default.min.css')}}" rel="stylesheet">
+<!-- venobox css -->
+<link href="{{ asset('/Light-HTML/css/venobox.css')}}" rel="stylesheet">
+<!-- custom styles for this template -->
+<link href="{{ asset('/Light-HTML/css/custom.css')}}" rel="stylesheet">
+<link href="{{ asset('/Light-HTML/css/responsive.css')}}" rel="stylesheet">
+<link href="{{ asset('/Light-HTML/css/helper.css')}}" rel="stylesheet">
+<link rel="canonical" href="https://www.pavimentosgijon.es/reforma-integral-banos-gijon" />
+
+</head>
+<body>
+<!-- ================ Preloader ================ -->
+<div id="preloader">
+  <div class="spinner-grow" role="status"> <span class="visually-hidden">Loading...</span> </div>
+</div>
+<!-- ================ Preloader end ================ --> 
+
+<!-- ================ Header ================ -->
+  {% include 'apgijon/header.html.twig' %}
+<!-- ================ Header end ================ --> 
+
+<!-- ================ inner page header ================ -->
+<div class="inner-page-title inner-page-header-bg">
+  <div class="container">
+    <div class="inner-page-title-c">
+      <h1>Reformas integrales de baños en Gijón</h1>
+      <div class="breadcrumb-box"> 
+        <!-- breadcrumb -->
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ path('homepage')}}"><i class="bi bi-house"></i> Inicio</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Reformas baños</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ================ inner page header end ================ --> 
+
+<!-- ================ Single services page ================ -->
+<div class="single-services-page pt-70 pb-40">
+  <div class="container">
+    <div class="row">
+        <div class="col-lg-12 mb-30"> 
+          <!-- Paso 1: Selección del tipo de reforma -->
+          <div id="selector-reforma" class="p-4 bg-light rounded shadow text-center">
+            <h4 class="mb-4">👋 ¿Qué tipo de reforma quieres hacer?</h4>
+            <button class="btn btn-outline-primary m-2" onclick="iniciarChat('ducha')">🚿 Cambiar bañera por plato de ducha</button>
+            <button class="btn btn-outline-success m-2" onclick="iniciarChat('completo')">🏗️ Reforma completa del baño</button>
+            <button class="btn btn-outline-secondary m-2" onclick="iniciarChat('otro')">🛠️ Otro tipo de reforma</button>
+            <button class="btn btn-outline-secondary m-2" onclick="iniciarSimulado()">Simular ducha</button>
+
+          </div>
+
+          <!-- Paso 2: Caja de chat (oculta al principio) -->
+          <div id="chat-box" class="chat-box p-4 bg-light rounded shadow" style="display: none;">
+            <div id="chat-messages" style="height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+                <!-- Aquí se mostrarán los mensajes -->
+            </div>
+            <form id="chat-form" class="d-flex">
+                <input type="text" id="chat-input" class="form-control me-2" placeholder="Escribe aquí..." autocomplete="off">
+                <button type="submit" class="btn btn-primary">Enviar</button>
+            </form>
+          </div>
+        </div>
+    </div>
+  </div>
+</div>
+<!-- ================ Single services page end ================ --> 
+
+<!-- ================ Gallery page ================ -->
+<div class="gallery-page pt-70 pb-40">
+  <div class="container">
+    <h3 class="mb-15">Nuestros trabajos en reformas de baños</h3>  
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-2 row-cols-1">
+      <div class="col mb-30"> 
+        <!-- gallery box -->
+        <div class="gallery-box">
+          <div class="image"><img src="{{ asset('/Light-HTML/img/gallery/bano1-mini.jpeg')}}" alt="Reforma integral baño Gijón"></div>
+          <a href="{{ asset('/Light-HTML/img/gallery/bano1.jpeg')}}" class="zoom venobox" data-gall="gallery1"><i class="bi bi-camera"></i></a> 
+        </div>
+        <!-- gallery box --> 
+        <div class="blog-item-content">
+            <h6><a href="{{ asset('/Light-HTML/img/gallery/mampara1.jpeg')}}" class="zoom venobox" data-gall="gallery1">Reforma integral de baño</a></h6>
+            <p>Reforma integral de baño con bañera y mampara de crital fijo</p>
+          </div>         
+      </div>
+
+      <div class="col mb-30"> 
+        <!-- gallery box -->
+        <div class="gallery-box">
+          <div class="image"><img src="{{ asset('/Light-HTML/img/gallery/bano2-mini.jpeg')}}" alt="Reformar baño Gijón"></div>
+          <a href="{{ asset('/Light-HTML/img/gallery/bano2.jpeg')}}" class="zoom venobox" data-gall="gallery1"><i class="bi bi-camera"></i></a> 
+        </div>
+        <!-- gallery box --> 
+        <div class="blog-item-content">
+            <h6><a href="{{ asset('/Light-HTML/img/gallery/mampara1.jpeg')}}" class="zoom venobox" data-gall="gallery1">Reforma integral de baño</a></h6>
+            <p>Retirada de bidé con grupo de ducha y mampara de fijo y corredera con un amplio plato de ducha</p>
+          </div>         
+      </div>
+
+
+      <div class="col mb-30"> 
+        <!-- gallery box -->
+        <div class="gallery-box">
+          <div class="image"><img src="{{ asset('/Light-HTML/img/gallery/bano3-mini.jpeg')}}" alt="Reforma de baño en Gijón"></div>
+          <a href="{{ asset('/Light-HTML/img/gallery/bano3.jpeg')}}" class="zoom venobox" data-gall="gallery1"><i class="bi bi-camera"></i></a> 
+        </div>
+        <!-- gallery box --> 
+        <div class="blog-item-content">
+            <h6><a href="{{ asset('/Light-HTML/img/gallery/mampara1.jpeg')}}" class="zoom venobox" data-gall="gallery1">Reforma integral de baño</a></h6>
+            <p>Cambio completo de baño con ventana dentro del plato de la ducha antideslizante y mampara fijo más corredera muy amplia </p>
+          </div>         
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ================ Gallery page end ================ --> 
+
+<!-- ================ Modal area ================ -->
+
+
+<div class="modal fade" id="modalContacto" tabindex="-1" aria-labelledby="modalContactoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalContactoLabel">💬 Antes de descargar el presupuesto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+             {{ form_start(form, {'attr' : { 'class': 'contact-form'}}) }}
+              <!--<form class="contact-form" id="contact-form" method="post" action="contact.php" enctype="multipart/form-data">-->
+                <div class="row">
+                    <div class="mb-3">
+          
+                      <input type="text" class="form-control" name="{{ field_name(form.nombre)}}" placeholder="{{ field_label(form.nombre)}}" required data-error="Nombre no informado.">
+                      <div class="help-block with-errors"></div>
+                    </div>
+                    <div class="mb-3">
+                      <input type="email" class="form-control" name="{{ field_name(form.email)}}" placeholder="{{ field_label(form.email)}}" required data-error="Email is required.">
+                      <div class="help-block with-errors"></div>
+                    </div>
+
+                </div>
+                
+                <div class="mb-3">
+                  <input type="text" placeholder="{{ field_label(form.telefono)}}" name="{{ field_name(form.telefono)}}" class="form-control" required data-error="Phone is required.">
+                  <div class="help-block with-errors"></div>
+                </div>
+                <div class="mb-3">
+                  <textarea class="form-control" rows="3" name="{{ field_name(form.pregunta)}}" placeholder="{{ field_label(form.pregunta)}}" required data-error="Message is required."></textarea>
+                  <div class="help-block with-errors"></div>
+                </div>
+                <input type="hidden" id="campo-json-presupuesto" name="{{ field_name(form.jsonPresupuesto) }}">
+
+                <div class="call-us-widget">
+                  <button type="submit" id="consultas_submit"  class="save btn btn-style-1 w-100">Descargar presupuesto</button>
+                </div>
+            {{ form_end(form) }}
+    </div>
+  </div>
+</div>
+
+<!-- ================ Modal area end ================ -->
+
+<!-- ================ Call us area ================ -->
+<div class="call-us-area">
+  <div class="container">
+    <div class="call-us-text">También por whatsapp  <a href="https://api.whatsapp.com/send/?phone=684608811" target="_blank"><i class="bi bi-whatsapp"></i> 684 608 811</a></div>
+  </div>
+</div>
+<!-- ================ Call us area end ================ -->
+
+<!-- ================ Footer area ================ -->
+  {% include 'apgijon/footer.html.twig' %}
+<!-- ================ Footer area end ================ --> 
+<!-- ================ Top scroll ================ --> 
+<a href="#" class="scroll-top"><i class="bi bi-capslock"></i></a> 
+<!-- ================ Top scroll end ================ -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<!-- js files --> 
+<script src="{{ asset('/Light-HTML/js/jquery-3.6.0.min.js')}}"></script> 
+<script src="{{ asset('/Light-HTML/js/bootstrap.bundle.min.js')}}"></script> 
+<!-- counter js --> 
+<script src="{{ asset('/Light-HTML/js/jquery-1.10.2.min.js')}}"></script> 
+<script src="{{ asset('/Light-HTML/js/waypoints.min.js')}}"></script> 
+<script src="{{ asset('/Light-HTML/js/jquery.counterup.min.js')}}"></script> 
+<!-- venobox js --> 
+<script src="{{ asset('/Light-HTML/js/venobox.min.js')}}"></script> 
+<!-- owl carousel --> 
+<script src="{{ asset('/Light-HTML/js/owl.carousel.min.js')}}"></script> 
+<!-- sticky js --> 
+<script src="{{ asset('/Light-HTML/js/jquery.sticky.js')}}"></script> 
+<!-- script js --> 
+<script src="{{ asset('/Light-HTML/js/custom.js')}}"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8B9E41FY"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WH8B9E41FY');
+</script>
+<script language = "javascript">
+    $(document).ready(function(){   
+
+
+    // Obtener la URL actual en Symfony y normalizarla
+    var urlActual = "{{ url(app.request.attributes.get('_route')) | replace({'https://127.0.0.1:8000': '', 'https://www.pavimentosgijon.es': ''}) }}";
+    
+    // Obtener todas las etiquetas <a> con la clase "nav-link"
+    var enlacesNav = document.querySelectorAll('a.nav-link');
+
+    // Recorrer los enlaces y agregar la clase "active" al enlace correspondiente
+    enlacesNav.forEach(function(enlace) {
+        // Obtener el atributo "href" del enlace y normalizarlo
+        var hrefEnlace = enlace.getAttribute('href');
+        console.log(hrefEnlace);
+        console.log(urlActual);
+        // Comparar el atributo "href" con la URL actual
+        if (urlActual == hrefEnlace) {
+
+           console.log("coincide");
+            // Si hay coincidencia, agregar la clase "active" al enlace
+            var liPadre = enlace.parentNode;
+            liPadre.classList.add('active');            
+
+        }
+    });
+
+
+      });  
+</script> 
+<script>
+let chatHistory = [];
+let chatStarted = false;
+
+const appendMessage = (msg, sender) => {
+  const chatMessages = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.classList.add('chat-message', `chat-${sender}`);
+  div.innerHTML = `<strong>${sender === 'user' ? 'Tú' : sender === 'ai' ? 'IA' : sender === 'system' ? 'Pavimentos Gijón' : ''}:</strong> ${msg}`;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+};
+
+function getPromptSistema(tipo) {
+  if (tipo === 'ducha') {
+
+   return `
+Eres un asistente profesional que conversa con el cliente para obtener los datos necesarios para un cambio de bañera por plato de ducha.
+
+
+Tu única tarea es hacer preguntas cortas y claras, no hables de campos ni valores tipo "true/false", interpreta lo que la persona responde y tradúcelo tú al JSON. Aunque ya conozcas el formato final, espera a que el cliente conteste todo, y una vez así  rellena el JSON y responde:
+
+
+{
+  "tipo_reforma": "cambio_bañera_por_plato_ducha",
+  "medidas_bañera": {
+    "largo_cm": 160,
+    "ancho_cm": 70
+  },
+  "entre_paredes": true,
+  "zona_azulejos": {
+    "derribo": true,
+    "altura_reforma": "1m",  // "minimo" / "1m" / "techo"
+    "reponer_azulejos": "buscar_similar"  // "tengo_repuestos" / "buscar_similar"
+  },
+  "griferia": {
+    "mantener_grifo_actual": true,
+    "instalar_barra_ducha": false
+  },
+  "mampara": {
+    "tipo": "fijo_mas_corredera"  // "ninguna" / "fijo" / "fijo_mas_corredera" / "angular" / "angular_doble"
+  },
+  "hay_escayola": false  // SOLO incluir si "altura_reforma" === "techo"
+}
+
+Haz una sola pregunta por vez, como si fueras un comercial amable. Espera respuesta antes de seguir. Cuando hayas recopilado todos los campos, responde ÚNICAMENTE con el JSON limpio y completo. No incluyas comentarios ni explicación.
+
+No muestres ningún presupuesto ni hables de precios. Solo construye el JSON.
+`;
+
+  }
+
+  if (tipo === 'completo') {
+    return `Quiero que actúes como un asesor experto en reformas de baños. Tu tarea es hacer preguntas claras, naturales y comprensibles para cualquier persona, con un tono cercano pero profesional.
+
+Tu objetivo es rellenar el siguiente JSON paso a paso, solo cuando tengas toda la información. No hables de campos ni valores tipo "true/false", interpreta lo que la persona responde y tradúcelo tú al JSON.
+Muy importante haz al menos 6 preguntas para rellenar el JSON, nunca inventes los campos del JSON, siempre pregunta al cliente.
+Haz una sola pregunta a la vez, y espera la respuesta antes de continuar.
+
+Ejemplo:
+❌ NO digas: “¿Desea sustituir el radiador por un toallero? Responda con true o false.”
+✅ Mejor: “¿Quieres cambiar el radiador que tienes por un radiador toallero, que también sirve para calentar las toallas?”
+
+Este es el JSON que debes rellenar:
+
+{
+  "tipo_reforma": "baño_completo",
+  "medidas_bano": {
+    "largo_m": ...,
+    "ancho_m": ...,
+    "alto_m": ...
+  },
+  "sanitarios": {
+    "ducha_o_banera": {
+      "tipo": "ducha" | "banera",
+    "medidas_bañera": {
+        "largo_cm": 160,
+        "ancho_cm": 70
+      },
+      "entre_paredes": true,
+    },
+    "bide": {
+      "hay_bide_actual": true | false,
+      "suprimir": true | false
+    }
+  },
+  "mampara": {
+    "tipo": "fijo_mas_corredera"  // "ninguna" / "fijo" / "fijo_mas_corredera" / "angular" / "angular_doble"
+  },  
+  "griferia": {
+    "mantener_grifo_actual": true| false,
+    "instalar_barra_ducha": false| false,
+  },
+  "mueble_lavabo": {
+    "ancho_cm": ...
+  },
+  "techo": {
+    "hay_escayola": true | false,
+    "reinstalar_escayola": true | false
+  },
+  "calefaccion": {
+    "hay_radiador": true | false,
+    "sustituir_por_toallero": true | false
+  }
+  "zona_azulejos": {
+    "derribo": true, (siempre)
+    "altura_reforma": "techo",  (hasta el techo siempre)
+    "reponer_azulejos": "reponer_todos"  // (siempre reponer todos)
+  },  
+}
+
+Al terminar todas las preguntas, responde solo con el JSON completo rellenado.`;
+  }
+  return `Eres un asistente para reformas de baño. Pregunta al usuario qué tipo de reforma quiere hacer y guíalo para poder generar un presupuesto provisional dividido en mano de obra y materiales. No entres en detalles técnicos.`;
+}
+function iniciarChat(tipo) {
+  const prompt = getPromptSistema(tipo);
+
+  chatHistory = [
+    { role: 'system', content: prompt }
+  ];
+
+  document.getElementById('selector-reforma').style.display = 'none';
+  document.getElementById('chat-box').style.display = 'block';
+
+  let mensajeInicio = '';
+  if (tipo === 'ducha') {
+    mensajeInicio = "Has elegido cambiar la bañera por un plato de ducha. Empecemos con algunas preguntas para calcular el presupuesto.";
+  } else if (tipo === 'completo') {
+    mensajeInicio = "Vamos a hacer una reforma completa del baño. Empezamos con las medidas del baño, ¿vale?";
+  } else {
+    mensajeInicio = "Perfecto. Cuéntame qué tipo de reforma tienes en mente para ayudarte mejor.";
+  }
+
+  appendMessage(mensajeInicio, 'system');
+  chatStarted = true;
+
+  // Solicitar primera pregunta al backend
+  fetch('{{ path("api_presupuesto_chat") }}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify({ messages: chatHistory })
+  })
+  .then(response => response.json())
+  .then(data => {
+    let content = data.reply;
+
+    // Opcional: intentar extraer un bloque JSON de forma más tolerante
+    const match = content.match(/```json\s*([\s\S]*?)```/) || content.match(/{[\s\S]*}/);
+    const jsonText = match ? match[1] || match[0] : null;
+
+    if (!jsonText) {
+      appendMessage(content, 'ai');
+      chatHistory.push({ role: 'assistant', content: content });
+      return;
+    }
+
+    let jsonObj = null;
+    try {
+      // ⚠️ Limpiar comentarios tipo "//" que invalidan JSON
+      const cleaned = jsonText.replace(/\/\/.*$/gm, '');
+      jsonObj = JSON.parse(cleaned);
+    } catch (e) {
+      console.error("Error al parsear JSON:", e, jsonText);
+      appendMessage("❌ Error al interpretar el JSON generado por la IA.", 'ai');
+      return;
+    }
+
+    // Guardar para PDF
+    window.ultimoPresupuestoJson = jsonObj;
+
+    // Mostrar visualmente
+    appendMessage(`<pre>${JSON.stringify(jsonObj, null, 2)}</pre>`, 'ai');
+
+
+    // Llamar a Symfony para calcular el presupuesto
+    fetch('/api/presupuesto/calculate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(jsonObj)
+    })
+    .then(res => res.json())
+    .then(presupuesto => {
+      const texto = `
+  💼 <strong>Presupuesto estimado</strong><br>
+  - Mano de obra: <strong>${presupuesto.mano_obra} €</strong><br>
+  - Materiales: <strong>${presupuesto.materiales} €</strong><br>
+  - Total estimado: <strong>${presupuesto.total_estimado_min} €</strong> a <strong>${presupuesto.total_estimado_max} €</strong><br><br>
+  📄 <a href="#" onclick="descargarPdfPresupuesto()" class="btn btn-sm btn-outline-primary">Descargar PDF</a>
+      `;
+      appendMessage(texto, 'ai');
+    })
+    .catch(() => {
+      appendMessage("❌ Error al calcular el presupuesto.", 'ai');
+    });
+  })
+  .catch(() => {
+    appendMessage("❌ Error al contactar con la IA. Intenta de nuevo más tarde.", 'ai');
+  });
+}
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  const chatForm = document.getElementById('chat-form');
+  const chatInput = document.getElementById('chat-input');
+
+  chatForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const userMsg = chatInput.value.trim();
+    if (!userMsg || !chatStarted) return;
+
+    appendMessage(userMsg, 'user');
+    chatInput.value = '';
+
+    chatHistory.push({ role: 'user', content: userMsg });
+
+    try {
+      const response = await fetch('{{ path("api_presupuesto_chat") }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ messages: chatHistory })
+      });
+
+      const data = await response.json();
+      // Detectar si la respuesta es JSON
+      const match = data.reply.match(/{[\s\S]*}/);
+
+      if (!match) {
+        // No es JSON, mostrar como texto normal
+        appendMessage(data.reply, 'ai');
+        chatHistory.push({ role: 'assistant', content: data.reply });
+        return;
+      }
+
+      let jsonObj = null;
+      try {
+        jsonObj = JSON.parse(match[0]);
+      } catch (e) {
+        appendMessage("❌ Error al interpretar la respuesta de la IA como JSON.", 'ai');
+        return;
+      }
+
+      // Mostrar JSON
+      appendMessage(`<pre>${JSON.stringify(jsonObj, null, 2)}</pre>`, 'ai');
+      chatHistory.push({ role: 'assistant', content: match[0] });
+
+      // Guardar para descarga PDF
+      window.ultimoPresupuestoJson = jsonObj;
+
+      // Hacer la llamada a Symfony para calcular
+      fetch('/api/presupuesto/calculate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(jsonObj)
+      })
+      .then(res => res.json())
+      .then(presupuesto => {
+// Fusionamos el JSON original + presupuesto calculado
+      window.ultimoPresupuestoJson = {
+        ...jsonObj, // o el jsonSimulado si estás en simulado
+        ...presupuesto    };    
+        const texto = `
+      💼 <strong>Presupuesto estimado</strong><br>
+      - Mano de obra: <strong>${presupuesto.mano_obra} €</strong><br>
+      - Materiales: <strong>${presupuesto.materiales} €</strong><br>
+      - Total estimado: <strong>${presupuesto.total_estimado_min} €</strong> a <strong>${presupuesto.total_estimado_max} €</strong><br><br>
+      📄 <a href="#" onclick="descargarPdfPresupuesto()" class="btn btn-sm btn-outline-primary">Descargar PDF</a>
+        `;
+        appendMessage(texto, 'ai');
+      })
+      .catch(() => {
+        appendMessage("❌ Error al calcular el presupuesto.", 'ai');
+      });
+
+    } catch (error) {
+      appendMessage("❌ Error al contactar con la IA. Intenta de nuevo más tarde.", 'ai');
+    }
+  });
+});
+
+function descargarPdfPresupuesto() {
+  const json = window.ultimoPresupuestoJson;
+  if (!json) {
+    alert("No hay presupuesto generado.");
+    return;
+  }
+
+  document.getElementById('campo-json-presupuesto').value = JSON.stringify(json);
+
+  const modal = new bootstrap.Modal(document.getElementById('modalContacto'));
+  modal.show();
+}
+
+document.getElementById('form-contacto').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const nombre = document.getElementById('nombre').value.trim();
+  const telefono = document.getElementById('telefono').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const jsonPresupuesto = document.getElementById('json-presupuesto').value;
+
+  fetch('/api/presupuesto/lead', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nombre, telefono, email, presupuesto: JSON.parse(jsonPresupuesto) })
+  }).then(() => {
+    // Ahora generamos el PDF
+    fetch('/api/presupuesto/pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: jsonPresupuesto
+    })
+    .then(res => res.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'presupuesto-bano.pdf';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    })
+    .catch(() => alert('Error al generar el PDF.'));
+  });
+});
+
+function iniciarSimulado() {
+  const jsonSimulado = {
+    "tipo_reforma": "cambio_bañera_por_plato_ducha",
+    "medidas_bañera": {
+      "largo_cm": 140,
+      "ancho_cm": 70
+    },
+    "entre_paredes": true,
+    "zona_azulejos": {
+      "derribo": true,
+      "altura_reforma": "1m",
+      "reponer_azulejos": "buscar_similar"
+    },
+    "griferia": {
+      "mantener_grifo_actual": true,
+      "instalar_barra_ducha": false
+    },
+    "mampara": {
+      "tipo": "fijo_mas_corredera"
+    }
+  };
+
+  // Mostrar el chat y ocultar selección
+  document.getElementById('selector-reforma').style.display = 'none';
+  document.getElementById('chat-box').style.display = 'block';
+  chatStarted = true;
+
+  // Simulamos mensaje de bienvenida
+  appendMessage("Has elegido cambiar la bañera por un plato de ducha.", 'system');
+
+  // Simulamos que la IA responde con el JSON
+  const jsonStr = JSON.stringify(jsonSimulado, null, 2);
+  chatHistory = [
+    { role: 'system', content: 'Simulación de presupuesto de ducha' },
+    { role: 'assistant', content: jsonStr }
+  ];
+  appendMessage(`<pre>${jsonStr}</pre>`, 'ai');
+
+  // Guardamos el JSON como si fuera el generado por la IA
+  window.ultimoPresupuestoJson = jsonSimulado;
+
+  // Hacemos la llamada para calcular el presupuesto
+  fetch('/api/presupuesto/calculate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(jsonSimulado)
+  })
+  .then(res => res.json())
+  .then(presupuesto => {
+// Fusionamos el JSON original + presupuesto calculado
+  window.ultimoPresupuestoJson = {
+    ...jsonSimulado, // o el jsonSimulado si estás en simulado
+    ...presupuesto
+  };
+
+    const texto = `
+💼 <strong>Presupuesto estimado</strong><br>
+- Mano de obra: <strong>${presupuesto.mano_obra} €</strong><br>
+- Materiales: <strong>${presupuesto.materiales} €</strong><br>
+- Total estimado: <strong>${presupuesto.total_estimado_min} €</strong> a <strong>${presupuesto.total_estimado_max} €</strong><br><br>
+📄 <a href="#" onclick="descargarPdfPresupuesto()" class="btn btn-sm btn-outline-primary">Descargar PDF</a>
+    `;
+    appendMessage(texto, 'ai');
+  })
+  .catch(() => {
+    appendMessage("❌ Error al calcular el presupuesto.", 'ai');
+  });
+}
+
+
+</script>
+
+
+
+
+
+</body>
+</html>

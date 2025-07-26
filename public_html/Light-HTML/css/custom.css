@@ -2160,3 +2160,35 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cc08b5f9', e
 	border-radius: 6px;
 	overflow: hidden;
 }
+
+/* Chat general */
+.chat-message {
+  margin-bottom: 10px;
+  padding: 10px 15px;
+  border-radius: 10px;
+  max-width: 80%;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.chat-user {
+  background-color: #d1e7ff;
+  color: #003366;
+  margin-left: auto;
+  text-align: right;
+}
+
+.chat-ai {
+  background-color: #f0f0f0;
+  color: #222;
+  margin-right: auto;
+  text-align: left;
+}
+
+.chat-system {
+  background-color: #fff8e1;
+  color: #6b4f00;
+  font-weight: bold;
+  margin: 0 auto;
+  text-align: center;
+}
