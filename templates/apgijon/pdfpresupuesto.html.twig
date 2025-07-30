@@ -88,87 +88,158 @@
     </table>
 
     <div class="info-block">
-      <h4>Detalle de Materiales</h4>
-      <ul style="list-style: none; padding-left: 0; margin-top: 10px;">
-
-        {% if presupuesto.mampara is defined and presupuesto.mampara.tipo != 'ninguna' %}
-        <li style="margin-bottom: 10px;">
-          <strong>Mampara de ducha:</strong><br>
-          - Mampara tipo: 
-            {% set tipo_mampara = {
-              'fijo': 'fijo',
-              'fijo_mas_corredera': 'fijo + corredera',
-              'angular': 'angular',
-              'angular_doble': 'angular doble'
-            }[presupuesto.mampara.tipo] %}
-          {{ tipo_mampara|capitalize }}.
-        </li>
-        {% endif %}
+      <h4 style="border-bottom: 2px solid #007BFF; padding-bottom: 5px;">Detalle de Materiales</h4>
+      <ul style="list-style: none; padding-left: 0; margin-top: 15px;">
 
         <li style="margin-bottom: 10px;">
-          <strong>Plato de ducha antideslizante:</strong><br>
-          - Sustitución completa de la bañera.<br>
-          {% if presupuesto.medidas_bañera is defined %}
-            - Medidas aproximadas: {{ presupuesto.medidas_bañera.largo_cm }} × {{ presupuesto.medidas_bañera.ancho_cm }} cm.
+          <strong>Sanitarios:</strong>
+          {% if presupuesto.tipo_reforma is defined and presupuesto.tipo_reforma == 'cambio_bañera_por_plato_ducha' %}
+            Ducha con plato antideslizante.
+          {% elseif presupuesto.sanitarios is defined and presupuesto.sanitarios.ducha_o_banera is defined and presupuesto.sanitarios.ducha_o_banera.tipo == 'ducha' %}
+
+            Ducha con plato antideslizante.
+            {% if presupuesto.mampara is defined and presupuesto.mampara.tipo != 'ninguna' %}
+              <br>Mampara tipo {{ {
+                'fijo': 'fijo',
+                'fijo_mas_corredera': 'fijo + corredera',
+                'angular': 'angular',
+                'angular_doble': 'angular doble'
+              }[presupuesto.mampara.tipo] }}.
+            {% endif %}
+          {% else %}
+            Bañera tradicional.
           {% endif %}
         </li>
 
-        {% if presupuesto.griferia is defined %}
+        <li style="margin-bottom: 10px;">
+          <strong>Grifería:</strong>
           {% if presupuesto.griferia.instalar_barra_ducha %}
-          <li style="margin-bottom: 10px;">
-            <strong>Grifería:</strong><br>
-            - Barra de ducha con rociador.
-          </li>
+            Barra de ducha con rociador.
           {% elseif not presupuesto.griferia.mantener_grifo_actual %}
-          <li style="margin-bottom: 10px;">
-            <strong>Grifería:</strong><br>
-            - Sustitución del grifo por uno nuevo monomando.
-          </li>
+            Grifo monomando nuevo.
+          {% else %}
+            Se mantiene el grifo existente.
           {% endif %}
+        </li>
+
+        {% if presupuesto.mueble_lavabo is defined %}
+        <li style="margin-bottom: 10px;">
+          <strong>Mueble de lavabo:</strong>
+          {{ presupuesto.mueble_lavabo.ancho_cm }} cm de ancho.
+        </li>
         {% endif %}
+        {% if presupuesto.instalar_radiador_toallero is defined and presupuesto.instalar_radiador_toallero == 'true' %}
+       
+        <li style="margin-bottom: 10px;">
+          <strong>Calefacción:</strong>
+          Radiador toallero.
+        </li>
+        {% endif %}
+
+        {% if presupuesto.zona_azulejos.derribo %}
+        <li style="margin-bottom: 10px;">
+          <strong>Revestimientos:</strong>
+          Azulejos hasta el {{ presupuesto.zona_azulejos.altura_reforma }}.
+        </li>
+        {% endif %}
+        {% if presupuesto.tipo_reforma is defined and presupuesto.tipo_reforma == 'baño_completo' %}
+        <li style="margin-bottom: 10px;">
+          <strong>Pavimento:</strong> Reposición del suelo completo.
+        </li>
+        {% endif %}
+
 
       </ul>
 
+
+
       <p>Total estimado: <strong>{{ presupuesto.materiales }} €</strong></p>
+
     </div>
 
-      <div class="info-block">
-        <h4>Detalle de Mano de Obra</h4>
-        <ul style="list-style: none; padding-left: 0; margin-top: 10px;">
-
-          {% if presupuesto.zona_azulejos is defined and presupuesto.zona_azulejos.derribo %}
-          <li style="margin-bottom: 10px;">
-            <strong>Albañilería:</strong><br>
-            - Derribo de azulejos hasta altura {{ presupuesto.zona_azulejos.altura_reforma }}.<br>
-            - Preparación de paredes para alicatado.<br>
-            - Instalación del nuevo plato de ducha.
-          </li>
-          {% endif %}
-
-          <li style="margin-bottom: 10px;">
-            <strong>Fontanería:</strong><br>
-            - Adaptación del desagüe y tomas de agua.<br>
-            {% if presupuesto.griferia is defined %}
-              {% if presupuesto.griferia.instalar_barra_ducha %}
-                - Instalación de barra de ducha.
-              {% else %}
-                - Mantenimiento o sustitución del grifo existente.
-              {% endif %}
-            {% endif %}
-          </li>
-
-          {% if presupuesto.mampara is defined and presupuesto.mampara.tipo != 'ninguna' %}
-          <li style="margin-bottom: 10px;">
-            <strong>Otros trabajos:</strong><br>
-            - Instalación de mampara tipo {{ tipo_mampara|default(presupuesto.mampara.tipo)|replace({'fijo_mas_corredera': 'fijo + corredera'}) }}.
-          </li>
-          {% endif %}
-          
-        </ul>
 
 
-      <p>Total estimado: <strong>{{ presupuesto.mano_obra }} €</strong></p>
-    </div>
+<div class="info-block">
+  <h4 style="border-bottom: 2px solid #007BFF; padding-bottom: 5px;">Detalle de Mano de Obra</h4>
+  <ul style="list-style: none; padding-left: 0; margin-top: 15px;">
+
+    <li style="margin-bottom: 10px;">
+      <strong>Albañilería:</strong><br>
+      - Demolición de revestimientos actuales.<br>
+      - Preparación completa de paredes y suelo.<br>
+    {% if presupuesto.tipo_reforma is defined and presupuesto.tipo_reforma == 'baño_completo' %}      
+      - Colocación de azulejos y pavimento nuevos.
+    {% endif %}
+    </li>
+
+    <li style="margin-bottom: 10px;">
+      <strong>Fontanería:</strong><br>
+
+
+      {% if presupuesto.tipo_reforma is defined and presupuesto.tipo_reforma == 'baño_completo' %}
+      - Adaptación de desagües y tomas para ducha/bañera, lavabo, inodoro
+      
+      {% endif %}
+
+      {% if presupuesto.sanitarios.bide is defined and presupuesto.sanitarios.bide.hay_bide_actual and not presupuesto.sanitarios.bide.suprimir %}
+        , bidé
+      {% endif %}
+      <br>
+      {% if presupuesto.griferia.instalar_barra_ducha %}
+        - Instalación de barra de ducha con rociador.
+      {% else %}
+        - Instalación de grifo monomando.
+      {% endif %}
+    </li>
+    {% if presupuesto.tipo_reforma is defined and presupuesto.tipo_reforma == 'baño_completo' %}
+    <li style="margin-bottom: 10px;">
+      <strong>Electricidad:</strong><br>
+      - Colocación de punto de luz en techo.<br>
+      - Instalación de llave de luz y toma de corriente para el espejo.
+    </li>
+
+    {% endif %}
+
+    {% if presupuesto.mampara is defined and presupuesto.mampara.tipo != 'ninguna' %}
+    <li style="margin-bottom: 10px;">
+      <strong>Mampara:</strong><br>
+      - Instalación de mampara tipo {{ {
+        'fijo': 'fijo',
+        'fijo_mas_corredera': 'fijo + corredera',
+        'angular': 'angular',
+        'angular_doble': 'angular doble'
+      }[presupuesto.mampara.tipo]|default(presupuesto.mampara.tipo) }}.
+    </li>
+    {% endif %}
+
+      {% if presupuesto.tipo_reforma is defined and presupuesto.tipo_reforma == 'baño_completo' %}
+        <li style="margin-bottom: 10px;">
+          <strong>Montaje de mobiliario:</strong><br>
+          - Instalación de mueble de lavabo y espejo.
+        </li>
+      {% endif %}
+
+   {% if presupuesto.instalar_radiador_toallero is defined and presupuesto.instalar_radiador_toallero == 'true' %}
+
+    <li style="margin-bottom: 10px;">
+      <strong>Calefacción:</strong><br>
+      - Sustitución del radiador por toallero calefactable.
+    </li>
+    {% endif %}
+
+   {% if presupuesto.techo.reinstalar_escayola is defined  %}
+
+    <li style="margin-bottom: 10px;">
+      <strong>Escayola:</strong><br>
+      - Instalación de nueva escayola en el techo.
+    </li>
+    {% endif %}
+
+  </ul>
+
+  <p style="margin-top: 15px;"><strong>Total mano de obra:</strong> {{ presupuesto.mano_obra }} €</p>
+</div>
+
 
 
     <div class="total">

@@ -47,12 +47,12 @@
 <div class="inner-page-title inner-page-header-bg">
   <div class="container">
     <div class="inner-page-title-c">
-      <h1>Reformas integrales de baños en Gijón</h1>
+      <h1>Calcula tu presupuesto de una reforma del baño en Gijón</h1>
       <div class="breadcrumb-box"> 
         <!-- breadcrumb -->
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ path('homepage')}}"><i class="bi bi-house"></i> Inicio</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Reformas baños</li>
+          <li class="breadcrumb-item active" aria-current="page">Calcular presupuesto</li>
         </ol>
       </div>
     </div>
@@ -71,7 +71,7 @@
             <button class="btn btn-outline-primary m-2" onclick="iniciarChat('ducha')">🚿 Cambiar bañera por plato de ducha</button>
             <button class="btn btn-outline-success m-2" onclick="iniciarChat('completo')">🏗️ Reforma completa del baño</button>
             <button class="btn btn-outline-secondary m-2" onclick="iniciarChat('otro')">🛠️ Otro tipo de reforma</button>
-            <button class="btn btn-outline-secondary m-2" onclick="iniciarSimulado()">Simular ducha</button>
+           <!-- <button class="btn btn-outline-secondary m-2" onclick="iniciarSimulado()">Simular ducha</button> -->
 
           </div>
 
@@ -145,44 +145,47 @@
 
 
 <div class="modal fade" id="modalContacto" tabindex="-1" aria-labelledby="modalContactoLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content shadow">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title" id="modalContactoLabel">💬 Antes de descargar el presupuesto</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        {{ form_start(form, {'attr' : { 'class': 'contact-form','target': '_blank'}}) }}
+
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="nombre" name="{{ field_name(form.nombre)}}" placeholder="Tu nombre" required>
+          <label for="nombre">Tu nombre</label>
         </div>
-             {{ form_start(form, {'attr' : { 'class': 'contact-form'}}) }}
-              <!--<form class="contact-form" id="contact-form" method="post" action="contact.php" enctype="multipart/form-data">-->
-                <div class="row">
-                    <div class="mb-3">
-          
-                      <input type="text" class="form-control" name="{{ field_name(form.nombre)}}" placeholder="{{ field_label(form.nombre)}}" required data-error="Nombre no informado.">
-                      <div class="help-block with-errors"></div>
-                    </div>
-                    <div class="mb-3">
-                      <input type="email" class="form-control" name="{{ field_name(form.email)}}" placeholder="{{ field_label(form.email)}}" required data-error="Email is required.">
-                      <div class="help-block with-errors"></div>
-                    </div>
 
-                </div>
-                
-                <div class="mb-3">
-                  <input type="text" placeholder="{{ field_label(form.telefono)}}" name="{{ field_name(form.telefono)}}" class="form-control" required data-error="Phone is required.">
-                  <div class="help-block with-errors"></div>
-                </div>
-                <div class="mb-3">
-                  <textarea class="form-control" rows="3" name="{{ field_name(form.pregunta)}}" placeholder="{{ field_label(form.pregunta)}}" required data-error="Message is required."></textarea>
-                  <div class="help-block with-errors"></div>
-                </div>
-                <input type="hidden" id="campo-json-presupuesto" name="{{ field_name(form.jsonPresupuesto) }}">
+        <div class="form-floating mb-3">
+          <input type="email" class="form-control" id="email" name="{{ field_name(form.email)}}" placeholder="Tu email" required>
+          <label for="email">Tu email</label>
+        </div>
 
-                <div class="call-us-widget">
-                  <button type="submit" id="consultas_submit"  class="save btn btn-style-1 w-100">Descargar presupuesto</button>
-                </div>
-            {{ form_end(form) }}
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="telefono" name="{{ field_name(form.telefono)}}" placeholder="Teléfono" required>
+          <label for="telefono">Teléfono</label>
+        </div>
+
+        <div class="form-floating mb-3">
+          <textarea class="form-control" placeholder="Tu mensaje" id="pregunta" name="{{ field_name(form.pregunta)}}" style="height: 100px;"></textarea>
+          <label for="pregunta">¿Quieres dejar un comentario?</label>
+        </div>
+
+        <input type="hidden" id="campo-json-presupuesto" name="{{ field_name(form.jsonPresupuesto) }}">
+
+        <button type="submit" class="btn btn-primary w-100 mt-3">
+          <i class="bi bi-download"></i> Descargar presupuesto
+        </button>
+
+        {{ form_end(form) }}
+      </div>
     </div>
   </div>
 </div>
+
 
 <!-- ================ Modal area end ================ -->
 
@@ -259,6 +262,7 @@
 let chatHistory = [];
 let chatStarted = false;
 
+
 const appendMessage = (msg, sender) => {
   const chatMessages = document.getElementById('chat-messages');
   const div = document.createElement('div');
@@ -272,11 +276,20 @@ function getPromptSistema(tipo) {
   if (tipo === 'ducha') {
 
    return `
-Eres un asistente profesional que conversa con el cliente para obtener los datos necesarios para un cambio de bañera por plato de ducha.
+Eres un asistente profesional para calcular presupuestos de reforma de baño (cambio de bañera por plato de ducha).
 
+Tu trabajo es hacer preguntas cortas y claras, como un comercial. No hables de "valores booleanos" ni "estructura de datos". Habla como una persona normal, pero con el objetivo de recopilar todos los datos para rellenar un JSON.
 
-Tu única tarea es hacer preguntas cortas y claras, no hables de campos ni valores tipo "true/false", interpreta lo que la persona responde y tradúcelo tú al JSON. Aunque ya conozcas el formato final, espera a que el cliente conteste todo, y una vez así  rellena el JSON y responde:
+Haz entre 6 y 8 preguntas antes de generar el JSON, las preguntas deben responderse de una en una por apartado del JSON necesario. No inventes nada.
 
+Estas son las opciones válidas para ciertos campos:
+
+- altura_reforma: "minimo", "1m", "techo"
+- reponer_azulejos: "tengo_repuestos", "buscar_similar"
+- mampara.tipo: "ninguna", "fijo", "fijo_mas_corredera", "angular", "angular_doble"
+- hay_escayola: solo debe aparecer si altura_reforma = "techo"
+
+Al terminar, construye el JSON con claves exactas, sin comentarios, sin explicaciones. Ejemplo del formato que debes usar:
 
 {
   "tipo_reforma": "cambio_bañera_por_plato_ducha",
@@ -287,23 +300,26 @@ Tu única tarea es hacer preguntas cortas y claras, no hables de campos ni valor
   "entre_paredes": true,
   "zona_azulejos": {
     "derribo": true,
-    "altura_reforma": "1m",  // "minimo" / "1m" / "techo"
-    "reponer_azulejos": "buscar_similar"  // "tengo_repuestos" / "buscar_similar"
+    "altura_reforma": "1m",
+    "reponer_azulejos": "buscar_similar"
   },
   "griferia": {
     "mantener_grifo_actual": true,
     "instalar_barra_ducha": false
   },
   "mampara": {
-    "tipo": "fijo_mas_corredera"  // "ninguna" / "fijo" / "fijo_mas_corredera" / "angular" / "angular_doble"
+    "tipo": "fijo_mas_corredera"
   },
-  "hay_escayola": false  // SOLO incluir si "altura_reforma" === "techo"
+  "hay_escayola": false
 }
 
-Haz una sola pregunta por vez, como si fueras un comercial amable. Espera respuesta antes de seguir. Cuando hayas recopilado todos los campos, responde ÚNICAMENTE con el JSON limpio y completo. No incluyas comentarios ni explicación.
-
-No muestres ningún presupuesto ni hables de precios. Solo construye el JSON.
+Cuando tengas toda la información, responde con el JSON limpio. No hables de precios.
+No digas "true" o "false", interpreta las respuestas del cliente y tradúcelas al JSON.
 `;
+    if (!validarJsonPresupuesto(jsonObj)) {
+      appendMessage("⚠️ Faltan algunos datos importantes. Vamos a seguir con algunas preguntas más antes de calcular.", 'ai');
+      return;
+    }
 
   }
 
@@ -318,7 +334,7 @@ Ejemplo:
 ❌ NO digas: “¿Desea sustituir el radiador por un toallero? Responda con true o false.”
 ✅ Mejor: “¿Quieres cambiar el radiador que tienes por un radiador toallero, que también sirve para calentar las toallas?”
 
-Este es el JSON que debes rellenar:
+Este es el JSON que debes rellenar, siempre completo, sin comentarios y siempre basandose en las respuestas del cliente, nunca inventes los campos ni añadas ni quites ninguno de los campos y una vez que los conozcas devuelve solo el JSON en este formato y responde:
 
 {
   "tipo_reforma": "baño_completo",
@@ -342,7 +358,7 @@ Este es el JSON que debes rellenar:
     }
   },
   "mampara": {
-    "tipo": "fijo_mas_corredera"  // "ninguna" / "fijo" / "fijo_mas_corredera" / "angular" / "angular_doble"
+    "tipo": "fijo_mas_corredera"  // "ninguna" / "fijo" / "fijo_mas_corredera" / "angular" / "angular_doble" (interpreta fijo cuando dicen fija, corredera, como fijo más corredera y si no entiendes ninguna de esas por fijo + corredera siempre)
   },  
   "griferia": {
     "mantener_grifo_actual": true| false,
@@ -355,10 +371,8 @@ Este es el JSON que debes rellenar:
     "hay_escayola": true | false,
     "reinstalar_escayola": true | false
   },
-  "calefaccion": {
-    "hay_radiador": true | false,
-    "sustituir_por_toallero": true | false
-  }
+  "instalar_radiador_toallero": true | false, // (siempre preguntar si quieren toallero)
+
   "zona_azulejos": {
     "derribo": true, (siempre)
     "altura_reforma": "techo",  (hasta el techo siempre)
@@ -371,6 +385,8 @@ Al terminar todas las preguntas, responde solo con el JSON completo rellenado.`;
   return `Eres un asistente para reformas de baño. Pregunta al usuario qué tipo de reforma quiere hacer y guíalo para poder generar un presupuesto provisional dividido en mano de obra y materiales. No entres en detalles técnicos.`;
 }
 function iniciarChat(tipo) {
+  sessionStorage.removeItem('chatHistory');
+  localStorage.removeItem('ultimoPresupuestoAI');  
   const prompt = getPromptSistema(tipo);
 
   chatHistory = [
@@ -422,7 +438,7 @@ function iniciarChat(tipo) {
       jsonObj = JSON.parse(cleaned);
     } catch (e) {
       console.error("Error al parsear JSON:", e, jsonText);
-      appendMessage("❌ Error al interpretar el JSON generado por la IA.", 'ai');
+      appendMessage("Ups... algo fue mal al procesar la respuesta. ¿Puedes intentarlo de nuevo o reformular tu última frase?", 'ai');
       return;
     }
 
@@ -430,8 +446,12 @@ function iniciarChat(tipo) {
     window.ultimoPresupuestoJson = jsonObj;
 
     // Mostrar visualmente
-    appendMessage(`<pre>${JSON.stringify(jsonObj, null, 2)}</pre>`, 'ai');
+    //appendMessage(`<pre>${JSON.stringify(jsonObj, null, 2)}</pre>`, 'ai');
 
+      if (chatHistory.length < 7) {
+        appendMessage("⚠️ Aún no tengo toda la información. Vamos a seguir con algunas preguntas más antes de calcular.", 'ai');
+        return;
+      }
 
     // Llamar a Symfony para calcular el presupuesto
     fetch('/api/presupuesto/calculate', {
@@ -487,31 +507,55 @@ document.addEventListener('DOMContentLoaded', function () {
         body: JSON.stringify({ messages: chatHistory })
       });
 
-      const data = await response.json();
-      // Detectar si la respuesta es JSON
-      const match = data.reply.match(/{[\s\S]*}/);
+        const data = await response.json();
 
-      if (!match) {
-        // No es JSON, mostrar como texto normal
-        appendMessage(data.reply, 'ai');
-        chatHistory.push({ role: 'assistant', content: data.reply });
-        return;
-      }
+        // Intentar encontrar un bloque de texto con formato JSON en la respuesta
+        let match = null;
+        try {
+          match = data.reply.match(/{[\s\S]*}/);
+        } catch (e) {
+          appendMessage("Ups... no pude interpretar la respuesta. Inténtalo de nuevo.", 'ai');
+          return;
+        }
 
-      let jsonObj = null;
-      try {
-        jsonObj = JSON.parse(match[0]);
-      } catch (e) {
-        appendMessage("❌ Error al interpretar la respuesta de la IA como JSON.", 'ai');
-        return;
-      }
+        if (!match) {
+          // Si no se detecta JSON, mostrar la respuesta tal cual
+          appendMessage(data.reply, 'ai');
+          chatHistory.push({ role: 'assistant', content: data.reply });
+          return;
+        }
 
-      // Mostrar JSON
-      appendMessage(`<pre>${JSON.stringify(jsonObj, null, 2)}</pre>`, 'ai');
-      chatHistory.push({ role: 'assistant', content: match[0] });
+        let jsonObj = null;
+        try {
+          // Intentar limpiar comas colgantes y comillas mal cerradas, si es posible
+          const jsonCleaned = match[0]
+            .replace(/,\s*}/g, '}')  // quitar comas finales
+            .replace(/,\s*]/g, ']'); // quitar comas en arrays
+
+          jsonObj = JSON.parse(jsonCleaned);
+        } catch (e) {
+          console.warn('Error al parsear JSON:', e, match[0]);
+
+          appendMessage(
+            "Parece que la respuesta no es del todo válida. ¿Puedes intentar reformular tu mensaje o volver a enviarlo?",
+            'ai'
+          );
+          return;
+        }
+
+        // Si todo va bien, seguimos
+        chatHistory.push({ role: 'assistant', content: match[0] });
+        // Aquí puedes continuar con tu lógica para usar jsonObj
+
 
       // Guardar para descarga PDF
       window.ultimoPresupuestoJson = jsonObj;
+
+      if (chatHistory.length < 7) {
+        appendMessage("⚠️ Aún no tengo toda la información. Vamos a seguir con algunas preguntas más antes de calcular.", 'ai');
+        return;
+      }
+
 
       // Hacer la llamada a Symfony para calcular
       fetch('/api/presupuesto/calculate', {
@@ -523,10 +567,13 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .then(res => res.json())
       .then(presupuesto => {
-// Fusionamos el JSON original + presupuesto calculado
+  // Fusionamos el JSON original + presupuesto calculado
       window.ultimoPresupuestoJson = {
         ...jsonObj, // o el jsonSimulado si estás en simulado
         ...presupuesto    };    
+  // Guardar el JSON completo en el campo oculto del formulario
+    document.getElementById('campo-json-presupuesto').value = JSON.stringify(window.ultimoPresupuestoJson);
+
         const texto = `
       💼 <strong>Presupuesto estimado</strong><br>
       - Mano de obra: <strong>${presupuesto.mano_obra} €</strong><br>
@@ -535,6 +582,32 @@ document.addEventListener('DOMContentLoaded', function () {
       📄 <a href="#" onclick="descargarPdfPresupuesto()" class="btn btn-sm btn-outline-primary">Descargar PDF</a>
         `;
         appendMessage(texto, 'ai');
+/*        if (presupuesto.detalles) {
+          const detallesHtml = [];
+
+          detallesHtml.push(`<br><details><summary>🧪 Ver desglose técnico</summary><div style="font-size: 0.9em;">`);
+
+          detallesHtml.push(`<strong>🔧 Mano de Obra:</strong><ul>`);
+          presupuesto.detalles.mano_obra.forEach(item => {
+            detallesHtml.push(`<li>${item.concepto}: ${item.importe.toFixed(2)} €</li>`);
+          });
+          detallesHtml.push(`</ul>`);descargarPdfPresupuesto
+
+          detallesHtml.push(`<strong>🏗️ Materiales:</strong><ul>`);
+          presupuesto.detalles.materiales.forEach(item => {
+            detallesHtml.push(`<li>${item.concepto}: ${item.importe.toFixed(2)} €</li>`);
+          });
+          detallesHtml.push(`</ul>`);
+
+          // ✅ Añadir JSON completo
+          detallesHtml.push(`<hr><strong>📦 JSON completo</strong><br>`);
+          detallesHtml.push(`<pre style="max-height: 300px; overflow: auto; background: #f8f9fa; padding: 10px; border: 1px solid #ddd;">${JSON.stringify(window.ultimoPresupuestoJson, null, 2)}</pre>`);
+
+          detallesHtml.push(`</div></details>`);
+
+          appendMessage(detallesHtml.join(''), 'ai');
+        }
+*/
       })
       .catch(() => {
         appendMessage("❌ Error al calcular el presupuesto.", 'ai');

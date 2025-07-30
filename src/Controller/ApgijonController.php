@@ -63,131 +63,273 @@ class ApgijonController extends AbstractController
             return $this->json($resultados);
         }
 
-private function calcularPresupuestoBanioCompleto(array $datos): array
+        private function calcularPresupuestoBanioCompleto(array $datos): array
+        {
+            $p = $this->precios;
+            $manoObra = 0;
+            $materiales = 0;
+            $detalles = [
+                'mano_obra' => [],
+                'materiales' => []
+            ];
+
+            $largo = $datos['medidas_bano']['largo_m'];
+            $ancho = $datos['medidas_bano']['ancho_m'];
+            $alto = $datos['medidas_bano']['alto_m'];
+
+            $m2_paredes = 2 * ($largo + $ancho) * $alto;
+            $m2_suelo = $largo * $ancho;
+
+            // 🧱 MANO DE OBRA
+            $manoObra += $p['mano_obra']['albañil']['reforma_completa'];
+            $detalles['mano_obra'][] = ['concepto' => 'Albañil - Reforma completa', 'importe' => $p['mano_obra']['albañil']['reforma_completa']];
+
+            $puntosAgua = 1; // inodoro
+            $detalles['mano_obra'][] = ['concepto' => 'Fontanero - Punto agua: Inodoro', 'importe' => $p['mano_obra']['fontanero_base']];
+
+            if (!empty($datos['mueble_lavabo']['ancho_cm'])) {
+                $puntosAgua++;
+                $detalles['mano_obra'][] = ['concepto' => 'Fontanero - Punto agua: Lavabo', 'importe' => $p['mano_obra']['fontanero_base']];
+            }
+
+            if (!empty($datos['sanitarios']['ducha_o_banera']['tipo'])) {
+                $puntosAgua++;
+                $detalles['mano_obra'][] = ['concepto' => 'Fontanero - Punto agua: Ducha/Bañera', 'importe' => $p['mano_obra']['fontanero_base']];
+            }
+
+            if (!empty($datos['griferia']['instalar_barra_ducha'])) {
+                $puntosAgua++;
+                $detalles['mano_obra'][] = ['concepto' => 'Fontanero - Punto agua: Barra de ducha', 'importe' => $p['mano_obra']['fontanero_base']];
+            }
+
+            if (!empty($datos['sanitarios']['bide']['hay_bide_actual']) && empty($datos['sanitarios']['bide']['suprimir'])) {
+                $puntosAgua++;
+                $detalles['mano_obra'][] = ['concepto' => 'Fontanero - Punto agua: Bidé', 'importe' => $p['mano_obra']['fontanero_base']];
+            }
+
+            if (!empty($datos['fontaneria']['llaves_corte'])) {
+                $puntosAgua++;
+                $detalles['mano_obra'][] = ['concepto' => 'Fontanero - Llaves de corte', 'importe' => $p['mano_obra']['fontanero_base']];
+            }
+
+            $manoObra += ($puntosAgua - 1) * $p['mano_obra']['fontanero_base']; // ya se sumó el primero arriba
+
+            $manoObra += $p['mano_obra']['pintura_techo'];
+            $detalles['mano_obra'][] = ['concepto' => 'Pintura techo', 'importe' => $p['mano_obra']['pintura_techo']];
+
+            $manoObra += $p['mano_obra']['electricista_base'];
+            $detalles['mano_obra'][] = ['concepto' => 'Electricista base', 'importe' => $p['mano_obra']['electricista_base']];
+
+            $manoObra += $p['mano_obra']['jefe_obra'];
+            $detalles['mano_obra'][] = ['concepto' => 'Jefe de obra', 'importe' => $p['mano_obra']['jefe_obra']];
+
+            $manoObra += $p['mano_obra']['mampara_instalacion'];
+            $detalles['mano_obra'][] = ['concepto' => 'Instalación mampara', 'importe' => $p['mano_obra']['mampara_instalacion']];
+
+            if (!empty($datos['griferia']['instalar_barra_ducha'])) {
+                $manoObra += $p['mano_obra']['barra_ducha_extra'];
+                $detalles['mano_obra'][] = ['concepto' => 'Extra barra de ducha', 'importe' => $p['mano_obra']['barra_ducha_extra']];
+            }
+
+            if (!empty($datos['techo']['reinstalar_escayola'])) {
+                $manoObra += $p['mano_obra']['escayola_instalacion'];
+                $detalles['mano_obra'][] = ['concepto' => 'Instalación escayola', 'importe' => $p['mano_obra']['escayola_instalacion']];
+            }
+
+            if (!empty($datos['instalar_radiador_toallero'])) {
+                $manoObra += $p['mano_obra']['radiador_toallero_instalacion'];
+                $detalles['mano_obra'][] = ['concepto' => 'Instalación radiador toallero', 'importe' => $p['mano_obra']['radiador_toallero_instalacion']];
+            }
+
+            if ($manoObra < $p['mano_obra']['minimo']) {
+                $detalles['mano_obra'][] = ['concepto' => 'Mínimo de mano de obra aplicado', 'importe' => $p['mano_obra']['minimo'] - $manoObra];
+                $manoObra = $p['mano_obra']['minimo'];
+            }
+
+            // 🧱 MATERIALES
+            $materiales += $m2_paredes * $p['materiales']['azulejos']['precio_m2'];
+            $detalles['materiales'][] = ['concepto' => 'Azulejos pared', 'importe' => round($m2_paredes * $p['materiales']['azulejos']['precio_m2'])];
+
+            $materiales += $m2_suelo * $p['materiales']['pavimento']['precio_m2'];
+            $detalles['materiales'][] = ['concepto' => 'Pavimento suelo', 'importe' => round($m2_suelo * $p['materiales']['pavimento']['precio_m2'])];
+
+            $materiales += $p['materiales']['cola']['bano_completo'];
+            $detalles['materiales'][] = ['concepto' => 'Cola para alicatado', 'importe' => $p['materiales']['cola']['bano_completo']];
+
+            $tipoSanitario = $datos['sanitarios']['ducha_o_banera']['tipo'] ?? null;
+            if ($tipoSanitario && isset($p['materiales']['sanitarios'][$tipoSanitario])) {
+                $materiales += $p['materiales']['sanitarios'][$tipoSanitario];
+                $detalles['materiales'][] = ['concepto' => ucfirst($tipoSanitario), 'importe' => $p['materiales']['sanitarios'][$tipoSanitario]];
+            }
+            // Mampara
+            $tipoMampara = $datos['mampara']['tipo'];
+            $importe = $p['materiales']['mampara'][$tipoMampara] ?? 0;
+            $materiales += $importe;
+            if ($importe > 0) {
+                $detalles['materiales'][] = ['concepto' => "Mampara ($tipoMampara)", 'importe' => $importe];
+            }
+
+
+            $grifo = !empty($datos['griferia']['instalar_barra_ducha'])
+                ? $p['materiales']['griferia']['barra_ducha']
+                : $p['materiales']['griferia']['estandar'];
+
+            $materiales += $grifo;
+            $detalles['materiales'][] = ['concepto' => 'Grifería', 'importe' => $grifo];
+
+            $ancho = $datos['mueble_lavabo']['ancho_cm'] ?? null;
+            $precioLavabo = match (true) {
+                $ancho <= 60 => $p['materiales']['muebles']['lavabo'][60],
+                $ancho <= 80 => $p['materiales']['muebles']['lavabo'][80],
+                $ancho >= 100 => $p['materiales']['muebles']['lavabo'][100],
+                default => $p['materiales']['muebles']['lavabo'][80],
+            };
+
+            $materiales += $precioLavabo;
+            $detalles['materiales'][] = ['concepto' => 'Mueble lavabo', 'importe' => $precioLavabo];
+
+            $materiales += $p['materiales']['muebles']['espejo'];
+            $detalles['materiales'][] = ['concepto' => 'Espejo', 'importe' => $p['materiales']['muebles']['espejo']];
+
+            $materiales += $p['materiales']['sanitarios']['inodoro'];
+            $detalles['materiales'][] = ['concepto' => 'Inodoro', 'importe' => $p['materiales']['sanitarios']['inodoro']];
+
+            $materiales += $p['materiales']['electricidad']['foco'];
+            $detalles['materiales'][] = ['concepto' => 'Foco LED', 'importe' => $p['materiales']['electricidad']['foco']];
+
+            if (!empty($datos['instalar_radiador_toallero'])) {
+                $materiales += $p['materiales']['radiador_toallero'];
+                $detalles['materiales'][] = ['concepto' => 'Radiador toallero', 'importe' => $p['materiales']['radiador_toallero']];
+            }
+
+            if (!empty($datos['techo']['reinstalar_escayola'])) {
+                $materiales += $p['materiales']['escayola'];
+                $detalles['materiales'][] = ['concepto' => 'Escayola', 'importe' => $p['materiales']['escayola']];
+            }
+
+            if (!empty($datos['sanitarios']['bide']['hay_bide_actual']) && empty($datos['sanitarios']['bide']['suprimir'])) {
+                $materiales += $p['materiales']['sanitarios']['bide'];
+                $materiales += $p['materiales']['griferia']['bide'];
+                $detalles['materiales'][] = ['concepto' => 'Bidé', 'importe' => $p['materiales']['sanitarios']['bide']];
+                $detalles['materiales'][] = ['concepto' => 'Grifería bidé', 'importe' => $p['materiales']['griferia']['bide']];
+            }
+
+            $totalMin = $manoObra + $materiales;
+            $totalMax = $totalMin + 100;
+
+            return [
+                'mano_obra' => round($manoObra),
+                'materiales' => round($materiales),
+                'total_estimado_min' => round($totalMin),
+                'total_estimado_max' => round($totalMax),
+                'detalles' => $detalles,
+            ];
+        }
+
+
+private function calcularPresupuestoDucha(array $datos): array
 {
     $p = $this->precios;
     $manoObra = 0;
     $materiales = 0;
+    $detalles = [
+        'mano_obra' => [],
+        'materiales' => []
+    ];
 
-    $largo = $datos['medidas_bano']['largo_m'];
-    $ancho = $datos['medidas_bano']['ancho_m'];
-    $alto = $datos['medidas_bano']['alto_m'];
+    $altura = $datos['zona_azulejos']['altura_reforma'];
+    $entreParedes = $datos['entre_paredes'];
+    $longitud = $datos['medidas_bañera']['largo_cm'] / 100;
 
-    $m2_paredes = 2 * ($largo + $ancho) * $alto;
-    $m2_suelo = $largo * $ancho;
+    // 🧱 Mano de obra
+    $importe = match ($altura) {
+        '1m' => $p['mano_obra']['albañil']['hasta_1m'],
+        'techo' => $p['mano_obra']['albañil']['hasta_techo'],
+        default => 0
+    };
+    $manoObra += $importe;
+    $detalles['mano_obra'][] = ['concepto' => "Albañil - Alicatado hasta $altura", 'importe' => $importe];
 
-    // 🧱 MANO DE OBRA
-    $manoObra += $p['mano_obra']['albañil']['reforma_completa'];
-    // Calcular puntos de agua
-    $puntosAgua = 0;
-
-    // Siempre hay inodoro
-    $puntosAgua++;
-
-    // Mueble lavabo
-    if (!empty($datos['mueble_lavabo']['ancho_cm'])) {
-        $puntosAgua++;
-    }
-
-    // Plato de ducha o bañera
-    if (!empty($datos['sanitarios']['ducha_o_banera']['tipo'])) {
-        $puntosAgua++;
-    }
-
-    // Grifo (ya viene con ducha o bañera, pero si instalas barra puede contar aparte)
-    if (!empty($datos['griferia']['instalar_barra_ducha'])) {
-        $puntosAgua++;
-    }
-
-    // Bidé si no se suprime
-    if (
-        !empty($datos['sanitarios']['bide']['hay_bide_actual']) &&
-        empty($datos['sanitarios']['bide']['suprimir'])
-    ) {
-        $puntosAgua++;
-    }
-
-    // Llaves de corte si quieres contarlas como extra (puedes crear una bandera en el JSON)
-    if (!empty($datos['fontaneria']['llaves_corte'])) {
-        $puntosAgua++;
-    }
-
-    // Multiplicar
-    $manoObra += $puntosAgua * $p['mano_obra']['fontanero_base'];
-    $manoObra += $p['mano_obra']['pintura_techo'];
-    $manoObra += $p['mano_obra']['electricista_base'];
-    $manoObra += $p['mano_obra']['jefe_obra'];
-    $manoObra += $p['mano_obra']['mampara_instalacion'];
+    $manoObra += $p['mano_obra']['fontanero_base'];
+    $detalles['mano_obra'][] = ['concepto' => 'Fontanero - instalación básica', 'importe' => $p['mano_obra']['fontanero_base']];
 
     if (!empty($datos['griferia']['instalar_barra_ducha'])) {
         $manoObra += $p['mano_obra']['barra_ducha_extra'];
+        $detalles['mano_obra'][] = ['concepto' => 'Fontanero - instalación barra de ducha', 'importe' => $p['mano_obra']['barra_ducha_extra']];
     }
 
-    if (!empty($datos['techo']['reinstalar_escayola'])) {
-        $manoObra += $p['mano_obra']['escayola_instalacion'];
+    if ($altura === 'techo') {
+        $manoObra += $p['mano_obra']['pintura_techo'];
+        $detalles['mano_obra'][] = ['concepto' => 'Pintura techo', 'importe' => $p['mano_obra']['pintura_techo']];
     }
 
-    if (!empty($datos['calefaccion']['sustituir_por_toallero'])) {
-        $manoObra += $p['mano_obra']['radiador_toallero_instalacion'];
+    if ($datos['mampara']['tipo'] !== 'ninguna') {
+        $manoObra += $p['mano_obra']['mampara_instalacion'];
+        $detalles['mano_obra'][] = ['concepto' => 'Instalación mampara', 'importe' => $p['mano_obra']['mampara_instalacion']];
     }
 
-    $manoObra = max($manoObra, $p['mano_obra']['minimo']);
+    $manoObra += $p['mano_obra']['jefe_obra'];
+    $detalles['mano_obra'][] = ['concepto' => 'Coordinación jefe de obra', 'importe' => $p['mano_obra']['jefe_obra']];
 
-    // 🧱 MATERIALES
+    if ($manoObra < $p['mano_obra']['minimo']) {
+        $detalles['mano_obra'][] = ['concepto' => 'Aplicado mínimo de mano de obra', 'importe' => $p['mano_obra']['minimo'] - $manoObra];
+        $manoObra = $p['mano_obra']['minimo'];
+    }
 
-    // Revestimientos
-    $materiales += $m2_paredes * $p['materiales']['azulejos']['precio_m2'];
-    $materiales += $m2_suelo * $p['materiales']['pavimento']['precio_m2'];
+    // 🧱 Materiales
 
-    // Cola específica para baño completo
-    $materiales += $p['materiales']['cola']['bano_completo'];
+    // Plato de ducha
+    if ($longitud <= 1.2) {
+        $importe = $p['materiales']['plato_ducha']['hasta_120'];
+        $materiales += $importe;
+        $detalles['materiales'][] = ['concepto' => 'Plato de ducha hasta 120 cm', 'importe' => $importe];
+    } elseif ($longitud <= 1.6) {
+        $importe = $p['materiales']['plato_ducha']['hasta_160'];
+        $materiales += $importe;
+        $detalles['materiales'][] = ['concepto' => 'Plato de ducha hasta 160 cm', 'importe' => $importe];
+    } else {
+        $importe = $p['materiales']['plato_ducha']['mayor'];
+        $materiales += $importe;
+        $detalles['materiales'][] = ['concepto' => 'Plato de ducha mayor de 160 cm', 'importe' => $importe];
+    }
 
-    // Plato de ducha o bañera
-    $materiales += $p['materiales']['sanitarios'][$datos['sanitarios']['ducha_o_banera']['tipo']] ?? 0;
+    // Mampara
+    $tipoMampara = $datos['mampara']['tipo'];
+    $importe = $p['materiales']['mampara'][$tipoMampara] ?? 0;
+    $materiales += $importe;
+    if ($importe > 0) {
+        $detalles['materiales'][] = ['concepto' => "Mampara ($tipoMampara)", 'importe' => $importe];
+    }
 
     // Grifería
-    $materiales += !empty($datos['griferia']['instalar_barra_ducha'])
+    $grifo = !empty($datos['griferia']['instalar_barra_ducha'])
         ? $p['materiales']['griferia']['barra_ducha']
         : $p['materiales']['griferia']['estandar'];
+    $materiales += $grifo;
+    $detalles['materiales'][] = ['concepto' => 'Grifería', 'importe' => $grifo];
 
-    // Mueble de lavabo
-    $ancho = $datos['mueble_lavabo']['ancho_cm'] ?? null;
+    // Azulejos
+    if (!empty($datos['zona_azulejos']['derribo'])) {
+        $paredes = $entreParedes ? 2 : 1;
+        $altura_m = $altura === 'techo' ? 2.4 : ($altura === '1m' ? 1 : 0.5);
+        $m2 = $paredes * $longitud * $altura_m;
 
-    $precioLavabo = match (true) {
-        $ancho <= 60 => $p['materiales']['muebles']['lavabo'][60],
-        $ancho <= 80 => $p['materiales']['muebles']['lavabo'][80],
-        $ancho >= 100 => $p['materiales']['muebles']['lavabo'][100],
-        default => $p['materiales']['muebles']['lavabo'][80] // el más grande por defecto
-    };
+        $importeAzulejos = $m2 * $p['materiales']['azulejos']['precio_m2'];
+        $materiales += $importeAzulejos;
+        $detalles['materiales'][] = ['concepto' => 'Azulejos (m²)', 'importe' => round($importeAzulejos)];
 
-    $materiales += $precioLavabo;
+        $materiales += $p['materiales']['cola']['base'];
+        $detalles['materiales'][] = ['concepto' => 'Cola base para alicatado', 'importe' => $p['materiales']['cola']['base']];
 
-    // Espejo (siempre)
-    $materiales += $p['materiales']['muebles']['espejo'];
-
-    // Inodoro (siempre)
-    $materiales += $p['materiales']['sanitarios']['inodoro'];
-
-    // Foco LED (siempre)
-    $materiales += $p['materiales']['electricidad']['foco'];
-
-    // Radiador toallero (opcional)
-    if (!empty($datos['calefaccion']['sustituir_por_toallero'])) {
-        $materiales += $p['materiales']['radiador_toallero'];
+        if ($altura === 'techo') {
+            $materiales += $p['materiales']['cola']['extra_techo'];
+            $detalles['materiales'][] = ['concepto' => 'Cola extra por altura hasta techo', 'importe' => $p['materiales']['cola']['extra_techo']];
+        }
     }
 
-    // Escayola (opcional)
-    if (!empty($datos['techo']['reinstalar_escayola'])) {
-        $materiales += $p['materiales']['escayola'];
-    }
-
-    // Bidé (solo si hay y no se suprime)
-    if (
-        !empty($datos['sanitarios']['bide']['hay_bide_actual']) &&
-        empty($datos['sanitarios']['bide']['suprimir'])
-    ) {
-        $materiales += $p['materiales']['sanitarios']['bide'];
-        $materiales += $p['materiales']['griferia']['bide']; // grifo del bidé
+    if (($datos['zona_azulejos']['reponer_azulejos'] ?? '') === 'buscar_similar') {
+        $materiales += $p['materiales']['azulejos_similares_extra'];
+        $detalles['materiales'][] = ['concepto' => 'Suplemento por azulejos similares', 'importe' => $p['materiales']['azulejos_similares_extra']];
     }
 
     $totalMin = $manoObra + $materiales;
@@ -198,88 +340,9 @@ private function calcularPresupuestoBanioCompleto(array $datos): array
         'materiales' => round($materiales),
         'total_estimado_min' => round($totalMin),
         'total_estimado_max' => round($totalMax),
+        'detalles' => $detalles,
     ];
 }
-
-
-
-    private function calcularPresupuestoDucha(array $datos): array
-    {
-        $p = $this->precios;
-        $manoObra = 0;
-        $materiales = 0;
-
-        $altura = $datos['zona_azulejos']['altura_reforma'];
-        $entreParedes = $datos['entre_paredes'];
-        $longitud = $datos['medidas_bañera']['largo_cm'] / 100;
-
-        // 🧱 Mano de obra
-        $manoObra += match ($altura) {
-            '1m' => $p['mano_obra']['albañil']['hasta_1m'],
-            'techo' => $p['mano_obra']['albañil']['hasta_techo'],
-            default => 0
-        };
-
-        $manoObra += $p['mano_obra']['fontanero_base'];
-
-        if (!empty($datos['griferia']['instalar_barra_ducha'])) {
-            $manoObra += $p['mano_obra']['barra_ducha_extra'];
-        }
-
-        if ($altura === 'techo') {
-            $manoObra += $p['mano_obra']['pintura_techo'];
-        }
-
-        if ($datos['mampara']['tipo'] !== 'ninguna') {
-            $manoObra += $p['mano_obra']['mampara_instalacion'];
-        }
-
-        $manoObra += $p['mano_obra']['jefe_obra'];
-
-        $manoObra = max($manoObra, $p['mano_obra']['minimo']);
-
-        // 🧱 Materiales
-
-        if ($longitud <= 1.2) {
-            $materiales += $p['materiales']['plato_ducha']['hasta_120'];
-        } elseif ($longitud <= 1.6) {
-            $materiales += $p['materiales']['plato_ducha']['hasta_160'];
-        } else {
-            $materiales += $p['materiales']['plato_ducha']['mayor'];
-        }
-
-        $materiales += $p['materiales']['mampara'][$datos['mampara']['tipo']] ?? 0;
-
-        $materiales += !empty($datos['griferia']['instalar_barra_ducha'])
-            ? $p['materiales']['griferia']['barra_ducha']
-            : $p['materiales']['griferia']['estandar'];
-
-        if (!empty($datos['zona_azulejos']['derribo'])) {
-            $paredes = $entreParedes ? 2 : 1;
-            $altura_m = $altura === 'techo' ? 2.4 : ($altura === '1m' ? 1 : 0.5);
-            $m2 = $paredes * $longitud * $altura_m;
-            $materiales += $m2 * $p['materiales']['azulejos']['precio_m2'];
-
-            $materiales += $p['materiales']['cola']['base'];
-            if ($altura === 'techo') {
-                $materiales += $p['materiales']['cola']['extra_techo'];
-            }
-        }
-
-        if ($datos['zona_azulejos']['reponer_azulejos'] === 'buscar_similar') {
-            $materiales += $p['materiales']['azulejos_similares_extra'];
-        }
-
-        $totalMin = $manoObra + $materiales;
-        $totalMax = $totalMin + 100;
-
-        return [
-            'mano_obra' => round($manoObra),
-            'materiales' => round($materiales),
-            'total_estimado_min' => round($totalMin),
-            'total_estimado_max' => round($totalMax),
-        ];
-    }
 
 
     /**
@@ -385,10 +448,21 @@ private function calcularPresupuestoBanioCompleto(array $datos): array
   
             $consulta->setTimestamp(New DateTime());
             $consulta->setatencion(false);
+            $jsonPresupuesto = $form->get('jsonPresupuesto')->getData();
+            $datosPresupuesto = json_decode($jsonPresupuesto, true);
+
+            if (is_array($datosPresupuesto)) {
+                $consulta->setPresupuestoAI($datosPresupuesto); // 👈 aquí guardamos todo
+            }            
 
             $consultasRepository->add($consulta, true);
             $jsonPresupuesto = $form->get('jsonPresupuesto')->getData();
             $datosPresupuesto = json_decode($jsonPresupuesto, true);
+            $filename = 'presupuesto_' . $consulta->getId() . '.json';
+            $pathJson = $this->getParameter('kernel.project_dir') . '/public_html/pdfs/' . $filename;
+
+            file_put_contents($pathJson, json_encode($datosPresupuesto, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
             $rootDir = $this->getParameter('kernel.project_dir') . '/public_html';
 
             $html = $this->renderView('apgijon/pdfpresupuesto.html.twig', [
@@ -407,6 +481,7 @@ private function calcularPresupuestoBanioCompleto(array $datos): array
             file_put_contents($path, $this->pdf->output()); // guardado físico
                 // Envía el PDF por Telegram
             $notifier->sendDocument($path, "📄 Nuevo presupuesto generado:\nNombre: {$consulta->getNombre()}\nTeléfono: {$consulta->getTelefono()}");
+            $notifier->sendDocument($pathJson, "🧾 JSON completo (modo desarrollador)");
 
             return new Response(
                 $this->pdf->output(),

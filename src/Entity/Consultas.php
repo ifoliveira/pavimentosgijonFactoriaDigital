@@ -47,6 +47,11 @@ class Consultas
      */
     private $atencion;
 
+    /**
+     * @ORM\Column(type="json", nullable=true)
+     */
+    private $presupuestoAI = [];
+
     public function getId(): ?int
     {
         return $this->id;
@@ -120,6 +125,18 @@ class Consultas
     public function setAtencion(?bool $atencion): self
     {
         $this->atencion = $atencion;
+
+        return $this;
+    }
+
+    public function getPresupuestoAI(): ?array
+    {
+        return $this->presupuestoAI;
+    }
+
+    public function setPresupuestoAI(?array $presupuestoAI): self
+    {
+        $this->presupuestoAI = $presupuestoAI;
 
         return $this;
     }

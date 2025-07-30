@@ -67,43 +67,14 @@
       <div class="col-lg-3">
         <aside> 
           <!-- sidebar widget -->
-          <div class="s-sidebar-widget mb-30">
-            <h3>Pídenos presupuesto</h3>
-          <!-- sidebar contcat -->
-            <div class="sidebar-contcat">        
-              <!-- contact form -->
+        <div class="s-sidebar-widget mb-30 text-center">
+          <h3>Pídenos presupuesto</h3>
+          <p class="mb-3">Charla con nuestro asistente y obtén el presupuesto al momento.</p>
 
-              {{ form_start(form, {'attr' : { 'class': 'contact-form'}}) }}
-              <!--<form class="contact-form" id="contact-form" method="post" action="contact.php" enctype="multipart/form-data">-->
-                <div class="row">
-                    <div class="mb-3">
-          
-                      <input type="text" class="form-control" name="{{ field_name(form.nombre)}}" placeholder="{{ field_label(form.nombre)}}" required data-error="Nombre no informado.">
-                      <div class="help-block with-errors"></div>
-                    </div>
-                    <div class="mb-3">
-                      <input type="email" class="form-control" name="{{ field_name(form.email)}}" placeholder="{{ field_label(form.email)}}" required data-error="Email is required.">
-                      <div class="help-block with-errors"></div>
-                    </div>
-
-                </div>
-                
-                <div class="mb-3">
-                  <input type="text" placeholder="{{ field_label(form.telefono)}}" name="{{ field_name(form.telefono)}}" class="form-control" required data-error="Phone is required.">
-                  <div class="help-block with-errors"></div>
-                </div>
-                <div class="mb-3">
-                  <textarea class="form-control" rows="3" name="{{ field_name(form.pregunta)}}" placeholder="{{ field_label(form.pregunta)}}" required data-error="Message is required."></textarea>
-                  <div class="help-block with-errors"></div>
-                </div>
-                <div class="call-us-widget">
-                  <button type="submit" id="consultas_submit"  class="save btn btn-style-1 w-100">Pedir presupuesto</button>
-                </div>
-                {{ form_end(form) }}
-              <!-- contact form end --> 
-            </div>
-            <!-- sidebar contcat end --> 
-          </div>
+          <a class="btn-style-1 btn-cta-presupuesto" id="btnPresupuestoHero" href="{{ path('iapresupuesto') }}">
+            💬 Calcula tu presupuesto ahora
+          </a>
+        </div>
           <!-- sidebar widget end --> 
           
           <!-- sidebar widget -->

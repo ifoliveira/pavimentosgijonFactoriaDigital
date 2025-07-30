@@ -55,7 +55,9 @@
                 <h6>Reformas integrales</h6>
                 <h5>Reformar baño en Gijón</h5>
                 <p> En Pavimentos Gijón, nos especializamos en el diseño y ejecución de proyectos de reforma que abarcan desde la selección de los mejores materiales hasta la instalación experta</p>
-                <a class="btn-style-1" href="{{ path('integral')}}">Ver más <i class="bi bi-arrow-right"></i></a> </div>
+                <a class="btn-style-1" href="{{ path('integral')}}">Ver más <i class="bi bi-arrow-right"></i></a> 
+                <a class="btn-style-1 btn-cta-presupuesto"   id="btnPresupuestoHero"   href="{{ path('iapresupuesto') }}">   💬 Calcula tu presupuesto ahora</a>
+              </div>
               <div class="col-lg-6 col-md-6 col-sm-6">
                 <div class="banner-img"><img fetchpriority="high"  src="{{ asset('/Light-HTML/img/slider/Mueble Baño y Mampara de Baño.webp')}}" alt="Reforma baño realizada por Pavimentos gijón"></div>
               </div>
@@ -71,7 +73,9 @@
                 <h6>Bañera por ducha</h6>
                 <h5>Cambiar bañera por ducha en gijon</h5>
                 <p>En Pavimentos Gijón, nos especializamos en la transformación de espacios de baño, ofreciendo servicios especializados para reemplazar tu antigua bañera con una ducha elegante y funcional.</p>
-                <a class="btn-style-1" href="{{ path('platoducha')}}">Ver más <i class="bi bi-arrow-right"></i></a> </div>
+                <a class="btn-style-1" href="{{ path('platoducha')}}">Ver más <i class="bi bi-arrow-right"></i></a> 
+                <a class="btn-style-1 btn-cta-presupuesto"   id="btnPresupuestoHero"   href="{{ path('iapresupuesto') }}">   💬 Calcula tu presupuesto ahora</a>
+              </div>
               <div class="col-lg-6 col-md-6 col-sm-6">
                 <div class="banner-img"><img loading="lazy"  src="{{ asset('/Light-HTML/img/slider/Plato de ducha.webp')}}" alt="Cambio bañera por ducha realizada por Pavimentos gijón"></div>
               </div>
@@ -384,5 +388,21 @@
 
       });  
 </script> 
+<a href="{{ path('iapresupuesto') }}"
+   id="btnFlotantePresupuesto"
+   class="d-md-none"
+   style="position: fixed;
+          bottom: 20px;
+          right: 20px;
+          z-index: 9999;
+          background-color: #007bff;
+          color: white;
+          padding: 14px 20px;
+          border-radius: 30px;
+          font-size: 16px;
+          text-decoration: none;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">
+  💬 Presupuesto Calcula ahora
+</a>
 </body>
 </html>
