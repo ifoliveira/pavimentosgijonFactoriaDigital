@@ -659,6 +659,11 @@ document.getElementById('form-contacto').addEventListener('submit', function(e) 
       a.download = 'presupuesto-bano.pdf';
       a.click();
       window.URL.revokeObjectURL(url);
+      gtag('event', 'descarga_presupuesto', {
+        event_category: 'presupuestos',
+        event_label: 'PDF generado',
+        value: 1
+      });      
     })
     .catch(() => alert('Error al generar el PDF.'));
   });
