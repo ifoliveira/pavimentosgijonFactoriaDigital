@@ -22,6 +22,7 @@ class TelegramNotifier
         $data = [
             'chat_id' => $this->chatId,
             'text' => $message,
+            'parse_mode' => 'Markdown',
         ];
 
         $ch = curl_init($url);

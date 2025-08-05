@@ -1,0 +1,17 @@
+public function sendMessage(string $text): void
+{
+    $token = $this->botToken;
+    $chatId = $this->chatId;
+
+    $url = "https://api.telegram.org/bot{$token}/sendMessage";
+
+    $data = [
+        'chat_id' => $chatId,
+        'text' => $text,
+        'parse_mode' => 'Markdown',
+    ];
+
+    $this->client->request('POST', $url, [
+        'body' => $data,
+    ]);
+}

@@ -1,0 +1,75 @@
+{
+    "tipo_reforma": "cambio_bañera_por_plato_ducha",
+    "medidas_bañera": {
+        "largo_cm": 160,
+        "ancho_cm": 70
+    },
+    "entre_paredes": true,
+    "zona_azulejos": {
+        "derribo": true,
+        "altura_reforma": "1m",
+        "reponer_azulejos": "buscar_similar"
+    },
+    "griferia": {
+        "mantener_grifo_actual": false,
+        "instalar_barra_ducha": true
+    },
+    "mampara": {
+        "tipo": "fijo_mas_corredera"
+    },
+    "hay_escayola": false,
+    "mano_obra": 670,
+    "materiales": 1841,
+    "total_estimado_min": 2511,
+    "total_estimado_max": 2611,
+    "detalles": {
+        "mano_obra": [
+            {
+                "concepto": "Albañil - Alicatado hasta 1m",
+                "importe": 250
+            },
+            {
+                "concepto": "Fontanero - instalación básica",
+                "importe": 160
+            },
+            {
+                "concepto": "Fontanero - instalación barra de ducha",
+                "importe": 80
+            },
+            {
+                "concepto": "Instalación mampara",
+                "importe": 80
+            },
+            {
+                "concepto": "Coordinación jefe de obra",
+                "importe": 100
+            }
+        ],
+        "materiales": [
+            {
+                "concepto": "Plato de ducha hasta 160 cm",
+                "importe": 500
+            },
+            {
+                "concepto": "Mampara (fijo_mas_corredera)",
+                "importe": 800
+            },
+            {
+                "concepto": "Grifería",
+                "importe": 295
+            },
+            {
+                "concepto": "Azulejos (m²)",
+                "importe": 96
+            },
+            {
+                "concepto": "Cola base para alicatado",
+                "importe": 50
+            },
+            {
+                "concepto": "Suplemento por azulejos similares",
+                "importe": 100
+            }
+        ]
+    }
+}

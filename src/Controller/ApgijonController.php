@@ -502,6 +502,21 @@ private function calcularPresupuestoDucha(array $datos): array
         ]);
     }      
 
+        #[Route('/api/presupuesto/chat-track', name: 'api_presupuesto_track', methods: ['POST'])]
+        public function trackChat(Request $request, TelegramNotifier $notifier): JsonResponse
+        {
+            $data = json_decode($request->getContent(), true);
+            $pregunta = $data['pregunta'] ?? 'Sin pregunta';
+            $respuesta = $data['respuesta'] ?? 'Sin respuesta';
+
+            $mensaje = "📩 *Respuesta parcial de presupuesto:*\n\n❓ *IA:* {$pregunta}\n💬 *Usuario:* {$respuesta}";
+
+            $notifier->sendMessage($mensaje);
+
+            return $this->json(['ok' => true]);
+        }
+
+
         #[Route('/api/presupuesto/chat', name: 'api_presupuesto_chat', methods: ['POST'])]
         public function chat(Request $request, OpenAIClient $openAIClient, TelegramNotifier $notifier): JsonResponse
         {

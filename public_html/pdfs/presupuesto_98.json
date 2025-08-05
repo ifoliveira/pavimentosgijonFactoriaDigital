@@ -1,0 +1,67 @@
+{
+    "tipo_reforma": "cambio_bañera_por_plato_ducha",
+    "medidas_bañera": {
+        "largo_cm": 170,
+        "ancho_cm": 75
+    },
+    "entre_paredes": true,
+    "zona_azulejos": {
+        "derribo": true,
+        "altura_reforma": "1m",
+        "reponer_azulejos": "tengo_repuestos"
+    },
+    "griferia": {
+        "mantener_grifo_actual": true,
+        "instalar_barra_ducha": false
+    },
+    "mampara": {
+        "tipo": "fijo_mas_corredera"
+    },
+    "hay_escayola": false,
+    "mano_obra": 590,
+    "materiales": 1652,
+    "total_estimado_min": 2242,
+    "total_estimado_max": 2342,
+    "detalles": {
+        "mano_obra": [
+            {
+                "concepto": "Albañil - Alicatado hasta 1m",
+                "importe": 250
+            },
+            {
+                "concepto": "Fontanero - instalación básica",
+                "importe": 160
+            },
+            {
+                "concepto": "Instalación mampara",
+                "importe": 80
+            },
+            {
+                "concepto": "Coordinación jefe de obra",
+                "importe": 100
+            }
+        ],
+        "materiales": [
+            {
+                "concepto": "Plato de ducha mayor de 160 cm",
+                "importe": 600
+            },
+            {
+                "concepto": "Mampara (fijo_mas_corredera)",
+                "importe": 800
+            },
+            {
+                "concepto": "Grifería",
+                "importe": 100
+            },
+            {
+                "concepto": "Azulejos (m²)",
+                "importe": 102
+            },
+            {
+                "concepto": "Cola base para alicatado",
+                "importe": 50
+            }
+        ]
+    }
+}
