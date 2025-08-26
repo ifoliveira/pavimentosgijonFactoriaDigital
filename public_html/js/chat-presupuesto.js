@@ -5,7 +5,7 @@ const appendMessage = (msg, sender) => {
   const chatMessages = document.getElementById('chat-messages');
   const div = document.createElement('div');
   div.classList.add('chat-message', `chat-${sender}`);
-  div.innerHTML = `<strong>${sender === 'user' ? 'Tú' : sender === 'ai' ? 'IA' : sender === 'system' ? 'Pavimentos Gijón' : ''}:</strong> ${msg}`;
+  div.innerHTML = `<strong>${sender === 'user' ? 'Tú' : sender === 'ai' ? 'Pavimentos Gijón' : sender === 'system' ? 'Pavimentos Gijón' : ''}:</strong> ${msg}`;
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 };
@@ -22,16 +22,16 @@ function iniciarChat(tipo) {
 
   let mensajeInicio = '';
   if (tipo === 'ducha') {
-    mensajeInicio = "Has elegido cambiar la bañera por un plato de ducha. Empecemos con algunas preguntas para calcular el presupuesto.";
+    mensajeInicio = "🚿 Has elegido cambiar la bañera por un plato de ducha. Te haré unas preguntas rápidas para calcular un presupuesto orientativo. Si más adelante quieres comparar dos opciones (por ejemplo, con y sin bidé, o cambiando el grifo o no), te preparo primero este presupuesto y luego podemos generar otro con las diferencias que quieras.";
   } else if (tipo === 'completo') {
-    mensajeInicio = "Vamos a hacer una reforma completa del baño. Empezamos con las medidas del baño, ¿vale?";
+    mensajeInicio = "🏗️ Genial, vamos a planificar una reforma completa de tu baño. Empezaremos por las medidas para poder ajustar bien el presupuesto. Ten en cuenta que ahora calcularemos una sola versión. Si luego quieres ver variantes (por ejemplo, con distintos sanitarios o acabados), podemos generar un segundo presupuesto a partir del primero";
   } else {
     mensajeInicio = "Perfecto. Cuéntame qué tipo de reforma tienes en mente para ayudarte mejor.";
   }
 
   appendMessage(mensajeInicio, 'system');
   chatStarted = true;
-
+  
   fetch(RUTA_CHAT, {
     method: 'POST',
     headers: {

@@ -43,13 +43,13 @@
   {% include 'apgijon/header.html.twig' %}
 <!-- ================ Header end ================ --> 
 
-<!-- ================ inner page header ================ -->
+<!-- ================ inner page header ================ 
 <div class="inner-page-title inner-page-header-bg">
   <div class="container">
     <div class="inner-page-title-c">
       <h1>Calcula tu presupuesto de una reforma del baño en Gijón</h1>
       <div class="breadcrumb-box"> 
-        <!-- breadcrumb -->
+        <!-- breadcrumb 
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ path('homepage')}}"><i class="bi bi-house"></i> Inicio</a></li>
           <li class="breadcrumb-item active" aria-current="page">Calcular presupuesto</li>
@@ -70,7 +70,7 @@
             <h4 class="mb-4">👋 ¿Qué tipo de reforma quieres hacer?</h4>
             <button class="btn btn-outline-primary m-2" onclick="iniciarChat('ducha')">🚿 Cambiar bañera por plato de ducha</button>
             <button class="btn btn-outline-success m-2" onclick="iniciarChat('completo')">🏗️ Reforma completa del baño</button>
-            <button class="btn btn-outline-secondary m-2" onclick="iniciarChat('otro')">🛠️ Otro tipo de reforma</button>
+            <!-- <button class="btn btn-outline-secondary m-2" onclick="iniciarChat('otro')">🛠️ Otro tipo de reforma</button> -->
            <!-- <button class="btn btn-outline-secondary m-2" onclick="iniciarSimulado()">Simular ducha</button> -->
 
           </div>
@@ -81,7 +81,8 @@
                 <!-- Aquí se mostrarán los mensajes -->
             </div>
             <form id="chat-form" class="d-flex">
-                <input type="text" id="chat-input" class="form-control me-2" placeholder="Escribe aquí..." autocomplete="off">
+                <input type="text" id="chat-input" class="form-control me-2" placeholder="Escribe tu respuesta y pulsa Enviar" autocomplete="off">
+
                 <button type="submit" class="btn btn-primary">Enviar</button>
             </form>
           </div>
@@ -244,3 +245,248 @@
 
 {# PERMITE LANZAR UN PRESUPUESTO SIMULADO DE PRUEBA #}
 <script src="{{ asset('js/iniciar-simulado.js') }}"></script>
+
+<style>
+  /* ====== Elegancia ligera para tu selector y chat (sin cambiar HTML/JS) ====== */
+
+  /* Contenedor del selector */
+  #selector-reforma {
+    background: linear-gradient(180deg, #ffffff, #f8fafc);
+    border: 1px solid #eef2f7;
+    border-radius: 16px !important;
+    box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
+  }
+  #selector-reforma h4 {
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    margin-bottom: 1rem !important;
+  }
+  #selector-reforma .btn {
+    border-width: 1px;
+    border-radius: 14px;
+    padding: .85rem 1.1rem;
+    font-weight: 600;
+    transition: transform .12s ease, box-shadow .15s ease, border-color .15s ease, background-color .15s ease, color .15s ease;
+    white-space: normal;
+    line-height: 1.2;
+  }
+  #selector-reforma .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(2, 6, 23, 0.08);
+  }
+  /* Colores un poco más finos para los outline */
+  #selector-reforma .btn-outline-primary { border-color:#cfe0ff; color:#175cd3; }
+  #selector-reforma .btn-outline-primary:hover { background:#e9f1ff; border-color:#b3d1ff; color:#0b4cb3; }
+  #selector-reforma .btn-outline-success { border-color:#cdebd1; color:#027a48; }
+  #selector-reforma .btn-outline-success:hover { background:#eaf7ed; border-color:#b6e2bc; color:#046037; }
+  #selector-reforma .btn-outline-secondary { border-color:#e5e7eb; color:#374151; }
+  #selector-reforma .btn-outline-secondary:hover { background:#f3f4f6; border-color:#d1d5db; color:#111827; }
+
+  /* Chat: tarjeta limpia */
+  .chat-box {
+    background: #ffffff !important;
+    border: 1px solid #eef2f7;
+    border-radius: 16px !important;
+    box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
+  }
+  /* Área de mensajes */
+  #chat-messages {
+    border: 1px solid #eef2f7 !important;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #fbfdff, #ffffff);
+    padding: 12px !important;
+  }
+
+  /* Burbujas de mensaje (sin tocar tu appendMessage) */
+  #chat-messages .msg {
+    max-width: 78%;
+    padding: .65rem .85rem;
+    border-radius: 14px;
+    margin: .25rem 0;
+    font-size: 0.965rem;
+    line-height: 1.35;
+    box-shadow: 0 1px 0 rgba(17,24,39,.04);
+  }
+  #chat-messages .msg.ai {
+    background: #f8fafc;
+    border: 1px solid #eef2f7;
+    color: #0b1220;
+  }
+  #chat-messages .msg.user {
+    background: #2563eb;
+    color: #fff;
+    margin-left: auto;
+    border: 1px solid rgba(37,99,235,.15);
+  }
+
+  /* Input + botón enviar (sin cambiar el form) */
+  #chat-form .form-control {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: .7rem .9rem;
+    transition: box-shadow .15s ease, border-color .15s ease;
+  }
+  #chat-form .form-control:focus {
+    border-color: #b3d1ff;
+    box-shadow: 0 0 0 .2rem rgba(59,130,246,.15);
+  }
+  #chat-form .btn.btn-primary {
+    border-radius: 12px;
+    padding: .7rem 1.1rem;
+    font-weight: 700;
+    letter-spacing: .2px;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
+    transition: transform .12s ease, box-shadow .15s ease, background-color .15s ease;
+  }
+  #chat-form .btn.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px rgba(37, 99, 235, 0.22);
+  }
+
+  /* Tipografía general del bloque */
+  .single-services-page .container h3,
+  .single-services-page h4,
+  .gallery-page h3 {
+    letter-spacing: .2px;
+  }
+
+  /* Responsive: mejor respiración en móvil */
+  @media (max-width: 576px) {
+    #selector-reforma .btn { width: 100%; margin: .35rem 0 !important; }
+    #chat-messages { height: 360px !important; }
+  }
+
+#chat-form .hint {
+  flex-basis: 100%; /* ocupa todo el ancho */
+  margin-top: .4rem;
+  font-size: .85rem;
+  color:#6b7280;
+  text-align: left;
+}  
+</style>
+<style>
+  /* Micro-hint bajo el input (ligero, opcional) */
+  #chat-form .hint {
+    font-size: .85rem; color:#6b7280; margin-left:.25rem; margin-top:.25rem;
+  }
+</style>
+
+<script>
+(function(){
+  // --- CONFIG editable ---
+  const TIMEOUT_ABANDONO_MS = 45000; // 45s sin contestar = abandono
+  const TRACK_URL = '/api/presupuesto/chat-track'; // ya lo usas
+
+  // --- refs existentes ---
+  const chatBox = document.getElementById('chat-box');
+  const selector = document.getElementById('selector-reforma');
+  const chatForm = document.getElementById('chat-form');
+  const chatInput = document.getElementById('chat-input');
+  const chatMessages = document.getElementById('chat-messages');
+
+  // Micro-hint no invasivo (solo lo añadimos una vez)
+  (function ensureHint(){
+    if (!chatForm || chatForm.querySelector('.hint')) return;
+    const hint = document.createElement('div');
+    hint.className = 'hint';
+    hint.textContent = 'Tip: si no lo sabes, escribe “no lo sé” y seguimos.';
+    chatForm.parentNode.appendChild(hint); ;
+  })();
+
+  // Estado local
+  let firstQTimer = null;
+  let firstQTracked = false;
+  let firstQAnswered = false;
+  let tipoReformaActual = null;
+
+  // Envolvemos iniciarChat SOLO para añadir tracking/UX. Tu lógica sigue igual.
+  const iniciarChatOriginal = window.iniciarChat;
+  window.iniciarChat = function(tipo){
+    tipoReformaActual = tipo || null;
+
+    // Mostrar chat si estaba oculto (sin tocar tu flujo)
+    if (selector) selector.style.display = 'none';
+    if (chatBox) chatBox.style.display = 'block';
+
+    // Autofocus suave para invitar a responder
+    setTimeout(() => { try { chatInput && chatInput.focus(); } catch(e){} }, 50);
+
+    // Lanzar tracking de "first_question_shown" una sola vez por sesión de chat
+    // (no necesitamos el texto exacto; si quieres, puedes añadirlo desde tu handler)
+    if (!firstQTracked) {
+      firstQTracked = true;
+      safeTrack({
+        evento: 'first_question_shown',
+        tipo: tipoReformaActual,
+        // Si quieres enviar la última pregunta AI mostrada, descomenta:
+        // pregunta: ultimaPreguntaAIDetectada()
+      });
+      // Temporizador de abandono si no hay respuesta
+      firstQTimer = setTimeout(() => {
+        if (!firstQAnswered) {
+          safeTrack({ evento: 'first_question_abandon', tipo: tipoReformaActual });
+          // GA4 opcional
+          if (window.gtag) gtag('event', 'first_question_abandon', { tipo: tipoReformaActual || 'desconocido' });
+        }
+      }, TIMEOUT_ABANDONO_MS);
+
+      // GA4 opcional
+      if (window.gtag) gtag('event', 'first_question_shown', { tipo: tipoReformaActual || 'desconocido' });
+    }
+
+    // Dejar que tu función haga todo lo demás
+    if (typeof iniciarChatOriginal === 'function') {
+      return iniciarChatOriginal(tipo);
+    }
+  };
+
+  // Cuando el usuario envía la primera respuesta, limpiamos el timer y registramos "answered"
+  if (chatForm) {
+    chatForm.addEventListener('submit', function(){
+      if (!firstQAnswered) {
+        firstQAnswered = true;
+        if (firstQTimer) { clearTimeout(firstQTimer); firstQTimer = null; }
+
+        safeTrack({ evento: 'first_question_answered', tipo: tipoReformaActual });
+        if (window.gtag) gtag('event', 'first_question_answered', { tipo: tipoReformaActual || 'desconocido' });
+      }
+    });
+  }
+
+  // Si se van de la página sin responder, intenta registrar abandono
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'hidden' && firstQTracked && !firstQAnswered) {
+      navigator.sendBeacon?.(TRACK_URL, JSON.stringify({
+        evento: 'first_question_abandon',
+        tipo: tipoReformaActual || null
+      }));
+    }
+  });
+
+  // Helper para obtener la última pregunta AI mostrada (opcional)
+  function ultimaPreguntaAIDetectada(){
+    if (!chatMessages) return null;
+    const nodes = Array.from(chatMessages.querySelectorAll('.msg.ai'));
+    const last = nodes.length ? nodes[nodes.length - 1] : null;
+    return last ? last.textContent.trim().slice(0, 300) : null; // corta a 300 chars
+  }
+
+  // POST seguro (sin romper flujo)
+  async function safeTrack(payload){
+    try {
+      await fetch(TRACK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true, // ayuda en navegación
+        body: JSON.stringify(payload)
+      });
+    } catch(e) {
+      // silencioso
+      console.warn('tracking error', e);
+    }
+  }
+})();
+</script>
+
+</body>
+</html>
