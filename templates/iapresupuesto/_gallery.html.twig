@@ -1,0 +1,18 @@
+{# templates/iapresupuesto/_gallery.html.twig #}
+
+<div class="pg-section-wrapper">
+    <h3 class="pg-subtitle">Nuestros trabajos en reformas de baños</h3>
+
+    <div class="pg-gallery-grid">
+        {% for foto in [
+            '/Light-HTML/img/gallery/bano1-mini.jpeg',
+            '/Light-HTML/img/gallery/bano2-mini.jpeg',
+            '/Light-HTML/img/gallery/bano3-mini.jpeg'
+        ] %}
+            <div class="pg-gallery-item">
+                <img src="{{ asset(foto) }}" class="pg-gallery-img" alt="Reforma de baño">
+            </div>
+        {% endfor %}
+    </div>
+</div>
+

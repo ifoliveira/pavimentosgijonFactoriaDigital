@@ -1,0 +1,326 @@
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    let paso = 0;
+    let jsonFinal = {};
+    let tipoReformaActual = null;
+    window.pgCarruselCompleto = false;
+    const RUTA_VOLVER = "{{ path('platoducha') }}";
+
+    function appendMessage(msg, sender) {
+        const msgBox = document.getElementById('chat-messages');
+        const div = document.createElement('div');
+        div.classList.add('chat-message', `chat-${sender}`);
+        div.innerHTML = msg;
+        msgBox.appendChild(div);
+        msgBox.scrollTop = msgBox.scrollHeight;
+    }
+
+    async function iniciarChat(tipo) {
+        tipoReformaActual = tipo;
+        paso = 0;
+        jsonFinal = {};
+
+        document.getElementById('selector-reforma').style.display = 'none';
+        document.getElementById('chat-box').style.display = 'block';
+
+        const bienvenida =
+            tipo === 'ducha'
+                ? "🚿 Vamos a preparar tu presupuesto de cambio de bañera por plato de ducha."
+                : "🏗️ Vamos a preparar tu reforma completa del baño.";
+
+        appendMessage(bienvenida, "system");
+        console.log("Tipo de reforma seleccionado:", tipoReformaActual);
+        console.log("Iniciando chat con paso:", paso);
+        console.log("Tipo de reforma:", tipoReformaActual);
+        console.log("JSON inicial:", jsonFinal);
+        const resp = await fetch("/api/presupuesto/step", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paso, tipo: tipoReformaActual, json: jsonFinal })
+        });
+
+        
+        const data = await resp.json();
+        console.log("Respuesta recibida para el paso inicial");
+        console.log(data);
+
+        paso = data.paso;
+        console.log(data);
+        appendMessage(data.pregunta, "ai");
+    }
+
+    window.iniciarChat = iniciarChat;
+
+    document.getElementById('chat-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const input = document.getElementById('chat-input');
+        const respuesta = input.value.trim();
+        if (!respuesta) return;
+
+        appendMessage(respuesta, "user");
+        input.value = "";
+
+        console.log("Tipo de reforma seleccionado:", tipoReformaActual);
+        console.log("Iniciando chat con paso:", paso);
+        console.log("Tipo de reforma:", tipoReformaActual);
+        console.log("JSON inicial:", jsonFinal);
+
+        const resp = await fetch("/api/presupuesto/step", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                paso,
+                respuesta,
+                tipo: tipoReformaActual,
+                json: jsonFinal
+            })
+        });
+
+        const data = await resp.json();
+        jsonFinal = data.json;
+
+        console.log("Respuesta recibida con opciones " + data.opciones);
+        console.log(data.promptIA);
+        console.log("JSON actualizado:", jsonFinal);
+
+
+        if (data.fin) {
+
+
+            // 1️⃣ Abre el modal
+            pgOpenModalPreparando();
+
+            // 2️⃣ Fuerza renderizado del modal
+            await new Promise(resolve => requestAnimationFrame(resolve));
+
+            const resultado = await fetch("/api/presupuesto/calculate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    tipo: tipoReformaActual,
+                    json: jsonFinal
+                })
+            }).then(r => r.json());
+
+     //       appendMessage(
+     //           "💰 Tu presupuesto aproximado es: <b>" + resultado.total + " €</b><br><br>" +
+     //           "<div id='btn-pdf' class='pdf-button'>📄 Descargar presupuesto en PDF</div>",
+      //          "ai"
+      //      );
+
+            // Listener del botón PDF creado dinámicamente
+       //     setTimeout(() => {
+       //         const btn = document.getElementById("btn-pdf");
+       //         if (btn) btn.addEventListener("click", () => {
+       //             document.getElementById("pdf-modal").style.display = "flex";
+       //         });
+        //    }, 50);
+            // 4️⃣ Presupuesto listo
+            pgPresupuestoListo(resultado.urlPdf);
+
+            return;
+        }
+
+        paso = data.paso;
+        let texto = data.pregunta;
+
+        // Si hay opciones → añadirlas como lista
+        if (data.opciones) {
+
+            const opcionesConLabel = Object.values(data.opciones)
+                .filter(op => op.tipo === "compleja");
+
+            if (opcionesConLabel.length > 0) {
+                texto += "<br><br>";
+                opcionesConLabel.forEach(op => {
+                    texto += "• " + op.label + "<br>";
+                });
+            }
+        }
+
+        appendMessage(texto, "ai");
+
+
+    });
+
+    // CERRAR MODAL
+    document.getElementById("pdf-close").addEventListener("click", () => {
+        document.getElementById("pdf-modal").style.display = "none";
+    });
+
+    // DESCARGAR PDF + VALIDAR
+    document.getElementById("pdf-descargar").addEventListener("click", async () => {
+
+        const nombre = document.getElementById("pdf-nombre").value.trim();
+        const email = document.getElementById("pdf-email").value.trim();
+
+
+        document.getElementById("error-nombre").textContent = "";
+        document.getElementById("error-email").textContent = "";
+
+
+        let valid = true;
+
+        if (!nombre) {
+            document.getElementById("error-nombre").textContent = "Este campo es obligatorio";
+            valid = false;
+        }
+
+        if (!email || !email.includes("@")) {
+            document.getElementById("error-email").textContent = "Email no válido";
+            valid = false;
+        }
+
+        if (!valid) return;
+
+        const r = await fetch("/api/presupuesto/pdf", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                tipo: tipoReformaActual,
+                json: jsonFinal,
+                nombre,
+                email
+            })
+        });
+
+        const blob = await r.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "presupuesto.pdf";
+        document.body.appendChild(a);
+        a.click();
+
+        document.getElementById("pdf-modal").style.display = "none";
+
+        setTimeout(() => {
+            window.location.href = RUTA_VOLVER;
+        }, 4000);
+
+        
+    });
+    // Modal presupuesto preparando / listo
+    let pgCarouselTimer = null;
+
+    function pgOpenModalPreparando() {
+        window.pgCarruselCompleto = false;
+
+        const modal = document.getElementById('modal-presupuesto');
+        if (!modal) return;
+
+        modal.classList.remove('hidden');
+
+        // reset texto / botones
+        pgSetTextoPreparando();
+        document.getElementById('pg-modal-actions').classList.add('hidden');
+
+        // iniciar carrusel
+        pgStartCarousel();
+    }
+
+    function pgCloseModal() {
+        const modal = document.getElementById('modal-presupuesto');
+        if (!modal) return;
+
+        modal.classList.add('hidden');
+        pgStopCarousel();
+    }
+
+    function pgSetTextoPreparando() {
+        document.getElementById('pg-modal-text').innerHTML = `
+            <h3>Estamos preparando tu presupuesto</h3>
+            <p>Calculando materiales y mano de obra según tus respuestas…</p>
+        `;
+    }
+
+    function pgSetTextoListo() {
+        document.getElementById('pg-modal-text').innerHTML = `
+            <h3>Tu presupuesto está listo</h3>
+            <p>Ya puedes descargarlo en PDF.</p>
+        `;
+    }    
+
+    function pgStartCarousel() {
+    const slides = [
+        ...document.querySelectorAll('#pg-carousel .pg-slide'),
+        document.querySelector('#pg-carousel .pg-carousel__calc')
+    ].filter(Boolean); // evita nulls
+
+    let index = 0;
+    let vueltas = 0;
+
+    slides.forEach(s => s.classList.remove('active'));
+    slides[0].classList.add('active');
+
+    pgStopCarousel();
+
+    pgCarouselTimer = setInterval(() => {
+
+        slides[index].classList.remove('active');
+        index++;
+
+        if (index >= slides.length) {
+        index = 0;
+        vueltas++;
+        }
+
+        slides[index].classList.add('active');
+
+        if (vueltas === 1) {
+        window.pgCarruselCompleto = true;
+        }
+
+    }, 2500);
+    }
+
+
+    function pgStopCarousel() {
+    if (pgCarouselTimer) {
+        clearInterval(pgCarouselTimer);
+        pgCarouselTimer = null;
+    }
+    }
+
+    function pgPresupuestoListo(urlPdf) {
+
+        const actions = document.getElementById('pg-modal-actions');
+
+        const esperarCarrusel = setInterval(() => {
+            if (window.pgCarruselCompleto) {
+
+                // ✅ AHORA sí: primero termina carrusel
+                pgSetTextoListo();
+
+                // ✅ Mostrar botones
+                actions.classList.remove('hidden');
+
+                // ✅ Click del botón
+                document.getElementById('pg-btn-descargar').onclick = () => {
+
+                    // 1️⃣ Cerrar SIEMPRE el modal del carrusel
+                    pgCloseModal();
+
+                    // 2️⃣ Abrir el modal PDF (custom)
+                    const pdfModal = document.getElementById('pdf-modal');
+                    pdfModal.style.display = 'flex';
+                };
+
+
+                clearInterval(esperarCarrusel);
+            }
+        }, 300);
+
+    }
+
+    // listeners de cierre
+    document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'pg-btn-cerrar') pgCloseModal();
+    if (e.target && e.target.classList.contains('pg-modal__backdrop')) pgCloseModal();
+    });
+
+
+});
+</script>

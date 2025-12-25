@@ -433,7 +433,79 @@ private function calcularPresupuestoDucha(array $datos): array
     /**
      * @Route("/presupuestoInmediato", name="iapresupuesto")
      */
-    public function iapresupuesto(Request $request, ConsultasRepository $consultasRepository, TelegramNotifier $notifier): Response
+    public function iapresupuestoIA(Request $request, ConsultasRepository $consultasRepository, TelegramNotifier $notifier): Response
+    {
+
+        $consulta = new Consultas();
+
+        $form = $this->createForm(ConsultasType::class, $consulta);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $consulta = $form->getData();
+  
+            $consulta->setTimestamp(New DateTime());
+            $consulta->setatencion(false);
+            $jsonPresupuesto = $form->get('jsonPresupuesto')->getData();
+            $datosPresupuesto = json_decode($jsonPresupuesto, true);
+
+            if (is_array($datosPresupuesto)) {
+                $consulta->setPresupuestoAI($datosPresupuesto); // 👈 aquí guardamos todo
+            }            
+
+            $consultasRepository->add($consulta, true);
+            $jsonPresupuesto = $form->get('jsonPresupuesto')->getData();
+            $datosPresupuesto = json_decode($jsonPresupuesto, true);
+            $filename = 'presupuesto_' . $consulta->getId() . '.json';
+            $pathJson = $this->getParameter('kernel.project_dir') . '/public_html/pdfs/' . $filename;
+
+            file_put_contents($pathJson, json_encode($datosPresupuesto, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+            $rootDir = $this->getParameter('kernel.project_dir') . '/public_html';
+
+            $html = $this->renderView('apgijon/pdfpresupuesto.html.twig', [
+                'consulta' => $consulta,
+                'presupuesto' => $datosPresupuesto, // viene del JSON transformado
+                'id' => $consulta->getId(),
+                    'root_dir' => $rootDir
+            ]);
+
+                $this->pdf->loadHtml($html);
+                $this->pdf->render();            
+
+            $filename = 'presupuesto_PRE' . $consulta->getId() . '.pdf';
+            $path = $this->getParameter('kernel.project_dir') . '/public_html/pdfs/' . $filename;
+
+            file_put_contents($path, $this->pdf->output()); // guardado físico
+                // Envía el PDF por Telegram
+            $notifier->sendDocument($path, "📄 Nuevo presupuesto generado:\nNombre: {$consulta->getNombre()}\nTeléfono: {$consulta->getTelefono()}");
+            $notifier->sendDocument($pathJson, "🧾 JSON completo (modo desarrollador)");
+
+            return new Response(
+                $this->pdf->output(),
+                200,
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="presupuesto_PRE{{ id }}.pdf"'
+                ]
+            );            
+
+            return $this->redirectToRoute('integral', [], Response::HTTP_SEE_OTHER);
+        }   
+
+  
+
+        return $this->render('iapresupuesto/chat.html.twig', [
+            'form' => $form->createView()
+        ]);
+
+    }
+    /**
+     * @Route("/presupuestoInmediatoBis", name="iapresupuestob")
+     */
+    public function iapresupuestoB(Request $request, ConsultasRepository $consultasRepository, TelegramNotifier $notifier): Response
     {
 
         $consulta = new Consultas();
@@ -505,15 +577,87 @@ private function calcularPresupuestoDucha(array $datos): array
         #[Route('/api/presupuesto/chat-track', name: 'api_presupuesto_track', methods: ['POST'])]
         public function trackChat(Request $request, TelegramNotifier $notifier): JsonResponse
         {
-            $data = json_decode($request->getContent(), true);
-            $pregunta = $data['pregunta'] ?? 'Sin pregunta';
-            $respuesta = $data['respuesta'] ?? 'Sin respuesta';
+            $data = json_decode($request->getContent() ?: '[]', true) ?: [];
 
-            $mensaje = "📩 *Respuesta parcial de presupuesto:*\n\n❓ *IA:* {$pregunta}\n💬 *Usuario:* {$respuesta}";
+            $evento   = $data['evento']   ?? 'user_interaction';
+            $tipo     = $data['tipo']     ?? 'desconocido';      // "ducha" | "completo"
+            $chatId   = $data['chatId']   ?? substr(sha1($request->getClientIp().microtime()), 0, 10);
+            $pregunta = $data['pregunta'] ?? null;
+            $respuesta= $data['respuesta']?? null;
 
-            $notifier->sendMessage($mensaje);
+            // Sanitizar / limitar longitud
+            $esc = static function (?string $t): string {
+                if ($t === null) return '—';
+                $t = mb_substr($t, 0, 500);
+                // Escapar Markdown de Telegram (modo Markdown estándar)
+                $repl = ['*'=>'\*','_'=>'\_','['=>'\[',']'=>'\]','('=>'\(',')'=>'\)','~'=>'\~','`'=>'\`','>'=>'\>','#'=>'\#','+'=>'\+','-'=>'\-','='=>'\=','|'=>'\|','{'=>'\{','}'=>'\}','.'=>'\.','!'=>'\!'];
+                return strtr($t, $repl);
+            };
 
-            return $this->json(['ok' => true]);
+            $tipoLabel = match ($tipo) {
+                'ducha'    => '🚿 Cambio bañera → plato',
+                'completo' => '🏗️ Reforma completa',
+                default    => '❔ No especificado'
+            };
+
+            // Plantillas por evento
+            $titleByEvent = [
+                'tipo_seleccionado'    => '🔔 *Tipo de reforma seleccionado*',
+                'first_question_shown' => '🧩 *Primera pregunta mostrada*',
+                'user_response'        => '✍️ *Respuesta del usuario*',
+                'descargar_pdf_click'  => '📄 *Click en Descargar PDF*',
+                'first_question_abandon'=> '⏳ *Posible abandono en 1ª pregunta*',
+                'user_interaction'     => '💬 *Interacción en el chat*',
+            ];
+
+        
+            $titulo = $titleByEvent[$evento] ?? $titleByEvent['user_interaction'];
+
+            // Construcción del mensaje según el evento
+            switch ($evento) {
+
+                case 'first_question_shown':
+                    // Primera pregunta → tipo + IA
+                    $mensaje = implode("\n", [
+                        "🧩 *Primera pregunta mostrada*",
+                        "• Tipo: *{$esc($tipoLabel)}*",
+                        "❓ *IA:* {$esc($pregunta)}",
+                    ]);
+                    break;
+
+                case 'user_response':
+                    // Interacción del usuario → solo su respuesta
+                    $mensaje = implode("\n", [
+                        "✍️ *Respuesta del usuario*",
+                        "💬 {$esc($respuesta)}",
+                    ]);
+                    break;
+
+                case 'tipo_seleccionado':
+                    // Tipo seleccionado → solo el tipo
+                    $mensaje = implode("\n", [
+                        "🔔 *Tipo de reforma seleccionado*",
+                        "• Tipo: *{$esc($tipoLabel)}*",
+                    ]);
+                    break;
+
+                default:
+                    // Otros eventos → plantilla genérica
+                    $mensaje = implode("\n", [
+                        "💬 *Interacción* {$esc($evento)}",
+                        "❓ *IA:* {$esc($pregunta)}",
+                        "💬 *Usuario:* {$esc($respuesta)}",
+                    ]);
+                    break;
+            }
+
+
+            try {
+                $notifier->sendMessage($mensaje); // tu servicio ya lo envía por Telegram en Markdown
+                return $this->json(['ok' => true]);
+            } catch (\Throwable $e) {
+                return $this->json(['ok' => false, 'error' => $e->getMessage()], 500);
+            }
         }
 
 

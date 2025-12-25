@@ -1,0 +1,469 @@
+presupuestos:
+  ducha:
+    pasos:
+      - id: medidas
+        pregunta: "¿Qué medidas aproximadas tiene tu bañera? Indica largo y ancho en centímetros (ej. 150 x 70)."
+        clave: medida_platoducha
+        formato:
+          largo: largo_cm
+          ancho: ancho_cm
+        interpretacion: |
+          Devuelve solo un JSON válido.
+          El usuario dará medidas con formatos variados.
+          Tu tarea es extraer **dos valores numéricos en centímetros**:
+            - largo_cm
+            - ancho_cm
+          Reglas:
+          - Si usa metros, conviértelos a centímetros.
+          - Acepta expresiones como "150x70", "150 x 70", "1.5 x 0.7 m".
+          - Acepta frases como "metro y medio por 70".
+          - Si un valor no está claro, estima razonablemente.
+          - Devuelve SIEMPRE ambos valores numéricos.
+          El formato de salida debe ser EXACTAMENTE:
+          {
+            "medida_platoducha": {
+              "largo_cm": <num>,
+              "ancho_cm": <num>
+            }
+          }
+      - id: paredes
+        pregunta: "¿La bañera está entre dos paredes?"
+        clave: entre_paredes
+        opciones:
+          - "sí"
+          - "no"
+
+        interpretacion: |
+          Devuelve SOLO un JSON válido.
+
+          El usuario responderá si la bañera está o no entre dos paredes.
+          Tu tarea es interpretar cualquier respuesta y devolver SIEMPRE un booleano:
+
+          - true  → si está entre dos paredes
+          - false → si NO está entre dos paredes
+
+          Normaliza cualquier expresión del usuario:
+            - sí, si, claro, está entre paredes, afirmativo → true
+            - no, no lo está, está abierta por un lado, negativo → false
+
+          El formato exacto de salida debe ser:
+
+          {
+            "entre_paredes": <true|false>
+          }
+      - id: azulejos
+        pregunta: "¿Quieres tirar azulejos? Puedes indicar: mínimo, hasta 1m, hasta el techo, o una altura aproximada en centímetros."
+        clave: zona_azulejos
+        formato:
+          categoria: "<minimo | hasta_1m | hasta_el_techo | altura_grifo | personalizado>"
+          altura_cm: numero_en_cm        
+        interpretacion: |
+          Eres un analizador estricto. Devuelves SIEMPRE solo un JSON válido y bien formado, sin texto alrededor.
+
+          Tarea:
+          Convertir la respuesta del usuario sobre cuánto azulejo quiere tirar en el siguiente formato EXACTO:
+
+          {
+            "zona_azulejos": {
+              "categoria": "<minimo | hasta_1m | hasta_el_techo | altura_grifo | personalizado>",
+              "altura_cm": <numero_entero_en_cm>
+            }
+          }
+
+          Reglas estrictas:
+          - "mínimo", "minimo" → categoria = "minimo", altura_cm = 30
+          - "hasta 1m", "1 metro", "100 cm" → categoria = "hasta_1m", altura_cm = 100
+          - "hasta el techo", "techo", "todo" → categoria = "hasta_el_techo", altura_cm = 240
+          - "altura del grifo", "a la altura del grifo" → categoria = "altura_grifo", altura_cm = 110
+          - Cualquier número expresado en:
+              • cm → usar ese número
+              • metros (1.5 m, 1,5m, 1 m 20) → convertir a centímetros
+          - En caso de valor numérico → categoria = "personalizado"
+          - altura_cm debe ser SIEMPRE un entero.
+
+          Devuelve SOLO el JSON. Sin explicaciones.
+  
+
+      - id: reposicion
+        pregunta: "¿Tienes azulejos suficientes para reponer los que se rompan al retirar la bañera?"
+        clave: reposicion_azulejos
+        opciones:
+          - "sí"
+          - "no"
+
+        interpretacion: |
+          Devuelve SOLO un JSON válido.
+
+          El usuario responderá si dispone o no de suficientes azulejos para reponer
+          los que se rompan o sean necesarios al retirar la bañera.
+          
+          Tu tarea es interpretar cualquier respuesta y devolver SIEMPRE un booleano:
+
+          - false  → si el usuario TIENE azulejos suficientes para reponer.
+          - true → si el usuario NO tiene azulejos suficientes y habrá que buscar similares.
+
+          Normaliza cualquier tipo de respuesta:
+          - "sí tengo", "sí hay", "tengo azulejos", "me llegan" → false
+          - "no", "no tengo", "no llegan", "habrá que buscar otros", "no creo" → true
+          - respuestas ambiguas como "creo que sí", "algo tengo" → interpretar como true SOLO si menciona azulejos físicos.
+          - respuestas ambiguas como "creo que no", "no estoy seguro" → interpretar como false por defecto.
+
+          El formato exacto de salida debe ser:
+
+          {
+            "reposicion_azulejos": <true|false>
+          }
+      - id: techo
+        pregunta: "¿Hay escayola en el techo y deseas mantenerla?"
+        clave: mantener_escayola
+
+        condiciones:
+          zona_azulejos.categoria: ["hasta_el_techo"]
+
+        opciones:
+          - "sí"
+          - "no"
+
+        interpretacion: |
+          Devuelve SOLO un JSON válido.
+
+          Esta pregunta solo aparece si el usuario va a alicatar hasta el techo.
+          La intención es saber si la escayola del techo debe mantenerse o retirarse.
+
+          Normaliza la respuesta a un booleano:
+
+          - true  → si el usuario desea mantener la escayola
+          - false → si el usuario NO desea mantenerla (habrá que retirarla o cortarla)
+
+          Normalización:
+          - "sí", "mantener", "quiero mantenerla", "que quede", "no tocar" → true
+          - "no", "quitar", "retirar", "fuera", "no mantener", "me da igual" → false
+
+          El formato exacto de salida debe ser:
+
+          {
+            "mantener_escayola": <true|false>
+          }
+      - id: grifo
+        pregunta: "¿Quieres cambiar el grifo actual?"
+        clave: accion_grifo
+        opciones:
+          - "si"
+          - "no"
+        interpretacion: |
+          Devuelve SOLO un JSON válido.
+          
+          El usuario indicará si quiere mantener o cambiar el grifo.
+          Normaliza SIEMPRE la respuesta a uno de estos valores:
+          - "no", "mantener", "dejar el que tengo", "me vale" → false
+          - "si", "cambiar", "quiero otro", "poner nuevo", "sustituir" → true
+
+          Ejemplos:
+          - "dejar el que tengo", "mantenerlo", "me vale" → false
+          - "quiero otro", "cambiarlo", "poner nuevo", "sustituir" → true
+
+          Formato exacto:
+          {
+            "accion_grifo": "<true|false>"
+          }
+      - id: tipo_griferia
+        pregunta: "¿Qué tipo de grifería quieres instalar? (barra de ducha, termostática, normal)"
+        clave: tipo_griferia
+
+        condiciones:
+          accion_grifo: [true]
+
+        opciones:
+          - "barra"
+          - "termostatica"
+          - "normal"
+
+        interpretacion: |
+          Devuelve SOLO un JSON válido.
+
+          El usuario debe elegir el tipo de grifería que quiere instalar.
+          Normaliza la respuesta a uno de estos valores:
+          - "barra"
+          - "termostatica"
+          - "normal"
+
+          Ejemplos:
+          - "una barra", "con barra", "barra de ducha" → "barra"
+          - "termostático", "termostatica" → "termostatica"
+          - "estándar", "normal", "simple" → "normal"
+
+          Formato exacto:
+          {
+            "tipo_griferia": "<barra|termostatica|normal>"
+          }
+
+     
+      - id: mampara
+        pregunta: "Selecciona una opción de mampara"  # ← NECESARIO PARA EVITAR undefined
+        clave: tipo_mampara
+        tipo: opciones_condicionales
+        textos:
+          si_entre_paredes: "Perfecto, como tu plato de ducha quedará entre dos paredes, estas son las mamparas que se pueden instalar:"
+          no_entre_paredes: "Como el plato estará abierto por un lateral, puedes elegir cualquiera de estas mamparas:"
+        opciones:
+          fijo:
+            label: "Fijo"
+            condiciones:
+              entre_paredes: [true, false]        
+          fijo_corredera:
+            label: "Fijo + corredera"
+            condiciones:
+              entre_paredes: [true, false]
+          angular:
+            label: "Angular"
+            condiciones:
+              entre_paredes: [false]
+          doble_corredera:
+            label: "Doble corredera"
+            condiciones:
+              entre_paredes: [true, false]
+        interpretacion: |
+          Devuelve SOLO un JSON válido.
+
+          El usuario debe elegir el tipo de mampara que quiere instalar.
+          Normaliza la respuesta a uno de estos valores:
+          Fijo|Fijo + corredera|Angular|Doble corredera
+
+          Ejemplos:
+          - "fija", "fijo", "cristal fijo" → "Fijo
+          - "con puerta", "corra en una puerta" → "Fijo + corredera"
+          - "angular", "que cierre en la esquina" → "Angular"
+          - "doble corredera", "con dos puertas correderas" → "Doble corredera"
+
+          Formato exacto:
+          {
+            "tipo_mampara": "<Fijo|Fijo + corredera|Angular|Doble corredera>"
+          }              
+  baño_completo:
+    pasos:
+      - id: medidas
+        pregunta: "¿Qué medidas aproximadas tiene tu baño? Indica largo, ancho y altura en centímetros (ej. 150 x 70 x 240 de alto)."
+        clave: medida_bano
+        formato:
+          largo: largo_cm
+          ancho: ancho_cm
+          alto: alto_cm
+        interpretacion: |
+          Devuelve solo un JSON válido.
+          El usuario dará medidas con formatos variados.
+          Tu tarea es extraer **tres valores numéricos en centímetros**:
+            - largo_cm
+            - ancho_cm
+            - alto_cm
+          Reglas:
+          - Si usa metros, conviértelos a centímetros.
+          - Acepta expresiones como "150x70", "150 x 70", "1.5 x 0.7 m".
+          - Acepta frases como "metro y medio por 70".
+          - Si un valor no está claro, estima razonablemente.
+          - Devuelve SIEMPRE todos los valores numéricos. Si la altura no se menciona, asume 240 cm.
+          El formato de salida debe ser EXACTAMENTE:
+          {
+            "medida_bano": {
+              "largo_cm": <num>,
+              "ancho_cm": <num>,
+              "alto_cm": <num>
+            }
+          }
+
+      - id: banera_o_ducha
+        pregunta: "¿Quieres una bañera o un plato de ducha? Si sabes las medidas aproximadas, indícalas."
+        clave: banera_o_ducha
+        interpretacion: |
+          Devuelve solo un JSON válido.
+          El usuario puede responder libremente.
+
+          Tu tarea es extraer:
+          - tipo: "banera" o "ducha"
+          - largo_cm
+          - ancho_cm
+
+          Reglas:
+          - Si el usuario menciona bañera → tipo = "banera"
+          - Si menciona plato de ducha o ducha → tipo = "ducha"
+          - Extrae medidas si aparecen (cm o m).
+          - Acepta formatos como:
+            - "plato de ducha 120x80"
+            - "bañera 170 x 70"
+            - "ducha grande"
+            - "bañera normal"
+          - Si no hay medidas claras:
+            - Bañera: 170 x 70 cm
+            - Ducha: 120 x 80 cm
+          - Convierte siempre a centímetros.
+          - Devuelve SIEMPRE tipo, largo_cm y ancho_cm.
+          - Si el usuario dice que quiere cambiar bañera por ducha, tipo = "ducha"
+
+          El formato de salida debe ser EXACTAMENTE:
+          {
+            "banera_o_ducha": {
+              "tipo": "banera|ducha",
+              "largo_cm": <num>,
+              "ancho_cm": <num>
+            }
+          }
+      - id: paredes
+        pregunta: "¿La bañera está entre dos paredes?"
+        clave: entre_paredes
+        opciones:
+          - "sí"
+          - "no"
+
+        interpretacion: |
+          Devuelve SOLO un JSON válido.
+
+          El usuario responderá si la bañera está o no entre dos paredes.
+          Tu tarea es interpretar cualquier respuesta y devolver SIEMPRE un booleano:
+
+          - true  → si está entre dos paredes
+          - false → si NO está entre dos paredes
+
+          Normaliza cualquier expresión del usuario:
+            - sí, si, claro, está entre paredes, afirmativo → true
+            - no, no lo está, está abierta por un lado, negativo → false
+
+          El formato exacto de salida debe ser:
+
+          {
+            "entre_paredes": <true|false>
+          }
+                         
+
+      - id: tipo_griferia
+        pregunta: "¿Qué tipo de grifería quieres instalar? (barra de ducha, termostática, normal)"
+        clave: tipo_griferia
+
+        condiciones:
+          accion_grifo: [true]
+
+        opciones:
+          - "barra"
+          - "termostatica"
+          - "normal"
+
+        interpretacion: |
+          Devuelve SOLO un JSON válido.
+
+          El usuario debe elegir el tipo de grifería que quiere instalar.
+          Normaliza la respuesta a uno de estos valores:
+          - "barra"
+          - "termostatica"
+          - "normal"
+
+          Ejemplos:
+          - "una barra", "con barra", "barra de ducha" → "barra"
+          - "termostático", "termostatica" → "termostatica"
+          - "estándar", "normal", "simple" → "normal"
+
+          Formato exacto:
+          {
+            "tipo_griferia": "<barra|termostatica|normal>"
+          }
+
+      - id: mampara
+        pregunta: "Selecciona una opción de mampara"  # ← NECESARIO PARA EVITAR undefined
+        clave: tipo_mampara
+        tipo: opciones_condicionales
+        textos:
+          si_entre_paredes: "Perfecto, como tu plato de ducha quedará entre dos paredes, estas son las mamparas que se pueden instalar:"
+          no_entre_paredes: "Como el plato estará abierto por un lateral, puedes elegir cualquiera de estas mamparas:"
+        opciones:
+          fijo:
+            label: "Fijo"
+            condiciones:
+              entre_paredes: [true, false]        
+          fijo_corredera:
+            label: "Fijo + corredera"
+            condiciones:
+              entre_paredes: [true, false]
+          angular:
+            label: "Angular"
+            condiciones:
+              entre_paredes: [false]
+          doble_corredera:
+            label: "Doble corredera"
+            condiciones:
+              entre_paredes: [true, false]
+        interpretacion: |
+          Devuelve SOLO un JSON válido.
+
+          El usuario debe elegir el tipo de mampara que quiere instalar.
+          Normaliza la respuesta a uno de estos valores:
+          Fijo|Fijo + corredera|Angular|Doble corredera
+
+          Ejemplos:
+          - "fija", "fijo", "cristal fijo" → "Fijo
+          - "con puerta", "corra en una puerta" → "Fijo + corredera"
+          - "angular", "que cierre en la esquina" → "Angular"
+          - "doble corredera", "con dos puertas correderas" → "Doble corredera"
+
+          Formato exacto:
+          {
+            "tipo_mampara": "<Fijo|Fijo + corredera|Angular|Doble corredera>"
+          }                        
+
+      - id: bide_o_higienico
+        pregunta: "¿Te gustaría bidé, ducha higiénica o no necesitas ninguno?"
+        clave: bide_o_higienico
+        interpretacion: |
+          Devuelve solo un JSON válido.
+          El usuario puede responder libremente.
+
+          Tu tarea es interpretar la opción elegida.
+
+          Extrae:
+          - opcion: "bide" | "higienico" | "ninguno"
+
+          Reglas:
+          - Si menciona bidé → opcion = "bide"
+          - Si menciona ducha higiénica, grifo higiénico o similar → opcion = "higienico"
+          - Si dice que no quiere ninguno, que no lo necesita, que no usa bidé o que le da igual → opcion = "ninguno"
+          - Si la respuesta es ambigua o no se entiende claramente:
+            - Asume "ninguno" por defecto.
+          - No devuelvas textos adicionales.
+
+          El formato de salida debe ser EXACTAMENTE:
+          {
+            "bide_o_higienico": {"bide|higienico|ninguno"}
+          }
+
+      - id: mueble_bano
+        pregunta: "¿Quieres mueble de baño con lavabo? Si es así, ¿qué medida aproximada te encaja mejor (80, 90 o 100 cm)?"
+        clave: mueble_bano
+        interpretacion: |
+          Devuelve solo un JSON válido.
+          El usuario puede responder libremente.
+
+          Tu tarea es interpretar:
+          - si quiere mueble o no
+          - la medida del mueble si aplica
+
+          Extrae:
+          - quiere: true | false
+          - medida_cm: 80 | 90 | 100 | null
+
+          Reglas:
+          - Si el usuario dice que no quiere mueble → quiere = false, medida_cm = null
+          - Si dice que sí quiere mueble:
+              - Extrae la medida si aparece (80, 90 o 100).
+              - Acepta frases como:
+                - "uno de 80"
+                - "90 cm"
+                - "el típico de 100"
+                - "mueble normal"
+          - Si quiere mueble pero no indica medida:
+              - Asume 80 cm por defecto.
+          - No aceptes otras medidas.
+          - No devuelvas textos adicionales.
+
+          El formato de salida debe ser EXACTAMENTE:
+          {
+            "mueble_bano": {
+              "quiere": true|false,
+              "medida_cm": 80|90|100|null
+            }
+          }

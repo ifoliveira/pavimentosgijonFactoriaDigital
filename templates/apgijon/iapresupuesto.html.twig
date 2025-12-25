@@ -82,7 +82,6 @@
             </div>
             <form id="chat-form" class="d-flex">
                 <input type="text" id="chat-input" class="form-control me-2" placeholder="Escribe tu respuesta y pulsa Enviar" autocomplete="off">
-
                 <button type="submit" class="btn btn-primary">Enviar</button>
             </form>
           </div>
@@ -413,26 +412,26 @@
 
     // Lanzar tracking de "first_question_shown" una sola vez por sesión de chat
     // (no necesitamos el texto exacto; si quieres, puedes añadirlo desde tu handler)
-    if (!firstQTracked) {
-      firstQTracked = true;
-      safeTrack({
-        evento: 'first_question_shown',
-        tipo: tipoReformaActual,
+   //if (!firstQTracked) {
+    //  firstQTracked = true;
+    //  safeTrack({
+    //    evento: 'first_question_shown',
+    //    tipo: tipoReformaActual,
         // Si quieres enviar la última pregunta AI mostrada, descomenta:
         // pregunta: ultimaPreguntaAIDetectada()
-      });
+    //  });
       // Temporizador de abandono si no hay respuesta
-      firstQTimer = setTimeout(() => {
-        if (!firstQAnswered) {
-          safeTrack({ evento: 'first_question_abandon', tipo: tipoReformaActual });
-          // GA4 opcional
-          if (window.gtag) gtag('event', 'first_question_abandon', { tipo: tipoReformaActual || 'desconocido' });
-        }
-      }, TIMEOUT_ABANDONO_MS);
+    //  firstQTimer = setTimeout(() => {
+    //    if (!firstQAnswered) {
+    //      safeTrack({ evento: 'first_question_abandon', tipo: tipoReformaActual });
+     //     // GA4 opcional
+    //      if (window.gtag) gtag('event', 'first_question_abandon', { tipo: tipoReformaActual || 'desconocido' });
+    //    }
+    //  }, TIMEOUT_ABANDONO_MS);
 
       // GA4 opcional
-      if (window.gtag) gtag('event', 'first_question_shown', { tipo: tipoReformaActual || 'desconocido' });
-    }
+    //  if (window.gtag) gtag('event', 'first_question_shown', { tipo: tipoReformaActual || 'desconocido' });
+    //}
 
     // Dejar que tu función haga todo lo demás
     if (typeof iniciarChatOriginal === 'function') {
@@ -456,10 +455,10 @@
   // Si se van de la página sin responder, intenta registrar abandono
   document.addEventListener('visibilitychange', function(){
     if (document.visibilityState === 'hidden' && firstQTracked && !firstQAnswered) {
-      navigator.sendBeacon?.(TRACK_URL, JSON.stringify({
-        evento: 'first_question_abandon',
-        tipo: tipoReformaActual || null
-      }));
+     // navigator.sendBeacon?.(TRACK_URL, JSON.stringify({
+      //  evento: 'first_question_abandon',
+      //  tipo: tipoReformaActual || null
+      //}));
     }
   });
 

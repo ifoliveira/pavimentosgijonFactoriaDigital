@@ -278,9 +278,6 @@ class Banks_N43
         $comision = array ("DESCUENTOS", "COMISIONES");
         $otros = array("5540XXXXXXXX5018");
 
-        var_dump($concepto);
-        die;
-
         foreach ($gastofijo as &$valor) {
             if (in_array($valor, $concepto)) {
                 $tipo->setDescripcionTm("Gasto Fijo");

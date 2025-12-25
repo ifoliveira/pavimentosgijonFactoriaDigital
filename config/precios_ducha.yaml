@@ -1,0 +1,216 @@
+manoObra:
+
+  albanil:
+    base:
+      precio: 450
+      descripcion: |
+          Albañil — Trabajo base
+          Retirada de plato de ducha antiguo
+          Desescombrar
+          Preparar paredes para azulejar con cola
+          Colocar plato de ducha
+    minimo:
+      precio: 50
+      descripcion: "Albañil — Alicatado mínimo (zona pequeña)"
+    hasta1m:
+      precio: 150
+      descripcion: "Albañil — Alicatado hasta 1 metro"
+    hastaTecho:
+      precio: 350
+      descripcion: "Albañil — Alicatado hasta el techo"
+    personalizado:
+      precio: 175
+      descripcion: "Albañil — Alicatado por m²"
+
+  fontanero:
+    base:
+      precio: 200
+      descripcion: |
+          Fontanero — Trabajo base
+          Instalación de tomas, plato de ducha y desagües
+          Colocar grifo de ducha o barra 
+
+  escayolista:
+    base:
+      precio: 150
+      descripcion: "Escayolista — Reparación de techo y moldura de escayola"
+
+  colocadorMampara:
+    base:
+      precio: 70
+      descripcion: "Instalación de mampara"
+
+
+materiales:
+
+  plato:
+    semicircular:
+      precio: 300
+      descripcion: "Plato de ducha semicircular"
+    pequeno:
+      precio: 420
+      descripcion: "Plato de ducha tamaño pequeño"
+    medio:
+      precio: 480
+      descripcion: "Plato de ducha tamaño medio"
+    grande:
+      precio: 590
+      descripcion: "Plato de ducha tamaño grande"
+
+  mampara:
+    fija:
+      precio: 550
+      descripcion: "Mampara fija"
+    fijoCorredera:
+      precio: 780
+      descripcion: "Mampara fijo + corredera"
+    angular:
+      precio: 880
+      descripcion: "Mampara angular"
+    dobleCorredera:
+      precio: 1150
+      descripcion: "Mampara doble corredera"
+    defecto:
+      precio: 780
+      descripcion: "Mampara estándar por defecto"
+
+  griferia:
+    mantener:
+      precio: 0
+    normal:
+      precio: 115
+      descripcion: "Grifería monomando estándar"
+    barra:
+      precio: 295
+      descripcion: "Columna/barra de ducha"
+    termostatica:
+      precio: 200
+      descripcion: "Grifería termostática"
+
+  azulejo:
+    reposicionM2:
+      precio: 32
+      descripcion: "Reposición de azulejo por m²"
+    colaM2:
+      precio: 80
+      descripcion: "Cola y materiales de agarre (H40)"
+
+
+reglas:
+
+
+  # --- REPOSICIÓN DE AZULEJOS POR M² ---
+  - si: "reposicion_azulejos == true"
+    calcular:
+      alto: "zona_azulejos.altura_cm / 100"
+
+      largo: "medida_platoducha.largo_cm / 100"
+      ancho: "medida_platoducha.ancho_cm / 100"
+
+      perimetro: "largo + ancho * 2"
+
+      m2_reposicion: "alto * perimetro"
+
+    sumar:
+      materiales_azulejo_reposicionM2: "round(m2_reposicion * materiales.azulejo.reposicionM2.precio,0)"
+
+
+
+
+
+  # GRIFERÍA (solo si se cambia)
+  - si: "accion_grifo == true && tipo_griferia == 'mantener'"
+    sumar:
+      materiales_griferia: "materiales.griferia.mantener.precio"
+
+  - si: "accion_grifo == true && tipo_griferia == 'normal'"
+    sumar:
+      materiales_griferia: "materiales.griferia.normal.precio"
+
+  - si: "accion_grifo == true && tipo_griferia == 'barra'"
+    sumar:
+      materiales_griferia: "materiales.griferia.barra.precio"
+
+  - si: "accion_grifo == true && tipo_griferia == 'termostatica'"
+    sumar:
+      materiales_griferia: "materiales.griferia.termostatica.precio"
+
+
+  # MAMPARA
+  - si: "tipo_mampara == 'Fijo'"
+    sumar:
+      materiales_mampara: "materiales.mampara.fija.precio"
+      manoObra_mampara: "manoObra.colocadorMampara.base.precio"
+
+  - si: "tipo_mampara == 'Fijo + corredera'"
+    sumar:
+      materiales_mampara: "materiales.mampara.fijoCorredera.precio"
+      manoObra_mampara: "manoObra.colocadorMampara.base.precio"
+
+  - si: "tipo_mampara == 'Angular'"
+    sumar:
+      materiales_mampara: "materiales.mampara.angular.precio"
+      manoObra_mampara: "manoObra.colocadorMampara.base.precio"
+
+  - si: "tipo_mampara == 'Doble corredera'"
+    sumar:
+      materiales_mampara: "materiales.mampara.dobleCorredera.precio"
+      manoObra_mampara: "manoObra.colocadorMampara.base.precio"
+
+  - si: "tipo_mampara != 'Fijo' && tipo_mampara != 'Fijo + corredera' && tipo_mampara != 'Angular' && tipo_mampara != 'Doble corredera'"
+    sumar:
+      materiales_mampara: "materiales.mampara.defecto.precio"
+      manoObra_mampara: "manoObra.colocadorMampara.base.precio"
+
+
+  # PLATOS SEGÚN TAMAÑO
+  - si: "medida_platoducha.largo_cm < 140"
+    sumar:
+      materiales_plato: "materiales.plato.pequeno.precio"
+
+  - si: "medida_platoducha.largo_cm >= 140 && medida_platoducha.largo_cm <= 160"
+    sumar:
+      materiales_plato: "materiales.plato.medio.precio"
+
+  - si: "medida_platoducha.largo_cm > 160"
+    sumar:
+      materiales_plato: "materiales.plato.grande.precio"
+
+  - si: "true"
+    sumar:
+      materiales_colaH40: "materiales.azulejo.colaM2.precio"   
+  
+  # ESCAYOLA
+  - si: "exists(mantener_escayola)"
+    sumar:
+      manoObra_escayola: "materiales.escayolista.base.precio"
+
+  # BASE (siempre se suma)
+  - si: "true"
+    sumar:
+      manoObra_albanilBase: "manoObra.albanil.base.precio"
+      manoObra_fontaneroBase: "manoObra.fontanero.base.precio"
+  
+
+
+  # ZONA AZULEJOS
+
+  - si: "zona_azulejos.categoria == 'minimo'"
+    sumar:
+      manoObra_hasta1m: "manoObra.albanil.minimo.precio"
+
+  - si: "zona_azulejos.categoria == 'hasta_1m'"
+    sumar:
+      manoObra_hasta1m: "manoObra.albanil.hasta1m.precio"
+
+  - si: "zona_azulejos.categoria == 'hasta_el_techo'"
+    sumar:
+      manoObra_hastaTecho: "manoObra.albanil.hastaTecho.precio"
+
+  # --- PERSONALIZADO POR METROS ---
+  - si: "zona_azulejos.categoria == 'personalizado'"
+    sumar:
+      manoObra_albanil_personalizado: "manoObra.albanil.personalizado.precio"
+
+
+

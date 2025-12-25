@@ -1,0 +1,75 @@
+{# templates/iapresupuesto/_modal.html.twig #}
+
+<!-- MODAL PDF -->
+<div id="pdf-modal" class="pdf-modal-overlay" style="display:none;">
+    <div class="pdf-modal-card">
+        
+        <button id="pdf-close" class="pdf-close-btn">✖</button>
+
+        <h3 class="pdf-title">📄 Descargar presupuesto</h3>
+
+        <div class="pdf-field">
+            <label for="pdf-nombre">Nombre *</label>
+            <input id="pdf-nombre" type="text" placeholder="Introduce tu nombre">
+            <small class="pdf-error" id="error-nombre"></small>
+        </div>
+
+        <div class="pdf-field">
+            <label for="pdf-email">Email *</label>
+            <input id="pdf-email" type="email" placeholder="Introduce tu correo electrónico">
+            <small class="pdf-error" id="error-email"></small>
+        </div>
+
+        <button id="pdf-descargar" class="pdf-submit">
+            📥 Descargar PDF
+        </button>
+
+    </div>
+</div>
+
+<div id="modal-presupuesto" class="pg-modal hidden" aria-hidden="true">
+  <div class="pg-modal__backdrop"></div>
+
+  <div class="pg-modal__panel" role="dialog" aria-modal="true">
+  
+    <div class="pg-carousel" id="pg-carousel">
+      {# OJO: mete aquí tus fotos reales en /public/img/obras/ #}
+    {# SLIDE ESPECIAL #}
+      <div class="pg-carousel__calc">
+        <div>
+           <strong>Calculando tu presupuesto</strong>
+            <span>Materiales · Mano de obra · Medidas</span>
+        </div>
+      </div>       
+        <div class="pg-slide active">
+            <img src="{{ asset('Light-HTML/img/gallery/plato1.jpeg') }}">
+            <div class="pg-slide-text">Reforma real</div>
+        </div>
+        <div class="pg-slide">
+            <img src="{{ asset('Light-HTML/img/services/duchaporbaneraCabecera.webp') }}">
+            <div class="pg-slide-text">Plato de ducha antideslizante</div>
+        </div>
+         <div class="pg-slide">
+            <img src={{ asset('/Light-HTML/img/gallery/bano2-mini.jpeg')}} alt="Reforma real 3">
+            <div class="pg-slide-text">Reforma baño completo</div>
+        </div>
+        <div class="pg-slide">
+            <img src={{ asset('/Light-HTML/img/services/ReformaIntegralBano.webp')}} alt="Reforma real 4">
+            <div class="pg-slide-text">Reforma integral de baño</div>
+        </div>
+    </div>
+
+    <div class="pg-modal__text" id="pg-modal-text"></div>
+
+    <div class="pg-modal__actions hidden" id="pg-modal-actions">
+      <button type="button" class="pg-btn" id="pg-btn-descargar">
+        Descargar presupuesto en PDF
+      </button>
+
+      <button type="button" class="pg-btn pg-btn--ghost" id="pg-btn-cerrar">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+

@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (!match) {
         appendMessage(data.reply, 'ai');
+        trackEvent({ evento: 'user_interaction', pregunta: data.reply  });
         chatHistory.push({ role: 'assistant', content: data.reply });
         return;
       }

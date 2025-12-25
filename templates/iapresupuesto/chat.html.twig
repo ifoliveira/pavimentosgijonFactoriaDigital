@@ -1,0 +1,30 @@
+{# templates/iapresupuesto/chat.html.twig #}
+
+
+{% extends 'base_light.html.twig' %}
+
+{% block title %}Chat con experto en reformas | Pavimentos Gijón{% endblock %}
+
+{% block body %}
+  <div class="single-services-page pt-70 pb-40">
+    <div class="container">
+      {% include 'iapresupuesto/_selector.html.twig' %}
+      {% include 'iapresupuesto/_chatbox.html.twig' %}
+    </div>
+  </div>
+
+  {% include 'iapresupuesto/_gallery.html.twig' %}
+  {% include 'iapresupuesto/_modal.html.twig' %}
+
+{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  {% include 'iapresupuesto/_styles_chat.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  {% include 'iapresupuesto/_scripts_chat.html.twig' %}
+{% endblock %}
+

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta content="Reformas de baños, Gijón..." name="keywords">
+        <meta content="Descubre en Gijón la excelencia..." name="description">
+        <meta property="og:image" content="{{ asset('assets/images/logo.png') }}" />
+        <meta property="og:title" content="Reformas integrales baños Gijón"/>
+        <meta property="og:url" content="https://www.pavimentosgijon.es" />
+        <meta property="og:site_name" content="Tienda de baño en Gijón" />
+        <meta property="og:type" content="mainpage"/>
+        <meta name="google-site-verification" content="CmHAjduH_5Xi65uGO9HjE2KDDG5Oh8H6-GtPlf_qOv8"/>
+
+        <link rel="preload" as="image" href="{{ asset('/Light-HTML/img/services/ReformaIntegralBano.webp') }}">
+        <title>{% block title %}Pavimentos Gijón{% endblock %}</title>
+
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('/img/favicon.png') }}">
+        <link href="{{ asset('/Light-HTML/css/bootstrap.min.css') }}" rel="stylesheet">
+        <link href="{{ asset('/Light-HTML/css/bootstrap-icons.css') }}" rel="stylesheet">
+        <link href="{{ asset('/Light-HTML/css/owl.carousel.min.css') }}" rel="stylesheet">
+        <link href="{{ asset('/Light-HTML/css/owl.theme.default.min.css') }}" rel="stylesheet">
+        <link href="{{ asset('/Light-HTML/css/venobox.css') }}" rel="stylesheet">
+        <link href="{{ asset('/Light-HTML/css/custom.css') }}" rel="stylesheet">
+        <link href="{{ asset('/Light-HTML/css/responsive.css') }}" rel="stylesheet">
+        <link href="{{ asset('/Light-HTML/css/helper.css') }}" rel="stylesheet">
+
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body>
+        <!-- Preloader -->
+        <div id="preloader">
+            <div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>
+        </div>
+
+        <!-- Header -->
+        {% include 'apgijon/header.html.twig' %}
+
+        <!-- Cuerpo principal -->
+        {% block body %}{% endblock %}
+
+        <!-- Footer -->
+        {% include 'apgijon/footer.html.twig' %}
+
+        <!-- Botón flotante -->
+        <a href="{{ path('iapresupuesto') }}" id="btnFlotantePresupuesto" class="d-md-none"
+            style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background-color: #007bff; color: white;
+                    padding: 14px 20px; border-radius: 30px; font-size: 16px; text-decoration: none; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">
+            💬 Presupuesto Calcula ahora
+        </a>
+
+        <!-- JS scripts -->
+        <script src="{{ asset('/Light-HTML/js/jquery-3.6.0.min.js') }}"></script>
+        <script src="{{ asset('/Light-HTML/js/bootstrap.bundle.min.js') }}"></script>
+        <script src="{{ asset('/Light-HTML/js/waypoints.min.js') }}"></script>
+        <script src="{{ asset('/Light-HTML/js/jquery.counterup.min.js') }}"></script>
+        <script src="{{ asset('/Light-HTML/js/venobox.min.js') }}"></script>
+        <script src="{{ asset('/Light-HTML/js/owl.carousel.min.js') }}"></script>
+        <script src="{{ asset('/Light-HTML/js/jquery.sticky.js') }}"></script>
+        <script src="{{ asset('/Light-HTML/js/custom.js') }}"></script>
+
+        {% block javascripts %}{% endblock %}
+
+
+    </body>
+</html>

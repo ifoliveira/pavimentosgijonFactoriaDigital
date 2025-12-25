@@ -1,0 +1,72 @@
+presupuestos:
+  ducha:
+    pasos:
+      - id: medidas
+        pregunta: "¿Qué medidas aproximadas tiene tu bañera?"
+        clave: medidas_bañera
+
+      - id: paredes
+        pregunta: "¿La bañera está entre dos paredes?"
+        clave: entre_paredes
+        opciones:
+          - "sí"
+          - "no"
+
+      - id: azulejos
+        pregunta: "¿Quieres tirar azulejos? (mínimo, hasta 1m o hasta el techo)"
+        clave: zona_azulejos
+        opciones:
+          - "mínimo"
+          - "hasta_1m"
+          - "hasta_el_techo"
+
+      - id: reposicion
+        pregunta: "¿Tienes azulejos para reponer o hay que buscar similares?"
+        clave: reposicion_azulejos
+        condiciones:
+          zona_azulejos: ["hasta_1m", "hasta_el_techo"]
+
+      - id: techo
+        pregunta: "¿¿Hay escayola o quieres alicatar hasta el techo?"
+        clave: alicatar_hasta_techo
+        condiciones:
+          zona_azulejos: ["hasta_el_techo"]
+
+      - id: grifo
+        pregunta: "¿Quieres mantener el grifo actual o cambiarlo?"
+        clave: accion_grifo
+        opciones:
+          - "mantener"
+          - "cambiar"
+
+      - id: tipo_griferia
+        pregunta: "¿Qué tipo de grifería quieres instalar? (barra, termostática, normal)"
+        clave: tipo_griferia
+        condiciones:
+          accion_grifo: ["cambiar"]
+
+      - id: mampara
+        pregunta: "¿Qué tipo de mampara quieres? (fijo+corredera, angular, doble corredera)"
+        clave: tipo_mampara
+
+
+  baño_completo:
+    pasos:
+      - id: superficie
+        pregunta: "¿Cuántos m² tiene aproximadamente el baño?"
+        clave: superficie_m2
+      - id: azulejo_altura
+        pregunta: "¿Quieres alicatar hasta 1m o hasta el techo?"
+        clave: altura_azulejo
+      - id: sanitarios
+        pregunta: "¿Qué sanitarios quieres incluir? (inodoro, lavabo, plato ducha, mueble)"
+        clave: sanitarios
+      - id: griferia
+        pregunta: "¿Qué tipo de grifería quieres? (empotrada, estándar)"
+        clave: griferia
+      - id: ducha_o_bañera
+        pregunta: "¿Quieres plato de ducha o bañera?"
+        clave: tipo_ducha
+      - id: mampara
+        pregunta: "¿Quieres añadir mampara? ¿Cuál?"
+        clave: tipo_mampara

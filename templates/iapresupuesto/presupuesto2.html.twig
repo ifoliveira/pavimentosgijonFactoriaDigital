@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+
+        body {
+            font-family: 'Inter', DejaVu Sans, sans-serif;
+            background: #ffffff;
+            padding: 20px;
+            color: #1f2937;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+
+        .header-title {
+            font-size: 26px;
+            font-weight: 900;
+            color: #3b82f6;
+        }
+
+        .header-sub {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .cliente-box {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-left: 4px solid #3b82f6;
+            background: #f3f7ff;
+            border-radius: 6px;
+        }
+
+        .cliente-box strong { font-weight: 700; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        th {
+            text-align: left;
+            padding: 8px;
+            background: #3b82f6;
+            color: white;
+            font-weight: 700;
+        }
+
+        td {
+            padding: 5px 6px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+            line-height: 1.3;
+        }
+        td::before {
+            content: "– ";
+            color: #3b82f6;
+            font-weight: 700;
+        }
+
+        .categoria {
+            background: #e5f1ff;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            color: #1e40af;
+            padding: 4px 6px;
+        }
+
+        .total-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: #e0f2fe;
+            border: 2px solid #7dd3fc;
+            font-size: 16px;
+            font-weight: 700;
+            text-align: right;
+            border-radius: 6px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="header-title">PAVIMENTOS GIJÓN</div>
+        <div class="header-sub">Presupuesto Provisional</div>
+    </div>
+
+    <div class="cliente-box">
+        <strong>Nombre:</strong> {{ nombre }} · 
+        <strong>Email:</strong> {{ email }} · 
+        <strong>Reforma:</strong> {{ tipo|capitalize }}
+    </div>
+
+    <table>
+        <tr>
+            <th>Detalle de los trabajos incluidos</th>
+        </tr>
+
+        <!-- CATEGORÍA MATERIALES -->
+        <tr>
+            <td class="categoria">Materiales</td>
+        </tr>
+
+        {% for concepto, importe in materiales %}
+        <tr>
+            <td>{{ concepto }}</td>
+        </tr>
+        {% endfor %}
+
+        <!-- CATEGORÍA MANO DE OBRA -->
+        <tr>
+            <td class="categoria">Mano de obra</td>
+        </tr>
+
+        {% for concepto, importe in mano_obra %}
+        <tr>
+            <td>{{ concepto|nl2br }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+
+    <div class="total-box">
+        Total: {{ total }} €
+    </div>
+
+    <div class="venta-box">
+        <strong>Una reforma cómoda, clara y sin sobresaltos.</strong><br><br>
+
+        Nuestro servicio está pensado para que la obra te resulte lo más cómoda posible.
+        El día de mayor actividad es el primero (retirada del plato o bañera, preparación y replanteo).
+        El resto del proceso —mampara, ajustes y remates— es mucho más ligero y apenas genera molestias.<br><br>
+
+        ✔ Materiales de calidad y primeras marcas<br>
+        ✔ Colaboramos con equipos, profesionales y puntuales<br>
+        ✔ Precio cerrado y transparente<br>
+        ✔ Más de 20 años reformando baños en Gijón<br><br>
+
+        <strong>Plazo actual:</strong><br>
+        Podemos programar tu obra en **2–3 semanas**, dependiendo de la agenda en el momento de confirmar.<br><br>
+        Para avanzar, resolver dudas o confirmar la fecha, simplemente responde a este correo.
+
+    </div>    
+
+    <div class="footer">
+        Pavimentos Gijón · 684 608 811 · 985 391 326 www.pavimentosgijon.es<br>
+        Este presupuesto es provisional — Validez 30 días.
+    </div>
+
+</body>
+</html>

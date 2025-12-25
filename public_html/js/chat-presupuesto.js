@@ -1,5 +1,22 @@
 let chatHistory = [];
 let chatStarted = false;
+// === TRACKING / TELEGRAM ===
+let firstQuestionSent = false;   // evita duplicados
+let tipoReformaActual = null;
+const chatId = (crypto?.randomUUID?.() || Math.random().toString(36).slice(2)) + '-' + Date.now();
+
+async function trackEvent({ evento, pregunta = null, respuesta = null }) {
+  try {
+    await fetch('/api/presupuesto/chat-track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ evento, tipo: tipoReformaActual, chatId, pregunta, respuesta })
+    });
+  } catch (e) {
+    console.warn('No se pudo enviar el seguimiento a Telegram.', e);
+  }
+}
+
 
 const appendMessage = (msg, sender) => {
   const chatMessages = document.getElementById('chat-messages');
@@ -11,15 +28,20 @@ const appendMessage = (msg, sender) => {
 };
 
 function iniciarChat(tipo) {
+
+  // 1) Estado base + UI
+  tipoReformaActual = tipo || null;
+
   sessionStorage.removeItem('chatHistory');
   localStorage.removeItem('ultimoPresupuestoAI');
-  const prompt = getPromptSistema(tipo);
 
+  const prompt = getPromptSistema(tipo);
   chatHistory = [{ role: 'system', content: prompt }];
 
   document.getElementById('selector-reforma').style.display = 'none';
   document.getElementById('chat-box').style.display = 'block';
 
+  // 2) Mensaje de bienvenida (igual que tenías)
   let mensajeInicio = '';
   if (tipo === 'ducha') {
     mensajeInicio = "🚿 Has elegido cambiar la bañera por un plato de ducha. Te haré unas preguntas rápidas para calcular un presupuesto orientativo. Si más adelante quieres comparar dos opciones (por ejemplo, con y sin bidé, o cambiando el grifo o no), te preparo primero este presupuesto y luego podemos generar otro con las diferencias que quieras.";
@@ -32,6 +54,10 @@ function iniciarChat(tipo) {
   appendMessage(mensajeInicio, 'system');
   chatStarted = true;
   
+  // 3) 📲 TELEGRAM: tipo seleccionado
+    trackEvent({ evento: 'tipo_seleccionado' });
+  
+  // 4) Llamada a la IA para la primera pregunta
   fetch(RUTA_CHAT, {
     method: 'POST',
     headers: {
@@ -42,57 +68,77 @@ function iniciarChat(tipo) {
   })
   .then(response => response.json())
   .then(data => {
-    const match = data.reply.match(/```json\s*([\s\S]*?)```/) || data.reply.match(/{[\s\S]*}/);
-    const jsonText = match ? match[1] || match[0] : null;
+    // === EXTRAER JSON Y PREGUNTA ===
+    const jsonBlock = data.reply.match(/```json\s*([\s\S]*?)```/);
+    let jsonText = null, textoPregunta = data.reply;
 
-    if (!jsonText) {
-      appendMessage(data.reply, 'ai');
-      chatHistory.push({ role: 'assistant', content: data.reply });
-      return;
+    if (jsonBlock) {
+      jsonText = jsonBlock[1];
+      textoPregunta = data.reply.replace(jsonBlock[0], '').trim();
+    } else {
+      const inline = data.reply.match(/{[\s\S]*}/);
+      if (inline) {
+        jsonText = inline[0];
+        textoPregunta = data.reply.replace(inline[0], '').trim();
+      }
     }
 
-    let jsonObj = null;
-    try {
-      const cleaned = jsonText.replace(/\/\/.*$/gm, '');
-      jsonObj = JSON.parse(cleaned);
-    } catch (e) {
-      appendMessage("❌ Error al procesar el JSON", 'ai');
-      return;
+    // Si hay texto (pregunta), lo mostramos y lo guardamos
+    if (textoPregunta) {
+      appendMessage(textoPregunta, 'ai');
+      chatHistory.push({ role: 'assistant', content: textoPregunta });
+
+      // 📲 TELEGRAM: primera pregunta (una sola vez)
+      //if (!firstQuestionSent) {
+      //  firstQuestionSent = true;
+        // Cuando recibas la primera pregunta de la IA:
+        trackEvent({ evento: 'first_question_shown', pregunta: textoPregunta });
+      //}
     }
 
-    window.ultimoPresupuestoJson = jsonObj;
+    // Si hay JSON, procesarlo
+    if (jsonText) {
+      let jsonObj = null;
+      try {
+        const cleaned = jsonText.replace(/\/\/.*$/gm, '');
+        jsonObj = JSON.parse(cleaned);
+      } catch (e) {
+        appendMessage("❌ Error al procesar el JSON", 'ai');
+        return;
+      }
 
-    if (!esJsonCompleto(jsonObj)) {
-    appendMessage("⚠️ Aún no tengo toda la información. Vamos a seguir con algunas preguntas más antes de calcular.", 'ai');
-    return;
-    }
+      window.ultimoPresupuestoJson = jsonObj;
 
-    fetch(RUTA_CALCULAR, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(jsonObj)
-    })
-    .then(res => res.json())
-    .then(presupuesto => {
-      const texto = `
+      if (!esJsonCompleto(jsonObj)) {
+        // No calculamos aún; solo seguimos preguntando (ya hemos mostrado la pregunta arriba)
+        return;
+      }
+
+      // JSON completo → calcular
+      fetch(RUTA_CALCULAR, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonObj)
+      })
+      .then(res => res.json())
+      .then(presupuesto => {
+        const texto = `
 💼 <strong>Presupuesto estimado</strong><br>
 - Mano de obra: <strong>${presupuesto.mano_obra} €</strong><br>
 - Materiales: <strong>${presupuesto.materiales} €</strong><br>
 - Total estimado: <strong>${presupuesto.total_estimado_min} €</strong> a <strong>${presupuesto.total_estimado_max} €</strong><br><br>
 📄 <a href="#" onclick="descargarPdfPresupuesto()" class="btn btn-sm btn-outline-primary">Descargar PDF</a>`;
-      appendMessage(texto, 'ai');
-    })
-    .catch(() => {
-      appendMessage("❌ Error al calcular el presupuesto.", 'ai');
-    });
+        appendMessage(texto, 'ai');
+      })
+      .catch(() => {
+        appendMessage("❌ Error al calcular el presupuesto.", 'ai');
+      });
+    }
   })
   .catch(() => {
     appendMessage("❌ Error al contactar con la IA. Intenta de nuevo más tarde.", 'ai');
   });
 }
-
 function descargarPdfPresupuesto() {
   const json = window.ultimoPresupuestoJson;
   if (!json) {

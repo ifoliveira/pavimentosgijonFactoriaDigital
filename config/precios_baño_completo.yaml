@@ -1,0 +1,291 @@
+manoObra:
+
+  albanil:
+    base:
+      precio: 1800
+      descripcion: |
+          Albañil — Trabajo base
+          -  Desmontar loza y derribo de bañera, azulejos y retirada de los escombros.
+          -  Preparar paredes para azulejar con cola, azulejar hasta el techo,colocar pavimento, materiales,arena y cemento.
+          -  Desescombrar
+          -  Colocar plato de ducha
+
+
+  fontanero:
+    base:
+      precio: 1100
+      descripcion: |
+          Fontanero — Trabajo base
+          - Instalación de tomas y puntos de agua
+          - Colocar grifería de todo el baño  
+          - Instalación de desagües y sifones
+          - Instalación de inodoro 
+
+  electricidad:
+    base:
+      precio: 250
+      descripcion: |
+          Electricista — Trabajo base
+          - Llave y enchufe para espejo 
+          - Instalación de iluminación de espejo y techo
+
+  escayolista:
+    pintura:
+      precio: 50
+      descripcion: "Pintura de techo"
+    base:
+      precio: 200
+      descripcion: "Escayolista — Reparación de techo y moldura de escayola"
+
+  colocadorMampara:
+    base:
+      precio: 100
+      descripcion: "Instalación de mampara"
+
+
+materiales:
+
+  plato:
+    semicircular:
+      precio: 300
+      descripcion: "Plato de ducha semicircular"
+    pequeno:
+      precio: 420
+      descripcion: "Plato de ducha tamaño pequeño"
+    medio:
+      precio: 480
+      descripcion: "Plato de ducha tamaño medio"
+    grande:
+      precio: 590
+      descripcion: "Plato de ducha tamaño grande"
+
+  bide:
+    suspendido:
+      precio: 250
+      descripcion: "Bidé suspendido con tapa amortiguada"
+    convencional:
+      precio: 165
+      descripcion: "Bidé ROCA con tapa amortiguada"
+
+  inodoro:
+    suspendido:
+      precio: 650
+      descripcion: "Inodoro suspendido"
+    convencional:
+      precio: 565
+      descripcion: "Inodoro ROCA con tapa amortiguada"
+
+  iluminacion:
+    focotechoLED:
+      precio: 59
+      descripcion: "Foco de techo LED para baño"
+
+  mampara:
+    fija:
+      precio: 550
+      descripcion: "Mampara fija"
+    fijoCorredera:
+      precio: 780
+      descripcion: "Mampara fijo + corredera"
+    angular:
+      precio: 880
+      descripcion: "Mampara angular"
+    dobleCorredera:
+      precio: 1150
+      descripcion: "Mampara doble corredera"
+    defecto:
+      precio: 780
+      descripcion: "Mampara estándar por defecto"
+
+  griferia:
+    mantener:
+      precio: 0
+    normal:
+      precio: 115
+      descripcion: "Grifería monomando estándar"
+    barra:
+      precio: 295
+      descripcion: "Columna/barra de ducha"
+    termostatica:
+      precio: 200
+      descripcion: "Grifería termostática"
+    lavabo:
+      precio: 70
+      descripcion: "Grifería para lavabo monomando estándar"
+    bide:
+      precio: 70
+      descripcion: "Grifería para bidé monomando estándar"
+    grupohigienico:
+      precio: 265
+      descripcion: "Grifería para grupo higiénico"
+
+  mueble:
+    80cm: 
+      precio: 875
+      descripcion: "Mueble de baño de 80 cm con lavabo y espejo con luz"
+    90cm: 
+      precio: 990
+      descripcion: "Mueble de baño de 90 cm con lavabo y espejo con luz"
+    100cm: 
+      precio: 1150
+      descripcion: "Mueble de baño amplio con lavabo y espejo con luz"
+
+ 
+
+  azulejo:
+    reposicionM2:
+      precio: 32
+      descripcion: "Reposición de azulejo por m²"
+    colaM2:
+      precio: 220
+      descripcion: "Cola y materiales de agarre (H40)"
+
+  radiadorToallero:
+    simple:
+      precio: 370
+      descripcion: "Radiador toallero simple"
+    doble:
+      precio: 450
+      descripcion: "Radiador toallero doble"
+
+reglas:
+
+
+  # --- REPOSICIÓN DE AZULEJOS POR M² ---
+  - si: "true"
+    calcular:
+      alto: "medida_bano.alto_cm / 100"
+
+      largo: "medida_bano.largo_cm / 100"
+      ancho: "medida_bano.ancho_cm / 100"
+
+      area: "largo * ancho"
+      pared1: "largo * alto"
+      pared2: "ancho * alto"
+
+      m2_reposicion: "area  + (pared1 * 2) + (pared2 * 2)"
+
+    sumar:
+      materiales_azulejo_reposicionM2: "round(m2_reposicion * materiales.azulejo.reposicionM2.precio,0)"
+
+
+
+
+
+  # GRIFERÍA (solo si se cambia)
+
+  - si: tipo_griferia == 'normal'"
+    sumar:
+      materiales_griferia: "materiales.griferia.normal.precio"
+
+  - si: tipo_griferia == 'barra'"
+    sumar:
+      materiales_griferia: "materiales.griferia.barra.precio"
+
+  - si: tipo_griferia == 'termostatica'"
+    sumar:
+      materiales_griferia: "materiales.griferia.termostatica.precio"
+
+  # BIDE HIGIENICO (si se instala)
+  - si: bide_o_higienico == 'bide'
+    sumar:
+      materiales_bide: "materiales.bide.convencional.precio"
+      griferia_bide: "materiales.griferia.bide.precio"  
+
+  - si: bide_o_higienico == 'higienico'
+    sumar:
+      griferia_higienico: "materiales.griferia.grupohigienico.precio"
+
+
+
+
+  # MAMPARA
+  - si: "tipo_mampara == 'Fijo'"
+    sumar:
+      materiales_mampara: "materiales.mampara.fija.precio"
+      manoObra_mampara: "manoObra.colocadorMampara.base.precio"
+
+  - si: "tipo_mampara == 'Fijo + corredera'"
+    sumar:
+      materiales_mampara: "materiales.mampara.fijoCorredera.precio"
+      manoObra_mampara: "manoObra.colocadorMampara.base.precio"
+
+  - si: "tipo_mampara == 'Angular'"
+    sumar:
+      materiales_mampara: "materiales.mampara.angular.precio"
+      manoObra_mampara: "manoObra.colocadorMampara.base.precio"
+
+  - si: "tipo_mampara == 'Doble corredera'"
+    sumar:
+      materiales_mampara: "materiales.mampara.dobleCorredera.precio"
+      manoObra_mampara: "manoObra.colocadorMampara.base.precio"
+
+  - si: "tipo_mampara != 'Fijo' && tipo_mampara != 'Fijo + corredera' && tipo_mampara != 'Angular' && tipo_mampara != 'Doble corredera'"
+    sumar:
+      materiales_mampara: "materiales.mampara.defecto.precio"
+      manoObra_mampara: "manoObra.colocadorMampara.base.precio"
+
+
+  # PLATOS SEGÚN TAMAÑO
+  - si: "banera_o_ducha.largo_cm < 140"
+    sumar:
+      materiales_plato: "materiales.plato.pequeno.precio"
+
+  - si: "banera_o_ducha.largo_cm >= 140 && banera_o_ducha.largo_cm <= 160"
+    sumar:
+      materiales_plato: "materiales.plato.medio.precio"
+
+  - si: "banera_o_ducha.largo_cm > 160"
+    sumar:
+      materiales_plato: "materiales.plato.grande.precio"
+
+  - si: "true"
+    sumar:
+      materiales_colaH40: "materiales.azulejo.colaM2.precio"   
+      materiales_inodoro: "materiales.inodoro.convencional.precio"
+      materiales_radiadorToallero: "materiales.radiadorToallero.simple.precio"
+      materiales_iluminacion: "materiales.iluminacion.focotechoLED.precio"  
+      materiales_griferia_lavabo: "materiales.griferia.lavabo.precio"
+
+
+
+            
+  
+  # ESCAYOLA
+  - si: "exists(mantener_escayola)"
+    sumar:
+      manoObra_escayola: "materiales.escayolista.base.precio"
+
+  # BASE (siempre se suma)
+  - si: "true"
+    sumar:
+      manoObra_albanilBase: "manoObra.albanil.base.precio"
+      manoObra_fontaneroBase: "manoObra.fontanero.base.precio"
+      manoObra_electricistaBase: "manoObra.electricidad.base.precio"
+      manoObra_escayolistaPintura: "manoObra.escayolista.pintura.precio"
+
+  
+
+
+
+  # ZONA AZULEJOS
+
+  - si: "zona_azulejos.categoria == 'minimo'"
+    sumar:
+      manoObra_hasta1m: "manoObra.albanil.minimo.precio"
+
+  - si: "zona_azulejos.categoria == 'hasta_1m'"
+    sumar:
+      manoObra_hasta1m: "manoObra.albanil.hasta1m.precio"
+
+  - si: "zona_azulejos.categoria == 'hasta_el_techo'"
+    sumar:
+      manoObra_hastaTecho: "manoObra.albanil.hastaTecho.precio"
+
+  # --- PERSONALIZADO POR METROS ---
+  - si: "zona_azulejos.categoria == 'personalizado'"
+    sumar:
+      manoObra_personalizado: "manoObra.albanil.alicatadoM2.precio"
+
+
+
