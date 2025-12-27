@@ -322,6 +322,8 @@
         }
 
         $(document).on('click', 'button[id="Checkout"]' , async function(event) {
+            event.preventDefault();
+            event.stopPropagation();
 
 
             // Datos de la fila seleccionada en la lista de productos
@@ -434,7 +436,7 @@
                     
                     success: function(response) {  
 
-                            ticket_script3(tipopago, importesnal);
+                            ticket_script4(tipopago, importesnal);
                             ticket_finalizar(tipopago, response.namepdf, response.importe, response.importesnal);
                             abrirNuevoTab('/Tickets/' + response.namepdf);
                             
@@ -450,6 +452,119 @@
         $listaDeImpresoras = document.querySelector("#listaDeImpresoras"),
         $btnLimpiarLog = document.querySelector("#btnLimpiarLog"),
         $btnImprimir = document.querySelector("#btnImprimir");
+
+    function ticket_script4(tipopago, importesnal) {
+
+        const entryInfoElements = document.querySelectorAll('[data-entry-info]');
+        const entryInfoObjects = Array.from(entryInfoElements)
+            .map(item => JSON.parse(item.dataset.entryInfo));
+        const ANCHO_IMPORTE = 9;
+
+        let total = 0;
+        let ticket = "";
+
+        // ESC/POS init + centrar
+        ticket += "\x1B@\n";
+        ticket += "\x1Ba\x01";
+        ticket += "P A V I M E N T O S   G I J O N\n";
+        ticket += "C.I.F. 53543499-M\n";
+        ticket += "Avda. Schultz Nº 28 Bajo\n";
+        ticket += "Tel: 985 391 326\n";
+        ticket += "WhatsApp: 684 608 811\n";
+        ticket += "www.pavimentosgijon.es\n\n";
+        ticket += "----------------------------------------------\n";
+        ticket += "FACTURA SIMPLIFICADA\n";
+        ticket += "----------------------------------------------\n\n";
+
+        ticket += "\x1Ba\x01"; // izquierda
+
+        entryInfoObjects[0].forEach(grupo => {
+            grupo.forEach(element => {
+                let parcial = element.cantidad * element.precio;
+                total += parcial;
+
+                let cantidad = element.cantidad.toString().padStart(2, "0");
+                let descripcion = element.descripcion.substr(0, 28).padEnd(28);
+                let importe = parcial.toLocaleString('de-DE', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).padStart(9);
+
+                ticket += ` ${cantidad} ${descripcion} ${importe} EUR\n`;
+            });
+        });
+
+        let iva = total * 0.21 / 1.21;
+
+        ticket += "----------------------------------------------\n";
+
+        let ivaStr = iva.toLocaleString('de-DE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).padStart(ANCHO_IMPORTE);
+
+        ticket += ` IVA 21%:`.padEnd(33) + ivaStr + " EUR\n";
+
+        ticket += "\x1BE\x01"; // negrita
+        let totalStr = total.toLocaleString('de-DE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).padStart(ANCHO_IMPORTE);
+
+        ticket += ` TOTAL:`.padEnd(33) + totalStr + " EUR\n";
+        ticket += "\x1BE\x00"; // normal
+
+        ticket += "\n\x1Ba\x01";
+        ticket += "Gracias por su compra\n\n";
+        ticket += "\n------------------------------------------\n";
+        ticket += "¿Pensando en reformar tu baño?\n\n";
+        ticket += "✔ Cambio de bañera por ducha\n";
+        ticket += "✔ Reforma integral de baño\n";
+        ticket += "✔ Mamparas y muebles de baño\n\n";
+        ticket += "Pide tu presupuesto online en:\n";
+        ticket += "www.pavimentosgijon.es\n";
+        ticket += "Rapido y sin compromiso\n";
+        ticket += "Escanea el QR y calcula tu presupuesto YA\n";     
+        ticket += escposQR("https://www.pavimentosgijon.es/presupuestoInmediato");   
+        ticket += "\x1DVA0"; // corte
+
+        // 👉 AQUÍ llamas a tu agente local
+        fetch('http://localhost:3000/print', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Token': 'tpv-secreto-123'
+            },
+            body: JSON.stringify({ ticket: ticket })
+        })
+        .then(r => r.json())
+        .then(r => console.log("Ticket impreso", r))
+        .catch(err => alert("Error al imprimir: " + err));
+    }
+
+
+        function escposQR(text) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
+            const len = data.length + 3;
+            const pL = len & 0xff;
+            const pH = (len >> 8) & 0xff;
+
+            let cmd = "";
+
+            // Seleccionar modelo 2
+            cmd += "\x1D(k\x04\x00\x31\x41\x32\x00";
+            // Tamaño del módulo (1–16) -> 6 es buen tamaño
+            cmd += "\x1D(k\x03\x00\x31\x43\x06";
+            // Nivel de corrección de errores (48=L,49=M,50=Q,51=H) -> M
+            cmd += "\x1D(k\x03\x00\x31\x45\x31";
+            // Almacenar datos
+            cmd += "\x1D(k" + String.fromCharCode(pL, pH) + "\x31\x50\x30" + text;
+            // Imprimir QR
+            cmd += "\x1D(k\x03\x00\x31\x51\x30";
+
+            return cmd;
+        }
 
 
         
