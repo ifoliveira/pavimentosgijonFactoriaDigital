@@ -134,7 +134,7 @@
                             <div class="card-body">
   
 
-                                <h3 class="card-title">PRODUCTOS</h3>
+                                <h3 class="card-title">PRODUCTOSS</h3>
                                 <h6 class="card-subtitle"></h6>
                                 <div class="table-responsive">
                                     <table id="tbprod" class="table table-striped table-bordered text-inputs-searching">
@@ -154,8 +154,8 @@
                                                      <td>{{ producto.id }}</td>
                                                      <td>{{ producto.tipoPdId}}</td>
                                                      <td>{{ producto.descripcionPd }}</td>
-                                                     <td align="right">{{ producto.precioPd|format_currency('EUR', locale='es')   }}</td>
-                                                     <td align="right">{{ producto.pvpPd|format_currency('EUR', locale='es')  }}</td>
+                                                     <td align="right"  data-order="{{ producto.precioPd }}">{{ producto.precioPd|format_currency('EUR', locale='es')   }}</td>
+                                                     <td align="right"  data-order="{{ producto.pvpPd }}">{{ producto.pvpPd|format_currency('EUR', locale='es')  }}</td>
                                                      <td>{{ producto.stockPd }}</td>
                                                  </tr>
                                              {% else %}
@@ -472,8 +472,8 @@
                                                      <td>{{ producto.id }}</td>
                                                      <td>{{ producto.tipoPdId}}</td>
                                                      <td>{{ producto.descripcionPd }}</td>
-                                                     <td align="right">{{ producto.precioPd|format_currency('EUR', locale='es')   }}</td>
-                                                     <td align="right">{{ producto.pvpPd|format_currency('EUR', locale='es')  }}</td>
+                                                     <td align="right" data-order="{{ producto.precioPd }}" >{{ producto.precioPd|format_currency('EUR', locale='es')   }}</td>
+                                                     <td align="right" data-order="{{ producto.pvpPd }}" >{{ producto.pvpPd|format_currency('EUR', locale='es')  }}</td>
                                                      <td>{{ producto.stockPd }}</td>
                                                  </tr>
                                              {% else %}
@@ -1100,20 +1100,27 @@
         ****************************************/
 
         $('#tbprod').on('click', 'tbody tr[role="row"]', function() {
-                var data = table.row(this).data();
-                
-                var res = data[4].split("&");
-                var res1 = data[3].split("&");   
-                res[0] = res[0].replace(/\./g, '').replace(/,/g, '.');
-                res1[0] = res1[0].replace(/\./g, '').replace(/,/g, '.');
+                var $cells = $(this).children('td');
+                // Leemos los valores numéricos sin formato desde data-order
+                var pvp = $cells.eq(4).data('order');
+                var precio = $cells.eq(3).data('order');
+
+                //var data = table.row(this).data();
+                //var res = data[4].split("&");
+                //var res1 = data[3].split("&");   
+                //res[0] = res[0].replace(/\./g, '').replace(/,/g, '.');
+                //res1[0] = res1[0].replace(/\./g, '').replace(/,/g, '.');
                 const inputValue = 1
-                const inputValue2 =  res[0]
-                const inputValue3 = res1[0]
+                /*const inputValue2 =  res[0]
+                const inputValue3 = res1[0]*/
                 const inputValue4 = 0
                 const inputStep = 1
                 const inputStep2 = 1
                 const inputText = ""
-                const inputValue0 = data[2]
+                //const inputValue0 = data[2]
+                const inputValue0 = $cells.eq(2).text();
+                const inputValue2 = pvp;
+                const inputValue3 = precio;                
 
                 Swal.fire({
                 showCancelButton: true,  // Activamos el botón de cancelar
@@ -1121,17 +1128,26 @@
                 cancelButtonText: 'Cancelar',
                 title: 'Cantidad y PVP',
                 html: `
-                    <h2> ${inputValue0} </h2>
-                    <input type="text" value="${inputText}" class="swal2-input" id="range-value0" style="text-align:center;">
-                    <h2> Cantidad </h2>
-                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align:center;">
-                    <h2> PVP </h2>
-                    <input type="number" value="${inputValue2}" step="${inputStep2}" class="swal2-input" id="range-value2" style="text-align:right;"> €
-                    <h2> Coste </h2>
-                    <input type="number" value="${inputValue3}" step="${inputStep2}" class="swal2-input" id="range-value3" style="text-align:right;"> €
-                    <h2> Descuento </h2>
-                    <input type="number" value="${inputValue4}" step="${inputStep2}" class="swal2-input" id="range-value4" style="text-align:right;"> %`,
-
+                        <h2>${inputValue0}</h2>
+                        <input type="text" value="${inputText}" class="swal2-input" id="range-value0" style="text-align:center;">
+                        
+                        <h2>Cantidad</h2>
+                        <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align:center;">
+                        
+                        <h2>PVP</h2>
+                        <div style="position:relative;">
+                            <input type="number" value="${parseFloat(inputValue2).toFixed(2).replace('.', ',')}" step="${inputStep2}" class="swal2-input" id="range-value2" style="text-align:right; padding-right:30px;">
+                            <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none;">€</span>
+                        </div>
+                        
+                        <h2>Coste</h2>
+                        <div style="position:relative;">
+                            <input type="number" value="${parseFloat(inputValue3).toFixed(2).replace('.', ',')}" step="${inputStep2}" class="swal2-input" id="range-value3" style="text-align:right; padding-right:30px;">
+                            <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none;">€</span>
+                        </div>
+                        
+                        <h2>Descuento</h2>
+                        <input type="number" value="${inputValue4}" step="${inputStep2}" class="swal2-input" id="range-value4" style="text-align:right;"> %`
                 }).then((result) => {
                     if (result.value) {
 

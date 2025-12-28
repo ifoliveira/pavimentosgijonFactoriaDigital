@@ -361,14 +361,19 @@ class PresupuestosController extends AbstractController
      */
     public function finalizar(Request $request, Presupuestos $presupuesto, EstadocestasRepository $estadocestasRepository): Response
     {   
-
-        
        
         $estadocesta = $estadocestasRepository->findOneBy(
             ['id' => 10],
         );
 
         $presupuesto->setEstadoPe($estadocesta);
+
+        $estadocesta2 = $estadocestasRepository->findOneBy(
+            ['id' => 2],
+        );
+
+        $presupuesto->getTicket()->setEstadoCs($estadocesta2->getId());
+        
         $this->em->flush();
 
         $response = new JsonResponse();

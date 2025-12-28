@@ -34,7 +34,16 @@
                         <h5 class="card-text">Pendiente: <td  align="right">{{ (presupuesto.importetotPe + presupuesto.importemanoobra - presupuesto.ticket.TotalPagos - presupuesto.impmanoobraPagado)   |format_currency('EUR', locale='es')  }}</td> </h5>
                         <p class="card-text">Total: <td  align="right">{{ (presupuesto.importetotPe + presupuesto.importemanoobra)  |format_currency('EUR', locale='es')  }}</td> </p>
                         <p class="card-text">Total Pagado: <td  align="right">{{ (presupuesto.ticket.TotalPagos + presupuesto.impmanoobraPagado)  |format_currency('EUR', locale='es')  }}</td> </p>
+                        
                     </div>
+                    <div class="card-body pt-0">
+                        {% for economicpresu in presupuesto.economicpresus %}
+                            {% if economicpresu.estadoEco == 1 and economicpresu.debehaberEco == 'D'%}
+                                <b>{{ economicpresu.conceptoEco }} - Importe: {{ economicpresu.importeEco | format_currency('EUR', locale='es') }}</b></br>
+                            {% endif %}
+                        {% endfor %}                      
+                    </div>
+
                     <div class="d-flex justify-content-between px-3 pb-3">
                       <a href="#" class=" btn btn-light-warning text-secondary font-weight-medium d-block w-100 mx-1 btn-pagar-obrero" 
                         data-pagos='{{ presupuesto.economicPagosPdtes|map(p => {
@@ -50,12 +59,45 @@
                         data-presupuesto="{{ presupuesto.id }}">
                         Cobros
                         </a>
-                    </div>                   
+                    </div>   
+                              
                 </div>
             </div>
+            <div>  
+
+            
+            </div>
+
 
         {% endfor %}                
         </div>
+
+
+
+{% endblock %}
+
+{% block leftpart %}  
+    <div class="left-part bg-light dashboard-right-part fixed-left-part">
+              <!-- Mobile toggle button -->
+        <a class="ri-menu-fill ri-close-fill btn btn-success show-left-part d-block d-md-none" href="javascript:void(0)"></a>
+              <!-- Mobile toggle button -->
+        <div class="scrollable position-relative" style="height: calc(100vh - 50px)">
+            {% for presupuesto in presupuestospdte %}        
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">Presupuesto con pagos pendientes!</h4>
+                    <p>El presupuesto <a href="{{ path ('presupuestos_show', { 'id': presupuesto.id  }) }}" class="font-medium link">{{ presupuesto.clientePe.direccionCl}}  ( {{presupuesto.manoobraPe}} )</a> tiene pagos pendientes de obreros.</p>
+                    
+                    <hr>
+                        {% for economicpresu in presupuesto.economicpresus %}
+                            {% if economicpresu.estadoEco == 1 and economicpresu.debehaberEco == 'D'%}
+                                <b>{{ economicpresu.conceptoEco }} - {{ economicpresu.importeEco | format_currency('EUR', locale='es') }}</b></br>
+                            {% endif %}
+                        {% endfor %}                        
+                    <p class="mb-0">Por favor, revise y gestione los pagos pendientes.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>  
 
 {% endblock %}
 

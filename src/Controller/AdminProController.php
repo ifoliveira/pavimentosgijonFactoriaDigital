@@ -45,8 +45,11 @@ class AdminProController extends AbstractController
     // Accedemos al primer presupuesto
     $presupuesto = $presupuestos[0] ?? null;
 
+    $presupuestospdte = $presupuestosRepository->findByEconomicPresuDebehaberAndEstado();
+
     return $this->render('admin_pro/dashboard.html.twig', [
         'presupuestos' => $presupuestos,
+        'presupuestospdte' => $presupuestospdte,
     ]);
              
 
@@ -108,6 +111,7 @@ class AdminProController extends AbstractController
         $pagosMo = $economicpresuRepository->pagototal()["pagototalMo"];
         $pendientecobroMo = $economicpresuRepository->pendienteCobro()["cobropdteMo"];
         $pendientepagoMo = $economicpresuRepository->pendientePago()["pagopdteMo"];
+        $ventapdtfinalizar  =$economicpresuRepository->pendienteYaCobrado()["pagototalPdte"];
         $bancototal = $bancoRepository->totalBanco();
         $efectivototal = $efectivoRepository->totalefectivo();
         $beneficio = $detallecestaRepository->beneficioTotal();
@@ -124,6 +128,7 @@ class AdminProController extends AbstractController
         $response = $this->render('admin_pro/contabilidad.html.twig', [
             'controller_name' => 'AdminProController',
             'bancototal' => $bancototal,
+            'ventaspdtefinalizar' => $ventapdtfinalizar,
             'efectivototal' => $efectivototal,
             'beneficio' => $beneficio,
             'pendiente' => $pendiente,

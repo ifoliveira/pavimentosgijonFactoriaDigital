@@ -44,10 +44,14 @@ class EconomicpresuRepository extends ServiceEntityRepository
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = '
-        SELECT sum(importe_eco) as cobrototalMo FROM economicpresu p
-        WHERE aplica_eco = "M"
-        AND YEAR(timestamp) = YEAR(CURDATE());
-            ';
+            SELECT SUM(e.importe_eco) AS cobrototalMo
+            FROM economicpresu e
+            INNER JOIN presupuestos p ON p.id = e.idpresu_eco_id
+            INNER JOIN cestas c ON c.id = p.ticket_id
+            WHERE e.aplica_eco = "M"
+            AND c.estado_cs = 2
+            AND YEAR(e.timestamp) = YEAR(CURDATE())
+        ';
 
         return $conn->fetchAssociative($sql);
 
@@ -57,11 +61,16 @@ class EconomicpresuRepository extends ServiceEntityRepository
     {
         $conn = $this->getEntityManager()->getConnection();
 
+
         $sql = '
-        SELECT sum(importe_eco) as pagototalMo FROM economicpresu p
-        WHERE aplica_eco = "E"
-        AND YEAR(timestamp) = YEAR(CURDATE());
-            ';
+            SELECT SUM(e.importe_eco) AS pagototalMo
+            FROM economicpresu e
+            INNER JOIN presupuestos p ON p.id = e.idpresu_eco_id
+            INNER JOIN cestas c ON c.id = p.ticket_id
+            WHERE e.aplica_eco = "E"
+            AND c.estado_cs = 2
+            AND YEAR(e.timestamp) = YEAR(CURDATE())
+        ';
 
         return $conn->fetchAssociative($sql);
 
@@ -96,6 +105,24 @@ class EconomicpresuRepository extends ServiceEntityRepository
 
 
     }      
+
+    public function pendienteYaCobrado()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT SUM(e.importe_pg) AS pagototalPdte
+            FROM pagos e
+            INNER JOIN cestas c ON c.id = e.cesta_id
+            Where c.estado_cs = 3
+            AND YEAR(c.timestamp_cs) = YEAR(CURDATE())
+            ';
+
+        return $conn->fetchAssociative($sql);
+
+
+    }    
+
 
     public function getImporteManoObraPendiente(int $presupuestoId): float
     {

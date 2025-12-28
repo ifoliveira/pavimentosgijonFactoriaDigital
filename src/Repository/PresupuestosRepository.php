@@ -55,6 +55,23 @@ class PresupuestosRepository extends ServiceEntityRepository
         ;
     }
 
+     /**
+      * @return Presupuestos[] Returns an array of Presupuestos objects
+      */    
+    public function findByEconomicPresuDebehaberAndEstado(string $debehaber = 'D', int $estado = 1)
+    {
+        return $this->createQueryBuilder('p')
+            ->innerJoin('p.economicpresus', 'e') // Asumimos que la propiedad se llama "economicpresus"
+            ->andWhere('e.debehaberEco = :debehaber')
+            ->andWhere('e.estadoEco = :estado')
+            ->andWhere('e.importeEco != 0')
+            ->andWhere('p.estadoPe > 9')
+            ->setParameter('debehaber', $debehaber)
+            ->setParameter('estado', $estado)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
     // /**
     //  * @return Presupuestos[] Returns an array of Presupuestos objects

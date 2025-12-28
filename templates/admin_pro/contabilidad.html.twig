@@ -29,193 +29,266 @@
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
-                <!-- row -->
-                    <div class="row">
-                                <h3> Cuentas generales</h3>
-                    <!-- Column -->
-                                <div class="col-sm-12 col-md-9 col-xl-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                        <div class="d-flex flex-row">
-                                            <div class="round align-self-center round-success">
-                                            <i data-feather="dollar-sign" class="feather-sm"></i>
-                                            </div>
-                                            <div class="ms-3 align-self-center">
-                                            <h4 class="mb-0">Total Banco</h4>
-                                            <span class="text-muted">{{ bancototal["max(fecha_bn)"] |date("m/d/Y", "Europe/Paris")}}</span>
-                                            </div>
-                                            <div class="ms-auto align-self-center">
-                                            <h2 class="font-weight-medium mb-0">{{ bancototal["sum(importe_bn)"] |format_currency('EUR', locale='es')}}</h2>
-                                            </div>
-                                        </div>
-                                        </div>
+                <!-- Cuentas generales -->
+                <h3 class="mb-3">Cuentas generales</h3>
+                <div class="row">
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
+                                    </div>
+                                    <div class="ms-3 align-self-center">
+                                        <h4 class="mb-0">Total banco</h4>
+                                        <span class="text-muted">{{ bancototal["max(fecha_bn)"] |date("d/m/Y", "Europe/Paris") }}</span>
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ bancototal["sum(importe_bn)"] |format_currency('EUR', locale='es') }}</h2>
                                     </div>
                                 </div>
-                                <div class="col-sm-12 col-md-9 col-xl-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                        <div class="d-flex flex-row">
-                                            <div class="round align-self-center round-success">
-                                            <i data-feather="paperclip" class="feather-sm"></i>
-                                            </div>
-                                            <div class="ms-3 align-self-center">
-                                            <h4 class="mb-0">Total Efectivo</h4>
-                                            <span class="text-muted">Efectivo actual</span>
-                                            </div>
-                                            <div class="ms-auto align-self-center">
-                                            <h2 class="font-weight-medium mb-0">{{ efectivototal["efectivototal"] |format_currency('EUR', locale='es')}}</h2>
-                                            </div>
-                                        </div>
-                                        </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="paperclip" class="feather-sm"></i>
                                     </div>
-                                </div>  
-                    </div>  
-
-                    <div class="row">
-                    <!-- Column -->
-                                <h3> Datos de ventas</h3>
-                                <div class="col-sm-12 col-md-4 col-xl-4">
-                                    <div class="card">
-                                        <div class="card-body">
-                                        <div class="d-flex flex-row">
-                                            <div class="round align-self-center round-success">
-                                            <i data-feather="dollar-sign" class="feather-sm"></i>
-                                            </div>
-                                            <div class="ms-4 align-self-center">
-                                            <h4 class="mb-0">Ventas totales</h4>
-                                            <span class="text-muted">Ventas totales</span>
-                                            </div>
-                                            <div class="ms-auto align-self-center">
-                                            <h2 class="font-weight-medium mb-0">{{ beneficio["pvp"]|format_currency('EUR', locale='es')}}</h2>
-                                            </div>
-                                        </div>
-                                        </div>
+                                    <div class="ms-3 align-self-center">
+                                        <h4 class="mb-0">Total efectivo</h4>
+                                        <span class="text-muted">Efectivo actual</span>
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ efectivototal["efectivototal"] |format_currency('EUR', locale='es') }}</h2>
                                     </div>
                                 </div>
-                                <div class="col-sm-12 col-md-4 col-xl-4">
-                                    <div class="card">
-                                        <div class="card-body">
-                                        <div class="d-flex flex-row">
-                                            <div class="round align-self-center round-success">
-                                            <i data-feather="dollar-sign" class="feather-sm"></i>
-                                            </div>
-                                            <div class="ms-4 align-self-center">
-                                            <h4 class="mb-0">Beneficio Total</h4>
-                                            {%  if beneficio["precio"] > 0 %}
-                                            <span class="text-muted">{{(((beneficio["pvp"] - beneficio["precio"]) / (beneficio["precio"]))* 100)|number_format(2)}} %</span>
-                                            {%  endif %}
-                                            </div>
-                                            <div class="ms-auto align-self-center">
-                                            <h2 class="font-weight-medium mb-0">{{ (beneficio["pvp"] - beneficio["precio"])|format_currency('EUR', locale='es')}}</h2>
-                                            </div>
-                                        </div>
-                                        </div>
-                                    </div>
-                                </div>    
-                                <div class="col-sm-12 col-md-4 col-xl-4">
-                                    <div class="card">
-                                        <div class="card-body">
-                                        <div class="d-flex flex-row">
-                                            <div class="round align-self-center round-success">
-                                            <i data-feather="dollar-sign" class="feather-sm"></i>
-                                            </div>
-                                            <div class="ms-4 align-self-center">
-                                            <h4 class="mb-0">Pendiente de cobro</h4>
-                                            <span class="text-muted"></span>
-                                            </div>
-                                            <div class="ms-auto align-self-center">
-                                            <h2 class="font-weight-medium mb-0">{{pendiente|format_currency('EUR', locale='es')}} </h2>
-                                            </div>
-                                        </div>
-                                        </div>
-                                    </div>
-                                </div>                                                              
-                    </div>                                                     
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                  <!-- Row -->
-
-                   <div class="row">
-                    <!-- Column -->
-                            <h3> Datos Mano de Obra</h3>
-                                <div class="col-sm-12 col-md-3 col-xl-3">
-                                    <div class="card">
-                                        <div class="card-body">
-                                        <div class="d-flex flex-row">
-                                            <div class="round align-self-center round-success">
-                                            <i data-feather="dollar-sign" class="feather-sm"></i>
-                                            </div>
-                                            <div class="ms-4 align-self-center">
-                                            <h4 class="mb-0">Mano de Obra</h4>
-                                            <span class="text-muted">Totales</span>
-                                            </div>
-                                            <div class="ms-auto align-self-center">
-                                            <h2 class="font-weight-medium mb-0">{{ cobrosMo|format_currency('EUR', locale='es')}}</h2>
-                                            </div>
-                                        </div>
-                                        </div>
+                <!-- Datos de ventas -->
+                <h3 class="mt-5 mb-3">Datos de ventas</h3>
+                <div class="row">
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
+                                    </div>
+                                    <div class="ms-4 align-self-center">
+                                        <h4 class="mb-0">Ventas totales cobrado</h4>
+                                        <span class="text-muted">Ventas totales</span>
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ beneficio["pvp"] |format_currency('EUR', locale='es') }}</h2>
                                     </div>
                                 </div>
-                                <div class="col-sm-12 col-md-3 col-xl-3">
-                                    <div class="card">
-                                        <div class="card-body">
-                                        <div class="d-flex flex-row">
-                                            <div class="round align-self-center round-success">
-                                            <i data-feather="dollar-sign" class="feather-sm"></i>
-                                            </div>
-                                            <div class="ms-4 align-self-center">
-                                            <h4 class="mb-0">Diferencia Total</h4>
-                                            {%  if cobrosMo > 0 %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
+                                    </div>
+                                    <div class="ms-4 align-self-center">
+                                        <h4 class="mb-0">Ventas totales coste</h4>
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ beneficio["precio"] |format_currency('EUR', locale='es') }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
+                                    </div>
+                                    <div class="ms-4 align-self-center">
+                                        <h4 class="mb-0">Beneficio total</h4>
+                                        {% if beneficio["precio"] > 0 %}
+                                            <span class="text-muted">{{ (((beneficio["pvp"] - beneficio["precio"]) / beneficio["precio"]) * 100) | number_format(2) }} %</span>
+                                        {% endif %}
+                                        
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ (beneficio["pvp"] - beneficio["precio"]) |format_currency('EUR', locale='es') }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                </div>
 
-                                            <span class="text-muted">{{(((cobrosMo - pagosMo) / (cobrosMo))* 100)|number_format(2)}} %</span>
-                                            {% endif %}
-                                            </div>
-                                            <div class="ms-auto align-self-center">
-                                            <h2 class="font-weight-medium mb-0">{{ (cobrosMo - pagosMo)|format_currency('EUR', locale='es')}}</h2>
-                                            </div>
-                                        </div>
-                                        </div>
+                <!-- Pendiente de cobro -->
+                <h3 class="mt-5 mb-3">Pendientes</h3>
+                <div class="row">
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
                                     </div>
-                                </div>    
-                                <div class="col-sm-12 col-md-3 col-xl-3">
-                                    <div class="card">
-                                        <div class="card-body">
-                                        <div class="d-flex flex-row">
-                                            <div class="round align-self-center round-success">
-                                            <i data-feather="dollar-sign" class="feather-sm"></i>
-                                            </div>
-                                            <div class="ms-4 align-self-center">
-                                            <h4 class="mb-0">Pendiente de cobro</h4>
-                                            <span class="text-muted"></span>
-                                            </div>
-                                            <div class="ms-auto align-self-center">
-                                            <h2 class="font-weight-medium mb-0">{{pendientecobroMo|format_currency('EUR', locale='es')}} </h2>
-                                            </div>
-                                        </div>
-                                        </div>
+                                    <div class="ms-4 align-self-center">
+                                        <h4 class="mb-0">Pendiente ya cobradas</h4>
                                     </div>
-                                </div>       
-                                <div class="col-sm-12 col-md-3 col-xl-3">
-                                    <div class="card">
-                                        <div class="card-body">
-                                        <div class="d-flex flex-row">
-                                            <div class="round align-self-center round-success">
-                                            <i data-feather="dollar-sign" class="feather-sm"></i>
-                                            </div>
-                                            <div class="ms-4 align-self-center">
-                                            <h4 class="mb-0">Pendiente de pago</h4>
-                                            <span class="text-muted"></span>
-                                            </div>
-                                            <div class="ms-auto align-self-center">
-                                            <h2 class="font-weight-medium mb-0">{{pendientepagoMo|format_currency('EUR', locale='es')}} </h2>
-                                            </div>
-                                        </div>
-                                        </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ ventaspdtefinalizar |format_currency('EUR', locale='es') }}</h2>
                                     </div>
-                                </div>                                                                                           
-                    </div>                                                     
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
+                                    </div>
+                                    <div class="ms-4 align-self-center">
+                                        <h4 class="mb-0">Pendiente de cobro</h4>
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ pendiente |format_currency('EUR', locale='es') }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                </div>
+
+                <!-- Mano de obra -->
+                <h3 class="mt-5 mb-3">Datos Mano de Obra</h3>
+                <div class="row">
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
+                                    </div>
+                                    <div class="ms-4 align-self-center">
+                                        <h4 class="mb-0">Mano de obra cobrado</h4>
+                                        <span class="text-muted">Totales</span>
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ cobrosMo |format_currency('EUR', locale='es') }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
+                                    </div>
+                                    <div class="ms-4 align-self-center">
+                                        <h4 class="mb-0">Mano de obra pagada</h4>
+                                        <span class="text-muted">Totales</span>
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ pagosMo |format_currency('EUR', locale='es') }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
+                                    </div>
+                                    <div class="ms-4 align-self-center">
+                                        <h4 class="mb-0">Diferencia total</h4>
+                                        {% if cobrosMo > 0 %}
+                                            <span class="text-muted">{{ (((cobrosMo - pagosMo) / cobrosMo) * 100) | number_format(2) }} %</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ (cobrosMo - pagosMo) |format_currency('EUR', locale='es') }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pendientes adicionales -->
+                <div class="row mt-4">
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
+                                    </div>
+                                    <div class="ms-4 align-self-center">
+                                        <h4 class="mb-0">Pendiente de cobro</h4>
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ pendientecobroMo |format_currency('EUR', locale='es') }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
+                                    </div>
+                                    <div class="ms-4 align-self-center">
+                                        <h4 class="mb-0">Pendiente de pago</h4>
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ pendientepagoMo |format_currency('EUR', locale='es') }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-row">
+                                    <div class="round align-self-center round-success">
+                                        <i data-feather="dollar-sign" class="feather-sm"></i>
+                                    </div>
+                                    <div class="ms-4 align-self-center">
+                                        <h4 class="mb-0">Beneficio pendiente de cobro</h4>
+                                    </div>
+                                    <div class="ms-auto align-self-center">
+                                        <h2 class="font-weight-medium mb-0">{{ (pendientecobroMo - pendientepagoMo) |format_currency('EUR', locale='es') }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                </div>
+
 
               <!-- Row -->     
-                                <!-- Footer callback -->
+                <!-- Footer callback -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card">

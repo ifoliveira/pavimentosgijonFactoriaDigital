@@ -209,7 +209,7 @@ class EconomicpresuController extends AbstractController
     /**
      * @Route("/{id}/{idbanco}/conciliar", name="economicpresu_conciliar", methods={"GET","POST"})
      */
-    public function conciliar_banco(Economicpresu $economicpresu, BancoRepository $bancoRepository, int $idbanco): Response
+    public function conciliar_banco(Economicpresu $economicpresu, BancoRepository $bancoRepository, int $idbanco, TiposmovimientoRepository $tiposmovimientoRepository): Response
     {
         $entityManager = $this->getDoctrine()->getManager();
         $banco = $bancoRepository->findOneBy(array('id' => $idbanco));
@@ -218,6 +218,9 @@ class EconomicpresuController extends AbstractController
 
             $banconuevo = clone $banco;  
             $banconuevo->setImporteBn($economicpresu->getImporteEco());
+            $banconuevo->setCategoriabn($tiposmovimientoRepository->findOneBy(['descripcionTm'=> 'Mano de Obra']));  
+            $banconuevo->setTimestamp(new \DateTime());
+            $banconuevo->setConciliado(1);
             $importenuevo= $banco->getImporteBn() - $economicpresu->getImporteEco();
             $banco->setImporteBn($importenuevo);
             $economicpresu->setBancoEco($banconuevo);
@@ -227,10 +230,11 @@ class EconomicpresuController extends AbstractController
         } else {
 
             $economicpresu->setBancoEco($banco);    
+            $banco->setCategoriabn($tiposmovimientoRepository->findOneBy(['descripcionTm'=> 'Mano de Obra']));
+            $banco->setConciliado(1);
         }
 
-          
-
+        
         $entityManager->flush();
 
         return $this->redirectToRoute('cestas_index');
