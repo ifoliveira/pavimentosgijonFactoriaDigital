@@ -74,7 +74,7 @@ class DetallecestaRepository extends ServiceEntityRepository
             INNER JOIN 
                 cestas p ON cesta_dc_id = p.id
             WHERE 
-                YEAR(timestamp_dc) = YEAR(CURDATE())
+                YEAR(fecha_fin_cs) = YEAR(CURDATE())
                 AND estado_cs = 2;
             ';
 

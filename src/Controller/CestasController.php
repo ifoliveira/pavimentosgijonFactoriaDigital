@@ -402,6 +402,7 @@ class CestasController extends AbstractController
         if ($cestas->getEstadoCs() == 1) {
             if ($importesnal == 0) {
                 $cestas->setEstadoCs(2);
+                $cestas->setFechaFinCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
             } else {
                 $cestas->setEstadoCs(3);
             }
@@ -420,6 +421,7 @@ class CestasController extends AbstractController
 
             if ($pagado == $cestas->getImporteTotCs()) {
                 $cestas->setEstadoCs(2);
+                $cestas->setFechaFinCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
             } 
         }    
         
@@ -485,6 +487,7 @@ class CestasController extends AbstractController
         $datos = $request->query->get('cesta');
         $cesta = new Cestas;
         $cesta->setEstadoCs(2);
+        $cestas->setFechaFinCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
         $cesta->setFechaCs(date_create ($datos[0]));
         $cesta->setImporteTotCs($datos[1]);
         $cesta->setDescuentoCs($datos[2]);

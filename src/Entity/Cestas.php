@@ -77,6 +77,11 @@ class Cestas
      */
     private $userAdmin;
 
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $fechaFinCs;
+
     public function __construct()
     {
         $this->detallecesta = new ArrayCollection();
@@ -288,6 +293,18 @@ class Cestas
     public function setUserAdmin(?Admin $userAdmin): self
     {
         $this->userAdmin = $userAdmin;
+
+        return $this;
+    }
+
+    public function getFechaFinCs(): ?\DateTimeInterface
+    {
+        return $this->fechaFinCs;
+    }
+
+    public function setFechaFinCs(?\DateTimeInterface $fechaFinCs): self
+    {
+        $this->fechaFinCs = $fechaFinCs;
 
         return $this;
     }

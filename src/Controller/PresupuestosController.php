@@ -373,6 +373,7 @@ class PresupuestosController extends AbstractController
         );
 
         $presupuesto->getTicket()->setEstadoCs($estadocesta2->getId());
+        $presupuesto->getTicket()->setFechaFinCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
         
         $this->em->flush();
 
@@ -635,6 +636,7 @@ class PresupuestosController extends AbstractController
         $cestanueva = new Cestas();
         $cestanueva = clone $presupuesto->getTicket();
         $cestanueva->setEstadoCs(2);
+        $cestanueva->setFechaFinCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
         $cestanueva->setImporteTotCs($importesenal);
         $cestanueva->setTipopagoCs($tipopago);
         $cestanueva->setDescuentoCs(0);
@@ -726,6 +728,9 @@ class PresupuestosController extends AbstractController
         $presupuesto->setEstadoPe($estadocesta);
         $presupuesto->getTicket()->setPrespuestoCs($presupuesto);
         $presupuesto->getTicket()->setEstadoCs(2);
+        $presupuesto->getTicket()->setFechaCs(new \DateTime());
+        $presupuesto->getTicket()->setTimestampCs(new \DateTime()); 
+        $presupuesto->getTicket()->setfechaFinCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
         $presupuesto->getTicket()->setImporteTotCs($importesenal);
         $presupuesto->getTicket()->setDescuentoCs($detallecestaRepository->imptotalCesta($presupuesto->getTicket())-$importesenal);
 
