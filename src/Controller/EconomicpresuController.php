@@ -219,7 +219,6 @@ class EconomicpresuController extends AbstractController
             $banconuevo = clone $banco;  
             $banconuevo->setImporteBn($economicpresu->getImporteEco());
             $banconuevo->setCategoriabn($tiposmovimientoRepository->findOneBy(['descripcionTm'=> 'Mano de Obra']));  
-            $banconuevo->setTimestamp(new \DateTime());
             $banconuevo->setConciliado(1);
             $importenuevo= $banco->getImporteBn() - $economicpresu->getImporteEco();
             $banco->setImporteBn($importenuevo);
