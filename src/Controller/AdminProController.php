@@ -103,18 +103,26 @@ class AdminProController extends AbstractController
     /**
      * @Route("/admin/contabilidad", name="admin_contabilidad")
      */
-    public function contabilidad(Request $request,EconomicpresuRepository $economicpresuRepository,  DetallecestaRepository $detallecestaRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
+    public function contabilidad(Request $request,
+                                 EconomicpresuRepository $economicpresuRepository,  
+                                 DetallecestaRepository $detallecestaRepository, 
+                                 BancoRepository $bancoRepository, 
+                                 CestasRepository $cestasRepository, 
+                                 EfectivoRepository $efectivoRepository, 
+                                 ForecastRepository $forecastRepository): Response
     {
+        $anio = $request->query->getInt('anio', (int) date('Y'));
+
         $ventas = 0;
         $pagos = 0;
-        $cobrosMo = $economicpresuRepository->cobrototal()["cobrototalMo"];
-        $pagosMo = $economicpresuRepository->pagototal()["pagototalMo"];
-        $pendientecobroMo = $economicpresuRepository->pendienteCobro()["cobropdteMo"];
-        $pendientepagoMo = $economicpresuRepository->pendientePago()["pagopdteMo"];
-        $ventapdtfinalizar  =$economicpresuRepository->pendienteYaCobrado()["pagototalPdte"];
+        $cobrosMo = $economicpresuRepository->cobrototal($anio)["cobrototalMo"];
+        $pagosMo = $economicpresuRepository->pagototal($anio)["pagototalMo"];
+        $pendientecobroMo = $economicpresuRepository->pendienteCobro($anio)["cobropdteMo"];
+        $pendientepagoMo = $economicpresuRepository->pendientePago($anio)["pagopdteMo"];
+        $ventapdtfinalizar  =$economicpresuRepository->pendienteYaCobrado($anio)["pagototalPdte"];
         $bancototal = $bancoRepository->totalBanco();
         $efectivototal = $efectivoRepository->totalefectivo();
-        $beneficio = $detallecestaRepository->beneficioTotal();
+        $beneficio = $detallecestaRepository->beneficioTotal($anio);
         $ticketspdte = $cestasRepository->ticketssnal();
         foreach ($ticketspdte as $ticket){
             $ventas = $ticket->getImporteTotCs() + $ventas;
@@ -126,6 +134,7 @@ class AdminProController extends AbstractController
 
 
         $response = $this->render('admin_pro/contabilidad.html.twig', [
+            'anio' => $anio, // <-- esta línea es clave
             'controller_name' => 'AdminProController',
             'bancototal' => $bancototal,
             'ventaspdtefinalizar' => $ventapdtfinalizar,

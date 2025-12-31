@@ -61,25 +61,28 @@ class DetallecestaRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function beneficioTotal()
+    public function beneficioTotal(?int $anio = null): array
     {
         $conn = $this->getEntityManager()->getConnection();
+         
+        // Usar el año actual si no se pasa uno
+        $anio = $anio ?? (int) date('Y');
 
         $sql = '
             SELECT 
-                SUM(pvp_dc * cantidad_dc) AS pvp, 
+                SUM((pvp_dc - (pvp_dc * descuento_dc / 100)) * cantidad_dc)  AS pvp, 
                 SUM(CASE WHEN precio_dc = 0 THEN pvp_dc * 0.5 * cantidad_dc ELSE precio_dc * cantidad_dc END) AS precio
             FROM 
                 detallecesta a 
             INNER JOIN 
                 cestas p ON cesta_dc_id = p.id
             WHERE 
-                YEAR(fecha_fin_cs) = YEAR(CURDATE())
+                YEAR(fecha_fin_cs) = :anio
                 AND estado_cs = 2;
             ';
 
         // returns an array of arrays (i.e. a raw data set)
-        return $conn->fetchAssociative($sql);
+        return $conn->fetchAssociative($sql, ['anio' => $anio]);
 
     }       
 

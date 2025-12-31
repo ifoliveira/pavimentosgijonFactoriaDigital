@@ -39,28 +39,38 @@ class EconomicpresuRepository extends ServiceEntityRepository
         }
     }
 
-    public function cobrototal()
+    public function cobroTotal(?int $anio = null): array
     {
         $conn = $this->getEntityManager()->getConnection();
+
+            // Usar el año actual si no se pasa uno
+            $anio = $anio ?? (int) date('Y');
 
         $sql = '
             SELECT SUM(e.importe_eco) AS cobrototalMo
             FROM economicpresu e
             INNER JOIN presupuestos p ON p.id = e.idpresu_eco_id
             INNER JOIN cestas c ON c.id = p.ticket_id
-            WHERE e.aplica_eco = "M"
-            AND c.estado_cs = 2
-            AND YEAR(e.timestamp) = YEAR(CURDATE())
+            WHERE e.aplica_eco = :modo
+            AND c.estado_cs = :estado
+            AND YEAR(e.timestamp) = :anio
         ';
 
-        return $conn->fetchAssociative($sql);
+        $params = [
+            'modo' => 'M',
+            'estado' => 2,
+            'anio' => $anio,
+        ];
 
+        return $conn->fetchAssociative($sql, $params);
     }
 
-    public function pagototal()
+    public function pagototal(?int $anio = null): array
     {
         $conn = $this->getEntityManager()->getConnection();
 
+        // Usar el año actual si no se pasa uno
+        $anio = $anio ?? (int) date('Y');
 
         $sql = '
             SELECT SUM(e.importe_eco) AS pagototalMo
@@ -69,12 +79,15 @@ class EconomicpresuRepository extends ServiceEntityRepository
             INNER JOIN cestas c ON c.id = p.ticket_id
             WHERE e.aplica_eco = "E"
             AND c.estado_cs = 2
-            AND YEAR(e.timestamp) = YEAR(CURDATE())
+            AND YEAR(e.timestamp) = :anio
         ';
 
-        return $conn->fetchAssociative($sql);
+        $params = [
+            'anio' => $anio,
+        ];
 
-    }   
+        return $conn->fetchAssociative($sql, $params);
+    }
     
     public function pendienteCobro()
     {
@@ -106,23 +119,27 @@ class EconomicpresuRepository extends ServiceEntityRepository
 
     }      
 
-    public function pendienteYaCobrado()
+    public function pendienteYaCobrado(?int $anio = null): array
     {
         $conn = $this->getEntityManager()->getConnection();
+
+        // Usar el año actual si no se pasa uno
+        $anio = $anio ?? (int) date('Y');
 
         $sql = '
             SELECT SUM(e.importe_pg) AS pagototalPdte
             FROM pagos e
             INNER JOIN cestas c ON c.id = e.cesta_id
             Where c.estado_cs = 3
-            AND YEAR(c.timestamp_cs) = YEAR(CURDATE())
-            ';
+            AND YEAR(c.timestamp_cs) = :anio
+        ';
 
-        return $conn->fetchAssociative($sql);
+        $params = [
+            'anio' => $anio,
+        ];
 
-
-    }    
-
+        return $conn->fetchAssociative($sql, $params);
+    }
 
     public function getImporteManoObraPendiente(int $presupuestoId): float
     {

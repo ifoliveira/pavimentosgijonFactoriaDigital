@@ -30,6 +30,20 @@
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
                 <!-- Cuentas generales -->
+                <form method="get" id="form-anio" class="mb-4">
+                    <div class="form-group row">
+                        <label for="anio" class="col-sm-2 col-form-label">Seleccionar año:</label>
+                        <div class="col-sm-3">
+                        {% set anioActual = "now"|date("Y")|number_format(0, '.', '') %}  {# fuerza a número sin decimales #}
+                        {% set anioInicio = anioActual - 5 %}
+                        <select name="anio" id="anio" class="form-control" onchange="document.getElementById('form-anio').submit();">
+                            {% for i in anioInicio..anioActual %}
+                                <option value="{{ i }}" {% if i == anio %}selected{% endif %}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                        </div>
+                    </div>
+                </form>                
                 <h3 class="mb-3">Cuentas generales</h3>
                 <div class="row">
                     <div class="col-md-4 col-xl-4">
