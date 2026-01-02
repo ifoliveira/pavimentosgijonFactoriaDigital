@@ -86,7 +86,7 @@
               <ul class="list-inline">
                 <li class="list-inline-item"><a href="{{ path('homepage')}}"><strong>By:</strong> Pav. Gijón</a></li>
                 <li class="list-inline-item"><a href="{{ path('integral')}}"><strong>Tag:</strong> Integrales</a></li>
-                <li class="list-inline-item"><a ><strong>Post:</strong> {{ post.publishedAt|date('j') }} {{ meses[mes_en] }}, <span class="current-year"></span></a></li>
+                <li class="list-inline-item"><a ><strong>Post:</strong> {{ post.publishedAt|date('j') }} {{ meses[mes_en] }}, {{ post.publishedAt|date('Y') }} </a></li>
               </ul>
           </div>
         </div>
