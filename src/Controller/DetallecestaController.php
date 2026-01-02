@@ -181,7 +181,17 @@ class DetallecestaController extends AbstractController
 
         //actualizamos la cantidad
         $actualizar->setCantidadDc($request->query->get('cantidad'));
+
+
         $this->em->flush();
+
+        
+
+        $cestaactual = $this->em->getRepository('App\Entity\Cestas')->findOneBy(['id'=> $actualizar->getCestaDc()->getId() ]);
+        $preciototalCesta = $detallecestaRepository->imptotalCesta($cestaactual->getId());
+        $cestaactual->setImporteTotCs($preciototalCesta);
+        $this->em->persist($cestaactual);
+        $this->em->flush();        
 
         //Volver a crear apartado del loop de la pantalla
         $template =$this->render('productos/loop.html.twig', ['cestaId'=>$actualizar->getCestaDc()->getId()])->getContent();

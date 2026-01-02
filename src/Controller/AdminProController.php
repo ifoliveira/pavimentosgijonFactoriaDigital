@@ -58,21 +58,22 @@ class AdminProController extends AbstractController
     /**
      * @Route("/admin/flujocaja", name="flujocaja")
      */
-    public function flujocaja(Request $request, TiposmovimientoRepository $tiposmovimientoRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
+    public function flujocaja(Request $request, DetallecestaRepository $detallecestaRepository, TiposmovimientoRepository $tiposmovimientoRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
     {
-       
 
+        $anio = $request->query->getInt('anio', (int) date('Y'));   
         $bancototal = $bancoRepository->totalBanco();
-        $ventasmestotal= $bancoRepository->ventamesBanco();
-        $ventaefetotal = $cestasRepository->ventaefemes();
+        
         $ventahistefect = $cestasRepository->ventaefetotal()["ventatotalef"];
         $efectivototal = $efectivoRepository->totalefectivo();
         $manoobratotal = intval($efectivoRepository->manoobraEfectivo()["sum(importe_ef)"]) + intval($bancoRepository->manoobraBanco()["importe"]) ;
+        $ventasmestotal = $detallecestaRepository->ventasporMesPresupuesto($anio);
+        $ventaefetotal = $detallecestaRepository->ventasporMesDiaaDia($anio);
 
 
         $forecast = $forecastRepository->findBy(
             ['estadoFr' => 'P'],
-            ['fechaFr' => 'ASC'],
+            ['fechaFr' => 'ASC']
         );
 
         $forecast = $forecastRepository->findBy(
@@ -83,6 +84,7 @@ class AdminProController extends AbstractController
         $cookies = $request->cookies->get('Mensaje');
 
         $response = $this->render('admin_pro/index.html.twig', [
+            'anio' => $anio, // <-- esta línea es clave
             'controller_name' => 'AdminProController',
             'bancototal' => $bancototal,
             'ventastotal' => $ventasmestotal,

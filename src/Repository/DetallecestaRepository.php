@@ -86,6 +86,55 @@ class DetallecestaRepository extends ServiceEntityRepository
 
     }       
 
+    public function ventasporMesPresupuesto(?int $anio = null): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        // Usar el año actual si no se pasa uno
+        $anio = $anio ?? (int) date('Y');
+
+        $sql = '
+        SELECT sum((pvp_dc - (pvp_dc * descuento_dc / 100)) * cantidad_dc) as importe , YEAR(fecha_fin_cs), month(fecha_fin_cs) as mes 
+          FROM detallecesta a 
+        INNER JOIN 
+              cestas p ON cesta_dc_id = p.id          
+        WHERE 
+              YEAR(fecha_fin_cs) = :anio
+              AND estado_cs = 2
+              AND prespuesto_cs_id IS NOT NULL
+        GROUP BY YEAR(fecha_fin_cs) , month(fecha_fin_cs);
+            ';
+     
+        // returns an array of arrays (i.e. a raw data set)
+        return $conn->fetchAllAssociative($sql, ['anio' => $anio]);
+
+    }
+
+    public function ventasporMesDiaaDia(?int $anio = null): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        // Usar el año actual si no se pasa uno
+        $anio = $anio ?? (int) date('Y');
+
+        $sql = '
+        SELECT sum((pvp_dc - (pvp_dc * descuento_dc / 100)) * cantidad_dc) as importe , YEAR(fecha_fin_cs), month(fecha_fin_cs) as mes 
+          FROM detallecesta a 
+        INNER JOIN 
+              cestas p ON cesta_dc_id = p.id
+        WHERE
+              YEAR(fecha_fin_cs) = :anio
+              AND estado_cs = 2
+              AND prespuesto_cs_id IS NULL
+        GROUP BY YEAR(fecha_fin_cs) , month(fecha_fin_cs);
+            ';
+
+        // returns an array of arrays (i.e. a raw data set)
+        return $conn->fetchAllAssociative($sql, ['anio' => $anio]);
+
+    }
+        
+    
     /**
      * @return Detallecesta[]
      */

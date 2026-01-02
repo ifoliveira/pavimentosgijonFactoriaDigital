@@ -387,7 +387,8 @@ $('#tbprod').on('click', 'tbody tr[role="row"]', function() {
                
                success: function(response) {  
                    $('#loop').html(response.template);
-                   //document.querySelector("span[name='cantidad']").innerText     =  response.cantidad;
+
+                   modif_importe({{ presupuesto.id }},0);
                },  
                error : function(xhr, textStatus, errorThrown) {  
                   alert(textStatus);  
