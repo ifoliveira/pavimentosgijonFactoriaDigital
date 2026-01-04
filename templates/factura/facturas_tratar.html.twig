@@ -1,0 +1,97 @@
+{% extends 'inicio2.html.twig' %}
+
+{% block eltiempo %}{% endblock %}
+{% block cabecera %}Tratar Factura{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('factura_subir') }}">Subir</a></li>
+    <li class="breadcrumb-item active">Tratar</li>
+{% endblock %}
+{% block title %}Procesar Factura{% endblock %}
+
+{% block cardbody1 %}
+    <h1>Procesar Factura Detectada</h1>
+
+    <h2>Subir nueva factura</h2>
+    <form method="post" enctype="multipart/form-data" class="mb-4">
+        <div class="mb-3">
+            <label for="factura" class="form-label">Selecciona un archivo PDF:</label>
+            <input type="file" id="factura" name="factura" accept="application/pdf" class="form-control" required>
+        </div>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="usar_imagen" value="1" id="usar_imagen">
+            <label class="form-check-label" for="usar_imagen">
+                Procesar como imagen (OCR con JPG)
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary">Procesar</button>
+    </form>    
+
+    {% if pdfFilename %}
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <h5>Vista previa PDF</h5>
+                <div class="border p-2" style="background: #f8f9fa;">
+                    <embed src="{{ asset('var/facturas/' ~ pdfFilename) }}" type="application/pdf" width="100%" height="500px">
+                </div>
+            </div>
+            <div class="col-md-8">
+                {% if datos.vencimientos is defined and datos.vencimientos|length > 0 %}
+                    <h5>Vencimientos</h5>
+                    {% for form in form_loop %}
+                        <div class="card mb-3">
+                            {{ form_start(form) }}
+                            <div class="card-body">
+                                {{ form_row(form.conceptoFr) }}
+                                {{ form_row(form.fechaFr) }}
+                                {{ form_row(form.importeFr) }}
+                                {{ form_row(form.origenFr) }}
+                                {{ form_row(form.tipoFr) }}
+                                <div class="form-group text-end">
+                                    <button type="submit" class="btn btn-primary">Guardar</button>
+                                </div>
+                            </div>
+                            {{ form_end(form) }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-warning">No hay vencimientos detectados no tratados</div>
+                {% endif %}
+            </div>
+        </div>
+
+
+
+    <hr>
+
+
+        <h2>Productos Detectados</h2>
+        {{ form_start(productos_form) }}
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Incluir</th>
+                <th>Descripción</th>
+                <th>Precio coste</th>
+                <th>PVP</th>
+                <th>Cantidad</th>
+                <th>Tipo</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for productoForm in productos_form.productos %}
+                <tr>
+                <td>{{ form_widget(productoForm.incluir) }}</td>
+                <td>{{ form_widget(productoForm.descripcion_Pd) }}</td>
+                <td class="text-end">{{ form_widget(productoForm.precio_Pd, {'attr': {'class': 'text-end'}}) }}</td>
+                <td class="text-end">{{ form_widget(productoForm.pvp_Pd, {'attr': {'class': 'text-end'}}) }}</td>
+                <td>{{ form_widget(productoForm.stock_Pd) }}</td>
+                <td>{{ form_widget(productoForm.tipo_pd_id) }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <button class="btn btn-success">Guardar todos los productos</button>
+        {{ form_end(productos_form) }}
+
+        {% endif %}
+{% endblock %}

@@ -3,6 +3,10 @@
 namespace App\Controller;
 
 use App\MisClases\FacturaPdfToJsonService;
+use App\Service\FacturaProcessorService;
+use App\Service\ForecastHandlerService;
+use App\Service\ProductoHandlerService;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,7 +49,11 @@ class FacturaUploadController extends AbstractController
     }
 
     #[Route('/factura/subir', name: 'factura_subir')]
-    public function subir(Request $request, FacturaPdfToJsonService $servicio, SluggerInterface $slugger, FormFactoryInterface $formFactory): Response
+    public function subir(Request $request, 
+                          FacturaProcessorService $processor,
+                          ForecastHandlerService $forecastHandler,
+                          ProductoHandlerService $productoHandler,
+    ): Response
     {
         $datos = null;
         $pdfFilename = null;
@@ -53,150 +61,52 @@ class FacturaUploadController extends AbstractController
         $formLoop = [];
         $productosForms = [];
         $usarImagen = $request->request->get('usar_imagen') === '1';
-     
-        
-      
+
+
+        // 1. Subida y análisis de la factura
         if ($request->isMethod('POST') && $request->files->has('factura')) {
-            /** @var UploadedFile $pdfFile */
-            $pdfFile = $request->files->get('factura');
-
-            if ($pdfFile && $pdfFile->isValid()) {
-                $originalFilename = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $pdfFilename = $safeFilename . '-' . uniqid() . '.' . $pdfFile->guessExtension();
-
-                try {
-                    $pdfFile->move(
-                        $this->getParameter('kernel.project_dir') . '/public_html/var/facturas/',
-                        $pdfFilename
-                    );
-
-                    // Procesar el PDF con OpenAI
-                    $ruta = $this->getParameter('kernel.project_dir') . '/public_html/var/facturas/' . $pdfFilename;
-                    if ($usarImagen) {
-                        // Convertir PDF a imagen
-                        $outputImagePath = str_replace('.pdf', '.jpg', $ruta);
-                    
-                        $process = new Process([
-                            'convert',
-                            '-density', '300',
-                            '-colorspace', 'gray',
-                            '-sharpen', '0x1.0',
-                            '-trim',
-                            '+repage',
-                            $ruta,
-                            '-background', 'white',
-                            '-alpha', 'remove',
-                            '-quality', '100',
-                            $outputImagePath
-                        ]);
-                        $process->run();
-                    
-                        if (!$process->isSuccessful()) {
-                            throw new ProcessFailedException($process);
-                        }
-                    
-                        // Procesar imagen con OpenAI
-                        $datos = $servicio->procesarFacturaPdf($outputImagePath);
-                    } else {
-                        // Procesar el PDF directamente como antes
-                        $datos = $servicio->procesarFacturaPdf($ruta);
-                    }
-                    //$json = file_get_contents($this->getParameter('kernel.project_dir') . '/public_html/var/facturas/factura_mock.json');
-                    //$datos = json_decode($json, true);
-
-                    $session->set('factura_datos', $datos);
-                    $session->set('factura_pdf', $pdfFilename);
-
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Error al subir el archivo: ' . $e->getMessage());
-                }
+            try {
+                [$pdfFilename, $datos] = $processor->procesarFacturaDesdeRequest($request);
+                $session->set('factura_datos', $datos);
+                $session->set('factura_pdf', $pdfFilename);
+            } catch (\Throwable $e) {
+                $this->addFlash('error', 'Error al procesar la factura: ' . $e->getMessage());
             }
         } else {
-            // Recuperar los datos si no hay nuevo PDF
             $datos = $session->get('factura_datos');
             $pdfFilename = $session->get('factura_pdf');
         }
-        
-        $formulariosEnviados = array_keys($request->request->all());
-        $indiceGuardado = null;
 
-        foreach ($formulariosEnviados as $clave) {
-            if (str_starts_with($clave, 'forecast_')) {
-                $indiceGuardado = (int) str_replace('forecast_', '', $clave);
-                break;
-            }
-        }
+      
+        // 2. Formularios de vencimientos
+        if (is_array($datos)) {
+            $formLoop = $forecastHandler->crearFormulariosForecast($datos, $request);
 
-        if (is_array($datos) && isset($datos['vencimientos']) && is_array($datos['vencimientos'])) {
-            foreach ($datos['vencimientos'] as $i => $vencimiento) {
-                $forecast = new Forecast();
-                $rawFecha = str_replace('-', '/', $vencimiento['fecha']);
-                $fecha = \DateTime::createFromFormat('d/m/Y', $rawFecha);            
-
-                $forecast->setFechaFr($fecha);
-                $forecast->setImporteFr((float) str_replace(',', '.', $vencimiento['importe']) * -1);
-                $forecast->setConceptoFr('Factura ' . ($datos['empresa_emisora']['nombre'] ?? ''));
-                $forecast->setOrigenFr('Banco');
-                $forecast->setFijovarFr('V');
-                $forecast->setEstadoFr('P');
-                $forecast->setTipoFr($this->em->getRepository(Tiposmovimiento::class)->findOneBy(['descripcionTm' => 'Proveedor']));
-            
-                $form = $formFactory->createNamed("forecast_$i", ForecastType::class, $forecast);
-                $form->handleRequest($request);
-            
-                if ($i === $indiceGuardado && $form->isSubmitted() && $form->isValid()) {
-                    $this->em->persist($forecast);
-                    $this->em->flush();
-            
-                    // Eliminar el vencimiento procesado de sesión
-                    $vencimientos = $datos['vencimientos'];
-                    unset($vencimientos[$i]);
-                    $datos['vencimientos'] = array_values($vencimientos);
-                    $session->set('factura_datos', $datos);
-            
-                    $this->addFlash('success', 'Movimiento guardado correctamente');
-                    return $this->redirectToRoute('factura_subir');
-                }
-            
-                $formLoop[] = $form;
-            }
-        } else {
-            $this->addFlash('warning', 'No hay vencimientos disponibles para procesar.');
-        }
-               
-        $productosForms = [];
-
-        foreach ($datos['articulos'] ?? [] as $i => $articulo) {
-            $producto = new Productos();
-            $producto->setDescripcionPd($articulo['descripcion']);
-            $producto->setPrecioPd((float)($articulo['importe_final']) * 1.262);
-            $producto->setPvpPd((float)($articulo['importe_final']) * 1.262 * 1.40);
-            $producto->setStockPd((int) $articulo['cantidad']);
-            $producto->setFecAltaPd(new \DateTime());
-            $producto->setObsoleto(false);
-        
-            $form = $formFactory->createNamed("producto_$i", ProductosType::class, $producto);
-            $form->handleRequest($request);
-        
-            if ($form->isSubmitted() && $form->isValid()) {
-                $this->em->persist($producto);
-                $this->em->flush();
-        
-                $this->addFlash('success', 'Producto guardado correctamente');
+            if (isset($formLoop['redirect']) && $formLoop['redirect']) {
+                $this->addFlash('success', 'Movimiento guardado correctamente');
                 return $this->redirectToRoute('factura_subir');
             }
-        
-            $productosForms[] = $form;
         }
-                
 
-        return $this->render('factura/subir.html.twig', [
+
+
+        // 3. Formularios de productos
+        $productosForm = $productoHandler->crearFormularioProductos($datos, $request);
+
+        if ($productosForm->isSubmitted() && $productosForm->isValid()) {
+            $productoHandler->guardarProductosDesdeFormulario($productosForm);
+            $this->addFlash('success', 'Productos procesados');
+            return $this->redirectToRoute('factura_subir');
+        }        
+
+        
+
+        return $this->render('factura/facturas_tratar.html.twig', [
             'datos' => $datos,
             'pdfFilename' => $pdfFilename,
             'form_loop' => array_map(fn($f) => $f->createView(), $formLoop),
             'articulos' => $datos['articulos'] ?? [],
-            'productos_forms' => array_map(fn($f) => $f->createView(), $productosForms),
+            'productos_form' => $productosForm->createView(),
                ]);
     }
 
