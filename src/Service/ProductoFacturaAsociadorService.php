@@ -80,7 +80,7 @@ class ProductoFacturaAsociadorService
             $coincidencias = $this->buscarCoincidenciasDeProducto($productoFactura, $diasRecientes);
 
             foreach ($coincidencias as $detalle) {
-                $costeNuevo = $productoFactura->getPrecioPd();
+                $costeNuevo = $productoFactura->getPrecioPd() * 1.262;
                 $resultado[] = new AnalisisProductoFactura($productoFactura, $detalle, $costeNuevo);
             }
         }
