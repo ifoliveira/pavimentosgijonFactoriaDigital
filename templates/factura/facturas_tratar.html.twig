@@ -28,13 +28,13 @@
 
     {% if pdfFilename %}
         <div class="row mb-4">
-            <div class="col-md-4">
+            <div class="col-md-7">
                 <h5>Vista previa PDF</h5>
                 <div class="border p-2" style="background: #f8f9fa;">
                     <embed src="{{ asset('var/facturas/' ~ pdfFilename) }}" type="application/pdf" width="100%" height="500px">
                 </div>
             </div>
-            <div class="col-md-8">
+            <div class="col-md-5">
                 {% if datos.vencimientos is defined and datos.vencimientos|length > 0 %}
                     <h5>Vencimientos</h5>
                     {% for form in form_loop %}
@@ -94,4 +94,70 @@
         {{ form_end(productos_form) }}
 
         {% endif %}
+
+        {% if productos_analisis is not empty %}
+            <hr>
+            <h2>Coincidencias encontradas en presupuestos</h2>
+
+            <form method="post" action="{{ path('factura_actualizar_costes') }}">
+                <input type="hidden" name="pdfFilename" value="{{ pdfFilename }}">
+
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Actualizar</th>
+                            <th>Producto en factura</th>
+                            <th>Presupuesto</th>
+                            <th>Coste anterior</th>
+                            <th>Coste nuevo</th>
+                            <th>Diferencia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i, item in productos_analisis %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="actualizar[{{ item.detalle.id }}]" checked>
+
+                                {# 🔑 ID REAL del detallecesta #}
+                                <input type="hidden"
+                                    name="detalle_id[{{ item.detalle.id }}]"
+                                    value="{{ item.detalle.id }}">
+
+                                {# 🔑 Coste nuevo #}
+                                <input type="hidden"
+                                    name="coste_nuevo[{{ item.detalle.id }}]"
+                                    value="{{ item.costeNuevo }}">
+                            </td>
+
+                            <td>{{ item.productoFactura.descripcionPd }}</td>
+                            <td>
+                                {% if item.detalle.cestaDc.prespuestoCs is not null %}
+                                    #{{ item.detalle.cestaDc.prespuestoCs.id }}
+                                    #{{ item.detalle.productoDc.descripcionPd }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end">{{ item.costeAnterior|number_format(2, ',', '.') }} €</td>
+                            <td class="text-end">{{ item.costeNuevo|number_format(2, ',', '.') }} €</td>
+                            <td class="text-end">
+                                {% set diff = item.diferencia %}
+                                <span class="{{ diff > 0 ? 'text-danger' : 'text-success' }}">
+                                    {{ diff|number_format(2, ',', '.') }} €
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">Actualizar costes seleccionados</button>
+                </div>
+            </form>
+        {% endif %}
+
 {% endblock %}

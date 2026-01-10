@@ -529,7 +529,7 @@
         ticket += "\x1DVA0"; // corte
 
         // 👉 AQUÍ llamas a tu agente local
-        fetch('http://localhost:3000/print', {
+        fetch('http://127.0.0.1:3000/print', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

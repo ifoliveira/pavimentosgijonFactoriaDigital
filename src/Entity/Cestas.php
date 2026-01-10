@@ -62,7 +62,7 @@ class Cestas
     private $detallecesta;
 
     /**
-     * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="cestas")
+     * @ORM\ManyToOne(targetEntity=Presupuestos::class, inversedBy="cestas")
      * @ORM\JoinColumn(name="prespuesto_cs_id", referencedColumnName="id", onDelete="SET NULL")
      */
     private $prespuestoCs;

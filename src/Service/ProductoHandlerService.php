@@ -80,6 +80,37 @@ class ProductoHandlerService
 
         $this->em->flush();
     }
+
+    /**
+     * Convierte los datos de artículos extraídos del PDF en entidades Productos
+     *
+     * @param array $datos
+     * @return Productos[]
+     */
+    public function crearProductosDesdeDatos(array $datos): array
+    {
+        $productos = [];
+
+        foreach ($datos['articulos'] ?? [] as $articulo) {
+            $producto = new Productos();
+            $producto->setDescripcionPd((string) ($articulo['descripcion'] ?? ''));
+            $cantidad = (int) ($articulo['cantidad'] ?? 1); // Evitar dividir por cero
+            $precio = round(floatval($articulo['importe_final']) / max($cantidad, 1), 2);
+            $pvp = round($precio * 1.5, 2);
+
+            $producto->setPrecioPd($precio);
+            $producto->setPvpPd($pvp);
+            $producto->setStockPd($cantidad);
+            $producto->setFecAltaPd(new \DateTime());
+            $producto->setObsoleto(false);
+
+            $productos[] = $producto;
+        }
+
+        return $productos;
+    }
+
+
 }
 
 ?>

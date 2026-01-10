@@ -43,13 +43,15 @@
 
 # Build data
 /build/
-/public_html/Tickets/.*
 /public_html/Nordigen/.*
 /public_html/Tickets/
 /public_html/Nordigen/
 /public_html/Light-HTML/img/blog/*
 /public_html/var/.*
 /public_html/pdfs/.*
+/public_html/var/facturas/
+/public_html/Presupuestos/ 
+
 
 # Composer PHAR
 /composer.phar

@@ -6,6 +6,7 @@ use App\MisClases\FacturaPdfToJsonService;
 use App\Service\FacturaProcessorService;
 use App\Service\ForecastHandlerService;
 use App\Service\ProductoHandlerService;
+use App\Service\ProductoFacturaAsociadorService;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,6 +25,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Productos;
 use App\Entity\Tipoproducto;
 use App\Form\ProductosType;
+use Psr\Log\LoggerInterface;
+use App\Repository\DetallecestaRepository;
 
 
 
@@ -32,9 +35,10 @@ class FacturaUploadController extends AbstractController
 
     protected $em;
 
-    public function __construct( EntityManagerInterface $em )
+    public function __construct( EntityManagerInterface $em , LoggerInterface $logger)
     {
         $this->em = $em;
+        $this->logger = $logger;
     }
 
     #[Route('/factura/nueva', name: 'factura_nueva')]
@@ -50,34 +54,47 @@ class FacturaUploadController extends AbstractController
 
     #[Route('/factura/subir', name: 'factura_subir')]
     public function subir(Request $request, 
-                          FacturaProcessorService $processor,
-                          ForecastHandlerService $forecastHandler,
-                          ProductoHandlerService $productoHandler,
+                        FacturaProcessorService $processor,
+                        ForecastHandlerService $forecastHandler,
+                        ProductoHandlerService $productoHandler,
+                        ProductoFacturaAsociadorService $asociador
     ): Response
     {
+        $session = $request->getSession();
         $datos = null;
         $pdfFilename = null;
-        $session = $request->getSession();
         $formLoop = [];
-        $productosForms = [];
-        $usarImagen = $request->request->get('usar_imagen') === '1';
-
-
+        //dd($request->files->all());
         // 1. Subida y análisis de la factura
         if ($request->isMethod('POST') && $request->files->has('factura')) {
             try {
                 [$pdfFilename, $datos] = $processor->procesarFacturaDesdeRequest($request);
+
                 $session->set('factura_datos', $datos);
                 $session->set('factura_pdf', $pdfFilename);
+
+
+                // Convertir a entidades
+                $productosDetectados = $productoHandler->crearProductosDesdeDatos($datos);
+
+                // Analizar coincidencias
+                $analisis = $asociador->analizarProductosDeFactura($productosDetectados);
+
+                // Guardar análisis
+                $session->set('factura_analisis', $analisis);
+
+
             } catch (\Throwable $e) {
                 $this->addFlash('error', 'Error al procesar la factura: ' . $e->getMessage());
+                dd($e);
             }
-        } else {
-            $datos = $session->get('factura_datos');
-            $pdfFilename = $session->get('factura_pdf');
         }
 
-      
+        // Recuperar datos guardados en sesión
+        $datos = $session->get('factura_datos');
+
+        $pdfFilename = $session->get('factura_pdf');
+        $analisis = $session->get('factura_analisis', []);
         // 2. Formularios de vencimientos
         if (is_array($datos)) {
             $formLoop = $forecastHandler->crearFormulariosForecast($datos, $request);
@@ -88,8 +105,6 @@ class FacturaUploadController extends AbstractController
             }
         }
 
-
-
         // 3. Formularios de productos
         $productosForm = $productoHandler->crearFormularioProductos($datos, $request);
 
@@ -97,19 +112,72 @@ class FacturaUploadController extends AbstractController
             $productoHandler->guardarProductosDesdeFormulario($productosForm);
             $this->addFlash('success', 'Productos procesados');
             return $this->redirectToRoute('factura_subir');
-        }        
+        }
+        //$analisis = $session->get('factura_analisis', []);
 
-        
 
+
+        // Render final
         return $this->render('factura/facturas_tratar.html.twig', [
             'datos' => $datos,
             'pdfFilename' => $pdfFilename,
             'form_loop' => array_map(fn($f) => $f->createView(), $formLoop),
             'articulos' => $datos['articulos'] ?? [],
             'productos_form' => $productosForm->createView(),
-               ]);
+            'productos_analisis' => $analisis,
+        ]);
     }
 
+    #[Route('/factura/actualizar-costes', name: 'factura_actualizar_costes', methods: ['POST'])]
+    public function actualizarCostes(
+        Request $request,
+        EntityManagerInterface $em,
+        DetallecestaRepository $detalleCestaRepository
+    ): Response {
+
+        $actualizar = $request->request->all('actualizar');
+        $costesNuevos = $request->request->all('coste_nuevo');
+        $pdfFilename = $request->request->get('pdfFilename');
+
+        if (!$pdfFilename) {
+            throw $this->createNotFoundException('No se ha recibido el nombre del PDF');
+        }        
+
+        if (!$actualizar || !$costesNuevos) {
+            $this->addFlash('warning', 'No se seleccionó ningún producto');
+            return $this->redirectToRoute('factura_subir');
+        }
+
+        foreach ($actualizar as $detalleId => $_) {
+
+            /** @var \App\Entity\DetalleCesta|null $detalle */
+            $detalle = $detalleCestaRepository->find($detalleId);
+
+            if (!$detalle) {
+                continue;
+            }
+
+            // 🔹 Guardamos coste anterior
+            $detalle->setCosteAnterior($detalle->getPrecioDc());
+
+            // 🔹 Actualizamos coste nuevo
+            $detalle->setPrecioDc((float) $costesNuevos[$detalleId]);
+
+            // 🔹 Flags de control
+            $detalle->setCosteActualizadoPorFactura(true);
+            $detalle->setFechaActualizacionCoste(new \DateTime());
+            // 🔹 FACTURA ORIGEN (nombre del PDF)
+            $detalle->setFacturaOrigen($pdfFilename);            
+
+            // persist NO es necesario si ya existe
+        }
+
+        $em->flush();
+
+        $this->addFlash('success', 'Costes actualizados correctamente');
+
+        return $this->redirectToRoute('factura_subir');
+    }
 
     
     #[Route('/factura/guardar-articulos', name: 'guardar_articulos', methods: ['POST'])]

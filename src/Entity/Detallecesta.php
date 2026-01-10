@@ -62,6 +62,26 @@ class Detallecesta
     private $textoDc;
 
     /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $costeActualizadoPorFactura;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $facturaOrigen;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $fechaActualizacionCoste;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $costeAnterior;
+
+    /**
      * __clone
      * @return void
      */
@@ -176,6 +196,54 @@ class Detallecesta
     public function setTextoDc(?string $textoDc): self
     {
         $this->textoDc = $textoDc;
+
+        return $this;
+    }
+
+    public function isCosteActualizadoPorFactura(): ?bool
+    {
+        return $this->costeActualizadoPorFactura;
+    }
+
+    public function setCosteActualizadoPorFactura(?bool $costeActualizadoPorFactura): self
+    {
+        $this->costeActualizadoPorFactura = $costeActualizadoPorFactura;
+
+        return $this;
+    }
+
+    public function getFacturaOrigen(): ?string
+    {
+        return $this->facturaOrigen;
+    }
+
+    public function setFacturaOrigen(?string $facturaOrigen): self
+    {
+        $this->facturaOrigen = $facturaOrigen;
+
+        return $this;
+    }
+
+    public function getFechaActualizacionCoste(): ?\DateTimeInterface
+    {
+        return $this->fechaActualizacionCoste;
+    }
+
+    public function setFechaActualizacionCoste(?\DateTimeInterface $fechaActualizacionCoste): self
+    {
+        $this->fechaActualizacionCoste = $fechaActualizacionCoste;
+
+        return $this;
+    }
+
+    public function getCosteAnterior(): ?float
+    {
+        return $this->costeAnterior;
+    }
+
+    public function setCosteAnterior(?float $costeAnterior): self
+    {
+        $this->costeAnterior = $costeAnterior;
 
         return $this;
     }
