@@ -30,6 +30,7 @@ class PresupuestoCalculateController extends AbstractController
     {
         $this->logger = $logger;
         $this->entityManager = $entityManager;
+        $this->mailer = $mailer;
     }
 
 
