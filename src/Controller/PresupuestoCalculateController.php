@@ -15,6 +15,8 @@ use App\MisClases\TelegramNotifier;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\PresupuestosLeadRepository;
 use App\Entity\PresupuestosLead;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 class PresupuestoCalculateController extends AbstractController
  
@@ -68,7 +70,8 @@ class PresupuestoCalculateController extends AbstractController
         Request $request,
         PresupuestoCalculatorService $calculator,
         TelegramNotifier $notifier,
-        PresupuestosLeadRepository $repo
+        PresupuestosLeadRepository $repo,
+        MailerInterface $mailer
                 
     ): Response {
 
@@ -132,15 +135,38 @@ class PresupuestoCalculateController extends AbstractController
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
+        $pdfBinary = $dompdf->output();
 
+
+        try {
+            $emailMessage = (new Email())
+                ->from('pavimentosgijon@gmail.com')
+                ->to($email)
+                ->subject('Tu presupuesto de reforma')
+                ->text(
+                    "Hola {$nombre},\n\n" .
+                    "Te adjuntamos el presupuesto solicitado.\n\n" .
+                    "Si tienes cualquier duda, responde a este email o escríbenos por WhatsApp."
+                )
+                ->attach($pdfBinary, 'presupuesto.pdf', 'application/pdf');
+
+            $mailer->send($emailMessage);
+            $notifier->sendMessage("✅ Email enviado a {$email} correctamente.");
+        } catch (\Throwable $e) {
+            $notifier->sendMessage("❗ Error enviando email a {$email}: " . $e->getMessage());
+
+
+        }
         return new Response(
-            $dompdf->output(),
+            $pdfBinary,
             200,
             [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="presupuesto.pdf"'
             ]
         );
+
+
     }
 }
 

@@ -9,6 +9,63 @@ parameters:
     ticketsDir: "%kernel.project_dir%/public_html/Tickets"
     nordigen: "%kernel.project_dir%/public_html/Nordigen"
     openai.api_key: '%env(OPENAI_API_KEY)%'    
+    presupuesto:
+      mano_obra:
+        albañil:
+          hasta_1m: 250
+          hasta_techo: 300
+          reforma_completa: 1200  # NUEVO para baño completo
+        fontanero_base: 160
+        barra_ducha_extra: 80
+        pintura_techo: 70
+        mampara_instalacion: 80
+        jefe_obra: 100
+        minimo: 500
+        electricista_base: 150           # NUEVO
+        escayola_instalacion: 250        # NUEVO
+        radiador_toallero_instalacion: 160 # NUEVO
+
+      materiales:
+        plato_ducha:
+          hasta_120: 450
+          hasta_160: 500
+          mayor: 600
+        mampara:
+          fijo: 400
+          fijo_mas_corredera: 800
+          angular: 900
+          angular_doble: 1200
+          ninguna: 0
+        griferia:
+          estandar: 100
+          barra_ducha: 295
+          lavabo: 70 
+          bide: 70
+        azulejos:
+          precio_m2: 30
+        pavimento:                       # NUEVO para suelo
+          precio_m2: 27
+        cola:
+          base: 50
+          extra_techo: 50
+          bano_completo: 250
+        azulejos_similares_extra: 100
+        sanitarios:                      # NUEVO
+          ducha: 500
+          banera: 450
+          bide: 165         # NUEVO
+          inodoro: 565
+          grupo_higienico: 295
+        muebles:
+          lavabo:
+            60: 475
+            80: 670
+            100: 1100
+          espejo: 295
+        radiador_toallero: 370           # NUEVO
+        escayola: 60                     # NUEVO
+        electricidad:
+          foco: 59
 services:
     # default configuration for services in *this* file
     _defaults:
