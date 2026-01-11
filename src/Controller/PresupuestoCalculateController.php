@@ -24,8 +24,9 @@ class PresupuestoCalculateController extends AbstractController
     private LoggerInterface $logger;
     private EntityManagerInterface $entityManager;
     private PresupuestosLeadRepository $presupuestosLeadRepository;
+    private MailerInterface $mailer;
 
-    public function __construct(LoggerInterface $logger, EntityManagerInterface $entityManager)
+    public function __construct(LoggerInterface $logger, EntityManagerInterface $entityManager, MailerInterface $mailer)
     {
         $this->logger = $logger;
         $this->entityManager = $entityManager;
@@ -150,7 +151,7 @@ class PresupuestoCalculateController extends AbstractController
                 )
                 ->attach($pdfBinary, 'presupuesto.pdf', 'application/pdf');
 
-            $mailer->send($emailMessage);
+            $this->mailer->send($emailMessage);
             $notifier->sendMessage("✅ Email enviado a {$email} correctamente.");
         } catch (\Throwable $e) {
             $notifier->sendMessage("❗ Error enviando email a {$email}: " . $e->getMessage());
