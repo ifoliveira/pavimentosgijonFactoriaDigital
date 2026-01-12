@@ -104,6 +104,7 @@ class PresupuestoCalculateController extends AbstractController
         $lead->setJsonPresupuesto($json);
         $lead->setTotal($res['total']);
         $lead->setManoObra($manoObraTotal);
+        $lead->setSeguimientoActivo(true);
         $lead->setMateriales($materialesTotal);
         $lead->setUltimoEvento(new \DateTime());
 

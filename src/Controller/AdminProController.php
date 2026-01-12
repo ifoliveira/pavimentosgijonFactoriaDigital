@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Repository\BancoRepository;
 Use App\MisClases\Banks_N43;
-use App\MisClases\nordigen;
 use App\Entity\Banco;
 use App\Entity\Cestas;
 use App\MisClases\Importar_Ticket;

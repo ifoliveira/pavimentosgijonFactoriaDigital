@@ -7,7 +7,6 @@ parameters:
     c43Dir: "%kernel.project_dir%/public_html/C43"
     presupuestoDir: "%kernel.project_dir%/public_html/Presupuestos"
     ticketsDir: "%kernel.project_dir%/public_html/Tickets"
-    nordigen: "%kernel.project_dir%/public_html/Nordigen"
     openai.api_key: '%env(OPENAI_API_KEY)%'    
     presupuesto:
       mano_obra:
@@ -95,10 +94,6 @@ services:
     App\MisClases\:
         resource: '../src/MisClases/'
 
-    App\MisClases\nordigen:    
-        arguments:
-            $nordigen: "%kernel.project_dir%/public_html/Nordigen"
-            $accept: ""
 
     App\MisClases\FacturaPdfToJsonService:
         arguments:
