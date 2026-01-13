@@ -690,6 +690,16 @@ a:hover {
 	font-size: 34px;
 	font-family: 'Big Shoulders Display', cursive;
 }
+
+.single-service-content .faq h3 {
+	font-size: 22px;
+	font-family: inherit;
+	color: #222;
+	font-weight: 600;
+	margin-top: 25px;
+	margin-bottom: 10px;
+}
+
 .single-service-content .p-quote {
 	font-size: 30px;
 	line-height: 70px;
