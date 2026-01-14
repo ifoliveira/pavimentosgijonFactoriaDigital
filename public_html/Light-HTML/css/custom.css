@@ -2202,3 +2202,41 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cc08b5f9', e
   margin: 0 auto;
   text-align: center;
 }
+
+/* ===============================
+   Listas en contenido editorial
+   =============================== */
+
+.single-service-content ol {
+  margin: 20px 0 20px 25px;
+  padding-left: 20px;
+}
+
+
+.single-service-content ol {
+  list-style: decimal;
+}
+
+.single-service-content li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+  font-family: 'Montserrat', sans-serif;
+  color: #000;  
+  font-size: 14px;
+}
+
+.single-service-content ul {
+  list-style-type: disc;
+  margin: 20px 0 20px 25px;
+  padding-left: 20px;
+}
+
+.single-service-content ul li::marker {
+  color: #0d6efd; /* azul Bootstrap */
+  font-size: 1.1em;
+}
+
+.single-service-content li {
+  margin-bottom: 10px;
+  line-height: 1.7;
+}

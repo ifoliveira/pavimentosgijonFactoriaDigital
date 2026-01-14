@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use App\MisClases\TelegramNotifier;
 use Dompdf\Dompdf; 
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class ApgijonController extends AbstractController
 {
@@ -430,6 +431,39 @@ private function calcularPresupuestoDucha(array $datos): array
         ]);
     }     
 
+
+    /**
+     * @Route("/reforma-bano-en-gijon", name="reformabanogijon")
+     */
+    public function reformabanogijon(Request $request, ConsultasRepository $consultasRepository): Response
+    {
+
+        $consulta = new Consultas();
+
+        $form = $this->createForm(ConsultasType::class, $consulta);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $consulta = $form->getData();
+  
+            $consulta->setTimestamp(New DateTime());
+            $consulta->setatencion(false);
+
+            $consultasRepository->add($consulta, true);
+
+            return $this->redirectToRoute('integral', [], Response::HTTP_SEE_OTHER);
+
+        }   
+
+        return $this->render('apgijon/reformabanogijon.html.twig', [
+            'controller_name' => 'ApgijonController',
+            'form' => $form->createView()
+
+        ]);
+    }     
+        
     /**
      * @Route("/presupuestoInmediato", name="iapresupuesto")
      */
@@ -717,8 +751,18 @@ private function calcularPresupuestoDucha(array $datos): array
         ]);
     }   
 
+    #[Route('/mamaparas-bano-gijon', name: 'mamparas_antigua')]
+    public function mamparasAntigua(): RedirectResponse
+    {
+        return new RedirectResponse(
+            '/mamparas-bano-gijon',
+            301
+        );
+    }
+
+
     /**
-     * @Route("/mamaparas-bano-gijon", name="mampara")
+     * @Route("/mamparas-bano-gijon", name="mampara")
      */
     public function mamparas(Request $request, ConsultasRepository $consultasRepository): Response
     {
