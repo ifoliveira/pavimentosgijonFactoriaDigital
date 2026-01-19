@@ -200,204 +200,87 @@ $(function () {
   );
   chart_line_overview.render();
 
-  // -----------------------------------------------------------------------
-  // Visitor
-  // -----------------------------------------------------------------------
 
-  var option_Visit_Separation = {
-    series: [50, 40, 30, 10],
-    labels: ["Mobile", "Tablet", "Other", "Desktop"],
-    chart: {
-      type: "donut",
-      fontFamily: "Montserrat,sans-serif",
-      height: 225,
-      offsetY: 30,
-      width: "100%",
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      width: 0,
-    },
-    plotOptions: {
-      pie: {
-        expandOnClick: true,
-        donut: {
-          size: "80",
-          labels: {
-            show: true,
-            name: {
-              show: true,
-              offsetY: 10,
-            },
-            value: {
-              show: false,
-            },
-            total: {
-              show: true,
-              color: "#000",
-              fontFamily: "Montserrat,sans-serif",
-              fontSize: "26px",
-              fontWeight: 600,
-              label: "Visits",
-            },
-          },
-        },
-      },
-    },
-    colors: ["#1e88e5", "#26c6da", "#eceff1", "#745af2"],
-    tooltip: {
-      show: true,
-      fillSeriesColor: false,
-    },
-    legend: {
-      show: false,
-    },
-    responsive: [
-      {
-        breakpoint: 1025,
-        options: {
-          chart: {
-            height: 220,
-            width: 220,
-          },
-        },
-      },
-      {
-        breakpoint: 769,
-        options: {
-          chart: {
-            height: 250,
-            width: 250,
-          },
-        },
-      },
-    ],
-  };
-
-  var chart_pie_donut_status = new ApexCharts(
-    document.querySelector("#Visit-Separation"),
-    option_Visit_Separation
-  );
-  chart_pie_donut_status.render();
 
   // -----------------------------------------------------------------------
   // Website Visitor
   // -----------------------------------------------------------------------
 
-  var option_Website_visit = {
+    const chart = new ApexCharts(document.querySelector("#Website-Visit"), {
+
     series: [
       {
-        name: "Series A View ",
-        data: forecast,
+        name: "Gasto acumulado",
+        data: forecast
       },
       {
-        name: "Series B View ",
-        data: banco,
+        name: "Saldo Banco",
+        data: bancoLine
       },
+      {
+        name: "Saldo Efectivo",
+        data: saldoefectivoLine
+      },      
+      {
+        name: "Saldo Banco + Efectivo",
+        data: bancoCajaLine
+      }
     ],
+    colors: ["#06d55c", "#1e88e5", "#fe88e5", "#f39c12"],
     chart: {
       fontFamily: "Montserrat,sans-serif",
       height: 400,
       type: "area",
-      toolbar: {
-        show: false,
-      },
+      toolbar: { show: false }
     },
-    grid: {
-      show: true,
-      borderColor: "rgba(0,0,0,.1)",
-      xaxis: {
-        lines: {
-          show: true,
+    dataLabels: {
+      enabled: false // ❌ esto es lo que apaga los valores encima de los puntos
+    },    
+    xaxis: {
+      type: 'datetime',
+      tickAmount: 10, // controla el número de etiquetas visibles
+      labels: {
+        style: {
+          colors: "#add9bb"
         },
-      },
-      yaxis: {
-        lines: {
-          show: true,
-        },
-      },
+        formatter: function (value, timestamp) {
+          const date = new Date(timestamp);
+          return date.toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "short"
+          }); // ej: "18 ene"
+        }
+      }
     },
-    colors: ["#06d79c", "#398bf7"],
+    yaxis: {
+      labels: { style: { colors: "#add9bb" } }
+    },
+    stroke: {
+      curve: "smooth",
+      width: 2
+    },
+    markers: {
+      size: 0,
+      strokeColors: "transparent"
+    },
     fill: {
       type: "gradient",
-      opacity: 0.5,
       gradient: {
         shade: "light",
         type: "vertical",
         shadeIntensity: 0.5,
-        gradientToColors: undefined, // optional, if not defined - uses the shades of same color in series
-        inverseColors: true,
         opacityFrom: 0.5,
         opacityTo: 0.3,
         stops: [0, 50, 100],
-        colorStops: [],
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      curve: "smooth",
-      width: 2,
-    },
-    markers: {
-      size: 3,
-      strokeColors: "transparent",
-    },
-    xaxis: {
-      categories: [fecha[0], fecha[1],fecha[2],fecha[3],fecha[4],fecha[5],fecha[6],fecha[7],fecha[8],fecha[9],
-      fecha[10], fecha[11],fecha[12],fecha[13],fecha[14],fecha[15],fecha[16],fecha[17],fecha[18],fecha[19],
-      fecha[20], fecha[21],fecha[22],fecha[23],fecha[24],fecha[25],fecha[26],fecha[27],fecha[28],fecha[29],
-      fecha[30], fecha[31],fecha[32],fecha[33],fecha[34],fecha[35],fecha[36],fecha[37],fecha[38],fecha[39]],
-      labels: {
-        style: {
-          colors: [
-            "#a1aab2",
-            "#a1aab2",
-            "#a1aab2",
-            "#a1aab2",
-            "#a1aab2",
-            "#a1aab2",
-            "#a1aab2",
-            "#a1aab2",
-          ],
-        },
-      },
-      axisBorder: {
-        color: "rgba(0,0,0,0.5)",
-      },
-    },
-    yaxis: {
-      labels: {
-        style: {
-          colors: [
-            "#a1aab2",
-            "#a1aab2",
-            "#a1aab2",
-            "#a1aab2",
-            "#a1aab2",
-            "#a1aab2",
-            "#a1aab2",
-          ],
-        },
       },
     },
     tooltip: {
-      x: {
-        format: "dd/MM/yy HH:mm",
-      },
-      theme: "dark",
+      x: { format: "dd/MM/yy" },
+      theme: "dark"
     },
-    legend: {
-      show: false,
-    },
-  };
 
-  var chart_area_spline = new ApexCharts(
-    document.querySelector("#Website-Visit"),
-    option_Website_visit
-  );
-  chart_area_spline.render();
+  });
+
+  chart.render();
+
 });

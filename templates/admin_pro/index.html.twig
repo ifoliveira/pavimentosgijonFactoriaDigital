@@ -2,6 +2,35 @@
 {% block title %}Administración Pavimentos Gijón{% endblock %}
 {% block eltiempo %}
 {% endblock %}
+    {% block jscustom %}
+    
+     
+        <!-- Chart JS -->
+        <script src="{{ asset('dist/js/pages/dashboards/dashboard.js') }}"></script>
+        <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
+        <!--Wave Effects -->
+        <script src="{{ asset('dist/js/waves.js') }}"></script>    
+
+              <script>
+                let forecast = {{ forecastChartData|json_encode|raw }};
+                let bancoTotal = {{ bancototal['sum(importe_bn)']|number_format(2, '.', '') }};
+                let efectivoTotal = {{ gastos['efectivototal']|number_format(2, '.', '') }}
+                let saldoefectivoLine = forecast.map(item => ({
+                  x: item.x,
+                  y: efectivoTotal
+                }));
+                let bancoLine = forecast.map(item => ({
+                  x: item.x,
+                  y: bancoTotal
+                }));
+
+                let bancoCajaLine = forecast.map(item => ({
+                  x: item.x,
+                  y: bancoTotal + efectivoTotal
+                }));                
+              </script>              
+
+    {% endblock %}      
 {% block cardbody1 %}
               <div class="card">
                 <div class="card-body">
@@ -19,14 +48,58 @@
                         </select>
                         </div>
                     </div>
-                </form>                
+                </form>   
+                <div class="row">             
                   <div class="d-lg-flex">
-                    <div>
-                      <h3 class="card-title">
-                        <span class="lstick d-inline-block align-middle"></span>Ventas
-                      </h3>
-                      <h6 class="card-subtitle">Año {{ anio }}</h6>
+                    <div class="col-lg-4 d-flex align-items-stretch">
+                      <div class="card w-100">
+                        <div class="card-body">
+                          <div class="d-flex">
+                            <div class="mr-3 align-self-center">
+                              <span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/income.png" alt="Income" />
+                            </div>
+                            <div class="align-self-center">
+                              <h6 class="text-muted mt-2 mb-0">Banco a {{ bancototal['max(fecha_bn)'] |date("d/m/Y") }}</h6>
+                              <h2 id="bancototal" data-banco="{{ bancototal['sum(importe_bn)'] }}">{{ bancototal['sum(importe_bn)'] |format_currency('EUR', locale='es') }}</h2>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                    <div class="col-lg-4 d-flex align-items-stretch">
+                      <div class="card w-100">
+                        <div class="card-body">
+                          <div class="d-flex">
+                            <div class="mr-3 align-self-center">
+                              <span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" />
+                            </div>
+                            <div class="align-self-center">
+                              <h6 class="text-muted mt-2 mb-0">Efectivo</h6>
+                              <h2 id="efectivototal" data-caja="{{ gastos['efectivototal'] }}">{{ gastos['efectivototal'] |format_currency('EUR', locale='es') }}</h2>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>                     
+                    <div class="col-lg-4 d-flex align-items-stretch">
+                      <div class="card w-100">
+                        <div class="card-body">
+                          <div class="d-flex">
+                            <div class="mr-3 align-self-center">
+                              <span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" />
+                            </div>
+                            <div class="align-self-center">
+                              <h6 class="text-muted mt-2 mb-0">Total</h6>
+                              <h2 id="cajatotal" data-caja="{{ bancototal['sum(importe_bn)'] + gastos['efectivototal'] }}">{{ (bancototal['sum(importe_bn)'] + gastos['efectivototal']) |format_currency('EUR', locale='es') }}</h2>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
 
                     {% set totaltar = 0 %}
                     {% set totalefe = 0 %}
@@ -53,532 +126,71 @@
                     {% set ventaefectivo = totalefe %}
                     {% set totalefe = ventahistefect + gastos['efectivototal'] %}
 
-                    <div class="ms-auto" style="margin-left: auto !important;">
-                      <ul class="list-inline">
-                        <li class="list-inline-item">
-                          <div class="d-flex">
-                            <i class="ri-checkbox-blank-circle-fill fs-5 font-10 me-2 text-primary mt-2" style="content: '\eb7c'"></i>
+                <div class="row">             
+                  <div class="d-lg-flex">
+                    <div class="card w-100">
+                      <div class="card-body">
+                          <div class="ms-auto" style="margin-left: auto !important;">
                             <div>
-                              <h3 class="mb-0">{{ totaltar + ventaefectivo }}</h3>
-                              <h6 class="text-muted">Ventas</h6>
+                              <h3 class="card-title">
+                                <span class="lstick d-inline-block align-middle"></span>Ventas
+                              </h3>
+                              <h6 class="card-subtitle">Año {{ anio }}</h6>
                             </div>
-                          </div>
-                        </li>
-                        <li class="list-inline-item">
-                          <div class="d-flex">
-                            <i
-                              class="
-                                ri-checkbox-blank-circle-fill
-                                fs-5
-                                font-10
-                                me-2
-                                text-info
-                                mt-2
-                              "
-                            ></i>
-                            <div>
-                              <h3 class="mb-0">{{ totaltar }}</h3>
-                              <h6 class="text-muted">Presupuestos</h6>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="list-inline-item">
-                          <div class="d-flex">
-                            <i
-                              class="
-                                ri-checkbox-blank-circle-fill
-                                fs-5
-                                font-10
-                                me-2
-                                text-muted
-                                mt-2
-                              "
-                            ></i>
-                            <div>
-                              <h3 class="mb-0">{{ventaefectivo}}</h3>
-                              <h6 class="text-muted">Dia a día</h6>
-                            </div>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div id="Sales-Overview"></div>
-                </div>
-              </div>
-                <div class="row">
-                   <div class="col-lg-4 d-flex align-items-stretch">
-                       <div class="card w-100">
-                           <div class="card-body">
-                               <div class="d-flex">
-                                   <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/income.png" alt="Income" />
-                                   </div>
-                                   <div class="align-self-center">
-                                    <h6 class="text-muted mt-2 mb-0">Banco a {{ bancototal['max(fecha_bn)'] |date("d/m/Y") }}</h6>
-                                    <h2 id="bancototal" data-banco="{{ bancototal['sum(importe_bn)'] }}">{{ bancototal['sum(importe_bn)'] |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                               </div>
-                           </div>
-                       </div>
-                   </div>
-                   <div class="col-lg-4 d-flex align-items-stretch">
-                       <div class="card w-100">
-                           <div class="card-body">
-                               <div class="d-flex">
-                                   <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" /></div>
-                                   <div class="align-self-center">
-                                       <h6 class="text-muted mt-2 mb-0">Efectivo</h6>
-                                       <h2 id="efectivototal" data-caja="{{ gastos['efectivototal'] }}">{{ gastos['efectivototal'] |format_currency('EUR', locale='es') }}</h2></div>
-                               </div>
-                           </div>
-                       </div>
-                   </div>                     
-                   <div class="col-lg-4 d-flex align-items-stretch">
-                       <div class="card w-100">
-                           <div class="card-body">
-                               <div class="d-flex">
-                                   <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" /></div>
-                                   <div class="align-self-center">
-                                       <h6 class="text-muted mt-2 mb-0">Total</h6>
-                                       <h2 id="cajatotal" data-caja="{{ bancototal['sum(importe_bn)'] + gastos['efectivototal'] }}">{{ (bancototal['sum(importe_bn)'] + gastos['efectivototal']) |format_currency('EUR', locale='es') }}</h2></div>
-                               </div>
-                           </div>
-                       </div>
-                   </div>
-                 
-                </div>
 
-                <div class="col-lg-12 d-flex align-items-stretch">
-                  <div class="card w-100">
-                    <div class="card-body">
-                      <div class="d-md-flex">
-                        <h4 class="card-title">
-                          <span class="lstick d-inline-block align-middle"></span>Website Visit
-                        </h4>
-                        <ul class="list-inline mb-0 ms-auto">
-                          <li class="list-inline-item">
-                            <h6 class="text-success">
-                              <i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2"></i>Site A view
-                            </h6>
-                          </li>
-                          <li class="list-inline-item">
-                            <h6 class="text-info">
-                              <i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2"></i>Site B view
-                            </h6>
-                          </li>
-                        </ul>
-                      </div>
-                      <div class="text-center mt-2">
-                        <div class="btn-group" role="group" aria-label="Basic example">
-                          <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm me-0 fs-2">
-                            PAGEVIEWS
-                          </button>
-                          <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm fs-2">
-                            REFERRALS
-                          </button>
-                        </div>
-                      </div>
-                      <div id="Website-Visit" class="position-relative mt-4" style="height: 400px; width: 100%"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- Row ends -->
-              <!-- Row starts -->
-              {# <div class="row">
-                <div class="col-lg-8 d-flex align-items-stretch">
-                  <div class="card w-100">
-                    <div class="card-body">
-                      <div class="d-md-flex align-items-center">
-                        <div>
-                          <h4 class="card-title">
-                            <span
-                              class="lstick d-inline-block align-middle"
-                            ></span
-                            >To Do list
-                          </h4>
-                          <h6 class="card-subtitle mb-0">
-                            List of your next task to complete
-                          </h6>
-                        </div>
-                        <div class="ms-auto mt-3 mt-md-0">
-                          <button
-                            class="btn btn-sm btn-rounded btn-success"
-                            data-bs-toggle="modal"
-                            data-bs-target="#myModal"
-                          >
-                            Add Task
-                          </button>
-                        </div>
-                      </div>
-
-                      <!-- -------------------------------------------------------------- -->
-                      <!-- To do list widgets -->
-                      <!-- -------------------------------------------------------------- -->
-                      <div class="to-do-widget mt-3 common-widget">
-                        <!-- .modal for add task -->
-                        <div
-                          class="modal fade"
-                          id="myModal"
-                          tabindex="-1"
-                          role="dialog"
-                          aria-hidden="true"
-                        >
-                          <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                              <div class="modal-header d-flex">
-                                <h4 class="modal-title">Add Task</h4>
-                                <button
-                                  type="button"
-                                  class="btn-close"
-                                  data-bs-dismiss="modal"
-                                  aria-label="Close"
-                                ></button>
-                              </div>
-                              <div class="modal-body">
-                                <form>
-                                  <div class="mb-3">
-                                    <label>Task name</label>
-                                    <input
-                                      type="text"
-                                      class="form-control"
-                                      placeholder="Enter Task Name"
-                                    />
+                            <ul class="list-inline">
+                              <li class="list-inline-item">
+                                <div class="d-flex">
+                                  <i class="ri-checkbox-blank-circle-fill fs-5 font-10 me-2 text-primary mt-2" style="content: '\eb7c'"></i>
+                                  <div>
+                                    <h3 class="mb-0">{{ totaltar + ventaefectivo }}</h3>
+                                    <h6 class="text-muted">Ventas</h6>
                                   </div>
-                                  <div class="mb-3">
-                                    <label>Assign to</label>
-                                    <select class="form-select">
-                                      <option selected="">Sachin</option>
-                                      <option value="1">Sehwag</option>
-                                    </select>
+                                </div>
+                              </li>
+                              <li class="list-inline-item">
+                                <div class="d-flex">
+                                  <i
+                                    class="
+                                      ri-checkbox-blank-circle-fill
+                                      fs-5
+                                      font-10
+                                      me-2
+                                      text-info
+                                      mt-2
+                                    "
+                                  ></i>
+                                  <div>
+                                    <h3 class="mb-0">{{ totaltar }}</h3>
+                                    <h6 class="text-muted">Presupuestos</h6>
                                   </div>
-                                </form>
-                              </div>
-                              <div class="modal-footer">
-                                <button
-                                  type="button"
-                                  class="btn btn-secondary"
-                                  data-bs-dismiss="modal"
-                                >
-                                  Close
-                                </button>
-                                <button
-                                  type="button"
-                                  class="btn btn-success"
-                                  data-bs-dismiss="modal"
-                                >
-                                  Submit
-                                </button>
-                              </div>
-                            </div>
-                            <!-- /.modal-content -->
+                                </div>
+                              </li>
+                              <li class="list-inline-item">
+                                <div class="d-flex">
+                                  <i
+                                    class="
+                                      ri-checkbox-blank-circle-fill
+                                      fs-5
+                                      font-10
+                                      me-2
+                                      text-muted
+                                      mt-2
+                                    "
+                                  ></i>
+                                  <div>
+                                    <h3 class="mb-0">{{ventaefectivo}}</h3>
+                                    <h6 class="text-muted">Dia a día</h6>
+                                  </div>
+                                </div>
+                              </li>
+                            </ul>
                           </div>
-                          <!-- /.modal-dialog -->
                         </div>
-                        <!-- /.modal -->
-                        <ul
-                          class="list-task todo-list list-group mb-0"
-                          data-role="tasklist"
-                        >
-                          <li
-                            class="list-group-item border-0 mb-0 py-3 pe-3 ps-0"
-                            data-role="task"
-                          >
-                            <div class="form-check form-check-inline w-100">
-                              <input
-                                type="checkbox"
-                                class="
-                                  form-check-input
-                                  danger
-                                  check-light-danger
-                                "
-                                id="inputSchedule"
-                                name="inputCheckboxesSchedule"
-                              />
-                              <label
-                                for="inputSchedule"
-                                class="form-check-label font-weight-medium"
-                              >
-                                <span>Schedule meeting with</span
-                                ><span class="badge bg-danger badge-pill ms-1"
-                                  >Today</span
-                                >
-                              </label>
-                            </div>
-                            <ul
-                              class="
-                                assignedto
-                                list-style-none
-                                m-0
-                                ps-4
-                                ms-1
-                                mt-1
-                              "
-                            >
-                              <li class="d-inline-block border-0 me-1">
-                                <img
-                                  src="../../assets/images/users/1.jpg"
-                                  alt="user"
-                                  data-bs-toggle="tooltip"
-                                  data-bs-placement="top"
-                                  title=""
-                                  data-original-title="Steave"
-                                  class="rounded-circle"
-                                />
-                              </li>
-                              <li class="d-inline-block border-0 me-1">
-                                <img
-                                  src="../../assets/images/users/2.jpg"
-                                  alt="user"
-                                  data-bs-toggle="tooltip"
-                                  data-bs-placement="top"
-                                  title=""
-                                  data-original-title="Jessica"
-                                  class="rounded-circle"
-                                />
-                              </li>
-                              <li class="d-inline-block border-0 me-1">
-                                <img
-                                  src="../../assets/images/users/3.jpg"
-                                  alt="user"
-                                  data-bs-toggle="tooltip"
-                                  data-bs-placement="top"
-                                  title=""
-                                  data-original-title="Priyanka"
-                                  class="rounded-circle"
-                                />
-                              </li>
-                              <li class="d-inline-block border-0 me-1">
-                                <img
-                                  src="../../assets/images/users/4.jpg"
-                                  alt="user"
-                                  data-bs-toggle="tooltip"
-                                  data-bs-placement="top"
-                                  title=""
-                                  data-original-title="Selina"
-                                  class="rounded-circle"
-                                />
-                              </li>
-                            </ul>
-                          </li>
-                          <li
-                            class="list-group-item border-0 mb-0 py-3 pe-3 ps-0"
-                            data-role="task"
-                          >
-                            <div class="form-check form-check-inline w-100">
-                              <input
-                                type="checkbox"
-                                id="inputCall"
-                                class="form-check-input info check-light-info"
-                                name="inputCheckboxesCall"
-                              />
-                              <label
-                                for="inputCall"
-                                class="form-check-label font-weight-medium"
-                              >
-                                <span>Give Purchase report to</span>
-                                <span class="badge bg-info badge-pill ms-1"
-                                  >Yesterday</span
-                                >
-                              </label>
-                            </div>
-                            <ul class="assignedto m-0 ps-4 ms-1 mt-1">
-                              <li class="d-inline-block border-0 me-1">
-                                <img
-                                  src="../../assets/images/users/3.jpg"
-                                  alt="user"
-                                  data-bs-toggle="tooltip"
-                                  data-bs-placement="top"
-                                  title=""
-                                  data-original-title="Priyanka"
-                                  class="rounded-circle"
-                                />
-                              </li>
-                              <li class="d-inline-block border-0 me-1">
-                                <img
-                                  src="../../assets/images/users/4.jpg"
-                                  alt="user"
-                                  data-bs-toggle="tooltip"
-                                  data-bs-placement="top"
-                                  title=""
-                                  data-original-title="Selina"
-                                  class="rounded-circle"
-                                />
-                              </li>
-                            </ul>
-                          </li>
-                          <li
-                            class="list-group-item border-0 mb-0 py-3 pe-3 ps-0"
-                            data-role="task"
-                          >
-                            <div class="form-check form-check-inline w-100">
-                              <input
-                                type="checkbox"
-                                id="inputBook"
-                                class="
-                                  form-check-input
-                                  primary
-                                  check-light-primary
-                                "
-                                name="inputCheckboxesBook"
-                              />
-                              <label
-                                for="inputBook"
-                                class="form-check-label font-weight-medium"
-                              >
-                                <span>Book flight for holiday</span
-                                ><span class="badge bg-primary badge-pill ms-1"
-                                  >1 week</span
-                                >
-                              </label>
-                            </div>
-                            <div class="fs-2 ps-3 d-inline-block ms-2">
-                              26 jun 2021
-                            </div>
-                          </li>
-                          <li
-                            class="list-group-item border-0 mb-0 py-3 pe-3 ps-0"
-                            data-role="task"
-                          >
-                            <div class="form-check form-check-inline w-100">
-                              <input
-                                type="checkbox"
-                                id="inputForward"
-                                class="
-                                  form-check-input
-                                  warning
-                                  check-light-warning
-                                "
-                                name="inputCheckboxesForward"
-                              />
-                              <label
-                                for="inputForward"
-                                class="form-check-label font-weight-medium"
-                              >
-                                <span>Forward all tasks</span>
-                                <span class="badge bg-warning badge-pill ms-1"
-                                  >2 weeks</span
-                                >
-                              </label>
-                            </div>
-                            <div class="fs-2 ps-3 d-inline-block ms-2">
-                              26 jun 2021
-                            </div>
-                          </li>
-                          <li
-                            class="list-group-item border-0 mb-0 py-3 pe-3 ps-0"
-                            data-role="task"
-                          >
-                            <div class="form-check form-check-inline w-100">
-                              <input
-                                type="checkbox"
-                                id="inputRecieve"
-                                class="
-                                  form-check-input
-                                  success
-                                  check-light-success
-                                "
-                                name="inputCheckboxesRecieve"
-                              />
-                              <label
-                                for="inputRecieve"
-                                class="form-check-label font-weight-medium"
-                              >
-                                <span>Recieve shipment</span
-                                ><span class="badge bg-success badge-pill ms-1"
-                                  >2 weeks</span
-                                >
-                              </label>
-                            </div>
-                            <ul
-                              class="
-                                assignedto
-                                list-style-none
-                                m-0
-                                ps-4
-                                ms-1
-                                mt-1
-                              "
-                            >
-                              <li class="d-inline-block border-0 me-1">
-                                <img
-                                  src="../../assets/images/users/1.jpg"
-                                  alt="user"
-                                  data-bs-toggle="tooltip"
-                                  data-bs-placement="top"
-                                  title=""
-                                  data-original-title="Steave"
-                                  class="rounded-circle"
-                                />
-                              </li>
-                              <li class="d-inline-block border-0 me-1">
-                                <img
-                                  src="../../assets/images/users/2.jpg"
-                                  alt="user"
-                                  data-bs-toggle="tooltip"
-                                  data-bs-placement="top"
-                                  title=""
-                                  data-original-title="Jessica"
-                                  class="rounded-circle"
-                                />
-                              </li>
-                              <li class="d-inline-block border-0 me-1">
-                                <img
-                                  src="../../assets/images/users/3.jpg"
-                                  alt="user"
-                                  data-bs-toggle="tooltip"
-                                  data-bs-placement="top"
-                                  title=""
-                                  data-original-title="Priyanka"
-                                  class="rounded-circle"
-                                />
-                              </li>
-                            </ul>
-                          </li>
-                        </ul>
-                      </div>
+                      <div id="Sales-Overview"></div>
                     </div>
                   </div>
-                </div>
-                <div class="col-lg-4 d-flex align-items-stretch">
-                  <div class="card w-100">
-                    <img
-                      class="card-img-top blog-img1"
-                      src="../../assets/images/big/img1.jpg"
-                      alt="Card image cap"
-                    />
-                    <div class="card-body">
-                      <h3 class="font-weight-normal">
-                        Featured Hydroflora Pots Garden &amp; Outdoors
-                      </h3>
-                      <span class="badge bg-info badge-pill">Technology</span>
-                      <p class="mb-0 mt-3">
-                        It is a long established fact that a reader will be
-                        distracted by the readable content of a page when
-                        looking at its layout. The point of using.
-                      </p>
-                      <div class="d-flex mt-3 pt-3">
-                        <button class="btn ps-0 btn-link">Read more</button>
-                        <div class="ms-auto align-self-center">
-                          <a href="javascript:void(0)" class="link me-2"
-                            ><i class="ri-heart-fill"></i
-                          ></a>
-                          <a href="javascript:void(0)" class="link me-2"
-                            ><i class="ri-share-fill"></i
-                          ></a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div> #}
-              </div>
-                {% set contador = 0 %}
-                {% set gasto = 0 %}
-                {% for movifore in forecast %}
-                  {% set gasto = gasto +  (movifore.getImporteFr * -1) %}  
-                     <a id="forecast{{ contador }}" class="{{ movifore.getOrigenFr }}" data-venta="{{ gasto }}"></a>  
-                     <a id="fechfore{{ contador }}" class="{{ movifore.getOrigenFr }}" data-venta="{{ movifore.getFechaFr|date('d-m')}}"></a>
-                  {% set contador = contador + 1 %}
-                {% endfor %}                 
+                
+
               <!-- Row ends -->
               {% endblock %}

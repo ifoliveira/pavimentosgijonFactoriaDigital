@@ -1,0 +1,148 @@
+{% extends 'inicio2.html.twig' %}
+{% block title %}Administración Pavimentos Gijón{% endblock %}
+{% block eltiempo %}
+{% endblock %}
+{% block jsbl %}
+
+
+
+    <!-- ============================================================== -->
+    <!-- All Jquery -->
+    <!-- ============================================================== -->
+        <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}"></script>
+    <!-- Bootstrap tether Core JavaScript -->
+        <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js')}}"></script>      
+    <!-- apps -->
+        <script src="{{ asset('dist/js/app.min.js')}}"></script>
+        <script src="{{ asset('dist/js/app.init.js')}}"></script>
+        <script src="{{ asset('dist/js/app-style-switcher.js') }}"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+        <script src="{{ asset('assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js') }}"></script>
+    <!--Menu sidebar -->
+        <script src="{{ asset('dist/js/sidebarmenu.js') }}"></script>
+    <!--Custom JavaScript -->
+        <script src="{{ asset('dist/js/feather.min.js') }}"></script>
+        <script src="{{ asset('dist/js/custom.min.js') }}"></script>
+        <!--This page JavaScript -->
+        <script src="{{ asset('assets/libs/apexcharts/dist/apexcharts.min.js') }}"></script>
+    {% endblock %}
+    {% block jscustom %}
+        <!-- Chart JS -->
+        <script src="{{ asset('dist/js/pages/dashboards/dashboardNew.js') }}"></script>
+        <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
+        <!--Wave Effects -->
+        <script src="{{ asset('dist/js/waves.js') }}"></script>        
+
+    {% endblock %}    
+    {% block cardbody1 %}
+              <div class="card">
+                <div class="card-body">
+                <!-- Cuentas generales -->
+                <div class="row">
+                   <div class="col-lg-4 d-flex align-items-stretch">
+                       <div class="card w-100">
+                           <div class="card-body">
+                               <div class="d-flex">
+                                   <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/income.png" alt="Income" />
+                                   </div>
+                                   <div class="align-self-center">
+                                    <h6 class="text-muted mt-2 mb-0">Banco a {{ bancototal['max(fecha_bn)'] |date("d/m/Y") }}</h6>
+                                    <h2 id="bancototal" data-banco="{{ bancototal['sum(importe_bn)'] }}">{{ bancototal['sum(importe_bn)'] |format_currency('EUR', locale='es') }}</h2>
+                                    </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+                   <div class="col-lg-4 d-flex align-items-stretch">
+                       <div class="card w-100">
+                           <div class="card-body">
+                               <div class="d-flex">
+                                   <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" /></div>
+                                   <div class="align-self-center">
+                                       <h6 class="text-muted mt-2 mb-0">Efectivo</h6>
+                                       <h2 id="efectivototal" data-caja="{{ gastos['efectivototal'] }}">{{ gastos['efectivototal'] |format_currency('EUR', locale='es') }}</h2></div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>                     
+                   <div class="col-lg-4 d-flex align-items-stretch">
+                       <div class="card w-100">
+                           <div class="card-body">
+                               <div class="d-flex">
+                                   <div class="mr-3 align-self-center"><span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" /></div>
+                                   <div class="align-self-center">
+                                       <h6 class="text-muted mt-2 mb-0">Total</h6>
+                                       <h2 id="cajatotal" data-caja="{{ bancototal['sum(importe_bn)'] + gastos['efectivototal'] }}">{{ (bancototal['sum(importe_bn)'] + gastos['efectivototal']) |format_currency('EUR', locale='es') }}</h2></div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+                </div>
+
+                <div class="col-lg-12 d-flex align-items-stretch">
+                  <div class="card w-100">
+                    <div class="card-body">
+                      <div class="d-md-flex">
+                        <h4 class="card-title">
+                          <span class="lstick d-inline-block align-middle"></span>Flujo de Caja
+                        </h4>
+                          <ul class="list-inline mb-0 ms-auto">
+                            <li class="list-inline-item">
+                              <h6 class="text-success" style="color: #06d55c;">
+                                <i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color: #06d55c;"></i>Gasto acumulado
+                              </h6>
+                            </li>
+                            <li class="list-inline-item">
+                              <h6 style="color: #1e88e5;">
+                                <i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color: #1e88e5;"></i>Saldo Banco
+                              </h6>
+                            </li>
+                            <li class="list-inline-item">
+                              <h6 style="color: #fe88e5;">
+                                <i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color: #fe88e5;"></i>Saldo Efectivo
+                              </h6>
+                            </li>
+                            <li class="list-inline-item">
+                              <h6 style="color: #f39c12;">
+                                <i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color: #f39c12;"></i>Banco + Efectivo
+                              </h6>
+                            </li>
+                          </ul>
+
+                      </div>
+                      <div id="Website-Visit" class="position-relative mt-4" style="height: 400px; width: 100%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Row ends -->
+             
+                 
+
+              <script>
+                let forecast = {{ forecastChartData|json_encode|raw }};
+                let bancoTotal = {{ bancototal['sum(importe_bn)']|number_format(2, '.', '') }};
+                let efectivoTotal = {{ gastos['efectivototal']|number_format(2, '.', '') }}
+                let saldoefectivoLine = forecast.map(item => ({
+                  x: item.x,
+                  y: efectivoTotal
+                }));
+                let bancoLine = forecast.map(item => ({
+                  x: item.x,
+                  y: bancoTotal
+                }));
+
+                let bancoCajaLine = forecast.map(item => ({
+                  x: item.x,
+                  y: bancoTotal + efectivoTotal
+                }));                
+              </script>      
+
+              {% for movifore in forecast %}
+                <a id="forecast{{ loop.index0 }}" class="{{ movifore.getOrigenFr }}" data-venta="{{ (movifore.getImporteFr * -1)|number_format(2, '.', '') }}"></a>
+                <a id="fechfore{{ loop.index0 }}" class="{{ movifore.getOrigenFr }}" data-venta="{{ movifore.getFechaFr|date('Y-m-d') }}"></a>
+              {% endfor %}
+
+
+              <!-- Row ends -->
+    {% endblock %}

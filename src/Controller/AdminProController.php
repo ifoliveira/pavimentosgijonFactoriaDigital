@@ -54,10 +54,65 @@ class AdminProController extends AbstractController
 
     }
 
+
     /**
      * @Route("/admin/flujocaja", name="flujocaja")
      */
     public function flujocaja(Request $request, DetallecestaRepository $detallecestaRepository, TiposmovimientoRepository $tiposmovimientoRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
+    {
+
+        $bancototal = $bancoRepository->totalBanco();
+        
+        $ventahistefect = $cestasRepository->ventaefetotal()["ventatotalef"];
+        $efectivototal = $efectivoRepository->totalefectivo();
+        $manoobratotal = intval($efectivoRepository->manoobraEfectivo()["sum(importe_ef)"]) + intval($bancoRepository->manoobraBanco()["importe"]) ;
+        //$ventasmestotal = $detallecestaRepository->ventasporMesPresupuesto($anio);
+        //$ventaefetotal = $detallecestaRepository->ventasporMesDiaaDia($anio);
+
+
+        $forecastList = $forecastRepository->findBy(
+            ['estadoFr' => 'P'],
+            ['fechaFr' => 'ASC']
+        );
+
+        // Armamos un array para el gráfico
+        $forecastChartData = [];
+
+        $acumulado = 0;
+
+        foreach ($forecastList as $item) {
+            $importe = $item->getImporteFr() * -1; // Negativo si es gasto
+            $acumulado += $importe;
+
+            $forecastChartData[] = [
+                'x' => $item->getFechaFr()->format('Y-m-d'),
+                'y' => round($acumulado, 2)
+            ];
+        }
+
+        $cookies = $request->cookies->get('Mensaje');
+
+        $response = $this->render('admin_pro/indexpro.html.twig', [
+            //'anio' => $anio, // <-- esta línea es clave
+            'controller_name' => 'AdminProController',
+            'bancototal' => $bancototal,
+            'gastos' => $efectivototal,
+            'cookies' => $cookies,
+            'forecast' => $forecastList,
+            'forecastChartData' => $forecastChartData, // <- Esto va al gráfico
+
+        ]);
+             
+        $response->headers->setCookie(new Cookie('Mensaje', 'No mostrar', time() + 3600 * 18));
+ 
+        return $response;
+    }
+
+
+    /**
+     * @Route("/admin/resumenventas", name="resumenventas")
+     */
+    public function resumenventas(Request $request, DetallecestaRepository $detallecestaRepository, TiposmovimientoRepository $tiposmovimientoRepository, BancoRepository $bancoRepository, CestasRepository $cestasRepository, EfectivoRepository $efectivoRepository, ForecastRepository $forecastRepository): Response
     {
 
         $anio = $request->query->getInt('anio', (int) date('Y'));   
@@ -70,29 +125,41 @@ class AdminProController extends AbstractController
         $ventaefetotal = $detallecestaRepository->ventasporMesDiaaDia($anio);
 
 
-        $forecast = $forecastRepository->findBy(
+        $forecastList = $forecastRepository->findBy(
             ['estadoFr' => 'P'],
             ['fechaFr' => 'ASC']
         );
 
-        $forecast = $forecastRepository->findBy(
-            ['estadoFr' => 'P'],
-            ['fechaFr' => 'ASC']
-        );
+        // Armamos un array para el gráfico
+        $forecastChartData = [];
+
+        $acumulado = 0;
+
+        foreach ($forecastList as $item) {
+            $importe = $item->getImporteFr() * -1; // Negativo si es gasto
+            $acumulado += $importe;
+
+            $forecastChartData[] = [
+                'x' => $item->getFechaFr()->format('Y-m-d'),
+                'y' => round($acumulado, 2)
+            ];
+        }
+
 
         $cookies = $request->cookies->get('Mensaje');
 
         $response = $this->render('admin_pro/index.html.twig', [
             'anio' => $anio, // <-- esta línea es clave
             'controller_name' => 'AdminProController',
-            'bancototal' => $bancototal,
             'ventastotal' => $ventasmestotal,
             'ventahistefect' => $ventahistefect,
             'ventaefetotal' => $ventaefetotal,
-            'gastos' => $efectivototal,
-            'forecast' => $forecast,
             'manoobratotal' => $manoobratotal,
             'cookies' => $cookies,
+            'gastos' => $efectivototal,
+            'bancototal' => $bancototal,            
+            'forecast' => $forecastList,
+            'forecastChartData' => $forecastChartData, // <- Esto va al gráfico            
 
         ]);
              
