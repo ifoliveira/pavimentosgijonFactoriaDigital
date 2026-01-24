@@ -17,6 +17,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function iniciarChat(tipo) {
+        if (typeof gtag_report_conversion === 'function') {
+            setTimeout(() => {
+                gtag_report_conversion();
+            }, 300);
+        }        
         tipoReformaActual = tipo;
         paso = 0;
         jsonFinal = {};
