@@ -12,7 +12,15 @@
         <meta property="og:site_name" content="Tienda de baño en Gijón" />
         <meta property="og:type" content="mainpage"/>
         <meta name="google-site-verification" content="CmHAjduH_5Xi65uGO9HjE2KDDG5Oh8H6-GtPlf_qOv8"/>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-WH8B9E41FY"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
 
+        gtag('config', 'G-WH8B9E41FY');
+        </script>
         <link rel="preload" as="image" href="{{ asset('/Light-HTML/img/services/ReformaIntegralBano.webp') }}">
         <title>{% block title %}Pavimentos Gijón{% endblock %}</title>
 
@@ -27,26 +35,25 @@
         <link href="{{ asset('/Light-HTML/css/helper.css') }}" rel="stylesheet">
 
         {% block stylesheets %}{% endblock %}
-        <!-- Google tag (Google Ads) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17884247583"></script>
+        <!-- Event snippet for Solicitud de presupuesto conversion page
+        In your html page, add the snippet and call gtag_report_conversion when someone clicks on the chosen link or button. -->
         <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'AW-17884247583');
-        </script>
-        <!-- Google Ads Conversion: Solicitud de presupuesto -->
-        <script>
-        function gtag_report_conversion() {
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'conversion', {
+        function gtag_report_conversion(url) {
+        var callback = function () {
+            if (typeof(url) != 'undefined') {
+            window.location = url;
+            }
+        };
+        gtag('event', 'conversion', {
             'send_to': 'AW-17884247583/qCT9COHY0OsbEJ_s789C',
             'value': 1.0,
-            'currency': 'EUR'
-            });
+            'currency': 'EUR',
+            'event_callback': callback
+        });
+        return false;
         }
-        }
+        </script>
+
         </script>
 
 
