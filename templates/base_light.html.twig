@@ -27,6 +27,29 @@
         <link href="{{ asset('/Light-HTML/css/helper.css') }}" rel="stylesheet">
 
         {% block stylesheets %}{% endblock %}
+        <!-- Google tag (Google Ads) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17884247583"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'AW-17884247583');
+        </script>
+        <!-- Google Ads Conversion: Solicitud de presupuesto -->
+        <script>
+        function gtag_report_conversion() {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'conversion', {
+            'send_to': 'AW-17884247583/qCT9COHY0OsbEJ_s789C',
+            'value': 1.0,
+            'currency': 'EUR'
+            });
+        }
+        }
+        </script>
+
+
     </head>
     <body>
         <!-- Preloader -->
