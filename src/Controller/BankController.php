@@ -108,21 +108,53 @@ class BankController extends AbstractController
                     }
                     
                     $fechacomp = $fechaObj->format('Y-m-d');
+                    $concepto = $data[2];
+                    $importe = floatval($data[3]);                    
                     
                     if ($fechacomp > $ultimaFecha)                         {
         
-                        $categoria = $categoriaMovimiento->getCategoriaPorConcepto($data[2]);
+                        $categoria = $categoriaMovimiento->getCategoriaPorConcepto($concepto);
 
                         $banco = new Banco();
                         $banco->setCategoriaBn($categoria);
-                        $banco->setConceptoBn($data[2]);
+                        $banco->setConceptoBn($concepto);
                         $banco->setFechaBn($fechaObj);
-                        $banco->setImporteBn(floatval($data[3]));
+                        $banco->setImporteBn($importe);
                         $banco->setConciliado(false);
                         $banco->setTimestampBn(new \DateTime()); // Usamos la fecha y hora actual
                         $this->em->persist($banco);
                         $bancos[] = $banco;
 
+                    } elseif ($fechacomp === $ultimaFecha) {
+
+                        $movimientoExiste = $bancoRepository->createQueryBuilder('b')
+                            ->select('count(b.id)')
+                            ->where('b.fecha_Bn = :fecha')
+                            ->andWhere('b.importe_Bn = :importe')
+                            ->andWhere('b.concepto_Bn = :concepto')
+                            ->setParameters([
+                                'fecha' => $fechaObj->format('Y-m-d'),
+                                'importe' => $importe,
+                                'concepto' => $concepto,
+                            ])
+                            ->getQuery()
+                            ->getSingleScalarResult();                        
+
+                            
+                            if ($movimientoExiste == 0) {
+                               
+                                // No existe aún, lo insertamos
+                                $categoria = $categoriaMovimiento->getCategoriaPorConcepto($concepto);
+                                $banco = new Banco();
+                                $banco->setCategoriaBn($categoria);
+                                $banco->setConceptoBn($concepto);
+                                $banco->setFechaBn($fechaObj);
+                                $banco->setImporteBn($importe);
+                                $banco->setConciliado(false);
+                                $banco->setTimestampBn(new \DateTime());
+                                $this->em->persist($banco);
+                                $bancos[] = $banco;
+                            } 
                     }
                 }
 
