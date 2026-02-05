@@ -212,7 +212,7 @@
                                                     <th class="text-center"></th>
                                             {% endif %}                                                
                                             {% if tipo == "FACTURA SIMPLIFICADA" or (tipo == "PRESUPUESTO" and estado == "ACEPTADO") %}
-                                                    <th class="text-center">{{ "now"|date("m/d/Y") }}  {% if tipo == "FACTURA SIMPLIFICADA" and facturapagada == false %} * {% endif %}</th>
+                                                    <th class="text-center">{{ "now"|date("d/m/Y") }}  {% if tipo == "FACTURA SIMPLIFICADA" and facturapagada == false %} * {% endif %}</th>
                                                     <th class="text-center">{{ ((presupuesto.importetotPe)/1.21) |format_currency('EUR', locale='es')  }}</th>
                                                     <th class="text-center">{{ ((presupuesto.importetotPe)-((presupuesto.importetotPe)/1.21)) |format_currency('EUR', locale='es')  }}</th>
                                                     <th class="text-center">{{ (presupuesto.importetotPe) |format_currency('EUR', locale='es')  }}</th>
