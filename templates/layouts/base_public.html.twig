@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Reformas de baño en Gijón | 30 años de experiencia{% endblock %}</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{% block meta_description %}Reformas de baños en Gijón con presupuesto claro, plazos reales y más de 30 años de experiencia.{% endblock %}">
+    <meta name="robots" content="index, follow">
+    <meta name="google-site-verification" content="CmHAjduH_5Xi65uGO9HjE2KDDG5Oh8H6-GtPlf_qOv8"/>
+    <meta name="theme-color" content="#000000">
+    <link rel="canonical" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website"/>
+    <meta property="og:title" content="{% block og_title %}Reformas de baño en Gijón | 30 años de experiencia{% endblock %}"/>
+    <meta property="og:description" content="{% block og_description %}Reformas de baños en Gijón con presupuesto claro y 30 años de experiencia.{% endblock %}"/>
+    <meta property="og:url" content="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}"/>
+    <meta property="og:image" content="https://www.pavimentosgijon.es/assets/images/logo.png"/>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ asset('/assets/images/favicon.png')}}">
+
+    <link href="{{ asset('/Light-HTML/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('dist/css/public.css') }}" rel="stylesheet">
+
+    {% block stylesheets %}{% endblock %}
+</head>
+
+
+<body class="public-site">
+<div class="nav-overlay"></div>
+
+{% block header %}
+    {% include 'home/header_public.html.twig' %}
+{% endblock %}
+
+
+
+<main>
+    {% block body %}{% endblock %}
+</main>
+
+{% block footer %}
+    {# footer público #}
+{% endblock %}
+    <script src="{{ asset('/Light-HTML/js/bootstrap.bundle.min.js')}}"></script> 
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  const toggle = document.querySelector('.menu-toggle');
+  const mobileNav = document.querySelector('.mobile-nav');
+
+  if (!toggle || !mobileNav) return;
+
+  toggle.addEventListener('click', function () {
+    mobileNav.classList.toggle('open');
+
+    // Bloquear scroll cuando esté abierto
+    document.body.classList.toggle('nav-open');
+  });
+
+  // Cerrar al pulsar cualquier enlace
+  mobileNav.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function () {
+      mobileNav.classList.remove('open');
+      document.body.classList.remove('nav-open');
+    });
+  });
+
+});
+</script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q9J4NFZXEG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-Q9J4NFZXEG');
+</script>
+
+<script>
+  function gtag_report_conversion() {
+    if (typeof gtag !== 'undefined') {
+            gtag('event', 'conversion', {
+            'send_to': 'AW-17884247583/qCT9COHY0OsbEJ_s789C',
+            'value': 1.0,
+            'currency': 'EUR'
+            });
+        }
+    }
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.faq-q').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.classList.contains('open');
+
+        // Solo uno abierto a la vez (quita esto si quieres varios abiertos)
+        document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+        document.querySelectorAll('.faq-q[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+
+        if (!isOpen) {
+          item.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock %}
+
+</body>
+</html>
+

@@ -1,0 +1,766 @@
+/* ==================================================
+   1. VARIABLES + RESET
+   ================================================== */
+
+:root {
+  --color-primary: #0d6efd;
+  --color-text: #1f2933;
+  --color-muted: #6b7280;
+  --color-bg: #ffffff;
+  --color-bg-soft: #f8fafc;
+  --border-radius: 6px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body.public-site {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+body.nav-open {
+  overflow: hidden;
+}
+
+
+a {
+  text-decoration: none;
+}
+
+/* ==================================================
+   2. LAYOUT BASE
+   ================================================== */
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+section {
+  padding: 72px 0;
+}
+
+/* ==================================================
+   3. TIPOGRAFÍA
+   ================================================== */
+
+h1 {
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 30px;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+p {
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.hero-sub {
+  font-size: 19px;
+  color: #ffffff;
+  opacity: 0.9;
+}
+
+/* ==================================================
+   4. BOTONES GENERALES
+   ================================================== */
+
+.btn {
+  display: inline-block;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+/* ==================================================
+   5. HEADER (INTEGRADO EN HERO)
+   ================================================== */
+
+.home-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 30;
+  background: transparent;
+  padding: 20px 0;
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.site-logo img {
+  height: 120px;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.75));
+}
+
+/* Botón elegante del header */
+
+.home-nav  a {
+  display: inline-block;
+  background-color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #111827;
+  color: #111827;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.home-nav  a:hover {
+  background: #111827;
+  color: #ffffff;
+}
+
+
+
+
+
+/* ==================================================
+   6. HERO
+   ================================================== */
+
+.hero-decision {
+  position: relative;
+  padding: 180px 0px 0px 0px;
+  text-align: center;
+
+  background-image: url('/Light-HTML/img/fondoHero.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.hero-decision h1 {
+  margin-bottom: 24px;
+  color: #ffffff;
+}
+/* Overlay oscuro elegante */
+
+.hero-decision::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 0;
+}
+
+/* Contenido encima del overlay */
+
+.hero-decision > .container {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+  margin: 0 auto;
+  background: rgba(31, 41, 55, 0.65);
+  padding: 48px 56px;
+  border-radius: 10px;
+}
+
+/* Botones del hero */
+
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero-actions .btn-primary {
+  display: inline-block;
+  background: linear-gradient(135deg, #ffffff, #e5e7eb);
+  background-color: #ffffff;
+  border: none;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  border: 1px solid #111827;
+  color: #111827;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.hero-actions .btn-primary:hover {
+  background: #111827;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.35);  
+}
+
+
+.hero-actions .btn-secondary {
+  background: transparent;
+  color: #ffffff;
+  border: 1.5px solid rgba(255,255,255,0.6);
+  padding: 15px 28px;
+}
+
+.hero-actions .btn-secondary:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+/* ==================================================
+   7. MOBILE NAV
+   ================================================== */
+
+.menu-toggle {
+  display: relativ;
+  width: 22px;
+  height: 16px;
+  flex-direction: column;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 130;
+}
+
+
+.menu-toggle span {
+  height: 1.5px;
+  background-color: #374151;
+  border-radius: 2px;
+}
+
+.mobile-nav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 80%;
+  max-width: 320px;
+  background: #0f172a;
+  padding: 100px 30px 40px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 120;
+}
+
+
+.mobile-nav a {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.mobile-nav.open {
+  transform: translateX(0);
+}
+
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.3s ease;
+  z-index: 110;
+}
+
+.nav-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+/*===================================================
+   7B. SECTIONS (ESTILOS GENERALES PARA SECCIONES)
+   ================================================== */
+.home-image {
+  padding: 60px 0;
+}
+
+.home-image img {
+  width: 100%;
+  height: auto;
+  max-height: 500px;   /* límite en desktop */
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.home-selector {
+  background: #f9fafb;
+  padding: 100px 0;
+}
+
+/*=================================================
+   7C. SELECTOR DE PAVIMENTOS (ESTILO DE LAS TARJETAS)
+   ================================================== */
+.selector-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+}
+
+.selector-card {
+  padding: 70px 60px;
+  border-radius: 22px;
+  transition: 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Card clara */
+
+.selector-card-light {
+  background: #ffffff;
+  box-shadow: 0 30px 70px rgba(0,0,0,0.08);
+}
+
+/* Card oscura para contraste */
+
+.selector-card-dark {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #ffffff;
+  box-shadow: 0 40px 90px rgba(0,0,0,0.25);
+}
+
+.selector-card-dark p {
+  color: rgba(255,255,255,0.8);
+}
+
+.selector-card:hover {
+  transform: translateY(-10px);
+}
+
+.selector-card h2 {
+  font-size: 28px;
+  margin-bottom: 18px;
+}
+
+.selector-card p {
+  margin-bottom: 30px;
+  font-size: 18px;
+}
+
+/* Botones comerciales */
+
+.card-btn {
+  display: inline-block;
+  padding: 14px 26px;
+  border-radius: 10px;
+  background: #111827;
+  color: #ffffff;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.card-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.card-btn-light {
+  background: #ffffff;
+  color: #111827;
+}
+
+
+/* ==================================================
+   9. RESEÑAS (ESTILO DE LA SECCIÓN DE RESEÑAS)
+   ================================================== */
+.reseñas-hero {
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.0) 0%,
+    rgba(0,0,0,0.65) 100%
+  );
+  padding: 30px 30px 40px 40px;
+  text-align: center;
+  color: #ffffff;
+   backdrop-filter: blur(4px);
+}
+
+
+.rating {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.stars {
+  color: #FFD700;
+  margin-right: 5px;
+}
+
+.score {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.reviews-line {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  font-size: 14px;
+  opacity: 0.9;
+  flex-wrap: wrap;
+}
+
+.review-highlight p {
+  font-size: 15px;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+
+.home-presupuesto {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #ffffff;
+  text-align: center;
+  border-radius: 20px;
+  margin: 0 20px;
+}
+
+.home-presupuesto a {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  border: 1px solid #111827;
+  color: #111827;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.home-presupuesto a:hover {
+  background: #111827;
+  color: #ffffff;
+}
+
+/* ==================================================
+   9. TESTIMONIO (ESTILO DE LA SECCIÓN DE TESTIMONIOS)
+   ================================================== */
+.home-testimonio {
+  padding: 120px 0;
+}
+
+.testimonial-card {
+  max-width: 820px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #1e293b, #111827);
+  padding: 60px;
+  border-radius: 18px;
+  color: #ffffff;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.4);
+  position: relative;
+}
+
+.quote-icon {
+  font-size: 90px;
+  opacity: 0.08;
+  position: absolute;
+  top: 20px;
+  left: 30px;
+}
+
+.testimonial-text {
+  font-size: 22px;
+  line-height: 1.7;
+  margin-bottom: 30px;
+}
+
+.testimonial-footer span {
+  display: block;
+  font-size: 14px;
+  opacity: 0.6;
+}
+/* ==================================================
+   10. SEO (ESTILO DE LA SECCIÓN DE SEO)
+   ================================================== */
+
+.home-seo {
+  padding: 120px 0;
+  background: #ffffff;
+}
+
+.seo-wrapper {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+
+.seo-text h2 {
+  margin-bottom: 30px;
+}
+
+.seo-text p {
+  margin-bottom: 20px;
+  color: var(--color-muted);
+}
+
+.seo-text h3 {
+  margin-top: 40px;
+  margin-bottom: 15px;
+}
+
+.seo-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.stat-box {
+  background: #f1f5f9;
+  padding: 40px 30px;
+  border-radius: 16px;
+  text-align: center;
+  transition: 0.3s ease;
+}
+
+.stat-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+}
+
+.stat-number {
+  display: block;
+  font-size: 38px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 15px;
+  color: var(--color-muted);
+}
+
+/* ==================================================
+   11. FAQ (ESTILO DE LA SECCIÓN DE FAQ)
+   ================================================== */
+
+.home-faq {
+  background: #f8fafc;
+  padding: 120px 0;
+}
+
+.faq-head {
+  max-width: 860px;
+  margin: 0 auto 40px auto;
+  text-align: center;
+}
+
+.faq-head p {
+  color: var(--color-muted);
+  margin-top: 10px;
+}
+
+.faq-list {
+  max-width: 920px;
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.faq-item {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+}
+
+.faq-q {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 22px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.faq-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #f1f5f9;
+  font-size: 18px;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  padding: 0 22px;
+}
+
+.faq-a p {
+  color: var(--color-muted);
+  margin: 0;
+  padding: 0 0 22px 0;
+}
+
+/* Estado abierto */
+.faq-item.open .faq-a {
+  max-height: 220px;
+}
+
+.faq-item.open .faq-icon {
+  transform: rotate(45deg);
+  background: #e2e8f0;
+}
+
+/* ==================================================
+   9. FOOTER
+   ================================================== */
+.site-footer {
+  background: #0f172a;
+  color: #ffffff;
+  padding-top: 80px;
+  margin-top: 120px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 60px;
+}
+
+.footer-brand p,
+.footer-contact p {
+  color: rgba(255,255,255,0.7);
+}
+
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 10px;
+}
+
+.footer-links a {
+  color: rgba(255,255,255,0.8);
+  transition: 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: #ffffff;
+}
+
+.footer-bottom {
+  margin-top: 60px;
+  padding: 25px 0;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+}
+
+
+/* ==================================================
+   10. RESPONSIVE
+   ================================================== */
+
+@media (max-width: 768px) {
+
+  h1 {
+    font-size: 32px;
+  }
+
+  section {
+    padding: 48px 0;
+  }
+
+  .home-nav {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: flex;
+  }
+
+  .home-header {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 14px 0;
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+  .hero-decision {
+    padding-top: 40px;
+    padding-left: 10px;
+    padding-right: 10px;
+    min-height: auto;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .hero-actions a {
+    width: 100%;
+    text-align: center;
+  }
+
+  .site-logo img {
+    height: 70px;
+  }
+  
+  .home-image {
+    padding: 40px 0;
+  }
+
+  .home-image img {
+    max-height: 280px;  /* clave */
+    border-radius: 12px;
+  }  
+
+  @media (max-width: 992px) {
+  .selector-grid {
+    grid-template-columns: 1fr;
+  }
+
+    .seo-wrapper {
+    grid-template-columns: 1fr;
+    gap: 50px;
+  }
+}
+
+}

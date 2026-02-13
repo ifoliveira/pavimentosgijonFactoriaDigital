@@ -347,7 +347,7 @@ private function calcularPresupuestoDucha(array $datos): array
 
 
     /**
-     * @Route("/", name="homepage")
+     * @Route("/homepage", name="homepage2")
      */
     public function index(Request $request): Response
     {
@@ -388,6 +388,18 @@ private function calcularPresupuestoDucha(array $datos): array
             'form' => $form->createView(),
             'cookies'=> 'No mostrar'
         ]);
+    }
+
+
+    /**
+     * @Route("/", name="homepage")
+     */
+    public function index2(Request $request): Response
+    {
+
+       return $this->render('home/index_decision.html.twig', [
+           'controller_name' => 'ApgijonController',
+       ]);
     }
 
     /**

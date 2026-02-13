@@ -1,0 +1,30 @@
+<header class="home-header">
+  <div class="container header-inner">
+
+    <div class="site-logo">
+      
+      <img src="/Light-HTML/img/Logo2.png" alt="Pavimentos Gijón" class="site-logo">
+    </div>
+
+    <button class="menu-toggle" type="button" aria-label="Abrir menú">
+    <span></span>
+    <span></span>
+    <span></span>
+    </button>
+  </div>
+
+  <div class="mobile-nav">
+    <a href="{{ path('platoducha') }}">Bañera por ducha</a>
+    <a href="{{ path('integral') }}">Reforma de baño</a>
+    <a href="{{ path('aboutus') }}" >
+        30 años de experiencia
+    </a>
+    <a href="{{ path('blog') }}" >
+        Consejos y guía de reformas
+    </a>            
+
+    <a href="{{ path('iapresupuesto') }}" class="btn btn-primary">
+      💬 Presupuesto reforma baño
+    </a>
+  </div>
+</header>
