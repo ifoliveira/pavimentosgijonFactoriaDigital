@@ -20,7 +20,6 @@
         "openai-php/client": "^0.14.0",
         "php-imap/php-imap": "^2.0",
         "phpoffice/phpspreadsheet": "^3.9",
-        "ramsey/uuid-doctrine": "^2.1",
         "sensio/framework-extra-bundle": "^6.2",
         "smalot/pdfparser": "^2.12",
         "symfony/asset": "5.4.*",
