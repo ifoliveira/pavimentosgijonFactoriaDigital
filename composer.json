@@ -20,6 +20,7 @@
         "openai-php/client": "^0.14.0",
         "php-imap/php-imap": "^2.0",
         "phpoffice/phpspreadsheet": "^3.9",
+        "ramsey/uuid-doctrine": "^2.1",
         "sensio/framework-extra-bundle": "^6.2",
         "smalot/pdfparser": "^2.12",
         "symfony/asset": "5.4.*",
@@ -32,7 +33,6 @@
         "symfony/http-client": "5.4.*",
         "symfony/intl": "5.4.*",
         "symfony/mailer": "5.4.*",
-        "symfony/maker-bundle": "1.43",
         "symfony/mime": "5.4.*",
         "symfony/monolog-bundle": "^3.6",
         "symfony/proxy-manager-bridge": "5.4.*",
@@ -50,6 +50,7 @@
     "require-dev": {
         "easycorp/easy-deploy-bundle": "^1.0",
         "symfony/debug-bundle": "^5.4",
+        "symfony/maker-bundle": "^1.50",
         "symfony/stopwatch": "^5.4",
         "symfony/var-dumper": "^5.4",
         "symfony/web-profiler-bundle": "^5.4"

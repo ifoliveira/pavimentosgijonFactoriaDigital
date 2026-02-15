@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Consultas;
+use App\Entity\Visitante;
 use DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,6 +20,9 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use App\MisClases\TelegramNotifier;
 use Dompdf\Dompdf; 
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Uid\Uuid;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Service\TrackingService;
 
 class ApgijonController extends AbstractController
 {
@@ -394,7 +398,7 @@ private function calcularPresupuestoDucha(array $datos): array
     /**
      * @Route("/", name="homepage")
      */
-    public function index2(Request $request): Response
+    public function index2(Request $request, EntityManagerInterface $em): Response
     {
 
        return $this->render('home/index_decision.html.twig', [
@@ -479,7 +483,7 @@ private function calcularPresupuestoDucha(array $datos): array
     /**
      * @Route("/presupuestoInmediato", name="iapresupuesto")
      */
-    public function iapresupuestoIA(Request $request, ConsultasRepository $consultasRepository, TelegramNotifier $notifier): Response
+    public function iapresupuestoIA(Request $request, ConsultasRepository $consultasRepository, TelegramNotifier $notifier, TrackingService $tracking): Response
     {
 
         $consulta = new Consultas();
@@ -541,13 +545,14 @@ private function calcularPresupuestoDucha(array $datos): array
             return $this->redirectToRoute('integral', [], Response::HTTP_SEE_OTHER);
         }   
 
-  
-
-        return $this->render('iapresupuesto/chat.html.twig', [
-            'form' => $form->createView()
+        $tracking->track('click_presupuesto', [
+              'referer' => $request->headers->get('referer')
         ]);
 
-    }
+         return $this->render('iapresupuesto/chat.html.twig', [
+             'form' => $form->createView()
+                ]);
+            }
     /**
      * @Route("/presupuestoInmediatoBis", name="iapresupuestob")
      */
