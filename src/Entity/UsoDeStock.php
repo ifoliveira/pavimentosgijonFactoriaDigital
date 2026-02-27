@@ -5,49 +5,33 @@ namespace App\Entity;
 use App\Repository\UsoDeStockRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=UsoDeStockRepository::class)
- */
+#[ORM\Entity(repositoryClass: UsoDeStockRepository::class)]
 class UsoDeStock
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Productos::class, inversedBy="usoDeStocks")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $producto;
+    #[ORM\ManyToOne(inversedBy: 'usoDeStocks')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Productos $producto = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=StockItem::class, inversedBy="usoDeStocks")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $stockItem;
+    #[ORM\ManyToOne(inversedBy: 'usoDeStocks')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?StockItem $stockItem = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Presupuestos::class, inversedBy="usoDeStocks")
-     */
-    private $presupuesto;
+    #[ORM\ManyToOne(inversedBy: 'usoDeStocks')]
+    private ?Presupuestos $presupuesto = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $cantidad;
+    #[ORM\Column(type: 'integer')]
+    private ?int $cantidad = null;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $fecha;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTimeInterface $fecha = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $comentario;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $comentario = null;
 
     public function getId(): ?int
     {
@@ -62,7 +46,6 @@ class UsoDeStock
     public function setProducto(?Productos $producto): self
     {
         $this->producto = $producto;
-
         return $this;
     }
 
@@ -74,7 +57,6 @@ class UsoDeStock
     public function setStockItem(?StockItem $stockItem): self
     {
         $this->stockItem = $stockItem;
-
         return $this;
     }
 
@@ -86,7 +68,6 @@ class UsoDeStock
     public function setPresupuesto(?Presupuestos $presupuesto): self
     {
         $this->presupuesto = $presupuesto;
-
         return $this;
     }
 
@@ -98,7 +79,6 @@ class UsoDeStock
     public function setCantidad(int $cantidad): self
     {
         $this->cantidad = $cantidad;
-
         return $this;
     }
 
@@ -110,7 +90,6 @@ class UsoDeStock
     public function setFecha(\DateTimeInterface $fecha): self
     {
         $this->fecha = $fecha;
-
         return $this;
     }
 
@@ -122,7 +101,6 @@ class UsoDeStock
     public function setComentario(?string $comentario): self
     {
         $this->comentario = $comentario;
-
         return $this;
     }
 }

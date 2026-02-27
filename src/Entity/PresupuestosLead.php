@@ -5,82 +5,52 @@ namespace App\Entity;
 use App\Repository\PresupuestosLeadRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=PresupuestosLeadRepository::class)
- */
+#[ORM\Entity(repositoryClass: PresupuestosLeadRepository::class)]
 class PresupuestosLead
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $email;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $email = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $nombre;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $nombre = null;
 
-    /**
-     * @ORM\Column(type="string", length=50, nullable=true)
-     */
-    private $tipoReforma;
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $tipoReforma = null;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $fechaPdf;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTimeInterface $fechaPdf = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $email1Enviado;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $email1Enviado = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $email2Enviado;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $email2Enviado = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $seguimientoActivo;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $seguimientoActivo = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $pdfDescargas;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $pdfDescargas = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $ultimoEvento;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $ultimoEvento = null;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     */
-    private $jsonPresupuesto = [];
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $jsonPresupuesto = [];
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $total;
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $total = null;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $manoObra;
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $manoObra = null;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $materiales;
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $materiales = null;
 
     public function getId(): ?int
     {
@@ -95,7 +65,6 @@ class PresupuestosLead
     public function setEmail(?string $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -107,7 +76,6 @@ class PresupuestosLead
     public function setNombre(?string $nombre): self
     {
         $this->nombre = $nombre;
-
         return $this;
     }
 
@@ -119,7 +87,6 @@ class PresupuestosLead
     public function setTipoReforma(?string $tipoReforma): self
     {
         $this->tipoReforma = $tipoReforma;
-
         return $this;
     }
 
@@ -131,7 +98,6 @@ class PresupuestosLead
     public function setFechaPdf(\DateTimeInterface $fechaPdf): self
     {
         $this->fechaPdf = $fechaPdf;
-
         return $this;
     }
 
@@ -143,7 +109,6 @@ class PresupuestosLead
     public function setEmail1Enviado(?bool $email1Enviado): self
     {
         $this->email1Enviado = $email1Enviado;
-
         return $this;
     }
 
@@ -155,7 +120,6 @@ class PresupuestosLead
     public function setEmail2Enviado(?bool $email2Enviado): self
     {
         $this->email2Enviado = $email2Enviado;
-
         return $this;
     }
 
@@ -167,7 +131,6 @@ class PresupuestosLead
     public function setSeguimientoActivo(?bool $seguimientoActivo): self
     {
         $this->seguimientoActivo = $seguimientoActivo;
-
         return $this;
     }
 
@@ -179,7 +142,6 @@ class PresupuestosLead
     public function setPdfDescargas(?int $pdfDescargas): self
     {
         $this->pdfDescargas = $pdfDescargas;
-
         return $this;
     }
 
@@ -191,7 +153,6 @@ class PresupuestosLead
     public function setUltimoEvento(?\DateTimeInterface $ultimoEvento): self
     {
         $this->ultimoEvento = $ultimoEvento;
-
         return $this;
     }
 
@@ -203,7 +164,6 @@ class PresupuestosLead
     public function setJsonPresupuesto(?array $jsonPresupuesto): self
     {
         $this->jsonPresupuesto = $jsonPresupuesto;
-
         return $this;
     }
 
@@ -215,7 +175,6 @@ class PresupuestosLead
     public function setTotal(?float $total): self
     {
         $this->total = $total;
-
         return $this;
     }
 
@@ -227,7 +186,6 @@ class PresupuestosLead
     public function setManoObra(?float $manoObra): self
     {
         $this->manoObra = $manoObra;
-
         return $this;
     }
 
@@ -239,7 +197,6 @@ class PresupuestosLead
     public function setMateriales(?float $materiales): self
     {
         $this->materiales = $materiales;
-
         return $this;
     }
 }

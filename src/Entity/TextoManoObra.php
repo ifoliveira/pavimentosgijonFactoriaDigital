@@ -5,33 +5,23 @@ namespace App\Entity;
 use App\Repository\TextoManoObraRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=TextoManoObraRepository::class)
- */
+#[ORM\Entity(repositoryClass: TextoManoObraRepository::class)]
 class TextoManoObra
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="text")
-     */
-    private $descripcionXo;
+    #[ORM\Column(type: 'text')]
+    private ?string $descripcionXo = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=TipoManoObra::class, inversedBy="textoManoObras")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $tipoXo;
+    #[ORM\ManyToOne(targetEntity: TipoManoObra::class, inversedBy: 'textoManoObras')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?TipoManoObra $tipoXo = null;
 
-    /**
-     * @ORM\Column(type="string", length=50)
-     */
-    private $resumenXo;
+    #[ORM\Column(type: 'string', length: 50)]
+    private ?string $resumenXo = null;
 
     public function getId(): ?int
     {
@@ -46,7 +36,6 @@ class TextoManoObra
     public function setDescripcionXo(string $descripcionXo): self
     {
         $this->descripcionXo = $descripcionXo;
-
         return $this;
     }
 
@@ -58,7 +47,6 @@ class TextoManoObra
     public function setTipoXo(?TipoManoObra $tipoXo): self
     {
         $this->tipoXo = $tipoXo;
-
         return $this;
     }
 
@@ -70,12 +58,11 @@ class TextoManoObra
     public function setResumenXo(string $resumenXo): self
     {
         $this->resumenXo = $resumenXo;
-
         return $this;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getResumenXo();
+        return $this->resumenXo ?? '';
     }
 }

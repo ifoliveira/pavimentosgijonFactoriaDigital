@@ -5,52 +5,34 @@ namespace App\Entity;
 use App\Repository\ConsultasRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=ConsultasRepository::class)
- */
+#[ORM\Entity(repositoryClass: ConsultasRepository::class)]
 class Consultas
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $nombre;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $nombre = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $email;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $email = null;
 
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     */
-    private $telefono;
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $telefono = null;
 
-    /**
-     * @ORM\Column(type="string", length=2500, nullable=true)
-     */
-    private $pregunta;
+    #[ORM\Column(type: 'string', length: 2500, nullable: true)]
+    private ?string $pregunta = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $timestamp;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $timestamp = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $atencion;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $atencion = null;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     */
-    private $presupuestoAI = [];
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $presupuestoAI = [];
 
     public function getId(): ?int
     {
@@ -65,7 +47,6 @@ class Consultas
     public function setNombre(?string $nombre): self
     {
         $this->nombre = $nombre;
-
         return $this;
     }
 
@@ -77,7 +58,6 @@ class Consultas
     public function setEmail(?string $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -89,7 +69,6 @@ class Consultas
     public function setTelefono(?string $telefono): self
     {
         $this->telefono = $telefono;
-
         return $this;
     }
 
@@ -101,7 +80,6 @@ class Consultas
     public function setPregunta(?string $pregunta): self
     {
         $this->pregunta = $pregunta;
-
         return $this;
     }
 
@@ -113,7 +91,6 @@ class Consultas
     public function setTimestamp(?\DateTimeInterface $timestamp): self
     {
         $this->timestamp = $timestamp;
-
         return $this;
     }
 
@@ -125,7 +102,6 @@ class Consultas
     public function setAtencion(?bool $atencion): self
     {
         $this->atencion = $atencion;
-
         return $this;
     }
 
@@ -137,7 +113,6 @@ class Consultas
     public function setPresupuestoAI(?array $presupuestoAI): self
     {
         $this->presupuestoAI = $presupuestoAI;
-
         return $this;
     }
 }

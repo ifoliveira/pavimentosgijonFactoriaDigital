@@ -5,38 +5,30 @@ namespace App\Entity;
 use App\Repository\ImageRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=ImageRepository::class)
- */
+#[ORM\Entity(repositoryClass: ImageRepository::class)]
 class Image
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $filePath;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $filePath = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=post::class, inversedBy="images",cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $post;
+    #[ORM\ManyToOne(
+        targetEntity: Post::class,
+        inversedBy: 'images',
+        cascade: ['persist']
+    )]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Post $post = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $imageType;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $imageType = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $alt;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $alt = null;
 
     public function getId(): ?int
     {
@@ -51,19 +43,17 @@ class Image
     public function setFilePath(?string $filePath): self
     {
         $this->filePath = $filePath;
-
         return $this;
     }
 
-    public function getPost(): ?post
+    public function getPost(): ?Post
     {
         return $this->post;
     }
 
-    public function setPost(?post $post): self
+    public function setPost(?Post $post): self
     {
         $this->post = $post;
-
         return $this;
     }
 
@@ -75,7 +65,6 @@ class Image
     public function setImageType(?string $imageType): self
     {
         $this->imageType = $imageType;
-
         return $this;
     }
 
@@ -87,7 +76,6 @@ class Image
     public function setAlt(?string $alt): self
     {
         $this->alt = $alt;
-
         return $this;
     }
 }

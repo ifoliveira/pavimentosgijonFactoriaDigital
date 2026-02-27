@@ -41,9 +41,9 @@
                                                         <a href ="/Tickets/{{ cestar.numticketCs }}" target="_blank" >{{ cestar.numticketCs }}</a>
                                                     </td>
                                                     <td>
-                                                        {% if ( cestar.PresupuetoId != 0 ) %}
+                                                        {% if ( cestar.prespuestoCs != 0 ) %}
 
-                                                            <a href="{{ path('presupuestos_show', {id: cestar.PresupuetoId}) }}" target="_blank"> {{cestar.prespuestoCs.clientePe.direccionCl}} </a>
+                                                            <a href="{{ path('presupuestos_show', {id: cestar.presupuestoCs}) }}" target="_blank"> {{cestar.presupuestoCs.clientePe.direccionCl}} </a>
 
                                                         {% endif %}                                                    
                                                     </td>
@@ -117,9 +117,9 @@
                                                         <a href ="/Tickets/{{ cesta.numticketCs }}" target="_blank" >{{ cesta.numticketCs }}</a>
                                                     </td>
                                                     <td>
-                                                        {% if ( cesta.PresupuetoId != 0 ) %}
+                                                        {% if ( cesta.prespuestoCs is not null ) %}
 
-                                                            <a href="{{ path('presupuestos_show', {id: cesta.PresupuetoId}) }}" target="_blank"> {{cesta.prespuestoCs.clientePe.direccionCl}} </a>
+                                                            <a href="{{ path('presupuestos_show', {id: cesta.prespuestoCs.id}) }}" target="_blank"> {{cesta.prespuestoCs.clientePe.direccionCl}} </a>
 
                                                         {% endif %}
                                                     </td>
@@ -229,7 +229,7 @@
             await swalWithBootstrapButtons.fire({
                 title: 'Borrado de tickets',
                 text: "Se va a borrar el ticket " + id + " ",
-                type: 'question',
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Adelante',
                 cancelButtonText: 'Noooo',
@@ -278,7 +278,7 @@
                success: function(response) { 
                     let timerInterval
                     Swal.fire({
-                    type: 'success',
+                    icon: 'success',
                     title: 'Se ha borrado correctamente!',
                     html: 'Se cerrara en breve',
                     timer: 2000,
@@ -302,63 +302,54 @@
         };  
 
  
-        $(document).on('click', 'a[name="cerrar_senal"]' ,async function(event) {
+        $(document).on('click', 'a[name="cerrar_senal"]', async function (event) {
 
             let url = this.dataset.url;
             let importe = this.dataset.importe;
 
-         // Datos de la fila seleccionada en la lista de productos
-            const inputValue = importe;
-            const inputStep = 1
+            // 1️⃣ Popup importe
+            const resultImporte = await Swal.fire({
+                title: 'Pago ticket',
+                html: `
+                    <h2>Importe a abonar</h2>
+                    <input type="number"
+                        value="${importe}"
+                        step="1"
+                        class="swal2-input"
+                        id="range-value">
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                preConfirm: () => {
+                    return document.getElementById('range-value').value;
+                }
+            });
 
-         // Pop up importe a abonar
-            await Swal.fire({
-                    title: 'Pago ticket',
-                    html: `
-                        <h2> Importe a abonar </h2>
-                        <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" text-align="center">`,
+            if (!resultImporte.isConfirmed) {
+                return; // cancelado
+            }
 
-                    }).then((result) => {
-                        if (result.value) {
-         // Llamamos al insert line
-                            const inputNumber = Swal.getContent().querySelector('#range-value');
-                            senal = inputNumber.value;
+            const senal = resultImporte.value;
 
-                        }
-                    })
-
-            const swalWithBootstrapButtons = await Swal.mixin({
-                customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'mr-2 btn btn-danger'
-                },
-                buttonsStyling: false,
-            })
-
-            await swalWithBootstrapButtons.fire({
-                title: 'Metodo de pago',
+            // 2️⃣ Popup método pago
+            const resultMetodo = await Swal.fire({
+                title: 'Método de pago',
                 text: "Selecciona un método de pago",
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Tarjeta',
                 cancelButtonText: 'Efectivo',
                 reverseButtons: true
-                })
+            });
+
+            if (resultMetodo.isConfirmed) {
+                ticket_finalizar("Tarjeta", "", 0, senal, url);
+            } else if (resultMetodo.dismiss === Swal.DismissReason.cancel) {
+                ticket_finalizar("Efectivo", "", 0, senal, url);
+            }
+
+        });
                 
-                .then((result) => {
-
-                    if (result.value) {
-                        ticket_finalizar("Tarjeta", "", 0 , senal, url) 
-                    } else if (
-                        // Read more about handling dismissals
-                        result.dismiss === Swal.DismissReason.cancel
-                    ) {
-                        ticket_finalizar("Efectivo", "", 0, senal, url) 
-                    }
-                })
-
-            })
-        
         function ticket_finalizar(tipopago, numticket, importe, importesnal, url) 
         {
             

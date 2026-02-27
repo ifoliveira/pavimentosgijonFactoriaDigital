@@ -7,27 +7,22 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=TipoproductoRepository::class)
- */
+#[ORM\Entity(repositoryClass: TipoproductoRepository::class)]
 class Tipoproducto
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $decripcion_Tp;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $decripcion_Tp = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Productos::class, mappedBy="tipo_pd_id")
-     */
-    private $productos;
+    #[ORM\OneToMany(
+        mappedBy: 'tipo_pd_id',
+        targetEntity: Productos::class
+    )]
+    private Collection $productos;
 
     public function __construct()
     {
@@ -47,12 +42,11 @@ class Tipoproducto
     public function setDecripcionTp(string $decripcion_Tp): self
     {
         $this->decripcion_Tp = $decripcion_Tp;
-
         return $this;
     }
 
     /**
-     * @return Collection|Productos[]
+     * @return Collection<int, Productos>
      */
     public function getProductos(): Collection
     {
@@ -72,7 +66,6 @@ class Tipoproducto
     public function removeProducto(Productos $producto): self
     {
         if ($this->productos->removeElement($producto)) {
-            // set the owning side to null (unless already changed)
             if ($producto->getTipoPd() === $this) {
                 $producto->setTipoPd(null);
             }
@@ -81,8 +74,8 @@ class Tipoproducto
         return $this;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getDecripcionTp();
+        return $this->decripcion_Tp ?? '';
     }
 }

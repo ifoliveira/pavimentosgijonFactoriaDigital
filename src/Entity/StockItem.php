@@ -7,53 +7,35 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=StockItemRepository::class)
- */
+#[ORM\Entity(repositoryClass: StockItemRepository::class)]
 class StockItem
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Productos::class, inversedBy="stockItems")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $producto;
+    #[ORM\ManyToOne(inversedBy: 'stockItems')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Productos $producto = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $cantidad;
+    #[ORM\Column(type: 'integer')]
+    private ?int $cantidad = null;
 
-    /**
-     * @ORM\Column(type="float")
-     */
-    private $precioUnitario;
+    #[ORM\Column(type: 'float')]
+    private ?float $precioUnitario = null;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $fechaEntrada;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTimeInterface $fechaEntrada = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $proveedor;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $proveedor = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $facturaId;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $facturaId = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=UsoDeStock::class, mappedBy="stockItem", orphanRemoval=true)
-     */
-    private $usoDeStocks;
+    #[ORM\OneToMany(mappedBy: 'stockItem', targetEntity: UsoDeStock::class, orphanRemoval: true)]
+    private Collection $usoDeStocks;
 
     public function __construct()
     {
@@ -73,7 +55,6 @@ class StockItem
     public function setProducto(?Productos $producto): self
     {
         $this->producto = $producto;
-
         return $this;
     }
 
@@ -85,7 +66,6 @@ class StockItem
     public function setCantidad(int $cantidad): self
     {
         $this->cantidad = $cantidad;
-
         return $this;
     }
 
@@ -97,7 +77,6 @@ class StockItem
     public function setPrecioUnitario(float $precioUnitario): self
     {
         $this->precioUnitario = $precioUnitario;
-
         return $this;
     }
 
@@ -109,7 +88,6 @@ class StockItem
     public function setFechaEntrada(\DateTimeInterface $fechaEntrada): self
     {
         $this->fechaEntrada = $fechaEntrada;
-
         return $this;
     }
 
@@ -121,7 +99,6 @@ class StockItem
     public function setProveedor(?string $proveedor): self
     {
         $this->proveedor = $proveedor;
-
         return $this;
     }
 
@@ -133,7 +110,6 @@ class StockItem
     public function setFacturaId(?string $facturaId): self
     {
         $this->facturaId = $facturaId;
-
         return $this;
     }
 
@@ -151,19 +127,16 @@ class StockItem
             $this->usoDeStocks[] = $usoDeStock;
             $usoDeStock->setStockItem($this);
         }
-
         return $this;
     }
 
     public function removeUsoDeStock(UsoDeStock $usoDeStock): self
     {
         if ($this->usoDeStocks->removeElement($usoDeStock)) {
-            // set the owning side to null (unless already changed)
             if ($usoDeStock->getStockItem() === $this) {
                 $usoDeStock->setStockItem(null);
             }
         }
-
         return $this;
     }
 }

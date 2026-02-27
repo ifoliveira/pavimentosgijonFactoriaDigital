@@ -4,89 +4,63 @@ namespace App\Entity;
 
 use App\Repository\ForecastRepository;
 use Doctrine\ORM\Mapping as ORM;
-USE App\Entity\Banco;
 
-/**
- * @ORM\Entity(repositoryClass=ForecastRepository::class)
- */
+#[ORM\Entity(repositoryClass: ForecastRepository::class)]
 class Forecast
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Tiposmovimiento::class, inversedBy="forecasts")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $tipoFr;
+    #[ORM\ManyToOne(inversedBy: 'forecasts')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Tiposmovimiento $tipoFr = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $conceptoFr;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $conceptoFr = null;
 
-    /**
-     * @ORM\Column(type="date")
-     */
-    private $fechaFr;
+    #[ORM\Column(type: 'date')]
+    private ?\DateTimeInterface $fechaFr = null;
 
-    /**
-     * @ORM\Column(type="float")
-     */
-    private $importeFr;
+    #[ORM\Column(type: 'float')]
+    private ?float $importeFr = null;
 
-    /**
-     * @ORM\Column(type="string", length=50)
-     */
-    private $origenFr;
+    #[ORM\Column(type: 'string', length: 50)]
+    private ?string $origenFr = null;
 
-    /**
-     * @ORM\Column(type="string", length=1)
-     */
-    private $fijovarFr;
+    #[ORM\Column(type: 'string', length: 1)]
+    private ?string $fijovarFr = null;
 
-    /**
-     * @ORM\Column(type="string", length=10)
-     */
-    private $estadoFr;
+    #[ORM\Column(type: 'string', length: 10)]
+    private ?string $estadoFr = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=banco::class)
-     */
-    private $banco;
+    #[ORM\ManyToOne]
+    private ?Banco $banco = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $timestamp;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $timestamp = null;
 
     public function __construct()
     {
-        $this->setEstadoFr('P');
-        $this->setTimestamp(new \DateTime());
-        $this->setFijovarFr('V');
-
+        $this->estadoFr = 'P';
+        $this->timestamp = new \DateTime();
+        $this->fijovarFr = 'V';
     }
-
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getTipoFr(): ?tiposmovimiento
+    public function getTipoFr(): ?Tiposmovimiento
     {
         return $this->tipoFr;
     }
 
-    public function setTipoFr(?tiposmovimiento $tipoFr): self
+    public function setTipoFr(?Tiposmovimiento $tipoFr): self
     {
         $this->tipoFr = $tipoFr;
-
         return $this;
     }
 
@@ -98,7 +72,6 @@ class Forecast
     public function setConceptoFr(string $conceptoFr): self
     {
         $this->conceptoFr = $conceptoFr;
-
         return $this;
     }
 
@@ -110,7 +83,6 @@ class Forecast
     public function setFechaFr(\DateTimeInterface $fechaFr): self
     {
         $this->fechaFr = $fechaFr;
-
         return $this;
     }
 
@@ -122,7 +94,6 @@ class Forecast
     public function setImporteFr(float $importeFr): self
     {
         $this->importeFr = $importeFr;
-
         return $this;
     }
 
@@ -134,7 +105,6 @@ class Forecast
     public function setOrigenFr(string $origenFr): self
     {
         $this->origenFr = $origenFr;
-
         return $this;
     }
 
@@ -146,7 +116,6 @@ class Forecast
     public function setFijovarFr(string $fijovarFr): self
     {
         $this->fijovarFr = $fijovarFr;
-
         return $this;
     }
 
@@ -158,19 +127,17 @@ class Forecast
     public function setEstadoFr(string $estadoFr): self
     {
         $this->estadoFr = $estadoFr;
-
         return $this;
     }
 
-    public function getBanco(): ?banco
+    public function getBanco(): ?Banco
     {
         return $this->banco;
     }
 
-    public function setBanco(?banco $banco): self
+    public function setBanco(?Banco $banco): self
     {
         $this->banco = $banco;
-
         return $this;
     }
 
@@ -182,7 +149,6 @@ class Forecast
     public function setTimestamp(?\DateTimeInterface $timestamp): self
     {
         $this->timestamp = $timestamp;
-
         return $this;
     }
 }

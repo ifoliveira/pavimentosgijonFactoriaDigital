@@ -7,32 +7,29 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=TipoManoObraRepository::class)
- */
+#[ORM\Entity(repositoryClass: TipoManoObraRepository::class)]
 class TipoManoObra
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=50)
-     */
-    private $tipoTm;
+    #[ORM\Column(type: 'string', length: 50)]
+    private ?string $tipoTm = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=TextoManoObra::class, mappedBy="tipoXo", orphanRemoval=true)
-     */
-    private $textoManoObras;
+    #[ORM\OneToMany(
+        mappedBy: 'tipoXo',
+        targetEntity: TextoManoObra::class,
+        orphanRemoval: true
+    )]
+    private Collection $textoManoObras;
 
-    /**
-     * @ORM\OneToMany(targetEntity=ManoObra::class, mappedBy="categoriaMo")
-     */
-    private $manoObras;
+    #[ORM\OneToMany(
+        mappedBy: 'categoriaMo',
+        targetEntity: ManoObra::class
+    )]
+    private Collection $manoObras;
 
     public function __construct()
     {
@@ -53,12 +50,11 @@ class TipoManoObra
     public function setTipoTm(string $tipoTm): self
     {
         $this->tipoTm = $tipoTm;
-
         return $this;
     }
 
     /**
-     * @return Collection|TextoManoObra[]
+     * @return Collection<int, TextoManoObra>
      */
     public function getTextoManoObras(): Collection
     {
@@ -78,7 +74,6 @@ class TipoManoObra
     public function removeTextoManoObra(TextoManoObra $textoManoObra): self
     {
         if ($this->textoManoObras->removeElement($textoManoObra)) {
-            // set the owning side to null (unless already changed)
             if ($textoManoObra->getTipoXo() === $this) {
                 $textoManoObra->setTipoXo(null);
             }
@@ -88,7 +83,7 @@ class TipoManoObra
     }
 
     /**
-     * @return Collection|ManoObra[]
+     * @return Collection<int, ManoObra>
      */
     public function getManoObras(): Collection
     {
@@ -108,7 +103,6 @@ class TipoManoObra
     public function removeManoObra(ManoObra $manoObra): self
     {
         if ($this->manoObras->removeElement($manoObra)) {
-            // set the owning side to null (unless already changed)
             if ($manoObra->getCategoriaMo() === $this) {
                 $manoObra->setCategoriaMo(null);
             }
@@ -117,8 +111,8 @@ class TipoManoObra
         return $this;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getTipoTm();
+        return $this->tipoTm ?? '';
     }
 }

@@ -3,145 +3,98 @@
 namespace App\Entity;
 
 use App\Repository\PresupuestosRepository;
-use App\Entity\estadocestas;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=PresupuestosRepository::class)
- */
+#[ORM\Entity(repositoryClass: PresupuestosRepository::class)]
 class Presupuestos
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Estadocestas", inversedBy="presupuestos")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $estadoPe;
+    #[ORM\ManyToOne(inversedBy: 'presupuestos')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Estadocestas $estadoPe = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Admin", inversedBy="presupuestos")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $userPe;
+    #[ORM\ManyToOne(inversedBy: 'presupuestos')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Admin $userPe = null;
 
-    /**
-     * @ORM\Column(type="date", nullable=true)
-     */
-    private $fechainiPe;
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $fechainiPe = null;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $costetotPe;
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $costetotPe = null;
 
-    /**
-     * @ORM\Column(type="float")
-     */
-    private $importetotPe;
+    #[ORM\Column(type: 'float')]
+    private ?float $importetotPe = null;
 
-    /**
-     * @ORM\Column(type="float")
-     */
-    private $descuaetoPe;
+    #[ORM\Column(type: 'float')]
+    private ?float $descuaetoPe = null;
 
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     */
-    private $tipopagototPE;
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $tipopagototPE = null;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $importesnalPe;
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $importesnalPe = null;
 
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     */
-    private $tipopagosnalPe;
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $tipopagosnalPe = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity="App\Entity\Cestas",orphanRemoval=true, cascade={"persist", "remove"}, orphanRemoval=true)
-     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
-     */
-    private $ticket;
+    #[ORM\OneToOne(orphanRemoval: true, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?Cestas $ticket = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $manoobraPe;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $manoobraPe = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Clientes::class, inversedBy="presupuestosCl", fetch="EAGER")
-     * @ORM\JoinColumn(name="cliente_pe_id", referencedColumnName="id", onDelete="SET NULL")
-     */    
-    private $clientePe;
+    #[ORM\ManyToOne(inversedBy: 'presupuestosCl', fetch: 'EAGER')]
+    #[ORM\JoinColumn(name: 'cliente_pe_id', referencedColumnName: 'id', onDelete: 'SET NULL', nullable: true)]
+    private ?Clientes $clientePe = null;
 
-    /**
-     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
-     */
-    private $timestampModPe;
+    #[ORM\Column(type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    private ?\DateTimeInterface $timestampModPe = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=ManoObra::class, mappedBy="presupuestoMo", cascade={"persist","remove"}, orphanRemoval=true)
-     * @ORM\OrderBy({"presupuestoMo" = "ASC","categoriaMo" = "ASC"})
-     */
-    private $manoObra;
+    #[ORM\OneToMany(mappedBy: 'presupuestoMo', targetEntity: ManoObra::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['presupuestoMo' => 'ASC', 'categoriaMo' => 'ASC'])]
+    private Collection $manoObra;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $importemanoobra;
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $importemanoobra = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Cestas::class, mappedBy="prespuestoCs", cascade={"persist","remove"}, orphanRemoval=true)
-     * @ORM\JoinColumn(name="ticket_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    private $cestas;
+    #[ORM\OneToMany(mappedBy: 'prespuestoCs', targetEntity: Cestas::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $cestas;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Economicpresu::class, mappedBy="idpresuEco", orphanRemoval=true, cascade={"persist","remove"})
-     * @ORM\OrderBy({"estadoEco" = "ASC"})
-     */
-    private $economicpresus;
+    #[ORM\OneToMany(mappedBy: 'idpresuEco', targetEntity: Economicpresu::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['estadoEco' => 'ASC'])]
+    private Collection $economicpresus;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Efectivo::class, mappedBy="presupuestoef" , orphanRemoval=true, cascade={"persist","remove"})
-     */
-    private $efectivos;
+    #[ORM\OneToMany(mappedBy: 'presupuestoef', targetEntity: Efectivo::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private Collection $efectivos;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $impmanoobraPagado;
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $impmanoobraPagado = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=UsoDeStock::class, mappedBy="presupuesto")
-     */
-    private $usoDeStocks;
+    #[ORM\OneToMany(mappedBy: 'presupuesto', targetEntity: UsoDeStock::class)]
+    private Collection $usoDeStocks;
 
     public function __construct()
     {
-
         $this->setFechainiPe(new \DateTime());
         $this->setTimestampModPe(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
 
         $this->setCostetotPe(0);
         $this->setDescuaetoPe(0);
         $this->setImportetotPe(0);
+
         $this->manoObra = new ArrayCollection();
         $this->cestas = new ArrayCollection();
         $this->economicpresus = new ArrayCollection();
         $this->efectivos = new ArrayCollection();
         $this->usoDeStocks = new ArrayCollection();
-
     }
 
     public function getId(): ?int
@@ -149,27 +102,25 @@ class Presupuestos
         return $this->id;
     }
 
-    public function getEstadoPe(): ?estadocestas
+    public function getEstadoPe(): ?Estadocestas
     {
         return $this->estadoPe;
     }
 
-    public function setEstadoPe(?estadocestas $estadoPe): self
+    public function setEstadoPe(?Estadocestas $estadoPe): self
     {
         $this->estadoPe = $estadoPe;
-
         return $this;
     }
 
-    public function getUserPe(): ?admin
+    public function getUserPe(): ?Admin
     {
         return $this->userPe;
     }
 
-    public function setUserPe(?admin $userPe): self
+    public function setUserPe(?Admin $userPe): self
     {
         $this->userPe = $userPe;
-
         return $this;
     }
 
@@ -181,7 +132,6 @@ class Presupuestos
     public function setFechainiPe(\DateTimeInterface $fechainiPe): self
     {
         $this->fechainiPe = $fechainiPe;
-
         return $this;
     }
 
@@ -193,7 +143,6 @@ class Presupuestos
     public function setCostetotPe(float $costetotPe): self
     {
         $this->costetotPe = $costetotPe;
-
         return $this;
     }
 
@@ -205,7 +154,6 @@ class Presupuestos
     public function setImportetotPe(float $importetotPe): self
     {
         $this->importetotPe = $importetotPe;
-
         return $this;
     }
 
@@ -217,7 +165,6 @@ class Presupuestos
     public function setDescuaetoPe(float $descuaetoPe): self
     {
         $this->descuaetoPe = $descuaetoPe;
-
         return $this;
     }
 
@@ -229,7 +176,6 @@ class Presupuestos
     public function setTipopagototPE(string $tipopagototPE): self
     {
         $this->tipopagototPE = $tipopagototPE;
-
         return $this;
     }
 
@@ -241,7 +187,6 @@ class Presupuestos
     public function setImportesnalPe(float $importesnalPe): self
     {
         $this->importesnalPe = $importesnalPe;
-
         return $this;
     }
 
@@ -253,19 +198,17 @@ class Presupuestos
     public function setTipopagosnalPe(string $tipopagosnalPe): self
     {
         $this->tipopagosnalPe = $tipopagosnalPe;
-
         return $this;
     }
 
-    public function getTicket(): ?cestas
+    public function getTicket(): ?Cestas
     {
         return $this->ticket;
     }
 
-    public function setTicket(cestas $ticket): self
+    public function setTicket(Cestas $ticket): self
     {
         $this->ticket = $ticket;
-
         return $this;
     }
 
@@ -277,7 +220,6 @@ class Presupuestos
     public function setManoobraPe(?string $manoobraPe): self
     {
         $this->manoobraPe = $manoobraPe;
-
         return $this;
     }
 
@@ -289,7 +231,6 @@ class Presupuestos
     public function setClientePe(?Clientes $clientePe): self
     {
         $this->clientePe = $clientePe;
-
         return $this;
     }
 
@@ -301,15 +242,13 @@ class Presupuestos
     public function setTimestampModPe(\DateTimeInterface $timestampModPe): self
     {
         $this->timestampModPe = $timestampModPe;
-
         return $this;
     }
 
     public function __toString()
     {
-        return $this->getClientePe()->getDireccionCl();
+        return $this->getClientePe()?->getDireccionCl() ?? (string) $this->id;
     }
-
 
     /**
      * @return Collection|ManoObra[]
@@ -325,19 +264,16 @@ class Presupuestos
             $this->manoObra[] = $manoObra;
             $manoObra->setPresupuestoMo($this);
         }
-
         return $this;
     }
 
     public function removeManoObra(ManoObra $manoObra): self
     {
         if ($this->manoObra->removeElement($manoObra)) {
-            // set the owning side to null (unless already changed)
             if ($manoObra->getPresupuestoMo() === $this) {
                 $manoObra->setPresupuestoMo(null);
             }
         }
-
         return $this;
     }
 
@@ -349,7 +285,6 @@ class Presupuestos
     public function setImportemanoobra(?float $importemanoobra): self
     {
         $this->importemanoobra = $importemanoobra;
-
         return $this;
     }
 
@@ -367,19 +302,16 @@ class Presupuestos
             $this->cestas[] = $cesta;
             $cesta->setPrespuestoCs($this);
         }
-
         return $this;
     }
 
     public function removeCesta(Cestas $cesta): self
     {
         if ($this->cestas->removeElement($cesta)) {
-            // set the owning side to null (unless already changed)
             if ($cesta->getPrespuestoCs() === $this) {
                 $cesta->setPrespuestoCs(null);
             }
         }
-
         return $this;
     }
 
@@ -397,31 +329,25 @@ class Presupuestos
             $this->economicpresus[] = $economicpresu;
             $economicpresu->setIdpresuEco($this);
         }
-
         return $this;
     }
 
     public function removeEconomicpresu(Economicpresu $economicpresu): self
     {
         if ($this->economicpresus->removeElement($economicpresu)) {
-            // set the owning side to null (unless already changed)
             if ($economicpresu->getIdpresuEco() === $this) {
                 $economicpresu->setIdpresuEco(null);
             }
         }
-
         return $this;
     }
 
     public function getEconomicPagosPdtes(): array
     {
-
         return array_filter($this->economicpresus->toArray(), function ($eco) {
             return $eco->getAplicaEco() == 'E' && $eco->getEstadoEco() == 1;
         });
     }
-     
-
 
     /**
      * @return Collection<int, Efectivo>
@@ -437,19 +363,16 @@ class Presupuestos
             $this->efectivos[] = $efectivo;
             $efectivo->setPresupuestoef($this);
         }
-
         return $this;
     }
 
     public function removeEfectivo(Efectivo $efectivo): self
     {
         if ($this->efectivos->removeElement($efectivo)) {
-            // set the owning side to null (unless already changed)
             if ($efectivo->getPresupuestoef() === $this) {
                 $efectivo->setPresupuestoef(null);
             }
         }
-
         return $this;
     }
 
@@ -461,7 +384,6 @@ class Presupuestos
     public function setImpmanoobraPagado(?float $impmanoobraPagado): self
     {
         $this->impmanoobraPagado = $impmanoobraPagado;
-
         return $this;
     }
 
@@ -479,19 +401,16 @@ class Presupuestos
             $this->usoDeStocks[] = $usoDeStock;
             $usoDeStock->setPresupuesto($this);
         }
-
         return $this;
     }
 
     public function removeUsoDeStock(UsoDeStock $usoDeStock): self
     {
         if ($this->usoDeStocks->removeElement($usoDeStock)) {
-            // set the owning side to null (unless already changed)
             if ($usoDeStock->getPresupuesto() === $this) {
                 $usoDeStock->setPresupuesto(null);
             }
         }
-
         return $this;
     }
 }

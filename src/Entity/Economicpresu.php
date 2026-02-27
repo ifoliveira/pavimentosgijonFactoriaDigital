@@ -5,69 +5,43 @@ namespace App\Entity;
 use App\Repository\EconomicpresuRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=EconomicpresuRepository::class)
- */
+#[ORM\Entity(repositoryClass: EconomicpresuRepository::class)]
 class Economicpresu
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=100, nullable=true)
-     */
-    private $conceptoEco;
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private ?string $conceptoEco = null;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $importeEco;
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $importeEco = null;
 
-    /**
-     * @ORM\Column(type="string", length=1, nullable=true)
-     */
-    private $debehaberEco;
+    #[ORM\Column(type: 'string', length: 1, nullable: true)]
+    private ?string $debehaberEco = null;
 
-    /**
-     * @ORM\Column(type="string", length=1, nullable=true)
-     */
-    private $aplicaEco;
+    #[ORM\Column(type: 'string', length: 1, nullable: true)]
+    private ?string $aplicaEco = null;
 
-    /**
-     * @ORM\Column(type="string", length=1, nullable=true)
-     */
-    private $estadoEco;
+    #[ORM\Column(type: 'string', length: 1, nullable: true)]
+    private ?string $estadoEco = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="economicpresus")
-     * @ORM\JoinColumn(nullable=false)
-     * @ORM\OrderBy({"estado_eco" = "ASC"})
-     */
-    private $idpresuEco;
+    #[ORM\ManyToOne(inversedBy: 'economicpresus')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Presupuestos $idpresuEco = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=Banco::class, cascade={"persist", "remove"})
-     */
-    private $bancoEco;
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    private ?Banco $bancoEco = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $timestamp;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $timestamp = null;
 
-    /**
-     * __clone
-     * @return void
-     */
-    
     public function __clone()
     {
         $this->id = null;
-    }    
+    }
 
     public function getId(): ?int
     {
@@ -82,7 +56,6 @@ class Economicpresu
     public function setConceptoEco(?string $conceptoEco): self
     {
         $this->conceptoEco = $conceptoEco;
-
         return $this;
     }
 
@@ -94,7 +67,6 @@ class Economicpresu
     public function setImporteEco(?float $importeEco): self
     {
         $this->importeEco = $importeEco;
-
         return $this;
     }
 
@@ -106,7 +78,6 @@ class Economicpresu
     public function setDebehaberEco(?string $debehaberEco): self
     {
         $this->debehaberEco = $debehaberEco;
-
         return $this;
     }
 
@@ -118,7 +89,6 @@ class Economicpresu
     public function setAplicaEco(?string $aplicaEco): self
     {
         $this->aplicaEco = $aplicaEco;
-
         return $this;
     }
 
@@ -130,19 +100,17 @@ class Economicpresu
     public function setEstadoEco(?string $estadoEco): self
     {
         $this->estadoEco = $estadoEco;
-
         return $this;
     }
 
-    public function getIdpresuEco(): ?presupuestos
+    public function getIdpresuEco(): ?Presupuestos
     {
         return $this->idpresuEco;
     }
 
-    public function setIdpresuEco(?presupuestos $idpresuEco): self
+    public function setIdpresuEco(?Presupuestos $idpresuEco): self
     {
         $this->idpresuEco = $idpresuEco;
-
         return $this;
     }
 
@@ -154,7 +122,6 @@ class Economicpresu
     public function setBancoEco(?Banco $bancoEco): self
     {
         $this->bancoEco = $bancoEco;
-
         return $this;
     }
 
@@ -166,9 +133,6 @@ class Economicpresu
     public function setTimestamp(?\DateTimeInterface $timestamp): self
     {
         $this->timestamp = $timestamp;
-
         return $this;
     }
-
- 
 }

@@ -6,84 +6,69 @@ use App\Repository\BancoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use app\Entity\Tiposmovimiento;
-use App\Repository\TiposmovimientoRepository;
 
-
-/**
- * @ORM\Entity(repositoryClass=BancoRepository::class)
- */
+#[ORM\Entity(repositoryClass: BancoRepository::class)]
 class Banco
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Tiposmovimiento", inversedBy="bancos",cascade={"persist"})
-     * @ORM\JoinColumn(name="categoria_bn", referencedColumnName="id")
-     */
-    private $categoria_Bn;
+    #[ORM\ManyToOne(inversedBy: 'bancos', cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'categoria_bn', referencedColumnName: 'id', nullable: true)]
+    private ?Tiposmovimiento $categoria_Bn = null;
 
-    /**
-     * @ORM\Column(type="float")
-     */
-    private $importe_Bn;
+    #[ORM\Column(type: 'float')]
+    private ?float $importe_Bn = null;
 
-    /**
-     * @ORM\Column(type="text")
-     */
-    private $concepto_Bn;
+    #[ORM\Column(type: 'text')]
+    private ?string $concepto_Bn = null;
 
-    /**
-     * @ORM\Column(type="date")
-     */
-    private $fecha_Bn;
+    #[ORM\Column(type: 'date')]
+    private ?\DateTimeInterface $fecha_Bn = null;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $timestamp_Bn;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTimeInterface $timestamp_Bn = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Pagos::class, mappedBy="bancoPg")
-     */
-    private $pagos;
+    #[ORM\OneToMany(mappedBy: 'bancoPg', targetEntity: Pagos::class)]
+    private Collection $pagos;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $conciliado;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $conciliado = null;
 
+    public function __construct()
+    {
+        $this->timestamp_Bn = new \DateTime();
+        $this->pagos = new ArrayCollection();
+    }
+
+    public function __clone()
+    {
+        $this->id = null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | GETTERS & SETTERS
+    |--------------------------------------------------------------------------
+    */
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-
-    public function getCategoriaBn(): ?tiposmovimiento
+    public function getCategoriaBn(): ?Tiposmovimiento
     {
         return $this->categoria_Bn;
     }
 
-    public function setCategoriaBn(?tiposmovimiento $categoria_Bn): self
+    public function setCategoriaBn(?Tiposmovimiento $categoria_Bn): self
     {
         $this->categoria_Bn = $categoria_Bn;
-
         return $this;
     }
-
 
     public function getImporteBn(): ?float
     {
@@ -93,7 +78,6 @@ class Banco
     public function setImporteBn(float $importe_Bn): self
     {
         $this->importe_Bn = $importe_Bn;
-
         return $this;
     }
 
@@ -105,7 +89,6 @@ class Banco
     public function setConceptoBn(string $concepto_Bn): self
     {
         $this->concepto_Bn = $concepto_Bn;
-
         return $this;
     }
 
@@ -117,7 +100,6 @@ class Banco
     public function setFechaBn(\DateTimeInterface $fecha_Bn): self
     {
         $this->fecha_Bn = $fecha_Bn;
-
         return $this;
     }
 
@@ -129,24 +111,7 @@ class Banco
     public function setTimestampBn(\DateTimeInterface $timestamp_Bn): self
     {
         $this->timestamp_Bn = $timestamp_Bn;
-
         return $this;
-    }
-
-    public function __construct()
-    {
-      $this->timestamp_Bn = new \DateTime();
-      $this->pagos = new ArrayCollection();
-    }
-
-    /**
-     * __clone
-     * @return void
-     */
-    
-    public function __clone()
-    {
-        $this->id = null;
     }
 
     /**
@@ -170,7 +135,6 @@ class Banco
     public function removePago(Pagos $pago): self
     {
         if ($this->pagos->removeElement($pago)) {
-            // set the owning side to null (unless already changed)
             if ($pago->getBancoPg() === $this) {
                 $pago->setBancoPg(null);
             }
@@ -187,8 +151,6 @@ class Banco
     public function setConciliado(?bool $conciliado): self
     {
         $this->conciliado = $conciliado;
-
         return $this;
-    }        
-
+    }
 }

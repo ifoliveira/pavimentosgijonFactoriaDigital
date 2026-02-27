@@ -6,74 +6,54 @@ use App\Repository\VisitanteRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\Uuid;
 
-/**
- * @ORM\Entity(repositoryClass=VisitanteRepository::class)
- */
+#[ORM\Entity(repositoryClass: VisitanteRepository::class)]
 class Visitante
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="string", length=36, unique=true)
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: 36, unique: true)]
     private ?string $id = null;
 
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $fechaPrimeraVisita = null;
 
-    /**
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
-    private $fechaPrimeraVisita;
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $fechaUltimaVisita = null;
 
-    /**
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
-    private $fechaUltimaVisita;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $origenNormalizado = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $origenNormalizado;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $utmOrigen = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $utmOrigen;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $utmMedio = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $utmMedio;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $utmCampaña = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $utmCampaña;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $gclid = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $gclid;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $referente = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $referente;
+    #[ORM\OneToMany(mappedBy: 'visitante', targetEntity: Evento::class, orphanRemoval: true)]
+    private Collection $eventos;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Evento::class, mappedBy="visitante", orphanRemoval=true)
-     */
-    private $eventos;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private int $numeroVisitas = 1;    
+    #[ORM\Column(type: 'integer')]
+    private int $numeroVisitas = 1;
 
     public function __construct()
     {
         $this->eventos = new ArrayCollection();
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | GETTERS & SETTERS
+    |--------------------------------------------------------------------------
+    */
 
     public function getId(): ?string
     {
@@ -94,7 +74,6 @@ class Visitante
     public function setFechaPrimeraVisita(?\DateTimeImmutable $fechaPrimeraVisita): self
     {
         $this->fechaPrimeraVisita = $fechaPrimeraVisita;
-
         return $this;
     }
 
@@ -106,7 +85,6 @@ class Visitante
     public function setFechaUltimaVisita(?\DateTimeImmutable $fechaUltimaVisita): self
     {
         $this->fechaUltimaVisita = $fechaUltimaVisita;
-
         return $this;
     }
 
@@ -118,7 +96,6 @@ class Visitante
     public function setOrigenNormalizado(?string $origenNormalizado): self
     {
         $this->origenNormalizado = $origenNormalizado;
-
         return $this;
     }
 
@@ -130,7 +107,6 @@ class Visitante
     public function setUtmOrigen(?string $utmOrigen): self
     {
         $this->utmOrigen = $utmOrigen;
-
         return $this;
     }
 
@@ -142,7 +118,6 @@ class Visitante
     public function setUtmMedio(?string $utmMedio): self
     {
         $this->utmMedio = $utmMedio;
-
         return $this;
     }
 
@@ -154,7 +129,6 @@ class Visitante
     public function setUtmCampaña(?string $utmCampaña): self
     {
         $this->utmCampaña = $utmCampaña;
-
         return $this;
     }
 
@@ -166,7 +140,6 @@ class Visitante
     public function setGclid(?string $gclid): self
     {
         $this->gclid = $gclid;
-
         return $this;
     }
 
@@ -178,7 +151,6 @@ class Visitante
     public function setReferente(?string $referente): self
     {
         $this->referente = $referente;
-
         return $this;
     }
 
@@ -193,6 +165,11 @@ class Visitante
         return $this;
     }
 
+    public function incrementarVisitas(): self
+    {
+        $this->numeroVisitas++;
+        return $this;
+    }
 
     /**
      * @return Collection<int, Evento>
@@ -215,7 +192,6 @@ class Visitante
     public function removeEvento(Evento $evento): self
     {
         if ($this->eventos->removeElement($evento)) {
-            // set the owning side to null (unless already changed)
             if ($evento->getVisitante() === $this) {
                 $evento->setVisitante(null);
             }

@@ -3,39 +3,32 @@
 namespace App\Entity;
 
 use App\Repository\EstadocestasRepository;
-use App\Entity\Presupuestos;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=EstadocestasRepository::class)
- */
+#[ORM\Entity(repositoryClass: EstadocestasRepository::class)]
 class Estadocestas
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $descripcionEc;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $descripcionEc = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Presupuestos::class, mappedBy="estadoPe", orphanRemoval=true)
-     */
-    private $presupuestos;
+    #[ORM\OneToMany(
+        mappedBy: 'estadoPe',
+        targetEntity: Presupuestos::class,
+        orphanRemoval: true
+    )]
+    private Collection $presupuestos;
 
     public function __construct()
     {
         $this->presupuestos = new ArrayCollection();
     }
-
-
 
     public function getId(): ?int
     {
@@ -45,10 +38,8 @@ class Estadocestas
     public function setId(int $idEc): self
     {
         $this->id = $idEc;
-
         return $this;
     }
-
 
     public function getDescripcionEc(): ?string
     {
@@ -58,18 +49,16 @@ class Estadocestas
     public function setDescripcionEc(string $descripcionEc): self
     {
         $this->descripcionEc = $descripcionEc;
-
         return $this;
     }
 
-   
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getDescripcionEc();
+        return (string) $this->getDescripcionEc();
     }
 
     /**
-     * @return Collection|Presupuestos[]
+     * @return Collection<int, Presupuestos>
      */
     public function getPresupuestos(): Collection
     {
@@ -89,7 +78,6 @@ class Estadocestas
     public function removePresupuesto(Presupuestos $presupuesto): self
     {
         if ($this->presupuestos->removeElement($presupuesto)) {
-            // set the owning side to null (unless already changed)
             if ($presupuesto->getEstadoPe() === $this) {
                 $presupuesto->setEstadoPe(null);
             }

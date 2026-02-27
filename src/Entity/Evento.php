@@ -5,38 +5,37 @@ namespace App\Entity;
 use App\Repository\EventoRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=EventoRepository::class)
- */
+#[ORM\Entity(repositoryClass: EventoRepository::class)]
 class Evento
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Visitante::class, inversedBy="eventos")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $visitante;
+    #[ORM\ManyToOne(inversedBy: 'eventos')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Visitante $visitante = null;
 
-    /**
-     * @ORM\Column(type="string", length=50, nullable=true)
-     */
-    private $tipo;
+    // 🔹 NUEVA relación con Sesion
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Sesion $sesion = null;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     */
-    private $datos = [];
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $tipo = null;
 
-    /**
-     * @ORM\Column(type="datetime_immutable")
-     */
-    private $fechaCreacion;
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $datos = [];
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    private ?\DateTimeImmutable $fechaCreacion = null;
+
+    /*
+    |--------------------------------------------------------------------------
+    | GETTERS & SETTERS
+    |--------------------------------------------------------------------------
+    */
 
     public function getId(): ?int
     {
@@ -51,7 +50,17 @@ class Evento
     public function setVisitante(?Visitante $visitante): self
     {
         $this->visitante = $visitante;
+        return $this;
+    }
 
+    public function getSesion(): ?Sesion
+    {
+        return $this->sesion;
+    }
+
+    public function setSesion(?Sesion $sesion): self
+    {
+        $this->sesion = $sesion;
         return $this;
     }
 
@@ -63,7 +72,6 @@ class Evento
     public function setTipo(?string $tipo): self
     {
         $this->tipo = $tipo;
-
         return $this;
     }
 
@@ -75,7 +83,6 @@ class Evento
     public function setDatos(?array $datos): self
     {
         $this->datos = $datos;
-
         return $this;
     }
 
@@ -87,7 +94,6 @@ class Evento
     public function setFechaCreacion(\DateTimeImmutable $fechaCreacion): self
     {
         $this->fechaCreacion = $fechaCreacion;
-
         return $this;
     }
 }

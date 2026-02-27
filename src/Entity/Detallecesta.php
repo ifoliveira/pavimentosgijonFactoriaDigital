@@ -3,116 +3,78 @@
 namespace App\Entity;
 
 use App\Repository\DetallecestaRepository;
-use App\Entity\Cestas;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=DetallecestaRepository::class)
- */
+#[ORM\Entity(repositoryClass: DetallecestaRepository::class)]
 class Detallecesta
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * 
-     * @ORM\ManyToOne(targetEntity=Cestas::class, inversedBy="detallecesta")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $cestaDc;
+    #[ORM\ManyToOne(inversedBy: 'detallecesta')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Cestas $cestaDc = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Productos::class)
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $productoDc;
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Productos $productoDc = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $cantidadDc;
+    #[ORM\Column(type: 'integer')]
+    private ?int $cantidadDc = null;
 
-    /**
-     * @ORM\Column(type="float")
-     */
-    private $pvpDc;
+    #[ORM\Column(type: 'float')]
+    private ?float $pvpDc = null;
 
-    /**
-     * @ORM\Column(type="float")
-     */
-    private $descuentoDc;
+    #[ORM\Column(type: 'float')]
+    private ?float $descuentoDc = null;
 
-    /**
-     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
-     */
-    private $timestampDc;
+    #[ORM\Column(type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    private ?\DateTimeInterface $timestampDc = null;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $precioDc;
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $precioDc = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $textoDc;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $textoDc = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $costeActualizadoPorFactura;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $costeActualizadoPorFactura = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $facturaOrigen;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $facturaOrigen = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $fechaActualizacionCoste;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $fechaActualizacionCoste = null;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $costeAnterior;
-
-    /**
-     * __clone
-     * @return void
-     */
-    
-    public function __clone()
-    {
-        $this->id = null;
-    }        
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $costeAnterior = null;
 
     public function __construct()
     {
         $this->setTimestampDc(new \DateTime());
         $this->setDescuentoDc(0);
-
     }
 
+    public function __clone()
+    {
+        $this->id = null;
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getCestaDc(): ?cestas
+    public function getCestaDc(): ?Cestas
     {
         return $this->cestaDc;
     }
 
-    public function setCestaDc(?cestas $cestaDc): self
+    public function setCestaDc(?Cestas $cestaDc): self
     {
         $this->cestaDc = $cestaDc;
-
         return $this;
     }
 
@@ -124,7 +86,6 @@ class Detallecesta
     public function setProductoDc(?Productos $productoDc): self
     {
         $this->productoDc = $productoDc;
-
         return $this;
     }
 
@@ -136,7 +97,6 @@ class Detallecesta
     public function setCantidadDc(int $cantidadDc): self
     {
         $this->cantidadDc = $cantidadDc;
-
         return $this;
     }
 
@@ -148,7 +108,6 @@ class Detallecesta
     public function setPvpDc(float $pvpDc): self
     {
         $this->pvpDc = $pvpDc;
-
         return $this;
     }
 
@@ -160,7 +119,6 @@ class Detallecesta
     public function setDescuentoDc(float $descuentoDc): self
     {
         $this->descuentoDc = $descuentoDc;
-
         return $this;
     }
 
@@ -172,7 +130,6 @@ class Detallecesta
     public function setTimestampDc(\DateTimeInterface $timestampDc): self
     {
         $this->timestampDc = $timestampDc;
-
         return $this;
     }
 
@@ -184,7 +141,6 @@ class Detallecesta
     public function setPrecioDc(?float $precioDc): self
     {
         $this->precioDc = $precioDc;
-
         return $this;
     }
 
@@ -196,7 +152,6 @@ class Detallecesta
     public function setTextoDc(?string $textoDc): self
     {
         $this->textoDc = $textoDc;
-
         return $this;
     }
 
@@ -208,7 +163,6 @@ class Detallecesta
     public function setCosteActualizadoPorFactura(?bool $costeActualizadoPorFactura): self
     {
         $this->costeActualizadoPorFactura = $costeActualizadoPorFactura;
-
         return $this;
     }
 
@@ -220,7 +174,6 @@ class Detallecesta
     public function setFacturaOrigen(?string $facturaOrigen): self
     {
         $this->facturaOrigen = $facturaOrigen;
-
         return $this;
     }
 
@@ -232,7 +185,6 @@ class Detallecesta
     public function setFechaActualizacionCoste(?\DateTimeInterface $fechaActualizacionCoste): self
     {
         $this->fechaActualizacionCoste = $fechaActualizacionCoste;
-
         return $this;
     }
 
@@ -244,11 +196,6 @@ class Detallecesta
     public function setCosteAnterior(?float $costeAnterior): self
     {
         $this->costeAnterior = $costeAnterior;
-
         return $this;
     }
-
-
-
-
 }

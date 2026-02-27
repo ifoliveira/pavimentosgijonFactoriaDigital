@@ -7,72 +7,51 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=PostRepository::class)
- */
+#[ORM\Entity(repositoryClass: PostRepository::class)]
 class Post
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $title;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $title = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $slug;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $slug = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $metaDescription;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $metaDescription = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $headerH1;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $headerH1 = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $headerH2;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $headerH2 = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $headerH3;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $headerH3 = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $headerH4;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $headerH4 = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $content;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $content = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $publishedAt;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $publishedAt = null;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isPublished;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isPublished = false;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Image::class, mappedBy="post", orphanRemoval=true,cascade={"persist"})
-     */
-    private $images;
+    #[ORM\OneToMany(
+        mappedBy: 'post',
+        targetEntity: Image::class,
+        orphanRemoval: true,
+        cascade: ['persist']
+    )]
+    private Collection $images;
 
     public function __construct()
     {
@@ -92,7 +71,6 @@ class Post
     public function setTitle(?string $title): self
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -104,7 +82,6 @@ class Post
     public function setSlug(string $slug): self
     {
         $this->slug = $slug;
-
         return $this;
     }
 
@@ -116,7 +93,6 @@ class Post
     public function setMetaDescription(?string $metaDescription): self
     {
         $this->metaDescription = $metaDescription;
-
         return $this;
     }
 
@@ -128,7 +104,6 @@ class Post
     public function setHeaderH1(?string $headerH1): self
     {
         $this->headerH1 = $headerH1;
-
         return $this;
     }
 
@@ -140,7 +115,6 @@ class Post
     public function setHeaderH2(?string $headerH2): self
     {
         $this->headerH2 = $headerH2;
-
         return $this;
     }
 
@@ -152,7 +126,6 @@ class Post
     public function setHeaderH3(?string $headerH3): self
     {
         $this->headerH3 = $headerH3;
-
         return $this;
     }
 
@@ -164,7 +137,6 @@ class Post
     public function setHeaderH4(?string $headerH4): self
     {
         $this->headerH4 = $headerH4;
-
         return $this;
     }
 
@@ -176,7 +148,6 @@ class Post
     public function setContent(?string $content): self
     {
         $this->content = $content;
-
         return $this;
     }
 
@@ -188,11 +159,10 @@ class Post
     public function setPublishedAt(?\DateTimeInterface $publishedAt): self
     {
         $this->publishedAt = $publishedAt;
-
         return $this;
     }
 
-    public function isIsPublished(): ?bool
+    public function isIsPublished(): bool
     {
         return $this->isPublished;
     }
@@ -200,7 +170,6 @@ class Post
     public function setIsPublished(bool $isPublished): self
     {
         $this->isPublished = $isPublished;
-
         return $this;
     }
 
@@ -225,7 +194,6 @@ class Post
     public function removeImage(Image $image): self
     {
         if ($this->images->removeElement($image)) {
-            // set the owning side to null (unless already changed)
             if ($image->getPost() === $this) {
                 $image->setPost(null);
             }

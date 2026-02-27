@@ -4,70 +4,52 @@ namespace App\Entity;
 
 use App\Repository\PagosRepository;
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Banco;
 
-/**
- * @ORM\Entity(repositoryClass=PagosRepository::class)
- */
+#[ORM\Entity(repositoryClass: PagosRepository::class)]
 class Pagos
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=cestas::class, inversedBy="pagos")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $cesta;
+    #[ORM\ManyToOne(inversedBy: 'pagos')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Cestas $cesta = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $fechaPg;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $fechaPg = null;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $importePg;
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $importePg = null;
 
-    /**
-     * @ORM\Column(type="string", length=25, nullable=true)
-     */
-    private $tipoPg;
+    #[ORM\Column(type: 'string', length: 25, nullable: true)]
+    private ?string $tipoPg = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=banco::class, inversedBy="pagos")
-     */
-    private $bancoPg;
+    #[ORM\ManyToOne(inversedBy: 'pagos')]
+    private ?Banco $bancoPg = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Efectivo::class, inversedBy="pagos" , cascade={"persist","remove"})
-     */
-    private $efectivoPg;
+    #[ORM\ManyToOne(inversedBy: 'pagos', cascade: ['persist', 'remove'])]
+    private ?Efectivo $efectivoPg = null;
 
     public function __toString()
     {
         return strval($this->id);
-    }    
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getCesta(): ?cestas
+    public function getCesta(): ?Cestas
     {
         return $this->cesta;
     }
 
-    public function setCesta(?cestas $cesta): self
+    public function setCesta(?Cestas $cesta): self
     {
         $this->cesta = $cesta;
-
         return $this;
     }
 
@@ -79,7 +61,6 @@ class Pagos
     public function setFechaPg(?\DateTimeInterface $fechaPg): self
     {
         $this->fechaPg = $fechaPg;
-
         return $this;
     }
 
@@ -91,7 +72,6 @@ class Pagos
     public function setImportePg(?float $importePg): self
     {
         $this->importePg = $importePg;
-
         return $this;
     }
 
@@ -103,31 +83,28 @@ class Pagos
     public function setTipoPg(?string $tipoPg): self
     {
         $this->tipoPg = $tipoPg;
-
         return $this;
     }
 
-    public function getBancoPg(): ?banco
+    public function getBancoPg(): ?Banco
     {
         return $this->bancoPg;
     }
 
-    public function setBancoPg(?banco $bancoPg): self
+    public function setBancoPg(?Banco $bancoPg): self
     {
         $this->bancoPg = $bancoPg;
-
         return $this;
     }
 
-    public function getEfectivoPg(): ?efectivo
+    public function getEfectivoPg(): ?Efectivo
     {
         return $this->efectivoPg;
     }
 
-    public function setEfectivoPg(?efectivo $efectivoPg): self
+    public function setEfectivoPg(?Efectivo $efectivoPg): self
     {
         $this->efectivoPg = $efectivoPg;
-
         return $this;
     }
 }

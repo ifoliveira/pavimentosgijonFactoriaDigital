@@ -553,77 +553,7 @@ private function calcularPresupuestoDucha(array $datos): array
              'form' => $form->createView()
                 ]);
             }
-    /**
-     * @Route("/presupuestoInmediatoBis", name="iapresupuestob")
-     */
-    public function iapresupuestoB(Request $request, ConsultasRepository $consultasRepository, TelegramNotifier $notifier): Response
-    {
 
-        $consulta = new Consultas();
-
-        $form = $this->createForm(ConsultasType::class, $consulta);
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-
-            $consulta = $form->getData();
-  
-            $consulta->setTimestamp(New DateTime());
-            $consulta->setatencion(false);
-            $jsonPresupuesto = $form->get('jsonPresupuesto')->getData();
-            $datosPresupuesto = json_decode($jsonPresupuesto, true);
-
-            if (is_array($datosPresupuesto)) {
-                $consulta->setPresupuestoAI($datosPresupuesto); // 👈 aquí guardamos todo
-            }            
-
-            $consultasRepository->add($consulta, true);
-            $jsonPresupuesto = $form->get('jsonPresupuesto')->getData();
-            $datosPresupuesto = json_decode($jsonPresupuesto, true);
-            $filename = 'presupuesto_' . $consulta->getId() . '.json';
-            $pathJson = $this->getParameter('kernel.project_dir') . '/public_html/pdfs/' . $filename;
-
-            file_put_contents($pathJson, json_encode($datosPresupuesto, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-            $rootDir = $this->getParameter('kernel.project_dir') . '/public_html';
-
-            $html = $this->renderView('apgijon/pdfpresupuesto.html.twig', [
-                'consulta' => $consulta,
-                'presupuesto' => $datosPresupuesto, // viene del JSON transformado
-                'id' => $consulta->getId(),
-                    'root_dir' => $rootDir
-            ]);
-
-                $this->pdf->loadHtml($html);
-                $this->pdf->render();            
-
-            $filename = 'presupuesto_PRE' . $consulta->getId() . '.pdf';
-            $path = $this->getParameter('kernel.project_dir') . '/public_html/pdfs/' . $filename;
-
-            file_put_contents($path, $this->pdf->output()); // guardado físico
-                // Envía el PDF por Telegram
-            $notifier->sendDocument($path, "📄 Nuevo presupuesto generado:\nNombre: {$consulta->getNombre()}\nTeléfono: {$consulta->getTelefono()}");
-            $notifier->sendDocument($pathJson, "🧾 JSON completo (modo desarrollador)");
-
-            return new Response(
-                $this->pdf->output(),
-                200,
-                [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="presupuesto_PRE{{ id }}.pdf"'
-                ]
-            );            
-
-            return $this->redirectToRoute('integral', [], Response::HTTP_SEE_OTHER);
-        }   
-
-        return $this->render('apgijon/iapresupuesto.html.twig', [
-            'controller_name' => 'ApgijonController',
-            'form' => $form->createView()
-
-        ]);
-    }      
 
         #[Route('/api/presupuesto/chat-track', name: 'api_presupuesto_track', methods: ['POST'])]
         public function trackChat(Request $request, TelegramNotifier $notifier): JsonResponse

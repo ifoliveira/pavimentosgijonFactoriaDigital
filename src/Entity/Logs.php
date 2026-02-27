@@ -5,32 +5,22 @@ namespace App\Entity;
 use App\Repository\LogsRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=LogsRepository::class)
- */
+#[ORM\Entity(repositoryClass: LogsRepository::class)]
 class Logs
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $Id_Log;
+    #[ORM\Column(type: 'integer')]
+    private ?int $Id_Log = null;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $Fecha;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTimeInterface $Fecha = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $Descripcion;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $Descripcion = null;
 
     public function getId(): ?int
     {
@@ -45,7 +35,6 @@ class Logs
     public function setIdLog(int $Id_Log): self
     {
         $this->Id_Log = $Id_Log;
-
         return $this;
     }
 
@@ -57,7 +46,6 @@ class Logs
     public function setFecha(\DateTimeInterface $Fecha): self
     {
         $this->Fecha = $Fecha;
-
         return $this;
     }
 
@@ -69,7 +57,6 @@ class Logs
     public function setDescripcion(string $Descripcion): self
     {
         $this->Descripcion = $Descripcion;
-
         return $this;
     }
 }

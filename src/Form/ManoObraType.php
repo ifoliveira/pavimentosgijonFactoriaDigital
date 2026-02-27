@@ -22,7 +22,12 @@ class ManoObraType extends AbstractType
             ->add('tipoMo', null, array(
                 'label' => 'Tipo' ))
             ->add('coste',  MoneyType::class, array(
-                    'label' => 'Coste' ))                
+                    'label' => 'Coste' ))       
+            ->add('presupuestoMo', EntityType::class, array(
+                'class' => Presupuestos::class,
+                'choice_label' => 'id',
+                'label' => 'Presupuesto'
+            ))
             ->add('textoMo', null, array(
                 'label' => 'Texto Descripción', 
                 'attr' => array('style' => 'height: 200px')

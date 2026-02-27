@@ -3,78 +3,52 @@
 namespace App\Entity;
 
 use App\Repository\ProductosRepository;
-use App\Repository\TipoproductoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use app\Entity\Tipoproducto;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=ProductosRepository::class)
- */
+#[ORM\Entity(repositoryClass: ProductosRepository::class)]
 class Productos
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $descripcion_Pd;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $descripcion_Pd = null;
 
-    /**
-     * @ORM\Column(type="float")
-     */
-    private $precio_Pd;
+    #[ORM\Column(type: 'float')]
+    private ?float $precio_Pd = null;
 
-    /**
-     * @ORM\Column(type="float")
-     */
-    private $pvp_Pd;
+    #[ORM\Column(type: 'float')]
+    private ?float $pvp_Pd = null;
 
-    /**
-     * @ORM\Column(type="smallint")
-     */
-    private $stock_Pd;
+    #[ORM\Column(type: 'smallint')]
+    private ?int $stock_Pd = null;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $fecAlta_Pd;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTimeInterface $fecAlta_Pd = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Tipoproducto", inversedBy="productos")
-     * @ORM\JoinColumn(name="tipo_pd_id", referencedColumnName="id")
-     */
-    private $tipo_pd_id;
+    #[ORM\ManyToOne(inversedBy: 'productos')]
+    #[ORM\JoinColumn(name: 'tipo_pd_id', referencedColumnName: 'id', nullable: true)]
+    private ?Tipoproducto $tipo_pd_id = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $obsoleto;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $obsoleto = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=StockItem::class, mappedBy="producto", orphanRemoval=true)
-     */
-    private $stockItems;
+    #[ORM\OneToMany(mappedBy: 'producto', targetEntity: StockItem::class, orphanRemoval: true)]
+    private Collection $stockItems;
 
-    /**
-     * @ORM\OneToMany(targetEntity=UsoDeStock::class, mappedBy="producto", orphanRemoval=true)
-     */
-    private $usoDeStocks;
+    #[ORM\OneToMany(mappedBy: 'producto', targetEntity: UsoDeStock::class, orphanRemoval: true)]
+    private Collection $usoDeStocks;
 
     public function __construct()
     {
-
         $this->setFecAltaPd(new \DateTime());
         $this->stockItems = new ArrayCollection();
         $this->usoDeStocks = new ArrayCollection();
     }
-
 
     public function getId(): ?int
     {
@@ -89,7 +63,6 @@ class Productos
     public function setDescripcionPd(string $descripcion_Pd): self
     {
         $this->descripcion_Pd = $descripcion_Pd;
-
         return $this;
     }
 
@@ -101,7 +74,6 @@ class Productos
     public function setPrecioPd(float $precio_Pd): self
     {
         $this->precio_Pd = $precio_Pd;
-
         return $this;
     }
 
@@ -113,7 +85,6 @@ class Productos
     public function setPvpPd(float $pvp_Pd): self
     {
         $this->pvp_Pd = $pvp_Pd;
-
         return $this;
     }
 
@@ -125,7 +96,6 @@ class Productos
     public function setStockPd(int $stock_Pd): self
     {
         $this->stock_Pd = $stock_Pd;
-
         return $this;
     }
 
@@ -137,26 +107,23 @@ class Productos
     public function setFecAltaPd(\DateTimeInterface $fecAlta_Pd): self
     {
         $this->fecAlta_Pd = $fecAlta_Pd;
-
         return $this;
     }
 
-    public function getTipoPdId(): ?tipoproducto
+    public function getTipoPdId(): ?Tipoproducto
     {
         return $this->tipo_pd_id;
     }
 
-    public function setTipoPdId(?tipoproducto $tipo_pd): self
+    public function setTipoPdId(?Tipoproducto $tipo_pd): self
     {
         $this->tipo_pd_id = $tipo_pd;
-
         return $this;
     }
 
     public function __toString()
     {
-        
-        return $this->descripcion_Pd;
+        return (string) $this->descripcion_Pd;
     }
 
     public function isObsoleto(): ?bool
@@ -167,7 +134,6 @@ class Productos
     public function setObsoleto(?bool $obsoleto): self
     {
         $this->obsoleto = $obsoleto;
-
         return $this;
     }
 
@@ -185,19 +151,16 @@ class Productos
             $this->stockItems[] = $stockItems;
             $stockItems->setProducto($this);
         }
-
         return $this;
     }
 
     public function removeStockItems(StockItem $stockItems): self
     {
         if ($this->stockItems->removeElement($stockItems)) {
-            // set the owning side to null (unless already changed)
             if ($stockItems->getProducto() === $this) {
                 $stockItems->setProducto(null);
             }
         }
-
         return $this;
     }
 
@@ -215,19 +178,16 @@ class Productos
             $this->usoDeStocks[] = $usoDeStock;
             $usoDeStock->setProducto($this);
         }
-
         return $this;
     }
 
     public function removeUsoDeStock(UsoDeStock $usoDeStock): self
     {
         if ($this->usoDeStocks->removeElement($usoDeStock)) {
-            // set the owning side to null (unless already changed)
             if ($usoDeStock->getProducto() === $this) {
                 $usoDeStock->setProducto(null);
             }
         }
-
         return $this;
     }
 }

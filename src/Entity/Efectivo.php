@@ -3,81 +3,64 @@
 namespace App\Entity;
 
 use App\Repository\EfectivoRepository;
-use App\Repository\TiposmovimientoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use app\Entity\Tiposmovimiento;
-use App\Entity\Presupuestos;
 
-/**
- * @ORM\Entity(repositoryClass=EfectivoRepository::class)
- */
+#[ORM\Entity(repositoryClass: EfectivoRepository::class)]
 class Efectivo
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Tiposmovimiento", inversedBy="efectivo")
-     * @ORM\JoinColumn(name="tipoEf", referencedColumnName="id")
-     */
-    private $tipoEf;
+    #[ORM\ManyToOne(inversedBy: 'efectivo')]
+    #[ORM\JoinColumn(name: 'tipoEf', referencedColumnName: 'id', nullable: true)]
+    private ?Tiposmovimiento $tipoEf = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $conceptoEf;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $conceptoEf = null;
 
-    /**
-     * @ORM\Column(type="date")
-     */
-    private $fechaEf;
+    #[ORM\Column(type: 'date')]
+    private ?\DateTimeInterface $fechaEf = null;
 
-    /**
-     * @ORM\Column(type="float")
-     */
-    private $importeEf;
+    #[ORM\Column(type: 'float')]
+    private ?float $importeEf = null;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $timestampEf;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTimeInterface $timestampEf = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=presupuestos::class, inversedBy="efectivos", cascade={"persist","remove"})
-     */
-    private $presupuestoef;
+    #[ORM\ManyToOne(inversedBy: 'efectivos', cascade: ['persist', 'remove'])]
+    private ?Presupuestos $presupuestoef = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Pagos::class, mappedBy="efectivoPg" , cascade={"persist","remove"})
-     */
-    private $pagos;
+    #[ORM\OneToMany(mappedBy: 'efectivoPg', targetEntity: Pagos::class, cascade: ['persist', 'remove'])]
+    private Collection $pagos;
 
+    public function __construct()
+    {
+        $this->timestampEf = new \DateTime();
+        $this->pagos = new ArrayCollection();
+    }
 
     public function __toString()
     {
         return strval($this->id);
-    }    
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getTipoEf(): ?tiposmovimiento
+    public function getTipoEf(): ?Tiposmovimiento
     {
         return $this->tipoEf;
     }
 
-    public function setTipoEf(?tiposmovimiento $tipoEf): self
+    public function setTipoEf(?Tiposmovimiento $tipoEf): self
     {
         $this->tipoEf = $tipoEf;
-
         return $this;
     }
 
@@ -89,7 +72,6 @@ class Efectivo
     public function setConceptoEf(string $conceptoEf): self
     {
         $this->conceptoEf = $conceptoEf;
-
         return $this;
     }
 
@@ -101,7 +83,6 @@ class Efectivo
     public function setFechaEf(\DateTimeInterface $fechaEf): self
     {
         $this->fechaEf = $fechaEf;
-
         return $this;
     }
 
@@ -113,7 +94,6 @@ class Efectivo
     public function setImporteEf(float $importeEf): self
     {
         $this->importeEf = $importeEf;
-
         return $this;
     }
 
@@ -125,25 +105,17 @@ class Efectivo
     public function setTimestampEf(\DateTimeInterface $timestampEf): self
     {
         $this->timestampEf = $timestampEf;
-
         return $this;
     }
-    
-    public function __construct()
-    {
-      $this->timestampEf = new \DateTime();
-      $this->pagos = new ArrayCollection();
-    }
 
-    public function getPresupuestoef(): ?presupuestos
+    public function getPresupuestoef(): ?Presupuestos
     {
         return $this->presupuestoef;
     }
 
-    public function setPresupuestoef(?presupuestos $presupuestoef): self
+    public function setPresupuestoef(?Presupuestos $presupuestoef): self
     {
         $this->presupuestoef = $presupuestoef;
-
         return $this;
     }
 
@@ -161,19 +133,16 @@ class Efectivo
             $this->pagos[] = $pago;
             $pago->setEfectivoPg($this);
         }
-
         return $this;
     }
 
     public function removePago(Pagos $pago): self
     {
         if ($this->pagos->removeElement($pago)) {
-            // set the owning side to null (unless already changed)
             if ($pago->getEfectivoPg() === $this) {
                 $pago->setEfectivoPg(null);
             }
         }
-
         return $this;
     }
 }

@@ -29,26 +29,47 @@ class TrackingService
         }
 
         $visitorId = $request->cookies->get('visitor_id');
+        $sesionId  = $request->cookies->get('sesion_id');
 
-        if (!$visitorId) {
+        if (!$visitorId || !$sesionId) {
             return;
         }
 
-        $visitante = $this->em
-            ->getRepository(Visitante::class)
-            ->find($visitorId);
+        // Buscar visitante
+        try {
+            $visitante = $this->em
+                ->getRepository(Visitante::class)
+                ->find(\Symfony\Component\Uid\Uuid::fromString($visitorId));
+        } catch (\Throwable $e) {
+            return;
+        }
 
         if (!$visitante) {
             return;
         }
 
+        // Buscar sesión
+        $sesion = $this->em
+            ->getRepository(\App\Entity\Sesion::class)
+            ->find($sesionId);
+
+        if (!$sesion) {
+            return;
+        }
+
+        // Crear evento
         $evento = new Evento();
         $evento->setVisitante($visitante);
+        $evento->setSesion($sesion);
         $evento->setTipo($tipo);
         $evento->setDatos($datos);
         $evento->setFechaCreacion(new \DateTimeImmutable());
 
         $this->em->persist($evento);
+
+        // Actualizar sesión
+        $sesion->setNumeroEventos($sesion->getNumeroEventos() + 1);
+
         $this->em->flush();
     }
 }

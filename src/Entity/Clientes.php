@@ -7,73 +7,48 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=ClientesRepository::class)
- */
+#[ORM\Entity(repositoryClass: ClientesRepository::class)]
 class Clientes
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=100)
-     */
-    private $nombreCl;
+    #[ORM\Column(type: 'string', length: 100)]
+    private ?string $nombreCl = null;
 
-    /**
-     * @ORM\Column(type="string", length=150, nullable=true)
-     */
-    private $apellidosCl;
+    #[ORM\Column(type: 'string', length: 150, nullable: true)]
+    private ?string $apellidosCl = null;
 
-    /**
-     * @ORM\Column(type="string", length=100, nullable=true)
-     */
-    private $ciudadCl;
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private ?string $ciudadCl = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $direccionCl;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $direccionCl = null;
 
-    /**
-     * @ORM\Column(type="string", length=9, nullable=true)
-     */
-    private $telefono1Cl;
+    #[ORM\Column(type: 'string', length: 9, nullable: true)]
+    private ?string $telefono1Cl = null;
 
-    /**
-     * @ORM\Column(type="string", length=9, nullable=true)
-     */
-    private $telefono2Cl;
+    #[ORM\Column(type: 'string', length: 9, nullable: true)]
+    private ?string $telefono2Cl = null;
 
-    /**
-     * @ORM\Column(type="string", length=100, nullable=true)
-     */
-    private $emailCl;
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private ?string $emailCl = null;
 
-    /**
-     * @ORM\Column(type="datetime", options={"default": "CURRENT_TIMESTAMP"})
-     */
-    private $timestampaltaCl;
+    #[ORM\Column(type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    private ?\DateTimeInterface $timestampaltaCl = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Presupuestos::class, mappedBy="clientePe")
-     */
-    private $presupuestosCl;
+    #[ORM\OneToMany(mappedBy: 'clientePe', targetEntity: Presupuestos::class)]
+    private Collection $presupuestosCl;
 
-    /**
-     * @ORM\Column(type="string", length=9, nullable=true)
-     */
-    private $dni;
+    #[ORM\Column(type: 'string', length: 9, nullable: true)]
+    private ?string $dni = null;
 
     public function __construct()
     {
         $this->presupuestosCl = new ArrayCollection();
         $this->setTimestampaltaCl(new \DateTime());
-
     }
 
     public function getId(): ?int
@@ -89,7 +64,6 @@ class Clientes
     public function setNombreCl(string $nombreCl): self
     {
         $this->nombreCl = $nombreCl;
-
         return $this;
     }
 
@@ -98,10 +72,9 @@ class Clientes
         return $this->apellidosCl;
     }
 
-    public function setApellidosCl(string $apellidosCl): self
+    public function setApellidosCl(?string $apellidosCl): self
     {
         $this->apellidosCl = $apellidosCl;
-
         return $this;
     }
 
@@ -110,10 +83,9 @@ class Clientes
         return $this->ciudadCl;
     }
 
-    public function setCiudadCl(string $ciudadCl): self
+    public function setCiudadCl(?string $ciudadCl): self
     {
         $this->ciudadCl = $ciudadCl;
-
         return $this;
     }
 
@@ -122,10 +94,9 @@ class Clientes
         return $this->direccionCl;
     }
 
-    public function setDireccionCl(string $direccionCl): self
+    public function setDireccionCl(?string $direccionCl): self
     {
         $this->direccionCl = $direccionCl;
-
         return $this;
     }
 
@@ -134,10 +105,9 @@ class Clientes
         return $this->telefono1Cl;
     }
 
-    public function setTelefono1Cl(string $telefono1Cl): self
+    public function setTelefono1Cl(?string $telefono1Cl): self
     {
         $this->telefono1Cl = $telefono1Cl;
-
         return $this;
     }
 
@@ -149,7 +119,6 @@ class Clientes
     public function setTelefono2Cl(?string $telefono2Cl): self
     {
         $this->telefono2Cl = $telefono2Cl;
-
         return $this;
     }
 
@@ -161,7 +130,6 @@ class Clientes
     public function setEmailCl(?string $emailCl): self
     {
         $this->emailCl = $emailCl;
-
         return $this;
     }
 
@@ -173,23 +141,23 @@ class Clientes
     public function setTimestampaltaCl(\DateTimeInterface $timestampaltaCl): self
     {
         $this->timestampaltaCl = $timestampaltaCl;
-
         return $this;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getNombreCl() . ' ' . $this->getApellidosCl() ;
+        return trim(($this->getNombreCl() ?? '') . ' ' . ($this->getApellidosCl() ?? ''));
     }
+
     /**
-     * @return Collection|presupuestos[]
+     * @return Collection<int, Presupuestos>
      */
     public function getPresupuestosCl(): Collection
     {
         return $this->presupuestosCl;
     }
 
-    public function addPresupuestosCl(presupuestos $presupuestosCl): self
+    public function addPresupuestosCl(Presupuestos $presupuestosCl): self
     {
         if (!$this->presupuestosCl->contains($presupuestosCl)) {
             $this->presupuestosCl[] = $presupuestosCl;
@@ -199,10 +167,9 @@ class Clientes
         return $this;
     }
 
-    public function removePresupuestosCl(presupuestos $presupuestosCl): self
+    public function removePresupuestosCl(Presupuestos $presupuestosCl): self
     {
         if ($this->presupuestosCl->removeElement($presupuestosCl)) {
-            // set the owning side to null (unless already changed)
             if ($presupuestosCl->getClientePe() === $this) {
                 $presupuestosCl->setClientePe(null);
             }
@@ -219,7 +186,6 @@ class Clientes
     public function setDni(?string $dni): self
     {
         $this->dni = $dni;
-
         return $this;
     }
 }

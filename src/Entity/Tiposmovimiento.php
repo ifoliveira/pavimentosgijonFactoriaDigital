@@ -7,42 +7,28 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=TiposmovimientoRepository::class)
- */
+#[ORM\Entity(repositoryClass: TiposmovimientoRepository::class)]
 class Tiposmovimiento
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $descripcionTm;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $descripcionTm = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Efectivo::class, mappedBy="tipoEf")
-     */
-    private $efectivo;
+    #[ORM\OneToMany(mappedBy: 'tipoEf', targetEntity: Efectivo::class)]
+    private Collection $efectivo;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Banco::class, mappedBy="categoria_Bn")
-     */
-    private $bancos;
+    #[ORM\OneToMany(mappedBy: 'categoria_Bn', targetEntity: Banco::class)]
+    private Collection $bancos;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Forecast::class, mappedBy="tipoFr")
-     */
-    private $forecasts;
+    #[ORM\OneToMany(mappedBy: 'tipoFr', targetEntity: Forecast::class)]
+    private Collection $forecasts;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $patronBusqueda;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $patronBusqueda = null;
 
     public function __construct()
     {
@@ -64,12 +50,11 @@ class Tiposmovimiento
     public function setDescripcionTm(string $descripcionTm): self
     {
         $this->descripcionTm = $descripcionTm;
-
         return $this;
     }
 
     /**
-     * @return Collection|Efectivo[]
+     * @return Collection<int, Efectivo>
      */
     public function getEfectivo(): Collection
     {
@@ -86,10 +71,9 @@ class Tiposmovimiento
         return $this;
     }
 
-    public function removeProducto(Efectivo $efectivo): self
+    public function removeEfectivo(Efectivo $efectivo): self
     {
         if ($this->efectivo->removeElement($efectivo)) {
-            // set the owning side to null (unless already changed)
             if ($efectivo->getTipoEf() === $this) {
                 $efectivo->setTipoEf(null);
             }
@@ -98,13 +82,8 @@ class Tiposmovimiento
         return $this;
     }
 
-    public function __toString()
-    {
-        return $this->getDescripcionTm();
-    }
-
     /**
-     * @return Collection|Banco[]
+     * @return Collection<int, Banco>
      */
     public function getBancos(): Collection
     {
@@ -124,7 +103,6 @@ class Tiposmovimiento
     public function removeBanco(Banco $banco): self
     {
         if ($this->bancos->removeElement($banco)) {
-            // set the owning side to null (unless already changed)
             if ($banco->getCategoriaBn() === $this) {
                 $banco->setCategoriaBn(null);
             }
@@ -134,7 +112,7 @@ class Tiposmovimiento
     }
 
     /**
-     * @return Collection|Forecast[]
+     * @return Collection<int, Forecast>
      */
     public function getForecasts(): Collection
     {
@@ -154,7 +132,6 @@ class Tiposmovimiento
     public function removeForecast(Forecast $forecast): self
     {
         if ($this->forecasts->removeElement($forecast)) {
-            // set the owning side to null (unless already changed)
             if ($forecast->getTipoFr() === $this) {
                 $forecast->setTipoFr(null);
             }
@@ -171,8 +148,11 @@ class Tiposmovimiento
     public function setPatronBusqueda(?string $patronBusqueda): self
     {
         $this->patronBusqueda = $patronBusqueda;
-
         return $this;
     }
 
+    public function __toString(): string
+    {
+        return $this->descripcionTm ?? '';
+    }
 }
