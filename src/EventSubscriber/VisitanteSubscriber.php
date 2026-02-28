@@ -12,14 +12,17 @@ use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Uid\Uuid;
 use App\Entity\Evento;
+use App\Service\BotDetectorService;
 
 class VisitanteSubscriber implements EventSubscriberInterface
 {
     private EntityManagerInterface $em;
+    private BotDetectorService $botDetector;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, BotDetectorService $botDetector)
     {
         $this->em = $em;
+        $this->botDetector = $botDetector;
     }
 
     public static function getSubscribedEvents(): array
@@ -196,13 +199,15 @@ class VisitanteSubscriber implements EventSubscriberInterface
             // 🆕 Crear nueva sesión
             $sesion = new Sesion();
             $nuevoId = Uuid::v4()->toRfc4122();
-
+            $userAgent = $request->headers->get('user-agent', '');
+            $sesion->setIsBot($this->botDetector->isBot($userAgent));
+            $sesion->setJsConfirmed(false); // por defecto
             $sesion->setId($nuevoId);
             $sesion->setVisitante($visitante);
             $sesion->setFechaInicio($ahora);
             $sesion->setFechaUltimoEvento($ahora);
             $sesion->setRutaEntrada($request->getPathInfo());
-            $sesion->setUserAgent(substr((string) $request->headers->get('user-agent'), 0, 255));
+            $sesion->setUserAgent(substr((string) $userAgent, 0, 255));
             $sesion->setNumeroEventos(0);
 
             $this->em->persist($sesion);

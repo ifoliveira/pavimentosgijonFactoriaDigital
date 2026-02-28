@@ -37,7 +37,19 @@
     {% include 'home/header_public.html.twig' %}
 {% endblock %}
 
-
+<script>
+(function() {
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon('/js-alive');
+    } else {
+        fetch('/js-alive', {
+            method: 'POST',
+            credentials: 'same-origin',
+            keepalive: true
+        });
+    }
+})();
+</script>
 
 <main>
     {% block body %}{% endblock %}

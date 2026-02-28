@@ -38,6 +38,12 @@ class Sesion
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $fechaUltimoEvento = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $isBot = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $jsConfirmed = null;
+
     /*
     |--------------------------------------------------------------------------
     | GETTERS & SETTERS
@@ -146,6 +152,30 @@ class Sesion
     public function setFechaUltimoEvento(?\DateTimeInterface $fechaUltimoEvento): static
     {
         $this->fechaUltimoEvento = $fechaUltimoEvento;
+
+        return $this;
+    }
+
+    public function isIsBot(): ?bool
+    {
+        return $this->isBot;
+    }
+
+    public function setIsBot(?bool $isBot): static
+    {
+        $this->isBot = $isBot;
+
+        return $this;
+    }
+
+    public function isJsConfirmed(): ?bool
+    {
+        return $this->jsConfirmed;
+    }
+
+    public function setJsConfirmed(?bool $jsConfirmed): static
+    {
+        $this->jsConfirmed = $jsConfirmed;
 
         return $this;
     }
