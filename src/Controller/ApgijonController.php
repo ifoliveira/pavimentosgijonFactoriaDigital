@@ -666,10 +666,15 @@ private function calcularPresupuestoDucha(array $datos): array
         }
 
 
+    #[Route('/cambio-banera-ducha-gijon', name: 'platoducha')]
+    public function cambioBaneraDuchaV2(): Response
+    {
+        return $this->render('apgijon/cambio_banera_ducha_v2.html.twig');
+    }
 
 
     /**
-     * @Route("/cambio-banera-ducha-gijon", name="platoducha")
+     * @Route("/cambio-banera-ducha-gijon-v2", name="platoducha_v2")
      */
     public function platoducha(Request $request, ConsultasRepository $consultasRepository): Response
     {

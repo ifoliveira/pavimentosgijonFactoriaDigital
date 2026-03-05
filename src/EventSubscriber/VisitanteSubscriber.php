@@ -49,7 +49,9 @@ class VisitanteSubscriber implements EventSubscriberInterface
             !$route ||
             str_starts_with($route, '_') ||
             str_starts_with($path, '/admin') ||
-            str_starts_with($route, 'admin_')
+            str_starts_with($route, 'admin_') ||
+            str_starts_with($path, '/js-alive') ||    
+            str_starts_with($route, 'js_alive')
         ) {
             return;
         }
@@ -86,7 +88,15 @@ class VisitanteSubscriber implements EventSubscriberInterface
         $response = $event->getResponse();
 
         $route = $request->attributes->get('_route');
-        if (!$route || str_starts_with($route, '_')) {
+        $path = $request->getPathInfo();
+        if (
+            !$route ||
+            str_starts_with($route, '_') ||
+            str_starts_with($path, '/admin') ||
+            str_starts_with($route, 'admin_') ||
+            str_starts_with($path, '/js-alive') ||    
+            str_starts_with($route, 'js_alive')
+        ) {
             return;
         }
 

@@ -1,0 +1,191 @@
+{% extends 'layouts/base_public.html.twig' %}
+
+{% block title %}Cambiar bañera por ducha en Gijón | Precio y presupuesto online{% endblock %}
+{% block meta_description %}Cambia tu bañera por plato de ducha en Gijón desde 2.000 €. Presupuesto online inmediato, obra en 2-3 días y sin compromiso.{% endblock %}
+{% block og_title %}Cambiar bañera por ducha en Gijón | Precio y presupuesto online{% endblock %}
+{% block og_description %}Cambio de bañera por plato de ducha en Gijón. Presupuesto inmediato, obra rápida y sin sorpresas.{% endblock %}
+
+{% block body %}
+
+<section class="hero-decision">
+  <div class="container">
+    <h1>Cambio de bañera por ducha en Gijón</h1>
+    <p class="hero-sub">
+      Desde <strong>2.000 €</strong> · Obra en <strong>2–3 días</strong> · Presupuesto PDF inmediato · Empresa local con <strong>30 años</strong>
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ path('iapresupuesto') }}" id="btnPresupuestoHeroV2">
+        💬 Calcular presupuesto online
+      </a>
+      <a class="btn btn-secondary" href="#trabajos">
+        📸 Ver trabajos reales
+      </a>
+    </div>
+  </div>
+    <div class="reseñas-hero">
+      <div class="rating">
+        <span class="stars">★★★★☆</span>
+        <span class="score">4,3</span> en reseñas de clientes
+      </div>
+
+    <div class="review-highlight">
+      <p>
+        <span>✅ Precio claro</span>
+        <span>✅ Plazos reales</span>
+        <span>✅ Especialistas en Gijón</span>
+      </p>
+
+      <p>Más de 30 años reformando baños en Gijón.</p>
+    </div>
+  </div>      
+
+</section>
+
+<section class="home-image" id="trabajos">
+    <div class="container trabajo-container">
+
+      <h2 class="trabajo-titulo">De bañera antigua a ducha cómoda y segura</h2>
+
+      <p class="intro-trabajo">
+          Este es un ejemplo real de un baño en Gijón donde sustituimos una bañera por un
+          plato de ducha moderno. El objetivo principal era mejorar la accesibilidad
+          y aprovechar mejor el espacio del baño.
+      </p>
+
+      <div class="trabajo-grid">
+
+          <div class="trabajo-item">
+            <h3>Estado original del baño</h3>
+            <img class="trabajo-img"
+                src="{{ asset('/img/Plato-Antes.png') }}"
+                alt="Bañera antigua antes de la reforma">
+          </div>
+
+          <div class="trabajo-item">
+            <h3>Resultado tras la reforma</h3>
+            <img class="trabajo-img"
+                src="{{ asset('/img/Plato de duchaNuevo.png') }}"
+                alt="Plato de ducha instalado en Gijón">
+          </div>
+
+      </div>
+
+      <p class="img-caption">
+          ✔ Reforma realizada en solo <strong>2 días</strong><br>
+          ✔ Retirada de bañera y escombros incluidos<br>
+          ✔ Instalación de plato de ducha y mampara frontal<br>
+          ✔ Adaptación del alicatado existente
+      </p>
+
+    </div>
+</section>
+
+<section class="home-presupuesto">
+  <div class="container">
+    <h2>¿Cuánto cuesta cambiar la bañera por ducha?</h2>
+    <p>
+      El precio suele estar entre <strong>2.000 € y 3.000 €</strong> según medidas, mampara, grifería y nivel de alicatado.
+      Te damos un <strong>precio orientativo en menos de 2 minutos</strong> y el <strong>PDF al instante</strong>.
+    </p>
+    <a href="{{ path('iapresupuesto') }}" onclick="gtag_report_conversion();" class="btn btn-primary">
+      💬 Calcular presupuesto ahora
+    </a>
+    <p style="margin-top:14px; opacity:.9;">🔒 No pedimos teléfono. 📄 PDF inmediato. 📍 Gijón.</p>
+  </div>
+</section>
+
+<section class="home-selector">
+
+  <div class="container selector-container">
+
+    <h2 class="selector-title">
+      Qué incluye el cambio de bañera por ducha
+    </h2>
+
+    <p class="selector-intro">
+      Servicio completo: retirada de la bañera, preparación de la base,
+      instalación del plato de ducha y todos los remates necesarios
+      para dejar el baño listo para usar.
+    </p>
+
+    <div class="selector-grid">
+
+      <div class="selector-card selector-card-light">
+        <h3>Retirada y preparación</h3>
+        <p>Retirada de bañera, desescombro y preparación de la base para el nuevo plato.</p>
+      </div>
+
+      <div class="selector-card selector-card-dark">
+        <h3>Plato + mampara</h3>
+        <p>Instalación del plato de ducha y mampara adaptada al espacio del baño.</p>
+      </div>
+
+      <div class="selector-card selector-card-light">
+        <h3>Alicatado y remates</h3>
+        <p>Reposición de azulejo según la opción elegida para integrar el nuevo plato.</p>
+      </div>
+
+      <div class="selector-card selector-card-dark">
+        <h3>Fontanería</h3>
+        <p>Adaptación de grifería y desagües según el caso.</p>
+      </div>
+
+    </div>
+
+    <p class="selector-footer">
+      Si prefieres renovar todo el baño, también realizamos
+      <a href="{{ path('integral') }}">reformas integrales de baños en Gijón</a>.
+    </p>
+
+  </div>
+
+</section>
+<section class="home-faq">
+  <div class="container">
+    <div class="faq-head">
+      <h2>Preguntas frecuentes</h2>
+      <p>Respuestas claras antes de pedir presupuesto.</p>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          ¿Se puede cambiar la bañera por ducha sin cambiar azulejos?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">
+          <p>Sí, se puede minimizar la obra para conservar la mayor parte del alicatado existente, según el caso.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          ¿Incluye la retirada de la bañera?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">
+          <p>Sí. Incluimos retirada, desescombro e instalación del plato y remates.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          ¿En cuánto tiempo se hace la obra?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">
+          <p>En la mayoría de casos, en 2–3 días con el baño terminado y funcional.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:28px;">
+      <a href="{{ path('iapresupuesto') }}" class="btn btn-primary">
+        💬 Quiero mi presupuesto en 2 minutos
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

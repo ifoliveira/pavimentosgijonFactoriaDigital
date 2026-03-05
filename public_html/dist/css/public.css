@@ -229,7 +229,7 @@ p {
    ================================================== */
 
 .menu-toggle {
-  display: relativ;
+  display: flex;
   width: 22px;
   height: 16px;
   flex-direction: column;
@@ -293,6 +293,118 @@ p {
   pointer-events: auto;
 }
 
+/* ==================================================
+   7A. TRABAJOS (ESTILO DE LA SECCIÓN DE TRABAJOS)
+   ================================================== */
+
+
+.trabajo-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:40px;
+margin-top:30px;
+}
+
+.trabajo-item{
+text-align:center;
+}
+
+.trabajo-img{
+width:100%;
+height:auto;
+border-radius:12px;
+box-shadow:0 10px 30px rgba(0,0,0,0.15);
+}
+
+@media (max-width:768px){
+
+.trabajo-grid{
+grid-template-columns:1fr;
+}
+}
+
+.intro-trabajo{
+max-width:700px;
+margin:auto;
+margin-bottom:30px;
+text-align:center;
+}
+
+.img-caption{
+margin-top:25px;
+text-align:center;
+font-size:15px;
+line-height:1.6;
+}
+
+.trabajo-container{
+text-align:center;
+padding-top:70px;
+padding-bottom:70px;
+}
+
+.trabajo-titulo{
+max-width:800px;
+margin:auto;
+margin-bottom:20px;
+}
+
+.selector-container{
+text-align:center;
+padding-top:80px;
+padding-bottom:80px;
+}
+
+.selector-title{
+max-width:700px;
+margin:auto;
+margin-bottom:20px;
+}
+
+.selector-intro{
+max-width:650px;
+margin:auto;
+margin-bottom:60px;
+line-height:1.7;
+font-size:17px;
+color:var(--color-muted);
+}
+
+.selector-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:40px;
+margin-bottom:50px;
+}
+
+.selector-card{
+text-align:left;
+padding:50px 40px;
+border-radius:20px;
+}
+
+.selector-card h3{
+margin-bottom:15px;
+}
+
+.selector-card p{
+line-height:1.6;
+}
+
+.selector-footer{
+max-width:600px;
+margin:auto;
+font-size:16px;
+line-height:1.6;
+}
+
+@media (max-width:768px){
+
+.selector-grid{
+grid-template-columns:1fr;
+}
+
+}
 
 /*===================================================
    7B. SECTIONS (ESTILOS GENERALES PARA SECCIONES)

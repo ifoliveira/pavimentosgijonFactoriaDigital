@@ -8,6 +8,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\VisitanteRepository;
 use App\Repository\SesionRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 class JsAliveController extends AbstractController
 {
@@ -18,13 +19,14 @@ class JsAliveController extends AbstractController
         SesionRepository $sesionRepository,
         EntityManagerInterface $em
     ): Response {
+
         $visitorId = $request->cookies->get('visitor_id');
 
         if (!$visitorId) {
             return new Response('no-cookie', 200);
         }
 
-        $visitante = $visitanteRepository->findOneBy(['uuid' => $visitorId]);
+        $visitante = $visitanteRepository->findOneBy(['id' => $visitorId]);
 
         if (!$visitante) {
             return new Response('no-visitante', 200);
@@ -47,6 +49,5 @@ class JsAliveController extends AbstractController
 
         return new Response('ok');
 
-        return new Response('ok');
     }
 }
