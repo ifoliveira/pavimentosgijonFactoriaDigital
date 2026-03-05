@@ -502,7 +502,7 @@ grid-template-columns:1fr;
 /* ==================================================
    9. RESEÑAS (ESTILO DE LA SECCIÓN DE RESEÑAS)
    ================================================== */
-.reseñas-hero {
+.resenas-hero {
   background: linear-gradient(
     to bottom,
     rgba(0,0,0,0.0) 0%,
