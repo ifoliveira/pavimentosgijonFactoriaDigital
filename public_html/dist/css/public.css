@@ -569,6 +569,21 @@ grid-template-columns:1fr;
   color: #ffffff;
 }
 
+.barrios-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    max-width: 400px;
+    margin: 20px auto;
+    text-align: left;
+}
+
+.barrios-grid div::before {
+    content: "• ";
+    color: #1a73e8;
+    font-weight: bold;
+}
+
 /* ==================================================
    9. TESTIMONIO (ESTILO DE LA SECCIÓN DE TESTIMONIOS)
    ================================================== */

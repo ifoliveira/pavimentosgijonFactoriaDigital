@@ -1,0 +1,312 @@
+{% extends 'layouts/base_public.html.twig' %}
+
+{% block title %}Reforma de baño en Gijón | Guía completa, precios y opciones{% endblock %}
+{% block meta_description %}Guía completa para reformar un baño en Gijón: precios orientativos, tipos de reforma y consejos antes de empezar la obra.{% endblock %}
+{% block og_title %}Reforma de baño en Gijón | Guía completa y precios{% endblock %}
+{% block og_description %}Descubre cuánto cuesta reformar un baño en Gijón y qué opciones existen según tu presupuesto.{% endblock %}
+
+{% block body %}
+
+<section class="hero-decision">
+  <div class="container">
+
+    <h1>Reforma de baño en Gijón<br>Guía completa, precios y opciones</h1>
+
+    <p class="hero-sub">
+      Reformas desde <strong>2.500 €</strong> · Reformas integrales desde <strong>6.000 €</strong> · 
+      Presupuesto online inmediato · Empresa local en Gijón
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ path('iapresupuesto') }}">
+        💬 Calcular presupuesto online
+      </a>
+
+      <a class="btn btn-secondary" href="#tipos">
+        📖 Ver tipos de reforma
+      </a>
+    </div>
+
+  </div>
+
+  <div class="resenas-hero">
+    <div class="rating">
+      <span class="stars">★★★★☆</span>
+      <span class="score">4,3</span> en reseñas de clientes
+    </div>
+
+    <div class="review-highlight">
+      <p>
+        <span>✅ Precio claro</span>
+        <span>✅ Plazos reales</span>
+        <span>✅ Especialistas en Gijón</span>
+      </p>
+
+      <p>Más de 30 años reformando baños en Gijón.</p>
+    </div>
+  </div>
+
+</section>
+
+
+
+<section class="home-image">
+
+  <div class="container trabajo-container">
+
+    <h2>Reformar un baño en Gijón</h2>
+
+    <p class="intro-trabajo">
+      Reformar un baño en Gijón no siempre significa hacer una obra integral.
+      Existen diferentes opciones según el estado del baño, el presupuesto
+      y las necesidades reales de cada vivienda.
+    </p>
+
+    <img class="trabajo-img"
+         src="{{ asset('/img/ImagenPortada.png') }}"
+         alt="Reforma de baño en Gijón">
+
+  </div>
+
+</section>
+
+
+
+<section class="seo-text">
+
+  <div class="container">
+
+    <h2>¿Qué incluye una reforma de baño?</h2>
+
+    <p>
+      Una reforma de baño puede ser parcial o completa. Estos son los trabajos
+      más habituales:
+    </p>
+
+    <ul>
+      <li>Cambio de bañera por plato de ducha</li>
+      <li>Reforma integral del baño</li>
+      <li>Sustitución de mamparas y sanitarios</li>
+      <li>Renovación de azulejos y suelos</li>
+      <li>Actualización de fontanería y electricidad</li>
+      <li>Mejora del mobiliario y almacenamiento</li>
+    </ul>
+
+  </div>
+
+</section>
+
+
+
+<section class="home-selector" id="tipos">
+
+      <div class="container selector-container">
+
+        <h2 class="selector-title">
+          Tipos de reforma de baño en Gijón
+        </h2>
+
+        <p class="selector-intro">
+          Dependiendo del estado del baño y del presupuesto disponible,
+          existen diferentes formas de mejorar el espacio.
+        </p>
+
+        <div class="selector-grid">
+
+      <div class="selector-card selector-card-light">
+        <h3>Reforma integral de baño</h3>
+        <p>
+          Renovación completa del baño con instalaciones nuevas,
+          alicatado, sanitarios y mobiliario.
+        </p>
+        <a class="selector-link" href="{{ path('integral') }}">
+          Ver reforma integral de baño →
+        </a>
+      </div>
+
+      <div class="selector-card selector-card-dark">
+        <h3>Cambio de bañera por ducha</h3>
+        <p>
+          Una de las reformas más habituales por comodidad,
+          seguridad y rapidez de ejecución.
+        </p>
+        <a class="selector-link" href="{{ path('platoducha') }}">
+          Ver cambio de bañera por ducha →
+        </a>
+      </div>
+
+      <div class="selector-card selector-card-light">
+        <h3>Cambio de mamparas de baño</h3>
+        <p>
+          Sustituir la mampara puede mejorar mucho el baño
+          sin necesidad de una reforma completa.
+        </p>
+        <a class="selector-link" href="{{ path('mampara') }}">
+          Ver mamparas de baño →
+        </a>
+      </div>
+
+      <div class="selector-card selector-card-dark">
+        <h3>Mejoras parciales</h3>
+        <p>
+          En algunos casos no es necesario realizar una reforma integral.
+          Cambiar el mueble de baño, la mampara, el espejo o renovar parte
+          del mobiliario puede mejorar mucho el aspecto del baño y su
+          funcionalidad sin necesidad de una obra completa.
+        </p>
+      </div>
+
+    </div>
+ 
+
+</section>
+
+
+
+<section class="home-presupuesto">
+
+  <div class="container">
+
+    <h2>Precios orientativos de una reforma de baño en Gijón</h2>
+
+    <p>
+      El precio de una reforma de baño depende del alcance de la obra,
+      los materiales y el estado actual del baño.
+    </p>
+
+    <ul>
+      <li>Cambio de bañera por ducha: desde 2.500 €</li>
+      <li>Reforma integral de baño: desde 6.000 €</li>
+      <li>Mejoras parciales: presupuesto a medida</li>
+    </ul>
+
+    <p>
+      Estos precios son orientativos y pueden variar según el proyecto.
+    </p>
+
+    <a href="{{ path('iapresupuesto') }}" class="btn btn-primary">
+      💬 Calcular presupuesto ahora
+    </a>
+
+  </div>
+
+</section>
+
+
+
+<section class="home-faq">
+
+  <div class="container">
+
+    <div class="faq-head">
+      <h2>Preguntas frecuentes sobre reformas de baño</h2>
+      <p>Respuestas claras antes de empezar una reforma.</p>
+    </div>
+
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          ¿Cuánto tiempo dura una reforma de baño?
+          <span class="faq-icon">+</span>
+        </button>
+
+        <div class="faq-a">
+          <p>
+            Un cambio de bañera por ducha puede realizarse en pocos días,
+            mientras que una reforma integral suele durar entre 10 y 12 días.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          ¿Puedo reformar el baño sin cambiar la distribución?
+          <span class="faq-icon">+</span>
+        </button>
+
+        <div class="faq-a">
+          <p>
+            Sí. En muchos casos se mantiene la distribución para reducir costes.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          ¿El presupuesto es sin compromiso?
+          <span class="faq-icon">+</span>
+        </button>
+
+        <div class="faq-a">
+          <p>
+            Sí. Puedes calcular tu presupuesto online o solicitar
+            asesoramiento personalizado.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<section class="home-image">
+
+  <div class="container">
+
+    <h2>Nuestros trabajos en reformas de baños</h2>
+
+    <div class="trabajo-grid">
+
+
+      <div class="trabajo-item">
+        <img src="{{ asset('/Light-HTML/img/gallery/bano2-mini.jpeg') }}"
+             alt="Reformar baño Gijón">
+      </div>
+
+      <div class="trabajo-item">
+        <img src="{{ asset('/Light-HTML/img/gallery/bano3-mini.jpeg') }}"
+             alt="Reforma de baño en Gijón">
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<section class="seo-local">
+  <div class="container">
+
+    <h2>Reformas de baños en Gijón y barrios cercanos</h2>
+
+    <p>
+      Realizamos reformas de baño en toda la ciudad de Gijón,
+      trabajando habitualmente en barrios como:
+    </p>
+
+    <div class="barrios-grid">
+
+      <div>El Llano</div>
+      <div>La Calzada</div>
+      <div>Montevil</div>
+      <div>Viesques</div>
+      <div>Nuevo Gijón</div>
+      <div>La Arena</div>
+      <div>Contrueces</div>
+      <div>Tremañes</div>
+      <div>Pumarín</div>
+      <div>El Coto</div>
+
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

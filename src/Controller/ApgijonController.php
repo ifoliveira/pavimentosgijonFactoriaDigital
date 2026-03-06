@@ -440,7 +440,7 @@ private function calcularPresupuestoDucha(array $datos): array
             return $this->redirectToRoute('integral', [], Response::HTTP_SEE_OTHER);
         }   
 
-        return $this->render('apgijon/integral.html.twig', [
+        return $this->render('apgijon/integral.html2.twig', [
             'controller_name' => 'ApgijonController',
             'form' => $form->createView()
 
@@ -473,7 +473,7 @@ private function calcularPresupuestoDucha(array $datos): array
 
         }   
 
-        return $this->render('apgijon/reformabanogijon.html.twig', [
+        return $this->render('apgijon/reformabanogijon.html2.twig', [
             'controller_name' => 'ApgijonController',
             'form' => $form->createView()
 
