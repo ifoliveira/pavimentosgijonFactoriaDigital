@@ -51,7 +51,11 @@ class VisitanteSubscriber implements EventSubscriberInterface
             str_starts_with($path, '/admin') ||
             str_starts_with($route, 'admin_') ||
             str_starts_with($path, '/js-alive') ||    
-            str_starts_with($route, 'js_alive')
+            str_starts_with($route, 'js_alive') ||
+            str_starts_with($path, '/login') ||
+            str_starts_with($route, 'login') ||
+            str_starts_with($path, '/track') ||
+            str_starts_with($route, 'track')
         ) {
             return;
         }
@@ -95,7 +99,11 @@ class VisitanteSubscriber implements EventSubscriberInterface
             str_starts_with($path, '/admin') ||
             str_starts_with($route, 'admin_') ||
             str_starts_with($path, '/js-alive') ||    
-            str_starts_with($route, 'js_alive')
+            str_starts_with($route, 'js_alive') ||
+            str_starts_with($path, '/login') ||
+            str_starts_with($route, 'login') ||
+            str_starts_with($path, '/track') ||
+            str_starts_with($route, 'track')
         ) {
             return;
         }

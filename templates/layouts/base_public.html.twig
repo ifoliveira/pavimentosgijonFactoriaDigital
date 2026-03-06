@@ -56,7 +56,38 @@
 </main>
 
 {% block footer %}
-    {# footer público #}
+<footer class="site-footer">
+  <div class="container footer-grid">
+
+    <div class="footer-brand">
+      <h3>Pavimentos Gijón</h3>
+      <p>
+        Especialistas en reformas de baño en Gijón.
+        Más de 30 años de experiencia ofreciendo obras claras y sin sorpresas.
+      </p>
+    </div>
+
+    <div class="footer-links">
+      <h4>Servicios</h4>
+      <ul>
+        <li><a href="{{ path('platoducha') }}">Cambio bañera por ducha</a></li>
+        <li><a href="{{ path('integral') }}">Reforma integral de baño</a></li>
+        <li><a href="{{ path('iapresupuesto') }}">Presupuesto online</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-contact">
+      <h4>Contacto</h4>
+      <p>Avenida Schultz N 28 Bajo Gijón, Asturias</p>
+      <p>Tel: 684 608 811</p>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <p>© {{ "now"|date("Y") }} Pavimentos Gijón · Todos los derechos reservados</p>
+  </div>
+</footer>
 {% endblock %}
     <script src="{{ asset('/Light-HTML/js/bootstrap.bundle.min.js')}}"></script> 
 {% block javascripts %}
@@ -125,6 +156,61 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   });
+</script>
+
+<script>
+
+let scrollEvents = {
+    25: false,
+    50: false,
+    75: false,
+    100: false
+};
+
+window.addEventListener('scroll', function () {
+
+    let scrollTop = window.scrollY;
+    let docHeight = document.body.scrollHeight - window.innerHeight;
+
+    let scrollPercent = Math.round((scrollTop / docHeight) * 100);
+
+    function sendEvent(percent) {
+
+        fetch('/track-event', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                evento: 'scroll_' + percent,
+                url: window.location.pathname
+            })
+        });
+
+    }
+
+    if (scrollPercent >= 25 && !scrollEvents[25]) {
+        scrollEvents[25] = true;
+        sendEvent(25);
+    }
+
+    if (scrollPercent >= 50 && !scrollEvents[50]) {
+        scrollEvents[50] = true;
+        sendEvent(50);
+    }
+
+    if (scrollPercent >= 75 && !scrollEvents[75]) {
+        scrollEvents[75] = true;
+        sendEvent(75);
+    }
+
+    if (scrollPercent >= 100 && !scrollEvents[100]) {
+        scrollEvents[100] = true;
+        sendEvent(100);
+    }
+
+});
+
 </script>
 
 {% endblock %}
