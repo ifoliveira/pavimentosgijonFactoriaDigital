@@ -36,7 +36,7 @@ class JsAliveController extends AbstractController
         // Recuperar la última sesión de ese visitante
         $sesion = $sesionRepository->findOneBy(
             ['visitante' => $visitante],
-            ['id' => 'DESC']   // o createdAt DESC si lo tienes
+            ['fechaInicio' => 'DESC']   // o createdAt DESC si lo tienes
         );
 
         if (!$sesion) {
@@ -82,7 +82,7 @@ class JsAliveController extends AbstractController
         // Recuperar la última sesión de ese visitante
         $sesion = $sesionRepository->findOneBy(
             ['visitante' => $visitante],
-            ['id' => 'DESC']   // o createdAt DESC si lo tienes
+            ['fechaInicio' => 'DESC']   // o createdAt DESC si lo tienes
         );
 
         if (!$sesion) {
