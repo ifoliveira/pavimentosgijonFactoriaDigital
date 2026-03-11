@@ -1,12 +1,16 @@
 {# templates/iapresupuesto/chat.html.twig #}
 
 
-{% extends 'base_light.html.twig' %}
+{% extends 'layouts/base_public.html.twig' %}
 
-{% block title %}Chat con experto en reformas | Pavimentos Gijón{% endblock %}
+
+{% block title %}Cambiar bañera por ducha en Gijón | Precio y presupuesto online{% endblock %}
+{% block meta_description %}Cambia tu bañera por plato de ducha en Gijón desde 2.000 €. Presupuesto online inmediato, obra en 2-3 días y sin compromiso.{% endblock %}
+{% block og_title %}Cambiar bañera por ducha en Gijón | Precio y presupuesto online{% endblock %}
+{% block og_description %}Cambio de bañera por plato de ducha en Gijón. Presupuesto inmediato, obra rápida y sin sorpresas.{% endblock %}
 
 {% block body %}
-  <div class="single-services-page pt-70 pb-40">
+  <section class="hero-decision">
     <div class="container">
       {% include 'iapresupuesto/_selector.html.twig' %}
       {% include 'iapresupuesto/_chatbox.html.twig' %}

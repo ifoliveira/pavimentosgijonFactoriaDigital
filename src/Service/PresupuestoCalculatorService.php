@@ -116,6 +116,8 @@ class PresupuestoCalculatorService
             'mano_obra' => $manoObra,
             'materiales' => $materiales,
             'detalle' => $detalle,
+            'min' => round($total * 0.95, 2), // -5% para estimación mínima
+            'max' => round($total * 1.05, 2)  // +5% para estimación máxima
         ];
     }
 

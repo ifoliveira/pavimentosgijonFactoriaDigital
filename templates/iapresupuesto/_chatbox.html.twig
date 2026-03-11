@@ -1,18 +1,35 @@
 {# templates/iapresupuesto/_chatbox.html.twig #}
 
-<div id="chat-box" class="pg-card pg-chat" style="display:none;">
+<div id="chat-box" class="chat-wrapper" style="display:none;">
 
-    <div id="chat-messages" class="pg-chat-messages"></div>
+  <div class="chat-header">
+    <div class="chat-avatar">🛠️</div>
 
-    <form id="chat-form" class="pg-chat-form">
-        <input id="chat-input" type="text"
-               class="pg-chat-input"
-               placeholder="Escribe tu respuesta aquí..."
-               autocomplete="off">
-        <button type="submit" class="btn-chat-send">Enviar</button>
-    </form>
+    <div class="chat-title">
+      <strong>Asesor de reformas</strong>
+      <span>Responde unas preguntas y calculamos el precio</span>
+    </div>
+  </div>
+
+
+  <div id="chat-messages" class="chat-messages"></div>
+
+
+  <form id="chat-form" class="chat-input-area">
+
+      <input
+        id="chat-input"
+        type="text"
+        class="chat-input"
+        placeholder="Escribe tu respuesta…"
+        autocomplete="off">
+
+      <button type="submit" class="chat-send">
+        Enviar
+      </button>
+
+  </form>
 
 </div>
-
 
 

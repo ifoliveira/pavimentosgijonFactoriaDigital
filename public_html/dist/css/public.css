@@ -888,6 +888,788 @@ grid-template-columns:1fr;
     grid-template-columns: 1fr;
     gap: 50px;
   }
+
+  }
 }
 
+/* ==================================================
+   12. PRESUPUESTO WIZARD (SELECTOR A/B + CHAT)
+   ================================================== */
+
+/* ── Eyebrow / títulos selector ── */
+.wizard-eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.wizard-question {
+  font-size: clamp(22px, 5vw, 32px);
+  font-weight: 700;
+  color: #1f2933;
+  margin-bottom: 10px;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.wizard-hint {
+  color: #6b7280;
+  font-size: 16px;
+  margin-bottom: 36px;
+  text-align: center;
+}
+
+/* ── Cards A/B ── */
+.choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.choice-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 32px 28px;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  gap: 8px;
+}
+
+.choice-card:hover,
+.choice-card:focus {
+  border-color: #111827;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.14);
+  transform: translateY(-4px);
+  outline: none;
+}
+
+.choice-card:active {
+  transform: translateY(-1px);
+}
+
+.choice-icon {
+  font-size: 36px;
+  margin-bottom: 4px;
+}
+
+.choice-card strong {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.3;
+}
+
+.choice-desc {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.choice-price {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  background: #f1f5f9;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+/* ── Barra de progreso ── */
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 640px;
+  margin: 0 auto 24px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1e293b, #374151);
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+.progress-label {
+  font-size: 13px;
+  color: #6b7280;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* ── Historial de mensajes ── */
+.chat-history {
+  max-width: 640px;
+  margin: 0 auto 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 80px;
+}
+
+/* Burbuja bot */
+.bubble-bot-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: fadeUp 0.3s ease;
+}
+
+.bubble-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #1e293b, #374151);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.bubble-bot {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px 16px 16px 16px;
+  padding: 14px 18px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #1f2933;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  max-width: calc(100% - 54px);
+}
+
+/* Burbuja usuario */
+.bubble-user-wrap {
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeUp 0.3s ease;
+}
+
+.bubble-user {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: #ffffff;
+  padding: 12px 18px;
+  border-radius: 16px 4px 16px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  max-width: 80%;
+  line-height: 1.5;
+}
+
+/* Typing dots */
+.typing-dots {
+  display: flex;
+  gap: 5px;
+  padding: 4px 0;
+}
+
+.typing-dots span {
+  width: 7px;
+  height: 7px;
+  background: #94a3b8;
+  border-radius: 50%;
+  animation: dotBounce 1.2s infinite;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40%            { transform: translateY(-6px); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Input texto libre ── */
+.chat-input-wrap {
+  max-width: 640px;
+  margin: 0 auto 10px;
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.chat-free-input {
+  flex: 1;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px 18px;
+  /* min 16px evita zoom automático en iOS Safari */
+  font-size: max(16px, 1rem);
+  color: #1f2933;
+  background: #ffffff;
+  transition: border-color 0.2s;
+}
+
+.chat-free-input:focus {
+  outline: none;
+  border-color: #1e293b;
+  box-shadow: 0 0 0 3px rgba(30,41,59,0.08);
+}
+
+.chat-send-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: #1e293b;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.chat-send-btn:hover  { background: #374151; }
+.chat-send-btn:active { transform: scale(0.95); }
+.chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Opciones tipo botón ── */
+.chat-options-wrap {
+  max-width: 640px;
+  margin: 0 auto 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.opt-btn {
+  width: 100%;
+  text-align: left;
+  padding: 15px 20px;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1f2933;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.opt-btn:hover,
+.opt-btn:focus {
+  border-color: #1e293b;
+  background: #f8fafc;
+  outline: none;
+}
+
+.opt-btn.selected {
+  border-color: #1e293b;
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.opt-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Botón volver ── */
+.btn-back {
+  display: block;
+  max-width: 640px;
+  margin: 8px auto 0;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: color 0.2s;
+}
+
+.btn-back:hover { color: #374151; }
+
+/* ── Tarjeta de resultado ── */
+.result-card {
+  max-width: 600px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 52px 44px;
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.1);
+  border: 1px solid #e5e7eb;
+  animation: fadeUp 0.4s ease;
+}
+
+.result-icon  { font-size: 48px; margin-bottom: 16px; }
+
+.result-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #1f2933;
+}
+
+.result-disclaimer {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.result-summary {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 28px;
+  text-align: left;
+  font-size: 14px;
+  color: #374151;
+  line-height: 2;
+}
+
+.result-summary .summary-row {
+  display: flex;
+  gap: 8px;
+}
+
+.result-summary .summary-key {
+  font-weight: 600;
+  color: #1f2933;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.result-btn {
+  width: 100%;
+  text-align: center;
+  padding: 16px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.result-btn-sec {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  background: transparent;
+  font-weight: 600;
+  font-size: 15px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.result-btn-sec:hover {
+  border-color: #1e293b;
+  color: #1e293b;
+}
+
+
+/* ── Responsive del wizard ── */
+@media (max-width: 600px) {
+  .choice-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .result-card {
+    padding: 36px 20px;
+  }
+}
+
+/* ==================================================
+   13. MODALES (CARRUSEL + FORMULARIO PDF)
+   ================================================== */
+
+/* Backdrop compartido */
+.pg-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.pg-modal__backdrop.hidden {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Caja del modal */
+.pg-modal__box {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px 36px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.3);
+  animation: slideUp 0.3s ease;
+  text-align: center;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pg-modal__box h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1f2933;
+}
+
+.pg-modal__box p {
+  font-size: 15px;
+  color: #6b7280;
+  margin-bottom: 0;
+  line-height: 1.5;
+}
+
+/* ── Slides del carrusel ── */
+#pg-carousel {
+  position: relative;
+  height: 100px;
+  margin-bottom: 24px;
+}
+
+.pg-slide,
+.pg-carousel__calc {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+}
+
+.pg-slide.active,
+.pg-carousel__calc.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pg-slide__icon {
+  font-size: 36px;
+}
+
+.pg-slide p,
+.pg-carousel__calc p {
+  font-size: 15px;
+  color: #374151;
+  margin: 0;
+}
+
+/* ── Texto dinámico del modal ── */
+#pg-modal-text {
+  margin-bottom: 20px;
+}
+
+/* ── Formulario PDF ── */
+.pdf-field {
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.pdf-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.pdf-field input {
+  width: 100%;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-size: max(16px, 1rem); /* evita zoom en iOS */
+  color: #1f2933;
+  transition: border-color 0.2s;
+  background: #ffffff;
+}
+
+.pdf-field input:focus {
+  outline: none;
+  border-color: #1e293b;
+  box-shadow: 0 0 0 3px rgba(30,41,59,0.08);
+}
+
+.field-error {
+  display: block;
+  font-size: 13px;
+  color: #ef4444;
+  margin-top: 4px;
+  min-height: 18px;
+}
+
+@media (max-width: 480px) {
+  .pg-modal__box {
+    padding: 32px 20px;
+  }
+}
+
+/* ==================================================
+   14. PRESUPUESTO MAIN (sin hero, cards arriba)
+   ================================================== */
+
+/* Sección principal: padding calculado para que las cards
+   queden centradas visualmente justo bajo el header */
+.presupuesto-main {
+  padding: 48px 0 80px;
+  min-height: calc(100vh - 80px); /* ocupa la pantalla completa en desktop */
+  display: flex;
+  align-items: flex-start;
+}
+
+.presupuesto-main .container {
+  width: 100%;
+}
+
+/* Prueba social bajo las cards */
+.presupuesto-social {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 28px;
+  margin-top: 28px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.presupuesto-social strong {
+  color: #1f2933;
+}
+
+.stars-inline {
+  color: #FFD700;
+  font-size: 15px;
+  margin-right: 3px;
+}
+
+/* En móvil: padding más ajustado para que las cards
+   aparezcan sin scroll desde el primer momento */
+@media (max-width: 768px) {
+  .presupuesto-main {
+    padding: 28px 0 60px;
+    min-height: auto;
+    align-items: flex-start;
+  }
+
+  .presupuesto-social {
+    gap: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+/* ==================================================
+   15. VISTA GALERÍA (reemplaza modal carrusel)
+   ================================================== */
+
+.galeria-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+/* Carrusel de fotos */
+.galeria-carrusel {
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: #f1f5f9;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+.galeria-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+
+.galeria-slide.active {
+  opacity: 1;
+}
+
+.galeria-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.galeria-slide-texto {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  background: linear-gradient(to top, rgba(15,23,42,0.75), transparent);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Dots indicadores */
+.galeria-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.galeria-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d1d5db;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.galeria-dot.active {
+  background: #1e293b;
+  transform: scale(1.3);
+}
+
+/* Barra de progreso ficticia */
+.galeria-progress-wrap {
+  max-width: 640px;
+  margin: 20px auto 8px;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.galeria-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #1e293b, #374151);
+  border-radius: 99px;
+  transition: width 0.18s linear, background 0.4s ease;
+}
+
+.galeria-progress-label {
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+/* CTA cuando el cálculo termina */
+.galeria-listo-text {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2933;
+  margin-bottom: 16px;
+}
+
+.galeria-btn {
+  display: block;
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 16px 24px;
+  font-size: 17px;
+  border-radius: 10px;
+  animation: fadeUp 0.4s ease;
+}
+
+/* ==================================================
+   16. VISTA DATOS (reemplaza modal PDF)
+   ================================================== */
+
+.datos-card {
+  max-width: 520px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 44px 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  border: 1px solid #e5e7eb;
+  animation: fadeUp 0.35s ease;
+}
+
+.datos-form {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.datos-submit {
+  width: 100%;
+  text-align: center;
+  padding: 16px 24px;
+  font-size: 16px;
+  border-radius: 10px;
+  margin-top: 8px;
+}
+
+/* Campos del formulario (reutiliza .pdf-field y .field-error del bloque 13) */
+
+@media (max-width: 600px) {
+  .datos-card {
+    padding: 32px 20px;
+    border-radius: 16px;
+    box-shadow: none;
+    border: none;
+  }
+
+  .galeria-carrusel {
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+  }
 }

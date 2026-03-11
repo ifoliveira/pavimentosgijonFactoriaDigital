@@ -39,7 +39,7 @@ class ApgijonController extends AbstractController
         $this->pdf->set_option('isHtml5ParserEnabled', true);
     }
 
-        #[Route('/api/presupuesto/calculate', name: 'api_presupuesto_calculate', methods: ['POST'])]
+        #[Route('/api/presupuesto/calculate2', name: 'api_presupuesto_calculate2', methods: ['POST'])]
         public function calcular(Request $request, TelegramNotifier $notifier): JsonResponse
         {
             $datos = json_decode($request->getContent(), true);
@@ -519,7 +519,7 @@ private function calcularPresupuestoDucha(array $datos): array
                 'consulta' => $consulta,
                 'presupuesto' => $datosPresupuesto, // viene del JSON transformado
                 'id' => $consulta->getId(),
-                    'root_dir' => $rootDir
+                'root_dir' => $rootDir
             ]);
 
                 $this->pdf->loadHtml($html);
@@ -549,10 +549,10 @@ private function calcularPresupuestoDucha(array $datos): array
               'referer' => $request->headers->get('referer')
         ]);
 
-         return $this->render('iapresupuesto/chat.html.twig', [
+        return $this->render('ia/iapresupuesto_2.html.twig', [
              'form' => $form->createView()
                 ]);
-            }
+           }
 
 
         #[Route('/api/presupuesto/chat-track', name: 'api_presupuesto_track', methods: ['POST'])]

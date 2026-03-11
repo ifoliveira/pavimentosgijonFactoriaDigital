@@ -65,9 +65,7 @@ class PresupuestoCalculateController extends AbstractController
         ]);
     }
 
-
-
- #[Route('/api/presupuesto/pdf', name: 'api_presupuesto_pdf', methods: ['POST'])]
+ #[Route('/api/presupuesto/pdf2', name: 'api_presupuesto_pdf2', methods: ['POST'])]
     public function pdf(
         Request $request,
         PresupuestoCalculatorService $calculator,

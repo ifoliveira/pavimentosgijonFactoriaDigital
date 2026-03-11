@@ -52,6 +52,9 @@ class PresupuestosLead
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $materiales = null;
 
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $token = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -197,6 +200,18 @@ class PresupuestosLead
     public function setMateriales(?float $materiales): self
     {
         $this->materiales = $materiales;
+        return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(?string $token): static
+    {
+        $this->token = $token;
+
         return $this;
     }
 }
