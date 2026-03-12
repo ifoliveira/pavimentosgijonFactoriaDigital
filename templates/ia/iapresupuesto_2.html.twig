@@ -233,7 +233,7 @@
           <span class="faq-icon">+</span>
         </button>
         <div class="faq-a">
-          <p>Normalmente podemos empezar en 1–2 semanas desde la confirmación del presupuesto definitivo.</p>
+          <p>Normalmente podemos empezar en 2-4 semanas desde la confirmación del presupuesto definitivo. Aunque depende de la complejidad de la obra y los materiales elegidos</p>
         </div>
       </div>
     </div>
@@ -292,12 +292,20 @@ const LABELS = {
 //  NAVEGACIÓN ENTRE VISTAS
 // ═══════════════════════════════════════════════════════════
 function mostrarVista(id) {
+  // 1. Scroll instantáneo ANTES de cambiar la vista — funciona en iOS/Android
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
+  // 2. Cambiar la vista
   ['view-selector','view-chat','view-galeria','view-datos'].forEach(v => {
     document.getElementById(v).style.display = (v === id) ? 'block' : 'none';
   });
-  // Scroll siempre al top de la sección al cambiar vista
-  const seccion = document.querySelector('.presupuesto-main');
-  if (seccion) window.scrollTo({ top: seccion.offsetTop - 20, behavior: 'smooth' });
+
+  // 3. Segundo scroll con delay por si el layout tarda en repintarse (móvil)
+  setTimeout(() => {
+    const seccion = document.querySelector('.presupuesto-main');
+    const top = seccion ? seccion.offsetTop - 20 : 0;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }, 50);
 }
 
 function mostrarVistaGaleria() { mostrarVista('view-galeria'); }
