@@ -202,7 +202,7 @@
 {# ══════════════════════════════════════════════
    FAQ
 ══════════════════════════════════════════════ #}
-<section class="home-faq">
+<section class="home-faq" id="seccionFaq">
   <div class="container">
     <div class="faq-head">
       <h2>Preguntas frecuentes</h2>
@@ -291,25 +291,19 @@ const LABELS = {
 // ═══════════════════════════════════════════════════════════
 //  NAVEGACIÓN ENTRE VISTAS
 // ═══════════════════════════════════════════════════════════
-
 function mostrarVista(id) {
-  // Cambiar la vista primero
+  // Cambiar la vista
   ['view-selector','view-chat','view-galeria','view-datos'].forEach(v => {
     document.getElementById(v).style.display = (v === id) ? 'block' : 'none';
   });
 
-  // Scroll robusto para Android/Samsung — document.documentElement cubre todos los casos
-  const seccion = document.querySelector('.presupuesto-main');
-  const top = seccion ? seccion.offsetTop - 20 : 0;
+  // FAQs solo visibles en el selector inicial
+  const faq = document.getElementById('seccionFaq');
+  if (faq) faq.style.display = (id === 'view-selector') ? '' : 'none';
 
-  document.documentElement.scrollTop = top;
-  document.body.scrollTop = top; // Safari fallback
-
-  // Reintento con delay por si el repintado del DOM tarda
-  setTimeout(() => {
-    document.documentElement.scrollTop = top;
-    document.body.scrollTop = top;
-  }, 80);
+  // Scroll al top de la página
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
 }
 
 function mostrarVistaGaleria() { mostrarVista('view-galeria'); }
