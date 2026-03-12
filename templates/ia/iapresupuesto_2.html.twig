@@ -292,18 +292,36 @@ const LABELS = {
 //  NAVEGACIÓN ENTRE VISTAS
 // ═══════════════════════════════════════════════════════════
 function mostrarVista(id) {
-  // Cambiar la vista
+  // Ocultar TODAS las vistas y el chat antes de mostrar la nueva
+  // así el historial de burbujas no empuja la página
   ['view-selector','view-chat','view-galeria','view-datos'].forEach(v => {
-    document.getElementById(v).style.display = (v === id) ? 'block' : 'none';
+    document.getElementById(v).style.display = 'none';
   });
 
-  // FAQs solo visibles en el selector inicial
+  // FAQs solo en selector
   const faq = document.getElementById('seccionFaq');
   if (faq) faq.style.display = (id === 'view-selector') ? '' : 'none';
 
-  // Scroll al top de la página
+  // Scroll al top absoluto con todas las vistas ocultas (página mínima)
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
+  window.scrollTo(0, 0);
+
+  // Mostrar la vista destino una vez estamos arriba
+  requestAnimationFrame(() => {
+    document.getElementById(id).style.display = 'block';
+  });
+}
+function resetChat() {
+  state = {
+    tipo: null,
+    paso: 0,
+    jsonActual: {},
+    esperandoRespuesta: false,
+    totalPasosEstimado: 8,
+  };
+  limpiarHistorial();
+  mostrarVista('view-selector');
 }
 
 function mostrarVistaGaleria() { mostrarVista('view-galeria'); }
@@ -707,11 +725,6 @@ function limpiarHistorial() {
   document.getElementById('progressLabel').textContent       = 'Iniciando…';
 }
 
-function resetChat() {
-  detenerGaleria();
-  limpiarHistorial();
-  mostrarVista('view-selector');
-}
 
 function escaparHTML(str) {
   return String(str)
