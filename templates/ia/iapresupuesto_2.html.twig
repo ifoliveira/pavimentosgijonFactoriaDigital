@@ -291,21 +291,25 @@ const LABELS = {
 // ═══════════════════════════════════════════════════════════
 //  NAVEGACIÓN ENTRE VISTAS
 // ═══════════════════════════════════════════════════════════
-function mostrarVista(id) {
-  // 1. Scroll instantáneo ANTES de cambiar la vista — funciona en iOS/Android
-  window.scrollTo({ top: 0, behavior: 'instant' });
 
-  // 2. Cambiar la vista
+function mostrarVista(id) {
+  // Cambiar la vista primero
   ['view-selector','view-chat','view-galeria','view-datos'].forEach(v => {
     document.getElementById(v).style.display = (v === id) ? 'block' : 'none';
   });
 
-  // 3. Segundo scroll con delay por si el layout tarda en repintarse (móvil)
+  // Scroll robusto para Android/Samsung — document.documentElement cubre todos los casos
+  const seccion = document.querySelector('.presupuesto-main');
+  const top = seccion ? seccion.offsetTop - 20 : 0;
+
+  document.documentElement.scrollTop = top;
+  document.body.scrollTop = top; // Safari fallback
+
+  // Reintento con delay por si el repintado del DOM tarda
   setTimeout(() => {
-    const seccion = document.querySelector('.presupuesto-main');
-    const top = seccion ? seccion.offsetTop - 20 : 0;
-    window.scrollTo({ top, behavior: 'smooth' });
-  }, 50);
+    document.documentElement.scrollTop = top;
+    document.body.scrollTop = top;
+  }, 80);
 }
 
 function mostrarVistaGaleria() { mostrarVista('view-galeria'); }
