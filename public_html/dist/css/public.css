@@ -891,7 +891,6 @@ grid-template-columns:1fr;
 
   }
 }
-
 /* ==================================================
    12. PRESUPUESTO WIZARD (SELECTOR A/B + CHAT)
    ================================================== */
@@ -1671,5 +1670,54 @@ grid-template-columns:1fr;
   .galeria-carrusel {
     aspect-ratio: 4 / 3;
     border-radius: 12px;
+  }
+}
+
+/* ==================================================
+   17. OVERLAY FULLSCREEN — galería y datos
+   Cubre toda la pantalla sin depender de scroll.
+   Funciona en Chrome Android, Samsung, iOS Safari.
+   ================================================== */
+
+#view-galeria,
+#view-datos {
+  display: none;
+  position: fixed;
+  inset: 0;                        /* top/right/bottom/left: 0 */
+  z-index: 900;
+  background: #ffffff;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 32px 20px 60px;
+  box-sizing: border-box;
+}
+
+/* Cuando están activos se muestran como flex (lo pone JS) */
+
+/* Limitar ancho del contenido interior */
+#view-galeria > *,
+#view-datos > * {
+  width: 100%;
+  max-width: 640px;
+}
+
+/* Animación de entrada desde abajo */
+@keyframes overlayUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+#view-galeria[style*="flex"],
+#view-datos[style*="flex"] {
+  animation: overlayUp 0.3s ease;
+}
+
+@media (max-width: 600px) {
+  #view-galeria,
+  #view-datos {
+    padding: 24px 16px 48px;
   }
 }

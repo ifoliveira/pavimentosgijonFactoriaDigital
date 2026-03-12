@@ -292,27 +292,46 @@ const LABELS = {
 // ═══════════════════════════════════════════════════════════
 //  NAVEGACIÓN ENTRE VISTAS
 // ═══════════════════════════════════════════════════════════
+// Vistas que van en overlay fullscreen (no necesitan scroll)
+const VISTAS_OVERLAY = ['view-galeria', 'view-datos'];
+
 function mostrarVista(id) {
-  // 1. Ocultar todas las vistas — página queda vacía y corta
-  ['view-selector','view-chat','view-galeria','view-datos'].forEach(v => {
-    document.getElementById(v).style.display = 'none';
+  const esOverlay = VISTAS_OVERLAY.includes(id);
+
+  // Vistas normales en flujo
+  ['view-selector', 'view-chat'].forEach(v => {
+    document.getElementById(v).style.display =
+      (!esOverlay && v === id) ? 'block' : 'none';
   });
 
-  // 2. FAQs solo en selector
+  // FAQs solo en selector
   const faq = document.getElementById('seccionFaq');
   if (faq) faq.style.display = (id === 'view-selector') ? '' : 'none';
 
-  // 3. Navegar al ancla — funciona en todos los navegadores móviles
-  window.location.hash = '';
-  window.location.hash = 'top-ancla';
-
-  // 4. Mostrar vista destino
-  requestAnimationFrame(() => {
-    document.getElementById(id).style.display = 'block';
-    // Limpiar el hash de la URL para que no quede feo
-    history.replaceState(null, '', window.location.pathname);
+  // Overlay: galeria y datos cubren toda la pantalla
+  VISTAS_OVERLAY.forEach(v => {
+    const el = document.getElementById(v);
+    if (v === id) {
+      el.style.display = 'flex';
+      // Bloquear scroll del body mientras el overlay está abierto
+      document.body.style.overflow = 'hidden';
+    } else {
+      el.style.display = 'none';
+    }
   });
+
+  // Si es vista normal, restaurar scroll del body
+  if (!esOverlay) {
+    document.body.style.overflow = '';
+  }
 }
+
+function mostrarVistaGaleria() { mostrarVista('view-galeria'); }
+function mostrarVistaDatos()   {
+  mostrarVista('view-datos');
+  setTimeout(() => document.getElementById('pdf-nombre').focus(), 400);
+}
+
 
 function resetChat() {
   state = {
@@ -324,12 +343,6 @@ function resetChat() {
   };
   limpiarHistorial();
   mostrarVista('view-selector');
-}
-
-function mostrarVistaGaleria() { mostrarVista('view-galeria'); }
-function mostrarVistaDatos()   {
-  mostrarVista('view-datos');
-  setTimeout(() => document.getElementById('pdf-nombre').focus(), 400);
 }
 
 // ═══════════════════════════════════════════════════════════
