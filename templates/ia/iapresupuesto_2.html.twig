@@ -12,6 +12,7 @@
    Flujo de vistas: selector → chat → galeria → datos → (result)
    Ninguna usa position:fixed ni modales. Todo en el flujo normal.
 ══════════════════════════════════════════════════════════════ #}
+<a id="top-ancla" style="display:block; height:0; visibility:hidden;"></a>
 <section class="presupuesto-main">
   <div class="container">
 
@@ -292,26 +293,27 @@ const LABELS = {
 //  NAVEGACIÓN ENTRE VISTAS
 // ═══════════════════════════════════════════════════════════
 function mostrarVista(id) {
-  // Ocultar TODAS las vistas y el chat antes de mostrar la nueva
-  // así el historial de burbujas no empuja la página
+  // 1. Ocultar todas las vistas — página queda vacía y corta
   ['view-selector','view-chat','view-galeria','view-datos'].forEach(v => {
     document.getElementById(v).style.display = 'none';
   });
 
-  // FAQs solo en selector
+  // 2. FAQs solo en selector
   const faq = document.getElementById('seccionFaq');
   if (faq) faq.style.display = (id === 'view-selector') ? '' : 'none';
 
-  // Scroll al top absoluto con todas las vistas ocultas (página mínima)
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
-  window.scrollTo(0, 0);
+  // 3. Navegar al ancla — funciona en todos los navegadores móviles
+  window.location.hash = '';
+  window.location.hash = 'top-ancla';
 
-  // Mostrar la vista destino una vez estamos arriba
+  // 4. Mostrar vista destino
   requestAnimationFrame(() => {
     document.getElementById(id).style.display = 'block';
+    // Limpiar el hash de la URL para que no quede feo
+    history.replaceState(null, '', window.location.pathname);
   });
 }
+
 function resetChat() {
   state = {
     tipo: null,
