@@ -891,6 +891,7 @@ grid-template-columns:1fr;
 
   }
 }
+
 /* ==================================================
    12. PRESUPUESTO WIZARD (SELECTOR A/B + CHAT)
    ================================================== */
@@ -1674,50 +1675,109 @@ grid-template-columns:1fr;
 }
 
 /* ==================================================
-   17. OVERLAY FULLSCREEN — galería y datos
-   Cubre toda la pantalla sin depender de scroll.
-   Funciona en Chrome Android, Samsung, iOS Safari.
+   OVERLAYS — reemplaza TODOS los bloques 17 y 18
+   Borra todo lo que tengas de esos bloques y pon solo esto
    ================================================== */
 
+/* El overlay cubre toda la pantalla */
 #view-galeria,
 #view-datos {
-  display: none;
+  display: none;          /* JS lo cambia a flex */
   position: fixed;
-  inset: 0;                        /* top/right/bottom/left: 0 */
-  z-index: 900;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
   background: #ffffff;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: 32px 20px 60px;
+}
+
+/* Contenedor interior: centrado, ancho máximo, padding */
+.overlay-inner {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
   box-sizing: border-box;
 }
 
-/* Cuando están activos se muestran como flex (lo pone JS) */
+/* Todo dentro del overlay respeta el ancho */
+#view-galeria *,
+#view-datos * {
+  box-sizing: border-box;
+  max-width: 100%;
+}
 
-/* Limitar ancho del contenido interior */
-#view-galeria > *,
-#view-datos > * {
+/* Carrusel: rellenoa el ancho disponible */
+.galeria-carrusel {
+  position: relative !important;
+  width: 100% !important;
+  aspect-ratio: 4 / 3 !important;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f1f5f9;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.galeria-carrusel img {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  max-width: 640px;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* Animación de entrada desde abajo */
+/* Botón CTA ancho completo */
+.galeria-btn {
+  display: block !important;
+  width: 100% !important;
+  text-align: center;
+  padding: 16px 20px;
+  font-size: 17px;
+  border-radius: 10px;
+}
+
+/* Card datos: sin bordes en móvil */
+.datos-card {
+  padding: 8px 0 0;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+}
+
+/* Animación de entrada */
 @keyframes overlayUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-#view-galeria[style*="flex"],
-#view-datos[style*="flex"] {
-  animation: overlayUp 0.3s ease;
+#view-galeria[style*="flex"] .overlay-inner,
+#view-datos[style*="flex"] .overlay-inner {
+  animation: overlayUp 0.25s ease;
 }
 
-@media (max-width: 600px) {
+/* Desktop: centrar verticalmente y card con estilo */
+@media (min-width: 640px) {
   #view-galeria,
   #view-datos {
-    padding: 24px 16px 48px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .overlay-inner {
+    padding: 40px 32px 60px;
+  }
+
+  .datos-card {
+    padding: 44px 40px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
   }
 }

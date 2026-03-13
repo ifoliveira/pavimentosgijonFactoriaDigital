@@ -1,0 +1,261 @@
+{% extends 'layouts/base_public.html.twig' %}
+
+{% block title %}Tu presupuesto de reforma de baño · Pavimentos Gijón{% endblock %}
+{% block meta_description %}Tu estimación personalizada para la reforma de baño en Gijón. Descarga el PDF completo.{% endblock %}
+
+{% block body %}
+<section class="presupuesto-main">
+  <div class="container">
+    <div class="resultado-wrap">
+
+      {# ══════════════════════════════
+         FASE 1 — Carrusel obligatorio
+      ══════════════════════════════ #}
+      <div id="fase-carrusel">
+
+        <div class="galeria-header">
+          <p class="wizard-eyebrow">Un momento…</p>
+          <h1 class="wizard-question" style="font-size:clamp(20px,4vw,28px);">
+            Preparando tu presupuesto
+          </h1>
+          <p class="wizard-hint" id="galeria-subtexto">
+            Calculando materiales, mano de obra y medidas…
+          </p>
+        </div>
+
+        <div class="galeria-carrusel" id="galeriaCarrusel">
+          <div class="galeria-slide active">
+            <img src="{{ asset('img/bano_homogeneo_4.jpg') }}" alt="Reforma real de baño en Gijón">
+            <div class="galeria-slide-texto">Reforma real · Gijón</div>
+          </div>
+          <div class="galeria-slide">
+            <img src="{{ asset('img/bano_homogeneo_1.jpg') }}" alt="Plato de ducha antideslizante">
+            <div class="galeria-slide-texto">Plato de ducha antideslizante</div>
+          </div>
+          <div class="galeria-slide">
+            <img src="{{ asset('img/bano_homogeneo_2.jpg') }}" alt="Reforma baño completo">
+            <div class="galeria-slide-texto">Reforma baño completo</div>
+          </div>
+          <div class="galeria-slide">
+            <img src="{{ asset('img/bano_homogeneo_3.jpg') }}" alt="Reforma integral de baño">
+            <div class="galeria-slide-texto">Reforma integral de baño</div>
+          </div>
+        </div>
+
+        <div class="galeria-dots" id="galeriaDots">
+          <span class="galeria-dot active"></span>
+          <span class="galeria-dot"></span>
+          <span class="galeria-dot"></span>
+          <span class="galeria-dot"></span>
+        </div>
+
+        <div class="galeria-progress-wrap">
+          <div class="galeria-progress-bar" id="galeriaProgressBar"></div>
+        </div>
+        <p class="galeria-progress-label" id="galeriaProgressLabel">Analizando medidas…</p>
+
+      </div>
+
+      {# ══════════════════════════════
+         FASE 2 — Formulario + precio
+         Oculto hasta que el carrusel termina
+      ══════════════════════════════ #}
+      <div id="fase-formulario" style="display:none;">
+
+        <div style="text-align:center; margin-bottom:24px;">
+          <p class="wizard-eyebrow">✅ ¡Tu presupuesto está listo!</p>
+          <h2 class="wizard-question" style="font-size:clamp(20px,4vw,28px); margin-bottom:8px;">
+            ¿Dónde te enviamos la estimación?
+          </h2>
+          <p class="wizard-hint">
+            Te enviamos el precio orientativo y el link para descargar el PDF completo. Sin publicidad.
+          </p>
+        </div>
+
+        {# <div style="background:#f8fafc; border:2px solid #e5e7eb; border-radius:14px;
+                    padding:20px; text-align:center; margin-bottom:24px;">
+          <p style="margin:0 0 4px; font-size:12px; font-weight:600; color:#6b7280;
+                     text-transform:uppercase; letter-spacing:0.08em;">
+            Estimación orientativa
+          </p>
+          <p style="margin:0 0 6px; font-size:36px; font-weight:800; color:#0f172a;
+                     letter-spacing:-0.02em; line-height:1.1;">
+            {{ (total * 0.92)|number_format(0, ',', '.') }} €
+            –
+            {{ (total * 1.08)|number_format(0, ',', '.') }} €
+          </p>
+          <p style="margin:0; font-size:13px; color:#9ca3af;">
+            Precio según tus respuestas · Visita técnica gratuita para confirmar
+          </p>
+        </div>#}
+
+        <div id="formulario-datos">
+          <div class="pdf-field">
+            <label for="pdf-nombre">Tu nombre</label>
+            <input type="text" id="pdf-nombre" placeholder="Ej. María García"
+                   autocomplete="name" inputmode="text" />
+            <span class="field-error" id="error-nombre"></span>
+          </div>
+
+          <div class="pdf-field">
+            <label for="pdf-email">Tu email</label>
+            <input type="email" id="pdf-email" placeholder="correo@ejemplo.com"
+                   autocomplete="email" inputmode="email" />
+            <span class="field-error" id="error-email"></span>
+          </div>
+
+          <div id="enviando" style="display:none; text-align:center; padding:12px 0;
+                                     color:#6b7280; font-size:15px;">
+            ⏳ Enviando tu estimación…
+          </div>
+
+          <button id="btn-enviar" class="btn btn-primary datos-submit" style="margin-top:8px;">
+            📩 Enviarme la estimación por email
+          </button>
+
+          <p style="margin-top:14px; font-size:12px; color:#9ca3af; text-align:center;">
+            🔒 Sin publicidad · PDF gratuito · Solo para tu reforma
+          </p>
+        </div>
+
+        <div id="confirmacion" style="display:none; text-align:center; padding:20px 0;">
+          <div style="font-size:52px; margin-bottom:16px;">📬</div>
+          <p class="wizard-eyebrow">¡Enviado!</p>
+          <h2 class="wizard-question" style="font-size:clamp(20px,4vw,26px); margin-bottom:12px;">
+            Revisa tu bandeja de entrada
+          </h2>
+          <p class="wizard-hint" style="margin-bottom:24px;">
+            Si no aparece en unos minutos, comprueba la carpeta de spam.
+          </p>
+          <a href="tel:684608811"
+             style="display:inline-block; background:#1e293b; color:#fff;
+                    padding:14px 28px; border-radius:10px; font-weight:700;
+                    font-size:16px; text-decoration:none;">
+            📞 Llamar ahora · 684 608 811
+          </a>
+        </div>
+
+      </div>{# /fase-formulario #}
+
+    </div>{# /resultado-wrap #}
+  </div>{# /container #}
+</section>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+const TOKEN = "{{ token }}";
+
+const TEXTOS_PROGRESO = [
+  'Analizando medidas…',
+  'Calculando superficie de azulejo…',
+  'Estimando mampara y plato de ducha…',
+  'Calculando horas de obra…',
+  'Ajustando precio final…',
+];
+
+let slideActual = 0;
+let vueltas     = 0;
+let carruselOk  = false;
+
+function iniciarCarrusel() {
+  const slides = document.querySelectorAll('#galeriaCarrusel .galeria-slide');
+  const dots   = document.querySelectorAll('#galeriaDots .galeria-dot');
+
+  setInterval(() => {
+    slides[slideActual].classList.remove('active');
+    dots[slideActual].classList.remove('active');
+    slideActual = (slideActual + 1) % slides.length;
+    if (slideActual === 0) vueltas++;
+    slides[slideActual].classList.add('active');
+    dots[slideActual].classList.add('active');
+
+    if (vueltas >= 1 && !carruselOk) {
+      carruselOk = true;
+      mostrarFormulario();
+    }
+  }, 2800);
+}
+
+function iniciarBarra() {
+  const bar   = document.getElementById('galeriaProgressBar');
+  const label = document.getElementById('galeriaProgressLabel');
+  let pct = 0, textoIdx = 0;
+
+  const interval = setInterval(() => {
+    const inc = pct < 60 ? 4 : pct < 85 ? 1.5 : 0.3;
+    pct = Math.min(pct + inc, 92);
+    bar.style.width = pct + '%';
+    const ni = Math.min(Math.floor(pct / 20), TEXTOS_PROGRESO.length - 1);
+    if (ni !== textoIdx) { textoIdx = ni; label.textContent = TEXTOS_PROGRESO[textoIdx]; }
+    if (pct >= 92) clearInterval(interval);
+  }, 180);
+}
+
+function mostrarFormulario() {
+  const bar   = document.getElementById('galeriaProgressBar');
+  const label = document.getElementById('galeriaProgressLabel');
+  bar.style.width      = '100%';
+  bar.style.background = '#22c55e';
+  label.textContent    = '✅ Cálculo completado';
+  document.getElementById('galeria-subtexto').textContent = '¡Listo! Tu presupuesto está calculado.';
+
+  setTimeout(() => {
+    document.getElementById('fase-carrusel').style.display   = 'none';
+    document.getElementById('fase-formulario').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 900);
+}
+
+async function enviarDatos() {
+  const nombre = document.getElementById('pdf-nombre').value.trim();
+  const email  = document.getElementById('pdf-email').value.trim();
+  document.getElementById('error-nombre').textContent = '';
+  document.getElementById('error-email').textContent  = '';
+
+  let valid = true;
+  if (!nombre) { document.getElementById('error-nombre').textContent = 'Este campo es obligatorio'; valid = false; }
+  if (!email || !email.includes('@')) { document.getElementById('error-email').textContent = 'Email no válido'; valid = false; }
+  if (!valid) return;
+
+  const btn      = document.getElementById('btn-enviar');
+  const enviando = document.getElementById('enviando');
+  btn.disabled   = true;
+  enviando.style.display = 'block';
+
+  try {
+    const res = await fetch('/api/presupuesto/completar', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: TOKEN, nombre, email }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.ok) throw new Error('ko');
+
+    document.getElementById('formulario-datos').style.display = 'none';
+    document.getElementById('confirmacion').style.display     = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } catch (err) {
+    enviando.style.display = 'none';
+    btn.disabled = false;
+    document.getElementById('error-email').textContent = '⚠️ Error al enviar. Inténtalo de nuevo.';
+    console.error(err);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  iniciarCarrusel();
+  iniciarBarra();
+
+  document.getElementById('btn-enviar').addEventListener('click', enviarDatos);
+  ['pdf-nombre', 'pdf-email'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') enviarDatos();
+    });
+  });
+});
+</script>
+{% endblock %}

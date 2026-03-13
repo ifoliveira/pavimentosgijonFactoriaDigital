@@ -207,72 +207,217 @@ class IAPresupuestoController extends AbstractController
         return new JsonResponse(['ok' => true]);
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  AÑADE ESTE MÉTODO a tu controlador IAPresupuestoController
-    //  (o al controlador donde tienes pdf2)
-    //
-    //  También necesitas añadir en el constructor (o como propiedad):
-    //  private EntityManagerInterface $entityManager;
-    // ══════════════════════════════════════════════════════════════
-
-    #[Route('/presupuesto/{token}', name: 'presupuesto_descargar', methods: ['GET'])]
-    public function descargarPorToken(
-        string $token,
-        PresupuestosLeadRepository $repo,
-        PresupuestoCalculatorService $calculator,
-        EntityManagerInterface $em
-    ): Response {
-
-        // 1. Buscar el lead por token
-        $lead = $repo->findOneBy(['token' => $token]);
-
-        if (!$lead) {
-            throw $this->createNotFoundException('Presupuesto no encontrado.');
-        }
-
-        // 2. Recuperar datos guardados
-        $tipo   = $lead->getTipoReforma();
-        $json   = $lead->getJsonPresupuesto();  // ← ya es array si lo guardas como json en Doctrine
-        $nombre = $lead->getNombre();
-        $email  = $lead->getEmail();
-
-        // Si getJsonPresupuesto() devuelve string, descodifícalo:
-        // $json = json_decode($lead->getJsonPresupuesto(), true);
-
-        // 3. Recalcular con el mismo servicio que ya usas
-        $res = $calculator->calcular($tipo, $json);
-
-        // 4. Renderizar con el mismo template que ya tienes
-        $html = $this->renderView('iapresupuesto/presupuesto.html.twig', [
-            'nombre'     => $nombre,
-            'email'      => $email,
-            'tipo'       => $tipo,
-            'total'      => $res['total'],
-            'mano_obra'  => $res['mano_obra'],
-            'materiales' => $res['materiales'],
-        ]);
-
-        // 5. Generar PDF con Dompdf — igual que en pdf2
-        $options = new Options();
-        $options->set('isHtml5ParserEnabled', true);
-        $options->set('isRemoteEnabled', true);
-
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-
-        $pdfBinary = $dompdf->output();
-
-        // 6. Contador de descargas (opcional pero útil)
-        $lead->setPdfDescargas(($lead->getPdfDescargas() ?? 0) + 1);
-        $lead->setUltimoEvento(new \DateTime());
-        $em->flush();
-
-        // 7. Devolver el PDF inline (se ve en el navegador, no fuerza descarga)
-        return new Response($pdfBinary, 200, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="presupuesto-bano-gijon.pdf"',
-        ]);
+// ══════════════════════════════════════════════════════════════
+//  CAMBIO 1 — Nueva ruta POST /api/presupuesto/iniciar
+//  Guarda el lead con token nada más terminar el chat.
+//  Sin nombre ni email todavía.
+//  Añade este método a IAPresupuestoController
+// ══════════════════════════════════════════════════════════════
+ 
+#[Route('/api/presupuesto/iniciar', name: 'api_presupuesto_iniciar', methods: ['POST'])]
+public function iniciar(
+    Request $request,
+    EntityManagerInterface $em,
+    PresupuestosLeadRepository $leadRepo,
+    PresupuestoCalculatorService $calculator
+): JsonResponse {
+ 
+    $data = json_decode($request->getContent(), true);
+    $tipo = $data['tipo'] ?? '';
+    $json = $data['json'] ?? [];
+ 
+    if (!$tipo || empty($json)) {
+        return new JsonResponse(['ok' => false, 'error' => 'Datos incompletos'], 400);
     }
+ 
+    // Calcular estimación para guardarla
+    $res = $calculator->calcular($tipo, $json);
+ 
+    // Crear lead anónimo con token
+    $lead = new PresupuestosLead();
+    $lead->setTipoReforma($tipo);
+    $lead->setJsonPresupuesto($json);
+    $lead->setTotal($res['total']);
+    $lead->setManoObra(array_sum($res['mano_obra']));
+    $lead->setMateriales(array_sum($res['materiales']));
+    $lead->setToken(bin2hex(random_bytes(24)));
+    $lead->setFechaPdf(new \DateTime());
+    $lead->setSeguimientoActivo(false); // aún no tiene email, no enviamos seguimiento
+    $lead->setUltimoEvento(new \DateTime());
+ 
+    $em->persist($lead);
+    $em->flush();
+ 
+    return new JsonResponse([
+        'ok'    => true,
+        'token' => $lead->getToken(),
+        'url'   => $this->generateUrl(
+            'presupuesto_ver',
+            ['token' => $lead->getToken()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        ),
+    ]);
+}
+ 
+// ══════════════════════════════════════════════════════════════
+//  CAMBIO 2 — Ruta GET /presupuesto/{token}
+//  Muestra la página con galería + formulario nombre/email.
+//  Renombrada a 'presupuesto_ver' (antes era 'presupuesto_descargar')
+// ══════════════════════════════════════════════════════════════
+ 
+#[Route('/presupuesto/{token}', name: 'presupuesto_ver', methods: ['GET'])]
+public function verPresupuesto(
+    string $token,
+    PresupuestosLeadRepository $leadRepo
+): Response {
+ 
+    $lead = $leadRepo->findOneBy(['token' => $token]);
+ 
+    if (!$lead) {
+        throw $this->createNotFoundException('Presupuesto no encontrado.');
+    }
+ 
+    return $this->render('ia/iapresupuesto_resultado.html.twig', [
+        'lead'  => $lead,
+        'token' => $token,
+        'tipo'  => $lead->getTipoReforma(),
+        'total' => $lead->getTotal(),
+    ]);
+}
+ 
+// ══════════════════════════════════════════════════════════════
+//  CAMBIO 3 — Ruta POST /api/presupuesto/completar
+//  El usuario rellena nombre+email en /presupuesto/{token}
+//  → completa el lead y envía el email con el PDF
+// ══════════════════════════════════════════════════════════════
+ 
+#[Route('/api/presupuesto/completar', name: 'api_presupuesto_completar', methods: ['POST'])]
+public function completar(
+    Request $request,
+    EntityManagerInterface $em,
+    PresupuestosLeadRepository $leadRepo,
+    PresupuestoCalculatorService $calculator,
+    MailerInterface $mailer,
+    TelegramNotifier $notifier
+): JsonResponse {
+ 
+    $data   = json_decode($request->getContent(), true);
+    $token  = $data['token']  ?? '';
+    $nombre = trim($data['nombre'] ?? '');
+    $email  = trim($data['email']  ?? '');
+ 
+    if (!$token || !$nombre || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return new JsonResponse(['ok' => false, 'error' => 'Datos incompletos'], 400);
+    }
+ 
+    $lead = $leadRepo->findOneBy(['token' => $token]);
+    if (!$lead) {
+        return new JsonResponse(['ok' => false, 'error' => 'Presupuesto no encontrado'], 404);
+    }
+ 
+    // Completar el lead
+    $lead->setNombre($nombre);
+    $lead->setEmail($email);
+    $lead->setSeguimientoActivo(true);
+    $lead->setEmail1Enviado(false);
+    $lead->setEmail2Enviado(false);
+    $lead->setFechaPdf(new \DateTime());
+    $lead->setUltimoEvento(new \DateTime());
+    $em->flush();
+ 
+    // Calcular rango para el email
+    $tipo = $lead->getTipoReforma();
+    $json = $lead->getJsonPresupuesto();
+    $res  = $calculator->calcular($tipo, is_string($json) ? json_decode($json, true) : $json);
+ 
+    $min = (int) ($res['total'] * 0.92);
+    $max = (int) ($res['total'] * 1.08);
+    $rangoTexto = number_format($min, 0, ',', '.') . ' € – ' . number_format($max, 0, ',', '.') . ' €';
+ 
+    // URL del PDF
+    $urlPdf = $this->generateUrl(
+        'presupuesto_pdf',
+        ['token' => $token],
+        UrlGeneratorInterface::ABSOLUTE_URL
+    );
+ 
+    // Enviar email HTML
+    $htmlEmail = $this->renderView('emails/presupuesto.html.twig', [
+        'nombre'     => $nombre,
+        'rangoTexto' => $rangoTexto,
+        'min'        => $min,
+        'max'        => $max,
+        'tipo'       => $tipo,
+        'urlPdf'     => $urlPdf,
+    ]);
+ 
+    $asunto = match ($tipo) {
+        'ducha'  => 'Tu estimación · Cambio de bañera por ducha en Gijón',
+        default  => 'Tu estimación · Reforma integral de baño en Gijón',
+    };
+ 
+    $emailMsg = (new Email())
+        ->from('Pavimentos Gijón <pavimentosgijon@gmail.com>')
+        ->to($email)
+        ->subject($asunto)
+        ->html($htmlEmail);
+ 
+    $mailer->send($emailMsg);
+ 
+    $notifier->sendMessage("📩 Lead completado: {$nombre} | {$email} | {$tipo} | {$res['total']} €");
+ 
+    return new JsonResponse(['ok' => true]);
+}
+ 
+// ══════════════════════════════════════════════════════════════
+//  CAMBIO 4 — Ruta GET /presupuesto/{token}/pdf
+//  Descarga el PDF directamente desde el link del email
+// ══════════════════════════════════════════════════════════════
+ 
+#[Route('/presupuesto/{token}/pdf', name: 'presupuesto_pdf', methods: ['GET'])]
+public function descargarPdf(
+    string $token,
+    PresupuestosLeadRepository $leadRepo,
+    PresupuestoCalculatorService $calculator,
+    EntityManagerInterface $em
+): Response {
+ 
+    $lead = $leadRepo->findOneBy(['token' => $token]);
+    if (!$lead) {
+        throw $this->createNotFoundException('Presupuesto no encontrado.');
+    }
+ 
+    $json = $lead->getJsonPresupuesto();
+    if (is_string($json)) $json = json_decode($json, true);
+ 
+    $res  = $calculator->calcular($lead->getTipoReforma(), $json);
+ 
+    $html = $this->renderView('iapresupuesto/presupuesto.html.twig', [
+        'nombre'     => $lead->getNombre(),
+        'email'      => $lead->getEmail(),
+        'tipo'       => $lead->getTipoReforma(),
+        'total'      => $res['total'],
+        'mano_obra'  => $res['mano_obra'],
+        'materiales' => $res['materiales'],
+    ]);
+ 
+    $options = new Options();
+    $options->set('isHtml5ParserEnabled', true);
+    $options->set('isRemoteEnabled', true);
+ 
+    $dompdf = new Dompdf($options);
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+ 
+    $lead->setPdfDescargas(($lead->getPdfDescargas() ?? 0) + 1);
+    $lead->setUltimoEvento(new \DateTime());
+    $em->flush();
+ 
+    return new Response($dompdf->output(), 200, [
+        'Content-Type'        => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="presupuesto-bano-gijon.pdf"',
+    ]);
+}
+
 }

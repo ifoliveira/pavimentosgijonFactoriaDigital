@@ -355,24 +355,26 @@ async function llamarAPI(respuesta) {
 async function finalizarChat() {
   if (typeof gtag_report_conversion === 'function') setTimeout(gtag_report_conversion, 300);
 
-  // Guardar el lead inmediatamente — antes de que el usuario haga nada más
+  pgCarruselCompleto = false;
+  calculoTerminado   = false;
+
+  mostrarVista('view-galeria');
+  iniciarGaleria();
+  iniciarBarraFicticia();
+
   try {
-    const res = await fetch('/api/presupuesto/iniciar', {
-      method:  'POST',
+    const res = await fetch('/api/presupuesto/calculate', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tipo: state.tipo, json: state.jsonActual }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-
-    if (data.ok && data.url) {
-      // Redirigir a la página del presupuesto con token
-      window.location.href = data.url;
-    }
+    await res.json();
   } catch (err) {
-    console.error('Iniciar error:', err);
-    // Si falla la API, mostrar el formulario inline como fallback
-    mostrarVista('view-datos');
+    console.error('Calculate error:', err);
+  } finally {
+    calculoTerminado = true;
+    mostrarBotonListoSiPuede();
   }
 }
 
@@ -387,6 +389,54 @@ function mostrarBotonListoSiPuede() {
   cta.style.display = 'block';
 }
 
+// ═══════════════════════════════════════════════════════════
+//  GALERÍA
+// ═══════════════════════════════════════════════════════════
+function iniciarGaleria() {
+  galeriaSlideActual = 0;
+  const slides = document.querySelectorAll('#galeriaCarrusel .galeria-slide');
+  const dots   = document.querySelectorAll('#galeriaDots .galeria-dot');
+  let vueltas  = 0;
+
+  slides.forEach(s => s.classList.remove('active'));
+  dots.forEach(d => d.classList.remove('active'));
+  slides[0].classList.add('active');
+  dots[0].classList.add('active');
+  detenerGaleria();
+
+  galeriaTimer = setInterval(() => {
+    slides[galeriaSlideActual].classList.remove('active');
+    dots[galeriaSlideActual].classList.remove('active');
+    galeriaSlideActual = (galeriaSlideActual + 1) % slides.length;
+    if (galeriaSlideActual === 0) vueltas++;
+    slides[galeriaSlideActual].classList.add('active');
+    dots[galeriaSlideActual].classList.add('active');
+    if (vueltas >= 1) { pgCarruselCompleto = true; mostrarBotonListoSiPuede(); }
+  }, 2800);
+}
+
+function detenerGaleria() {
+  if (galeriaTimer) { clearInterval(galeriaTimer); galeriaTimer = null; }
+}
+
+function iniciarBarraFicticia() {
+  const bar   = document.getElementById('galeriaProgressBar');
+  const label = document.getElementById('galeriaProgressLabel');
+  let pct = 0, textoIdx = 0;
+  bar.style.width = '0%';
+  bar.style.background = '';
+  label.textContent = TEXTOS_PROGRESO[0];
+  document.getElementById('galeria-cta').style.display = 'none';
+
+  const interval = setInterval(() => {
+    const inc = pct < 60 ? 4 : pct < 85 ? 1.5 : 0.3;
+    pct = Math.min(pct + inc, 92);
+    bar.style.width = pct + '%';
+    const ni = Math.min(Math.floor(pct / 20), TEXTOS_PROGRESO.length - 1);
+    if (ni !== textoIdx) { textoIdx = ni; label.textContent = TEXTOS_PROGRESO[textoIdx]; }
+    if (pct >= 92) clearInterval(interval);
+  }, 180);
+}
 
 // ═══════════════════════════════════════════════════════════
 //  EMAIL
