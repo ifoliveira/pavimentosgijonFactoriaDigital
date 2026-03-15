@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\PresupuestosLead;
-use App\MisClases\OpenAiService;
 use App\Repository\PresupuestosLeadRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,7 +13,7 @@ use App\Service\MotorDePasosService;
 use App\Service\InterpretadorIAService;
 use App\Service\PresupuestoCalculatorService;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use App\MisClases\TelegramNotifier;
+use App\Service\TelegramNotifierService as TelegramNotifier;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -23,13 +22,6 @@ use Dompdf\Options;
 
 class IAPresupuestoController extends AbstractController
 {
-    private OpenAiService $openAiService;
-
-    public function __construct(OpenAiService $openAiService)
-    {
-        $this->openAiService = $openAiService;
-    }
-
     // ─────────────────────────────────────────────────────────────
     // Ruta existente: formulario
     // ─────────────────────────────────────────────────────────────

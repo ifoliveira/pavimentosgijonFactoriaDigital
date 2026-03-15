@@ -14,9 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
 
-/**
- * @Route("/admin/forecast")
- */
+#[Route('/admin/forecast')]
 class ForecastController extends AbstractController
 {
 
@@ -27,9 +25,7 @@ class ForecastController extends AbstractController
         $this->em = $em;
     }
 
-    /**
-     * @Route("/", name="forecast_index", methods={"GET"})
-     */
+    #[Route('/', name: 'forecast_index', methods: ['GET'])]
     public function index(ForecastRepository $forecastRepository, BancoRepository $bancoRepository, DetallecestaRepository $detallecestaRepository): Response
     {
         return $this->render('forecast/conciliar.html.twig', [
@@ -38,9 +34,7 @@ class ForecastController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/consulta", name="forecast_consulta", methods={"GET"})
-     */
+    #[Route('/consulta', name: 'forecast_consulta', methods: ['GET'])]
     public function consulta(ForecastRepository $forecastRepository, DetallecestaRepository $detallecestaRepository): Response
     {
         return $this->render('forecast/consulta.html.twig', [
@@ -48,9 +42,7 @@ class ForecastController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/conciliar/idBanco/crear", name="forecast_crearBanco", methods={"GET"})
-     */
+    #[Route('/conciliar/idBanco/crear', name: 'forecast_crearBanco', methods: ['GET'])]
     public function crearIdBanco(Request $request, BancoRepository $bancoRepository): JsonResponse
     {    
         $bancoId = $request->query->get('banco');
@@ -78,9 +70,7 @@ class ForecastController extends AbstractController
 
     }    
 
-    /**
-     * @Route("/conciliar/{id}", name="forecast_conc", methods={"GET"})
-     */
+    #[Route('/conciliar/{id}', name: 'forecast_conc', methods: ['GET'])]
     public function conciliarPagos(Request $request, Forecast $forecast, BancoRepository $bancoRepository): JsonResponse
     {    
         $bancoId = $request->query->get('banco');
@@ -105,9 +95,7 @@ class ForecastController extends AbstractController
     }
          
 
-    /**
-     * @Route("/new", name="forecast_new", methods={"GET","POST"})
-     */
+    #[Route('/new', name: 'forecast_new', methods: ['GET','POST'])]
     public function new(Request $request , DetallecestaRepository $detallecestaRepository): Response
     {
         $forecast = new Forecast();
@@ -128,9 +116,7 @@ class ForecastController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="forecast_show", methods={"GET"})
-     */
+    #[Route('/{id}', name: 'forecast_show', methods: ['GET'])]
     public function show(Forecast $forecast , DetallecestaRepository $detallecestaRepository): Response
 
     {
@@ -139,9 +125,7 @@ class ForecastController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="forecast_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'forecast_edit', methods: ['GET','POST'])]
     public function edit(Request $request, Forecast $forecast , DetallecestaRepository $detallecestaRepository): Response
 
     {
@@ -160,9 +144,7 @@ class ForecastController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="forecast_delete", methods={"DELETE"})
-     */
+    #[Route('/{id}', name: 'forecast_delete', methods: ['DELETE'])]
     public function delete(Request $request, Forecast $forecast, DetallecestaRepository $detallecestaRepository): Response
 
     {
@@ -175,9 +157,7 @@ class ForecastController extends AbstractController
         return $this->redirectToRoute('forecast_index');
     }
 
-    /**
-     * @Route("/delete/fila", name="forecast_delete_ajax", methods={"GET","POST"})
-     */
+    #[Route('/delete/fila', name: 'forecast_delete_ajax', methods: ['GET','POST'])]
     public function deleteforecastajax(Request $request): JsonResponse
     {
         // Funcion para borrar registro de producto de una cesta determinada
@@ -197,9 +177,7 @@ class ForecastController extends AbstractController
     }  
 
 
-    /**
-     * @Route("/{id}/{estado}/conciliar", name="forecast_conciliar", methods={"GET","POST"})
-     */
+    #[Route('/{id}/{estado}/conciliar', name: 'forecast_conciliar', methods: ['GET','POST'])]
     public function conciliar(Request $request, Forecast $forecast,  DetallecestaRepository $detallecestaRepository, string $estado): Response
     {
 

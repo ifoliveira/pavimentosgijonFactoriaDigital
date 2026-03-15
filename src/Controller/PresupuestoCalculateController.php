@@ -11,7 +11,7 @@ use Dompdf\Options;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Psr\Log\LoggerInterface;
-use App\MisClases\TelegramNotifier;
+use App\Service\TelegramNotifierService;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\PresupuestosLeadRepository;
 use App\Entity\PresupuestosLead;
@@ -69,7 +69,7 @@ class PresupuestoCalculateController extends AbstractController
     public function pdf(
         Request $request,
         PresupuestoCalculatorService $calculator,
-        TelegramNotifier $notifier,
+        TelegramNotifierService $notifier,
         PresupuestosLeadRepository $repo,
         MailerInterface $mailer
                 

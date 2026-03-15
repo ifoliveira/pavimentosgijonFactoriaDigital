@@ -32,9 +32,7 @@ class BlogController extends AbstractController
 
 
 
-    /**
-     * @Route("/reforma-bano-gijon/{slug}", name="blog_show")
-     */
+    #[Route('/reforma-bano-gijon/{slug}', name: 'blog_show')]
     public function show(string $slug, PostRepository $postRepository, ConsultasRepository $consultasRepository, Request $request): Response
     {
         $post = $postRepository->findOneBy(['slug' => $slug]);
@@ -68,9 +66,7 @@ class BlogController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/reforma-bano-gijon/", name="blog")
-     */
+    #[Route('/reforma-bano-gijon/', name: 'blog')]
     public function mainBlog(PostRepository $postRepository): Response
     {
 
@@ -81,9 +77,7 @@ class BlogController extends AbstractController
             ]);
 
     }    
-    /**
-     * @Route("/admin/post/new", name="post_new")
-     */
+    #[Route('/admin/post/new', name: 'post_new')]
         public function new(Request $request): Response
         {
             $post = new Post();
@@ -115,9 +109,7 @@ class BlogController extends AbstractController
             ]);
         }
 
-    /**
-     * @Route("/admin/post/upload", name="upload_img")
-     */
+    #[Route('/admin/post/upload', name: 'upload_img')]
         public function upload(Request $request): Response
         {
             $form = $this->createForm(pdfUploadType::class);

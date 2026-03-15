@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\Productos;
 use App\Entity\Tipoproducto;
 use app\Entity\Cestas;
-use App\MisClases\CestaUser;
+use App\Service\CestaUserService;
 use App\Form\ProductosType;
 use App\Repository\CestasRepository;
 use App\Repository\ProductosRepository;
@@ -17,9 +17,7 @@ use Symfony\Component\Security\Core\User\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
 
-/**
- * @Route("/admin/productos")
- */
+#[Route('/admin/productos')]
 class ProductosController extends AbstractController
 {
 
@@ -30,9 +28,7 @@ class ProductosController extends AbstractController
         $this->em = $em;
     }
 
-    /**
-     * @Route("/", name="productos_index", methods={"GET"})
-     */
+    #[Route('/', name: 'productos_index', methods: ['GET'])]
     public function index(ProductosRepository $productosRepository, CestasRepository $cestasRepository): Response
     {
         $user = $this->getUser();
@@ -58,9 +54,7 @@ class ProductosController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/lista", name="productos_lista", methods={"GET"})
-     */
+    #[Route('/lista', name: 'productos_lista', methods: ['GET'])]
     public function listapd(ProductosRepository $productosRepository): Response
     {
         return $this->render('productos/lista.html.twig', [
@@ -68,9 +62,7 @@ class ProductosController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/new", name="productos_new", methods={"GET","POST"})
-     */
+    #[Route('/new', name: 'productos_new', methods: ['GET','POST'])]
     public function new(Request $request , CestasRepository $cestasRepository): Response
     {
         $producto = new Productos();
@@ -91,9 +83,7 @@ class ProductosController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="productos_show", methods={"GET"})
-     */
+    #[Route('/{id}', name: 'productos_show', methods: ['GET'])]
     public function show(Productos $producto): Response
     {
         return $this->render('productos/show.html.twig', [
@@ -101,9 +91,7 @@ class ProductosController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="productos_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'productos_edit', methods: ['GET','POST'])]
     public function edit(Request $request, Productos $producto): Response
     {
         $form = $this->createForm(ProductosType::class, $producto);
@@ -121,9 +109,7 @@ class ProductosController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="productos_delete", methods={"DELETE"})
-     */
+    #[Route('/{id}', name: 'productos_delete', methods: ['DELETE'])]
     public function delete(Request $request, Productos $producto): Response
     {
         if ($this->isCsrfTokenValid('delete'.$producto->getId(), $request->request->get('_token'))) {
@@ -134,9 +120,7 @@ class ProductosController extends AbstractController
         return $this->redirectToRoute('productos_index');
     }
 
- /**
-     * @Route("/actualiza/obsoleto", name="invierte_obsoleto", methods={"GET","POST"})
-     */
+ #[Route('/actualiza/obsoleto', name: 'invierte_obsoleto', methods: ['GET','POST'])]
     public function ajaxinscS(Request $request): jsonResponse
     {
         $id  = $request->query->get('id');

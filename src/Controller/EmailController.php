@@ -19,9 +19,7 @@ class EmailController extends AbstractController
 
  
         
-    /**
-     * @Route("/admin/fetch-emails", name="fetch_emails")
-     */
+    #[Route('/admin/fetch-emails', name: 'fetch_emails')]
     public function fetchEmails()
     {
         // Configuración del acceso a la cuenta de correo

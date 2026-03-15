@@ -10,14 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("admin/texto/mano/obra")
- */
+#[Route('admin/texto/mano/obra')]
 class TextoManoObraController extends AbstractController
 {
-    /**
-     * @Route("/", name="texto_mano_obra_index", methods={"GET"})
-     */
+    #[Route('/', name: 'texto_mano_obra_index', methods: ['GET'])]
     public function index(TextoManoObraRepository $textoManoObraRepository): Response
     {
         return $this->render('texto_mano_obra/index.html.twig', [
@@ -25,9 +21,7 @@ class TextoManoObraController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/new", name="texto_mano_obra_new", methods={"GET","POST"})
-     */
+    #[Route('/new', name: 'texto_mano_obra_new', methods: ['GET','POST'])]
     public function new(Request $request): Response
     {
         $textoManoObra = new TextoManoObra();
@@ -48,9 +42,7 @@ class TextoManoObraController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="texto_mano_obra_show", methods={"GET"})
-     */
+    #[Route('/{id}', name: 'texto_mano_obra_show', methods: ['GET'])]
     public function show(TextoManoObra $textoManoObra): Response
     {
         return $this->render('texto_mano_obra/show.html.twig', [
@@ -58,9 +50,7 @@ class TextoManoObraController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="texto_mano_obra_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'texto_mano_obra_edit', methods: ['GET','POST'])]
     public function edit(Request $request, TextoManoObra $textoManoObra): Response
     {
         $form = $this->createForm(TextoManoObraType::class, $textoManoObra);
@@ -78,9 +68,7 @@ class TextoManoObraController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="texto_mano_obra_delete", methods={"POST"})
-     */
+    #[Route('/{id}', name: 'texto_mano_obra_delete', methods: ['POST'])]
     public function delete(Request $request, TextoManoObra $textoManoObra): Response
     {
         if ($this->isCsrfTokenValid('delete'.$textoManoObra->getId(), $request->request->get('_token'))) {

@@ -15,31 +15,24 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\MisClases\ManoObraClass;
-use App\MisClases\EconomicoPresu;
+use App\Service\ManoObraService;
 use App\Repository\ConsultasRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Constraints\IsFalse;
 
-/**
- * @Route("/admin/clientes")
- */
+#[Route('/admin/clientes')]
 class ClientesController extends AbstractController
 {
 
 
-    protected $em;
-
-    public function __construct( EntityManagerInterface $em )
-    {
-        $this->em = $em;
-    }
+    public function __construct(
+        private EntityManagerInterface $em,
+        private ManoObraService $manoObraService,
+    ) {}
 
 
-    /**
-     * @Route("/", name="clientes_index", methods={"GET"})
-     */
+    #[Route('/', name: 'clientes_index', methods: ['GET'])]
     public function index(ClientesRepository $clientesRepository, ConsultasRepository $consultasRepository): Response
     {
         return $this->render('clientes/index.html.twig', [
@@ -48,9 +41,7 @@ class ClientesController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/new", name="clientes_new", methods={"GET","POST"})
-     */
+    #[Route('/new', name: 'clientes_new', methods: ['GET','POST'])]
     public function new(Request $request, EstadocestasRepository $estadocestasRepository): Response
         {   
 
@@ -83,9 +74,7 @@ class ClientesController extends AbstractController
             $this->em->persist($presupuesto);
             $this->em->flush();
 
-            $manoobra = new ManoObraClass($this->em);
-            $manoobra->IniciarPresupuesto($presupuesto);
-    
+            $this->manoObraService->iniciarPresupuesto($presupuesto);
 
             $micarpeta =  $this->getParameter("presupuestoDir") . '/' . $cliente->getNombreCl() . ' ' . $presupuesto->getFechainiPe()->format('Y-m-d') .'/fotos';
             if (!file_exists($micarpeta)) {
@@ -102,9 +91,7 @@ class ClientesController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="clientes_show", methods={"GET"})
-     */
+    #[Route('/{id}', name: 'clientes_show', methods: ['GET'])]
     public function show(Clientes $cliente): Response
     {
         return $this->render('clientes/show.html.twig', [
@@ -112,9 +99,7 @@ class ClientesController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="clientes_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'clientes_edit', methods: ['GET','POST'])]
     public function edit(Request $request, Clientes $cliente): Response
     {
         $form = $this->createForm(ClientesType::class, $cliente);
@@ -132,9 +117,7 @@ class ClientesController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="clientes_delete", methods={"DELETE"})
-     */
+    #[Route('/{id}', name: 'clientes_delete', methods: ['DELETE'])]
     public function delete(Request $request, Clientes $cliente): Response
     {
         if ($this->isCsrfTokenValid('delete'.$cliente->getId(), $request->request->get('_token'))) {
@@ -147,9 +130,7 @@ class ClientesController extends AbstractController
 
  
 
-    /**
-     * @Route("/delete/consulta", name="consulta_delete_ajax", methods={"GET","POST"})
-     */
+    #[Route('/delete/consulta', name: 'consulta_delete_ajax', methods: ['GET','POST'])]
     public function deleteconsultaajax(Request $request): JsonResponse
     {
         // Funcion para borrar registro de producto de una cesta determinada
@@ -168,9 +149,7 @@ class ClientesController extends AbstractController
 
     }      
 
-    /**
-     * @Route("/hide/consulta", name="consulta_hide_ajax", methods={"GET","POST"})
-     */
+    #[Route('/hide/consulta', name: 'consulta_hide_ajax', methods: ['GET','POST'])]
     public function hideconsultaajax(Request $request): JsonResponse
     {
         // Funcion para borrar registro de producto de una cesta determinada

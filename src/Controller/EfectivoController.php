@@ -12,14 +12,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-/**
- * @Route("/admin/efectivo")
- */
+#[Route('/admin/efectivo')]
 class EfectivoController extends AbstractController
 {
-    /**
-     * @Route("/", name="efectivo_index", methods={"GET"})
-     */
+    #[Route('/', name: 'efectivo_index', methods: ['GET'])]
     public function index(EfectivoRepository $efectivoRepository, DetallecestaRepository $detallecestaRepository): Response
     {
         return $this->render('efectivo/index.html.twig', [
@@ -27,9 +23,7 @@ class EfectivoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/new", name="efectivo_new", methods={"GET","POST"})
-     */
+    #[Route('/new', name: 'efectivo_new', methods: ['GET','POST'])]
     public function new(Request $request, DetallecestaRepository $detallecestaRepository): Response
     {
         $efectivo = new Efectivo();
@@ -52,9 +46,7 @@ class EfectivoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="efectivo_show", methods={"GET"})
-     */
+    #[Route('/{id}', name: 'efectivo_show', methods: ['GET'])]
     public function show(Efectivo $efectivo , DetallecestaRepository $detallecestaRepository): Response
     {
         return $this->render('efectivo/show.html.twig', [
@@ -62,9 +54,7 @@ class EfectivoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="efectivo_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'efectivo_edit', methods: ['GET','POST'])]
     public function edit(Request $request, Efectivo $efectivo , DetallecestaRepository $detallecestaRepository): Response
     {
         $form = $this->createForm(EfectivoType::class, $efectivo);
@@ -82,9 +72,7 @@ class EfectivoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="efectivo_delete", methods={"DELETE"})
-     */
+    #[Route('/{id}', name: 'efectivo_delete', methods: ['DELETE'])]
     public function delete(Request $request, Efectivo $efectivo): Response
     {
         if ($this->isCsrfTokenValid('delete'.$efectivo->getId(), $request->request->get('_token'))) {
@@ -96,9 +84,7 @@ class EfectivoController extends AbstractController
         return $this->redirectToRoute('efectivo_index');
     }
 
-    /**
-     * @Route("/delete/fila", name="efectivo_delete_ajax", methods={"GET","POST"})
-     */
+    #[Route('/delete/fila', name: 'efectivo_delete_ajax', methods: ['GET','POST'])]
     public function deleteajax(Request $request): JsonResponse
     {
         // Funcion para borrar registro de producto de una efectivo determinada

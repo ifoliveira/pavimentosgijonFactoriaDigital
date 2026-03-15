@@ -16,14 +16,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-/**
- * @Route("/admin/economicpresu")
- */
+#[Route('/admin/economicpresu')]
 class EconomicpresuController extends AbstractController
 {
-    /**
-     * @Route("/", name="app_economicpresu_index", methods={"GET"})
-     */
+    #[Route('/', name: 'app_economicpresu_index', methods: ['GET'])]
     public function index(EconomicpresuRepository $economicpresuRepository): Response
     {
         return $this->render('economicpresu/index.html.twig', [
@@ -31,9 +27,7 @@ class EconomicpresuController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/new", name="app_economicpresu_new", methods={"GET", "POST"})
-     */
+    #[Route('/new', name: 'app_economicpresu_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EconomicpresuRepository $economicpresuRepository): Response
     {
         $economicpresu = new Economicpresu();
@@ -52,9 +46,7 @@ class EconomicpresuController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="app_economicpresu_show", methods={"GET"})
-     */
+    #[Route('/{id}', name: 'app_economicpresu_show', methods: ['GET'])]
     public function show(Economicpresu $economicpresu): Response
     {
         return $this->render('economicpresu/show.html.twig', [
@@ -62,9 +54,7 @@ class EconomicpresuController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="app_economicpresu_edit", methods={"GET", "POST"})
-     */
+    #[Route('/{id}/edit', name: 'app_economicpresu_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Economicpresu $economicpresu, EconomicpresuRepository $economicpresuRepository): Response
     {
         $form = $this->createForm(EconomicpresuType::class, $economicpresu);
@@ -82,9 +72,7 @@ class EconomicpresuController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="app_economicpresu_delete", methods={"POST"})
-     */
+    #[Route('/{id}', name: 'app_economicpresu_delete', methods: ['POST'])]
     public function delete(Request $request, Economicpresu $economicpresu, EconomicpresuRepository $economicpresuRepository): Response
     {
         if ($this->isCsrfTokenValid('delete'.$economicpresu->getId(), $request->request->get('_token'))) {
@@ -94,9 +82,7 @@ class EconomicpresuController extends AbstractController
         return $this->redirectToRoute('app_economicpresu_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    /**
-     * @Route("/estado/ajax", name="economic_estado", methods={"GET","POST"})
-     */
+    #[Route('/estado/ajax', name: 'economic_estado', methods: ['GET','POST'])]
     public function estadoajax(Request $request): jsonResponse
     {
         $jsonData = array();
@@ -119,9 +105,7 @@ class EconomicpresuController extends AbstractController
 
     }     
     
-    /**
-     * @Route("/importe/ajax", name="economic_importe", methods={"GET","POST"})
-     */
+    #[Route('/importe/ajax', name: 'economic_importe', methods: ['GET','POST'])]
     public function importeajax(Request $request): jsonResponse
     {
         $jsonData = array();
@@ -144,9 +128,7 @@ class EconomicpresuController extends AbstractController
 
     }  
     
-    /**
-     * @Route("/pagar/ajax", name="economic_pagar", methods={"GET","POST"})
-     */
+    #[Route('/pagar/ajax', name: 'economic_pagar', methods: ['GET','POST'])]
     public function pagarajax(Request $request): jsonResponse
     {
         $jsonData = array();
@@ -194,9 +176,7 @@ class EconomicpresuController extends AbstractController
 
     }     
 
-    /**
-     * @Route("/conciliar/{id}", name="conciliar_presu", methods={"GET"})
-     */
+    #[Route('/conciliar/{id}', name: 'conciliar_presu', methods: ['GET'])]
     public function conciliar(economicpresu $economicpresu, BancoRepository $bancoRepository): Response
     {
    
@@ -206,9 +186,7 @@ class EconomicpresuController extends AbstractController
         ]);
     }       
 
-    /**
-     * @Route("/{id}/{idbanco}/conciliar", name="economicpresu_conciliar", methods={"GET","POST"})
-     */
+    #[Route('/{id}/{idbanco}/conciliar', name: 'economicpresu_conciliar', methods: ['GET','POST'])]
     public function conciliar_banco(Economicpresu $economicpresu, BancoRepository $bancoRepository, int $idbanco, TiposmovimientoRepository $tiposmovimientoRepository): Response
     {
         $entityManager = $this->getDoctrine()->getManager();

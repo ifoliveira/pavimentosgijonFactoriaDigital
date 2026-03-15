@@ -10,14 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/tipoproducto")
- */
+#[Route('/tipoproducto')]
 class TipoproductoController extends AbstractController
 {
-    /**
-     * @Route("/", name="tipoproducto_index", methods={"GET"})
-     */
+    #[Route('/', name: 'tipoproducto_index', methods: ['GET'])]
     public function index(TipoproductoRepository $tipoproductoRepository): Response
     {
         return $this->render('tipoproducto/index.html.twig', [
@@ -25,9 +21,7 @@ class TipoproductoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/new", name="tipoproducto_new", methods={"GET","POST"})
-     */
+    #[Route('/new', name: 'tipoproducto_new', methods: ['GET','POST'])]
     public function new(Request $request): Response
     {
         $tipoproducto = new Tipoproducto();
@@ -48,9 +42,7 @@ class TipoproductoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="tipoproducto_show", methods={"GET"})
-     */
+    #[Route('/{id}', name: 'tipoproducto_show', methods: ['GET'])]
     public function show(Tipoproducto $tipoproducto): Response
     {
         return $this->render('tipoproducto/show.html.twig', [
@@ -58,9 +50,7 @@ class TipoproductoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="tipoproducto_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'tipoproducto_edit', methods: ['GET','POST'])]
     public function edit(Request $request, Tipoproducto $tipoproducto): Response
     {
         $form = $this->createForm(TipoproductoType::class, $tipoproducto);
@@ -78,9 +68,7 @@ class TipoproductoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="tipoproducto_delete", methods={"DELETE"})
-     */
+    #[Route('/{id}', name: 'tipoproducto_delete', methods: ['DELETE'])]
     public function delete(Request $request, Tipoproducto $tipoproducto): Response
     {
         if ($this->isCsrfTokenValid('delete'.$tipoproducto->getId(), $request->request->get('_token'))) {

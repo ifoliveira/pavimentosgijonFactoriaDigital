@@ -1,5 +1,5 @@
 <?php
-namespace App\MisClases;
+namespace App\Service;
 /* A wrapper to do organise item names & prices into columns */
    
 class item

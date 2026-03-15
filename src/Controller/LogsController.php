@@ -12,14 +12,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-/**
- * @Route("/admin/logs")
- */
+#[Route('/admin/logs')]
 class LogsController extends AbstractController
 {
-    /**
-     * @Route("/", name="logs_index", methods={"GET"})
-     */
+    #[Route('/', name: 'logs_index', methods: ['GET'])]
     public function index(LogsRepository $logsRepository): Response
     {
 
@@ -33,9 +29,7 @@ class LogsController extends AbstractController
 
 
 
-    /**
-     * @Route("/new", name="logs_new", methods={"GET","POST"})
-     */
+    #[Route('/new', name: 'logs_new', methods: ['GET','POST'])]
     public function new(Request $request): Response
     {
         $log = new Logs();
@@ -56,9 +50,7 @@ class LogsController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="logs_show", methods={"GET"})
-     */
+    #[Route('/{id}', name: 'logs_show', methods: ['GET'])]
     public function show(Logs $log): Response
     {
         return $this->render('logs/show.html.twig', [
@@ -66,9 +58,7 @@ class LogsController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="logs_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'logs_edit', methods: ['GET','POST'])]
     public function edit(Request $request, Logs $log): Response
     {
         $form = $this->createForm(LogsType::class, $log);
@@ -86,9 +76,7 @@ class LogsController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="logs_delete", methods={"POST"})
-     */
+    #[Route('/{id}', name: 'logs_delete', methods: ['POST'])]
     public function delete(Request $request, Logs $log): Response
     {
         if ($this->isCsrfTokenValid('delete'.$log->getId(), $request->request->get('_token'))) {

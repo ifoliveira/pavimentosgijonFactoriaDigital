@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\MisClases\OpenAIClient;
+use App\Service\OpenAIClient;
 
 use Psr\Log\LoggerInterface;
 

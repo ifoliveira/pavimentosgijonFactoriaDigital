@@ -14,10 +14,10 @@ use App\Form\LogsType;
 use App\Entity\Logs;
 use App\Form\ConsultasType;
 use App\Repository\ConsultasRepository;
-use App\MisClases\OpenAIClient;
+use App\Service\OpenAIClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use App\MisClases\TelegramNotifier;
+use App\Service\TelegramNotifierService;
 use Dompdf\Dompdf; 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Uid\Uuid;
@@ -40,7 +40,7 @@ class ApgijonController extends AbstractController
     }
 
         #[Route('/api/presupuesto/calculate2', name: 'api_presupuesto_calculate2', methods: ['POST'])]
-        public function calcular(Request $request, TelegramNotifier $notifier): JsonResponse
+        public function calcular(Request $request, TelegramNotifierService $notifier): JsonResponse
         {
             $datos = json_decode($request->getContent(), true);
 
@@ -350,9 +350,7 @@ private function calcularPresupuestoDucha(array $datos): array
 }
 
 
-    /**
-     * @Route("/homepage", name="homepage2")
-     */
+    #[Route('/homepage', name: 'homepage2')]
     public function index(Request $request): Response
     {
 
@@ -395,9 +393,7 @@ private function calcularPresupuestoDucha(array $datos): array
     }
 
 
-    /**
-     * @Route("/", name="homepage")
-     */
+    #[Route('/', name: 'homepage')]
     public function index2(Request $request, EntityManagerInterface $em): Response
     {
 
@@ -406,9 +402,7 @@ private function calcularPresupuestoDucha(array $datos): array
        ]);
     }
 
-    /**
-     * @Route("/nosotros", name="aboutus")
-     */
+    #[Route('/nosotros', name: 'aboutus')]
     public function aboutus(Request $request): Response
     {
         return $this->render('apgijon/nosotros.html.twig', [
@@ -416,9 +410,7 @@ private function calcularPresupuestoDucha(array $datos): array
         ]);
     } 
 
-    /**
-     * @Route("/reforma-integral-banos-gijon", name="integral")
-     */
+    #[Route('/reforma-integral-banos-gijon', name: 'integral')]
     public function integral(Request $request, ConsultasRepository $consultasRepository): Response
     {
 
@@ -448,9 +440,7 @@ private function calcularPresupuestoDucha(array $datos): array
     }     
 
 
-    /**
-     * @Route("/reforma-bano-en-gijon", name="reformabanogijon")
-     */
+    #[Route('/reforma-bano-en-gijon', name: 'reformabanogijon')]
     public function reformabanogijon(Request $request, ConsultasRepository $consultasRepository): Response
     {
 
@@ -480,10 +470,8 @@ private function calcularPresupuestoDucha(array $datos): array
         ]);
     }     
         
-    /**
-     * @Route("/presupuestoInmediato", name="iapresupuesto")
-     */
-    public function iapresupuestoIA(Request $request, ConsultasRepository $consultasRepository, TelegramNotifier $notifier, TrackingService $tracking): Response
+    #[Route('/presupuestoInmediato', name: 'iapresupuesto')]
+    public function iapresupuestoIA(Request $request, ConsultasRepository $consultasRepository, TelegramNotifierService $notifier, TrackingService $tracking): Response
     {
 
         $consulta = new Consultas();
@@ -556,7 +544,7 @@ private function calcularPresupuestoDucha(array $datos): array
 
 
         #[Route('/api/presupuesto/chat-track', name: 'api_presupuesto_track', methods: ['POST'])]
-        public function trackChat(Request $request, TelegramNotifier $notifier): JsonResponse
+        public function trackChat(Request $request, TelegramNotifierService $notifier): JsonResponse
         {
             $data = json_decode($request->getContent() ?: '[]', true) ?: [];
 
@@ -643,7 +631,7 @@ private function calcularPresupuestoDucha(array $datos): array
 
 
         #[Route('/api/presupuesto/chat', name: 'api_presupuesto_chat', methods: ['POST'])]
-        public function chat(Request $request, OpenAIClient $openAIClient, TelegramNotifier $notifier): JsonResponse
+        public function chat(Request $request, OpenAIClient $openAIClient, TelegramNotifierService $notifier): JsonResponse
         {
             $data = json_decode($request->getContent(), true);
             $messages = $data['messages'] ?? null;
@@ -673,9 +661,7 @@ private function calcularPresupuestoDucha(array $datos): array
     }
 
 
-    /**
-     * @Route("/cambio-banera-ducha-gijon-v2", name="platoducha_v2")
-     */
+    #[Route('/cambio-banera-ducha-gijon-v2', name: 'platoducha_v2')]
     public function platoducha(Request $request, ConsultasRepository $consultasRepository): Response
     {
 
@@ -713,9 +699,7 @@ private function calcularPresupuestoDucha(array $datos): array
     }
 
 
-    /**
-     * @Route("/mamparas-bano-gijon", name="mampara")
-     */
+    #[Route('/mamparas-bano-gijon', name: 'mampara')]
     public function mamparas(Request $request, ConsultasRepository $consultasRepository): Response
     {
 
@@ -743,9 +727,7 @@ private function calcularPresupuestoDucha(array $datos): array
         ]);
     }       
 
-    /**
-     * @Route("/contacto", name="contacto")
-     */
+    #[Route('/contacto', name: 'contacto')]
     public function contacto(Request $request, ConsultasRepository $consultasRepository): Response
     {
 
@@ -773,10 +755,7 @@ private function calcularPresupuestoDucha(array $datos): array
         ]);
     }   
 
-    /**
-     * @Route("/img-route/{img}", name="img_route")
-     * A route with one parameter
-     */
+    #[Route('/img-route/{img}', name: 'img_route')]
     public function imagen($img): Response
     {
 

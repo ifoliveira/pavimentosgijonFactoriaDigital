@@ -6,16 +6,12 @@ use App\Entity\Presupuestos;
 use App\Entity\Productos;
 use App\Entity\Efectivo;
 use App\Entity\Economicpresu;
-use App\MisClases\GenerarPago;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Form\PresupuestosType;
 use App\Form\ProductosType;
 use App\Entity\Cestas;
 use App\Entity\Tiposmovimiento;
-use App\MisClases\EconomicoPresu;
-use App\MisClases\CestaUser;
-use App\MisClases\PagoManoObraService;
-use App\MisClases\FinanciacionClass;
+use App\Service\CestaUserService;
 use App\Repository\EfectivoRepository;
 use App\Repository\EstadocestasRepository;
 use App\Repository\PresupuestosRepository;
@@ -33,23 +29,22 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Service\PagoService;
+use App\Service\EconomicoPresuService;
+use App\Service\FinanciacionService;
+use App\Service\PagoManoObraService;
 
-/**
- * @Route("/admin/presupuestos")
- */
+#[Route('/admin/presupuestos')]
 class PresupuestosController extends AbstractController
 {
 
-    protected $em;
+    public function __construct(
+        private EntityManagerInterface $em,
+        private PagoService $pagoService,
+        private EconomicoPresuService $economicoPresuService,
+    ) {}
 
-    public function __construct( EntityManagerInterface $em )
-    {
-        $this->em = $em;
-    }
-
-    /**
-     * @Route("/", name="presupuestos_index", methods={"GET"})
-     */
+    #[Route('/', name: 'presupuestos_index', methods: ['GET'])]
     public function index(PresupuestosRepository $presupuestosRepository): Response
     {
         $estados=$presupuestosRepository->numeroestado();
@@ -70,9 +65,7 @@ class PresupuestosController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/finalizados", name="presupuestos_finalizados", methods={"GET"})
-     */
+    #[Route('/finalizados', name: 'presupuestos_finalizados', methods: ['GET'])]
     public function finalizados(PresupuestosRepository $presupuestosRepository): Response
     {
         $estados=$presupuestosRepository->numeroestado();
@@ -91,9 +84,7 @@ class PresupuestosController extends AbstractController
         ]);
     }    
 
-    /**
-     * @Route("/new", name="presupuestos_new", methods={"GET","POST"})
-     */
+    #[Route('/new', name: 'presupuestos_new', methods: ['GET','POST'])]
     public function new(Request $request, EstadocestasRepository $estadocestasRepository): Response
     {
         $presupuesto = new Presupuestos();
@@ -123,9 +114,7 @@ class PresupuestosController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="presupuestos_show",  methods={"GET","POST"})
-     */
+    #[Route('/{id}', name: 'presupuestos_show',  methods: ['GET','POST'])]
     public function show(Request $request, Presupuestos $presupuesto, EfectivoRepository $efectivoRepository, ProductosRepository $productosRepository, EconomicpresuRepository $economicpresu, CestasRepository $cestasRepository): Response
     {
 
@@ -232,9 +221,7 @@ class PresupuestosController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="presupuestos_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'presupuestos_edit', methods: ['GET','POST'])]
     public function edit(Request $request, Presupuestos $presupuesto): Response
     {
         $form = $this->createForm(PresupuestosType::class, $presupuesto);
@@ -252,9 +239,7 @@ class PresupuestosController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/{estado}/estado", name="presupuestos_estado", methods={"GET","POST"})
-     */
+    #[Route('/{id}/{estado}/estado', name: 'presupuestos_estado', methods: ['GET','POST'])]
     public function editestado(Request $request, Presupuestos $presupuesto, int $estado, EstadocestasRepository $estadocestasRepository, DetallecestaRepository $detallecestaRepository): Response
     {
         $formestado = $this->createForm(PresupuestosType::class, $presupuesto);
@@ -281,9 +266,7 @@ class PresupuestosController extends AbstractController
         return $this->redirectToRoute('presupuestos_show', array('id' => $presupuesto->getId() ));
     }
 
-    /**
-     * @Route("/{id}/modificar", name="presupuestos_modificar")
-     */
+    #[Route('/{id}/modificar', name: 'presupuestos_modificar')]
     public function modificar(Request $request, Presupuestos $presupuesto, ProductosRepository $productosRepository, EconomicpresuRepository $economicpresu): Response
     {
         $form = $this->createForm(PresupuestosType::class, $presupuesto);
@@ -308,9 +291,7 @@ class PresupuestosController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/modificarmanoobra", name="presupuestos_modificar_manoobra")
-     */
+    #[Route('/{id}/modificarmanoobra', name: 'presupuestos_modificar_manoobra')]
     public function modificarManoOobra(Request $request, Presupuestos $presupuesto, ProductosRepository $productosRepository, EconomicpresuRepository $economicpresu): Response
     {
 
@@ -354,9 +335,7 @@ class PresupuestosController extends AbstractController
     }
 
 
-    /**
-     * @Route("/{id}/finalizar", name="presupuestos_finalizar")
-     */
+    #[Route('/{id}/finalizar', name: 'presupuestos_finalizar')]
     public function finalizar(Request $request, Presupuestos $presupuesto, EstadocestasRepository $estadocestasRepository): Response
     {   
        
@@ -386,9 +365,7 @@ class PresupuestosController extends AbstractController
 
 
 
-    /**
-     * @Route("/{id}/{estado}/finestado", name="presupuestos_finestado", methods={"GET","POST"})
-     */
+    #[Route('/{id}/{estado}/finestado', name: 'presupuestos_finestado', methods: ['GET','POST'])]
     public function finestado(Request $request, Presupuestos $presupuesto, int $estado, EstadocestasRepository $estadocestasRepository): Response
     {
      
@@ -404,9 +381,7 @@ class PresupuestosController extends AbstractController
     }
 
 
-    /**
-     * @Route("/{id}/manoobra", name="presupuesto_manoobra")
-     */
+    #[Route('/{id}/manoobra', name: 'presupuesto_manoobra')]
     public function editmano(Request $request, Presupuestos $presupuesto): JsonResponse
     {
 
@@ -419,9 +394,7 @@ class PresupuestosController extends AbstractController
         return $response->setData("OK");
     }
 
-    /**
-     * @Route("/{id}", name="presupuestos_delete", methods={"DELETE"})
-     */
+    #[Route('/{id}', name: 'presupuestos_delete', methods: ['DELETE'])]
     public function delete(Request $request, Presupuestos $presupuesto): Response
     {
         if ($this->isCsrfTokenValid('delete'.$presupuesto->getId(), $request->request->get('_token'))) {
@@ -433,9 +406,7 @@ class PresupuestosController extends AbstractController
     }
 
 
-    /**
-     * @Route("/{id}/{precios}/{tipo}/{estado}/generar", name="presupuestos_generar", methods={"GET","POST"})
-     */
+    #[Route('/{id}/{precios}/{tipo}/{estado}/generar', name: 'presupuestos_generar', methods: ['GET','POST'])]
     public function generar(Request $request, string $precios, Presupuestos $presupuesto, string $tipo, string $estado): Response
     {
        
@@ -446,7 +417,7 @@ class PresupuestosController extends AbstractController
         $descuentototal = $cestauser->getDescuentoTot($presupuesto->getTicket()->getId()); 
         $total = $subtotal + $presupuesto->getImportemanoobra();
 
-        $financiacion = new FinanciacionClass($total, 12);
+        $financiacion = new FinanciacionService($total, 12);
         $economic = $presupuesto->getEconomicpresus();
 
 
@@ -464,9 +435,7 @@ class PresupuestosController extends AbstractController
     }
 
 
-    /**
-     * @Route("/ticketpdf/imprimir", name="presupuestopdf")
-     */
+    #[Route('/ticketpdf/imprimir', name: 'presupuestopdf')]
     public function imprimir(Request $request): JsonResponse
     {
         
@@ -535,9 +504,7 @@ class PresupuestosController extends AbstractController
        
     }
 
-    /**
-     * @Route("/senalpdf/{id}/crear", name="senalpdf")
-     */
+    #[Route('/senalpdf/{id}/crear', name: 'senalpdf')]
     public function senalpdf(Request $request, Presupuestos $presupuesto, EstadocestasRepository $estadocestasRepository): JsonResponse
     {
         $tipopago  = $request->query->get('tipopago');
@@ -564,9 +531,7 @@ class PresupuestosController extends AbstractController
        
     }
 
-    /**
-     * @Route("/aceptarpresu/{id}", name="aceptarpresu")
-     */
+    #[Route('/aceptarpresu/{id}', name: 'aceptarpresu')]
     public function aceptarpresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository, TiposmovimientoRepository $tiposmovimientoRepository): JsonResponse
     {
         $tipopago = $request->query->get('tipopago');
@@ -588,14 +553,10 @@ class PresupuestosController extends AbstractController
         $this->em->persist($presupuesto);
         $this->em->flush();
 
-        $economic = new EconomicoPresu($this->em);
-
-        $economic->iniciarPresu($presupuesto->getimportemanoobra(),$presupuesto);
+        $this->economicoPresuService->iniciarPresu($presupuesto->getimportemanoobra(), $presupuesto);
 
         // Creamos un pago con lo que llegue en la señal
-        $generarPago = New GenerarPago($this->em);
-
-        $generarPago->ticketPagoFinal($presupuesto->getTicket(), $importesenal, $tipopago, $tiposmovimientoRepository);
+        $this->pagoService->ticketPagoFinal($presupuesto->getTicket(), $importesenal, $tipopago, $tiposmovimientoRepository);
         $response = new JsonResponse();
 
         // Envía una respuesta de texto
@@ -604,9 +565,7 @@ class PresupuestosController extends AbstractController
        
     }
 
-    /**
-     * @Route("/cobromaterialpresu/{id}", name="cobrarpresu")
-     */
+    #[Route('/cobromaterialpresu/{id}', name: 'cobrarpresu')]
     public function cobrarpresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository): JsonResponse
     {
         $tipopago = $request->query->get('tipopago');
@@ -651,9 +610,7 @@ class PresupuestosController extends AbstractController
        
     }    
 
-   /**
-     * @Route("/cobromanopresu/{id}", name="cobrarmanopresu")
-     */
+   #[Route('/cobromanopresu/{id}', name: 'cobrarmanopresu')]
     public function cobrarmanopresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository): JsonResponse
     {
         $tipopago = $request->query->get('tipopago');
@@ -709,9 +666,7 @@ class PresupuestosController extends AbstractController
        
     }        
 
-    /**
-     * @Route("/modificarpresu/{id}", name="modificarpresu")
-     */
+    #[Route('/modificarpresu/{id}', name: 'modificarpresu')]
     public function modificarpresu(Request $request, Presupuestos $presupuesto, DetallecestaRepository $detallecestaRepository, EstadocestasRepository $estadocestasRepository): JsonResponse
     {
         $tipopago  = $request->query->get('tipopago');
@@ -734,8 +689,8 @@ class PresupuestosController extends AbstractController
 
         $this->em->flush();
 
-        $economic = new EconomicoPresu($this->em);
-        $economic->actualizaResto($detallecestaRepository->imptotalCesta($presupuesto->getTicket())-$importesenal,$presupuesto);
+        $this->economicoPresuService->actualizaResto($detallecestaRepository->imptotalCesta($presupuesto->getTicket())-$importesenal,$presupuesto);
+
         $response = new JsonResponse();
 
         // Envía una respuesta de texto
@@ -744,9 +699,7 @@ class PresupuestosController extends AbstractController
        
     }
 
-        /**
-     * @Route("/delete/fila", name="presupuesto_delete_ajax", methods={"GET","POST"})
-     */
+        #[Route('/delete/fila', name: 'presupuesto_delete_ajax', methods: ['GET','POST'])]
     public function deletepresuajax(Request $request): JsonResponse
     {
         // Funcion para borrar registro de producto de una cesta determinada
@@ -767,9 +720,7 @@ class PresupuestosController extends AbstractController
 
     } 
 
- /**
-     * @Route("/actualiza/importe", name="presuactualiza_imp", methods={"GET","POST"})
-     */
+ #[Route('/actualiza/importe', name: 'presuactualiza_imp', methods: ['GET','POST'])]
     public function ajaxinscS(Request $request): jsonResponse
     {
 
@@ -792,10 +743,7 @@ class PresupuestosController extends AbstractController
 
 
     }      
-    /**
-     * @Route("/pago/recibir/{id}", name="pago_recibir", methods={"POST"})
-     */    
-
+    #[Route('/pago/recibir/{id}', name: 'pago_recibir', methods: ['POST'])]
     public function recibirPago(Request $request, Presupuestos $presupuesto, EntityManagerInterface $em, TiposmovimientoRepository $tiposmovimientoRepository, EconomicpresuRepository $economicpresuRepository, PagoManoObraService $pagoManoObraService): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -820,9 +768,8 @@ class PresupuestosController extends AbstractController
         } else  if ($importe > $restanteMateriales & $restanteMateriales > 0) { 
             // Si el importe es mayor que el resto de materiales, hay que abonar todo lo que queda de materiales y el resto a mano de obra
 
-            $generarPago = New GenerarPago($this->em);
-            $generarPago->ticketPagoFinal($presupuesto->getTicket(), $restanteMateriales, $metodo, $tiposmovimientoRepository);
 
+            $this->pagoService->ticketPagoFinal($presupuesto->getTicket(), $restanteMateriales, $metodo, $tiposmovimientoRepository);
 
             // Actualizamos el importe de mano de obra pagado
             $importeaManodeObra = $importe - $restanteMateriales;
@@ -833,9 +780,8 @@ class PresupuestosController extends AbstractController
 
         } else if ($importe <= $restanteMateriales ) {  
             // Si el importe es menor o igual que el resto de materiales, se abona todo a materiales
-            $generarPago = New GenerarPago($this->em);
-            $generarPago->ticketPagoFinal($presupuesto->getTicket(), $importe, $metodo, $tiposmovimientoRepository);
-            $this->em->flush();  
+            $this->pagoService->ticketPagoFinal($presupuesto->getTicket(), $importe, $metodo, $tiposmovimientoRepository);
+            $this->em->flush();
 
         } else {
             // Si no, se abona todo a mano de obra  

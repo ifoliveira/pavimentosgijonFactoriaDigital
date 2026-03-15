@@ -6,7 +6,6 @@ use App\Entity\Banco;
 use App\Entity\Efectivo;
 use App\Entity\Tiposmovimiento;
 use App\Form\Banco1Type;
-Use App\MisClases\Banks_N43;
 use App\Repository\BancoRepository;
 use App\Repository\DetallecestaRepository;
 use App\Repository\EfectivoRepository;
@@ -21,9 +20,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 
 
-/**
- * @Route("/admin/banco")
- */
+#[Route('/admin/banco')]
 class BancoController extends AbstractController
 {
 
@@ -35,9 +32,7 @@ class BancoController extends AbstractController
     }
 
 
-    /**
-     * @Route("/", name="banco_index", methods={"GET"})
-     */
+    #[Route('/', name: 'banco_index', methods: ['GET'])]
     public function index(BancoRepository $bancoRepository, DetallecestaRepository $detallecestaRepository): Response
     {
         return $this->render('banco/index.html.twig', [
@@ -45,9 +40,7 @@ class BancoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/new", name="banco_new", methods={"GET","POST"})
-    */   
+    #[Route('/new', name: 'banco_new', methods: ['GET','POST'])]
     public function new(Request $request,DetallecestaRepository $detallecestaRepository): Response
     {
         $banco = new Banco();
@@ -67,9 +60,7 @@ class BancoController extends AbstractController
         ]);
     }
     
-    /**
-     * @Route("/{id_Bn}", name="banco_show", methods={"GET"})
-     */
+    #[Route('/{id_Bn}', name: 'banco_show', methods: ['GET'])]
     public function show(Banco $banco, DetallecestaRepository $detallecestaRepository): Response
     {
         return $this->render('banco/show.html.twig', [
@@ -77,9 +68,7 @@ class BancoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="banco_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'banco_edit', methods: ['GET','POST'])]
     public function edit(Request $request, Banco $banco , DetallecestaRepository $detallecestaRepository): Response
     {
         $form = $this->createForm(Banco1Type::class, $banco);
@@ -97,9 +86,7 @@ class BancoController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id_Bn}", name="banco_delete", methods={"DELETE"})
-     */
+    #[Route('/{id_Bn}', name: 'banco_delete', methods: ['DELETE'])]
     public function delete(Request $request, Banco $banco, DetallecestaRepository $detallecestaRepository): Response
     {
         if ($this->isCsrfTokenValid('delete'.$banco->getId(), $request->request->get('_token'))) {
@@ -111,9 +98,7 @@ class BancoController extends AbstractController
         return $this->redirectToRoute('banco_index');
     }
 
-    /**
-     * @Route("/{id}/transferencia", name="banco_transferencia", methods={"GET","POST"})
-     */
+    #[Route('/{id}/transferencia', name: 'banco_transferencia', methods: ['GET','POST'])]
     public function conciliar(Request $request, Banco $banco,  EfectivoRepository $efectivoRepository, TiposmovimientoRepository $tiposmovimientoRepository): Response
     {
                 

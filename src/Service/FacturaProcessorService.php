@@ -1,7 +1,7 @@
 <?php 
 namespace App\Service;
 
-use App\MisClases\FacturaPdfToJsonService;
+use App\Service\FacturaPdfToJsonService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\KernelInterface;

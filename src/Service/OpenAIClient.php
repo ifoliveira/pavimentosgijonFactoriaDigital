@@ -1,6 +1,6 @@
 <?php
 
-namespace App\MisClases;
+namespace App\Service;
 
 use OpenAI;
 

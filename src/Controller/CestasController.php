@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\MisClases\CestaUser;
+use App\Service\CestaUserService;
 use App\Entity\Cestas;
 use App\Entity\Detallecesta;
 use App\Entity\Efectivo;
@@ -14,7 +14,7 @@ use App\Repository\BancoRepository;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
-use App\MisClases\item;
+use App\Service\TicketItem;
 use App\Repository\TiposmovimientoRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,40 +22,32 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
-use App\MisClases\GenerarPago;
+use App\Service\PagoService;
 // Incluir los espacios de nombres requeridos por Dompdf
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-/**
- * @Route("admin/cestas")
- */
+#[Route('admin/cestas')]
 class CestasController extends AbstractController
 {
 
-    protected $em;
+    public function __construct(
+        private EntityManagerInterface $em,
+        private PagoService $pagoService,
+    ) {}
 
-    public function __construct( EntityManagerInterface $em )
-    {
-        $this->em = $em;
-    }
-
-    /**
-     * @Route("/", name="cestas_index", methods={"GET"})
-     */
+    #[Route('/', name: 'cestas_index', methods: ['GET'])]
     public function index(CestasRepository $cestasRepository): Response
     {
-        $ticketspendientes = $cestasRepository->ticketssnal();
+        $ticketspendientes = $cestasRepository->findPendientesCobro();
 
         return $this->render('cestas/index.html.twig', [
-            'cestas' => $cestasRepository->ticketshoy(),
+            'cestas' => $cestasRepository->findFinalizados(),
             'cestasnal'=> $ticketspendientes,
         ]);
     }
 
-    /**
-     * @Route("/new", name="cestas_new", methods={"GET","POST"})
-     */
+    #[Route('/new', name: 'cestas_new', methods: ['GET','POST'])]
     public function new(Request $request): Response
     {
         $cesta = new Cestas();
@@ -75,9 +67,7 @@ class CestasController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="cestas_show", methods={"GET"})
-     */
+    #[Route('/{id}', name: 'cestas_show', methods: ['GET'])]
     public function show(Cestas $cesta): Response
     {
         return $this->render('cestas/show.html.twig', [
@@ -85,9 +75,7 @@ class CestasController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="cestas_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'cestas_edit', methods: ['GET','POST'])]
     public function edit(Request $request, Cestas $cesta): Response
     {
         $form = $this->createForm(CestasType::class, $cesta);
@@ -105,9 +93,7 @@ class CestasController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="cestas_delete", methods={"DELETE"})
-     */
+    #[Route('/{id}', name: 'cestas_delete', methods: ['DELETE'])]
     public function delete(Request $request, Cestas $cesta): Response
     {
         if ($this->isCsrfTokenValid('delete'.$cesta->getId(), $request->request->get('_token'))) {
@@ -119,30 +105,23 @@ class CestasController extends AbstractController
         return $this->redirectToRoute('cestas_index');
     }
 
-    /**
-     * @Route("/delete/fila", name="cesta_delete_ajax", methods={"GET","POST"})
-     */
+    #[Route('/delete/fila', name: 'cesta_delete_ajax', methods: ['POST'])]
     public function deleteajax(Request $request): JsonResponse
     {
-        // Funcion para borrar registro de producto de una cesta determinada
-        // Obtener ID del cesta
-        $datos = $request->query->get('id');
-        // Obtener cesta
-        $cesta = $this->em->getRepository('App\Entity\Cestas')->find($datos);
+        $id    = $request->request->get('id');
+        $cesta = $this->em->getRepository(Cestas::class)->find($id);
 
-        // Borrado del detalle
+        if (!$cesta) {
+            return new JsonResponse(['error' => 'No encontrado'], 404);
+        }
+
         $this->em->remove($cesta);
         $this->em->flush();
 
-        $response = new JsonResponse();
+        return new JsonResponse();
+    }
 
-        return $response;
-
-    }  
-
-   /**
-     * @Route("/ticketpdf/{id}/epson", name="impepson", methods={"GET","POST"})
-     */
+   #[Route('/ticketpdf/{id}/epson', name: 'impepson', methods: ['GET','POST'])]
     public function epsonimp(Request $request, Cestas $cesta): jsonResponse
     {
    
@@ -161,11 +140,11 @@ class CestasController extends AbstractController
         $adelanto = $cesta->getDescuentoCs();
 
         foreach ($cesta->getdetallecesta() as $detallecesta) {
-        array_push($items, new item($detallecesta->getCantidadDc(), $detallecesta->getproductoDc()->getdescripcionPd() ,number_format(($detallecesta->getCantidadDc() * $detallecesta->getPvpDc()),2,',','.')));
+        array_push($items, new TicketItem($detallecesta->getCantidadDc(), $detallecesta->getproductoDc()->getdescripcionPd() ,number_format(($detallecesta->getCantidadDc() * $detallecesta->getPvpDc()),2,',','.')));
             $totaln = $totaln + ($detallecesta->getCantidadDc() * $detallecesta->getPvpDc());
         };
 
-        $senal = new item('','Senal', number_format(($importesnal*-1),2,',','.'));
+        $senal = new TicketItem('','Senal', number_format(($importesnal*-1),2,',','.'));
 
         
         /* Date is kept the same for testing */
@@ -206,14 +185,14 @@ class CestasController extends AbstractController
         /* Items */
         $printer -> setJustification(Printer::JUSTIFY_LEFT);
         $printer -> setEmphasis(true);
-        $printer -> text(new item('', '', '€'));
+        $printer -> text(new TicketItem('', '', '€'));
         $printer -> setEmphasis(false);
         foreach ($items as $item) {
             $printer -> text($item);
         }
 
         If ($cierre == 'SN') {
-            $adelantowrite = new item('','Adelanto', number_format($adelanto * -1,2,',','.') );
+            $adelantowrite = new TicketItem('','Adelanto', number_format($adelanto * -1,2,',','.') );
             $printer -> text($adelantowrite );
             $totaln = $totaln - $adelanto ;
             $importesnal = $adelanto;
@@ -223,7 +202,7 @@ class CestasController extends AbstractController
 
             
             $totaln = $totaln - $importesnal;
-            $total = new item('','Pendiente', number_format($totaln,2,',','.'), true);
+            $total = new TicketItem('','Pendiente', number_format($totaln,2,',','.'), true);
 
             $printer -> setEmphasis(true);
             $printer -> text($senal);
@@ -231,7 +210,7 @@ class CestasController extends AbstractController
 
         } else {
 
-            $total = new item('','Total', number_format($totaln,2,',','.'), true);
+            $total = new TicketItem('','Total', number_format($totaln,2,',','.'), true);
 
         }
         /*$printer -> setEmphasis(true);
@@ -274,9 +253,7 @@ class CestasController extends AbstractController
     }
 
     //Obtener array de detalle de ticket
-    /**
-     * @Route("/ticket/{id}/detalle", name="ticketdet", methods={"GET","POST"})
-     */
+    #[Route('/ticket/{id}/detalle', name: 'ticketdet', methods: ['GET','POST'])]
     public function ticketdet(Request $request, Cestas $cesta): jsonResponse
     {
         $salida = array();
@@ -296,9 +273,7 @@ class CestasController extends AbstractController
 
 
     //Imprimir el ticket solamente, no cambia el estado del ticket
-    /**
-     * @Route("/ticketpdf/{id}/imprimir", name="ticketpdf", methods={"GET","POST"})
-     */
+    #[Route('/ticketpdf/{id}/imprimir', name: 'ticketpdf', methods: ['GET','POST'])]
     public function imprimir(Request $request, Cestas $cesta): jsonResponse
     {
 
@@ -361,32 +336,20 @@ class CestasController extends AbstractController
        
     }
 
-    /**
-     * @Route("/{id}/tipopago", name="cesta_tipopago", methods={"GET","POST"})
-     */
-    public function cestatipopago(Request $request, Cestas $cesta,CestasRepository $cestasRepository): Response
+    #[Route('/{id}/tipopago', name: 'cesta_tipopago', methods: ['POST'])]
+    public function cestatipopago(Cestas $cesta): Response
     {
- 
+        $cesta->setTipopagoCs(
+            $cesta->getTipopagoCs() === 'Tarjeta' ? 'Efectivo' : 'Tarjeta'
+        );
 
-        if($cesta->getTipopagoCs() == 'Tarjeta') {
-
-            $cesta->setTipopagoCs('Efectivo');
-        }else{
-
-            $cesta->setTipopagoCs('Tarjeta');
-        }
-
-        $this->em->persist($cesta);
         $this->em->flush();
 
-         return $this->redirectToRoute('cestas_index');
+        return $this->redirectToRoute('cestas_index');
+    }
 
-    }  
 
-
-    /**
-     * @Route("/{id}/finalizar", name="cestas_finalizar")
-     */
+    #[Route('/{id}/finalizar', name: 'cestas_finalizar')]
     public function finalizar(Request $request, Cestas $cestas, TiposmovimientoRepository $tiposmovimientoRepository): Response
     {   
 
@@ -431,15 +394,13 @@ class CestasController extends AbstractController
         // Creamos un pago con lo que llegue en la señal
 
 
-        $generarPago = New GenerarPago($this->em);
-
         if ($importesnal == 0) {  
             $importe = $importetot;
         } else {
             $importe = $importesnal;
         }        
 
-        $generarPago->ticketPagoFinal($cestas, $importe, $tipopago, $tiposmovimientoRepository);
+        $this->pagoService->ticketPagoFinal($cestas, $importe, $tipopago, $tiposmovimientoRepository);
         
         $this->em->flush();  
 
@@ -451,62 +412,20 @@ class CestasController extends AbstractController
 
 
 
-    /**
-     * @Route("/{id}/deletelogico", name="delete_logico")
-     */
-    public function deletelogico(Request $request, Cestas $cestas): Response
-    {   
-    
-        // Cambiamos el estado de la cesta del presupuesto para que sea actual
-
-       // Obtener los detalles de la cesta
-       $detallecestas = $cestas->getdetallecesta();
-
-       // Eliminar cada detalle de la cesta
-       foreach ($detallecestas as $detallecesta) {
-           $cestas->removedetallescesta($detallecesta);
-           $this->em->remove($detallecesta); // También eliminamos el detalle de la base de datos
-       }
+    #[Route('/{id}/deletelogico', name: 'delete_logico')]
+    public function deletelogico(Cestas $cestas): Response
+    {
+        foreach ($cestas->getDetallecesta() as $detallecesta) {
+            $this->em->remove($detallecesta);
+        }
 
         $this->em->flush();
-        $response = new JsonResponse();
 
-        // Envía una respuesta de texto
-        return $response->setData("OK");
-      
-
+        return new JsonResponse("OK");
     }
 
-    /**
-     * @Route("/nuevo/ajax", name="cesta_ajax", methods={"GET","POST"})
-     */
-    public function ajaxcS(Request $request): jsonResponse
-    {
-        $jsonData = array();
-        
-        $datos = $request->query->get('cesta');
-        $cesta = new Cestas;
-        $cesta->setEstadoCs(2);
-        $cestas->setFechaFinCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
-        $cesta->setFechaCs(date_create ($datos[0]));
-        $cesta->setImporteTotCs($datos[1]);
-        $cesta->setDescuentoCs($datos[2]);
-        $cesta->setTipopagoCs($datos[3]);
-        $cesta->setNumticketCs($datos[4]);
-        $cesta->setTimestampCs(new \DateTime());
- 
-        $this->em->persist($cesta);
-        $this->em->flush();
 
-        $jsonData[0]= $datos;
-
-        return new jsonResponse($jsonData); 
-
-    }  
-
-    /**
-     * @Route("/conciliar/{id}", name="conciliar_cesta", methods={"GET"})
-     */
+    #[Route('/conciliar/{id}', name: 'conciliar_cesta', methods: ['GET'])]
     public function conciliar(Cestas $cesta, BancoRepository $bancoRepository): Response
     {
    
@@ -515,9 +434,7 @@ class CestasController extends AbstractController
             'bancos' => $bancoRepository->findAll(),
         ]);
     }    
-    /**
-     * @Route("/{id}/{idbanco}/conciliar", name="cestas_conciliar", methods={"GET","POST"})
-     */
+    #[Route('/{id}/{idbanco}/conciliar', name: 'cestas_conciliar', methods: ['GET','POST'])]
     public function conciliar_banco(Cestas $cesta, BancoRepository $bancoRepository, int $idbanco): Response
     {
         

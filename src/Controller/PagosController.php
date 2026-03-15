@@ -10,27 +10,21 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\PagosRepository;
 use App\Repository\BancoRepository;
-use App\MisClases\GenerarPago;
 use App\Entity\Pagos;
 use App\Entity\Economicpresu;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Service\PagoService;
 
-/**
- * @Route("/admin/pagos")
- */
+#[Route('/admin/pagos')]
 class PagosController extends AbstractController
 {
 
-    protected $em;
+    public function __construct(
+        private EntityManagerInterface $em,
+        private PagoService $pagoService,
+    ) {}
 
-    public function __construct( EntityManagerInterface $em )
-    {
-        $this->em = $em;
-    }
-
-    /**
-     * @Route("/", name="pagos_index", methods={"GET"})
-     */
+    #[Route('/', name: 'pagos_index', methods: ['GET'])]
     public function index(PagosRepository $pagosRepository, BancoRepository $bancoRepository): Response
     {
         return $this->render('pagos/index.html.twig', [
@@ -39,25 +33,20 @@ class PagosController extends AbstractController
         ]);
     }    
 
-    /**
-     * @Route("/conciliar/{id}", name="pagos_conciliar", methods={"GET"})
-     */
+    #[Route('/conciliar/{id}', name: 'pagos_conciliar', methods: ['GET'])]
     public function conciliarPagos(Request $request, Pagos $pagos, BancoRepository $bancoRepository): JsonResponse
     {    
         $bancoId = $request->query->get('banco');
 
-        $generarPago = New GenerarPago($this->em);
-
-        $generarPago->conciliar($pagos, $bancoId, $bancoRepository);
+        $this->PagosService->conciliar($pagos, $bancoId, $bancoRepository);
+        $this->em->flush();
 
         $response = new JsonResponse();
 
         return $response;
 
     }
-    /**
-     * @Route("/procesar/{id}", name="pago_procesar", methods={"POST"})
-     */ 
+    #[Route('/procesar/{id}', name: 'pago_procesar', methods: ['POST'])]
     public function procesarPago(Economicpresu $economicpresu, EntityManagerInterface $em): JsonResponse
     {
         // Simulamos que se marca como pagado

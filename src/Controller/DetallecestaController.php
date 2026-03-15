@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Detallecesta;
 use App\Form\DetallecestaType;
-use App\MisClases\CestaUser;
+use App\Service\CestaUserService;
 use App\Repository\DetallecestaRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,9 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
-/**
- * @Route("admin/detallecesta")
- */
+#[Route('admin/detallecesta')]
 class DetallecestaController extends AbstractController
 {
 
@@ -25,9 +23,7 @@ class DetallecestaController extends AbstractController
         $this->em = $em;
     }
 
-    /**
-     * @Route("/", name="detallecesta_index", methods={"GET"})
-     */
+    #[Route('/', name: 'detallecesta_index', methods: ['GET'])]
     public function index(DetallecestaRepository $detallecestaRepository): Response
     {
         return $this->render('detallecesta/index.html.twig', [
@@ -35,9 +31,7 @@ class DetallecestaController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="detallecesta_show", methods={"GET"})
-     */
+    #[Route('/{id}', name: 'detallecesta_show', methods: ['GET'])]
     public function show(Detallecesta $detallecestum): Response
     {
         return $this->render('detallecesta/show.html.twig', [
@@ -45,9 +39,7 @@ class DetallecestaController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="detallecesta_edit", methods={"GET","POST"})
-     */
+    #[Route('/{id}/edit', name: 'detallecesta_edit', methods: ['GET','POST'])]
     public function edit(Request $request, Detallecesta $detallecestum): Response
     {
         $form = $this->createForm(DetallecestaType::class, $detallecestum);
@@ -65,9 +57,7 @@ class DetallecestaController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="detallecesta_delete", methods={"DELETE"})
-     */
+    #[Route('/{id}', name: 'detallecesta_delete', methods: ['DELETE'])]
     public function delete(Request $request, Detallecesta $detallecestum): Response
     {
         if ($this->isCsrfTokenValid('delete'.$detallecestum->getId(), $request->request->get('_token'))) {
@@ -79,9 +69,7 @@ class DetallecestaController extends AbstractController
         return $this->redirectToRoute('detallecesta_index');
     }
 
-    /**
-     * @Route("/delete/fila", name="detallecesta_delete", methods={"GET","POST"})
-     */
+    #[Route('/delete/fila', name: 'detallecesta_delete', methods: ['GET','POST'])]
     public function ajaxcS(Request $request, DetallecestaRepository $detallecestaRepository): jsonResponse
     {
         // Funcion para borrar registro de producto de una cesta determinada
@@ -114,9 +102,7 @@ class DetallecestaController extends AbstractController
 
     }  
 
-    /**
-     * @Route("/nuevo/detalle", name="detallecesta_new", methods={"GET","POST"})
-     */
+    #[Route('/nuevo/detalle', name: 'detallecesta_new', methods: ['GET','POST'])]
     public function ajaxinscS(Request $request, DetallecestaRepository $detallecestaRepository): jsonResponse
     {
 
@@ -169,9 +155,7 @@ class DetallecestaController extends AbstractController
     }  
 
 
-    /**
-     * @Route("/plusminus/ajax", name="detallecesta_plusminus_ajax", methods={"GET","POST"})
-     */
+    #[Route('/plusminus/ajax', name: 'detallecesta_plusminus_ajax', methods: ['GET','POST'])]
     public function ajaxplumincS(Request $request, DetallecestaRepository $detallecestaRepository): jsonResponse
     {
          

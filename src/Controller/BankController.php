@@ -12,24 +12,19 @@ use App\Entity\Banco; // Asegúrate de que este use statement corresponda a tu e
 use App\Form\ExcelType; // Asegúrate de incluir tu nuevo formulario
 use App\Entity\Tiposmovimiento;
 use PhpOffice\PhpSpreadsheet\Calculation\DateTimeExcel\DateValue;
-use App\MisClases\CategoriaMovimiento;
+use App\Service\CategoriaMovimientoService;
 use App\Repository\BancoRepository;
 
 class BankController extends AbstractController
 {
 
+    public function __construct(
+        private EntityManagerInterface $em,
 
-    protected $em;
-
-    public function __construct( EntityManagerInterface $em )
-    {
-        $this->em = $em;
-    }
-
-    /**
-     * @Route("/admin/upload", name="uploadBank")
-     */
-    public function uploadBankData(Request $request, CategoriaMovimiento $categoriaMovimiento, BancoRepository $bancoRepository): Response
+    ) {}
+    
+    #[Route('/admin/upload', name: 'uploadBank')]
+    public function uploadBankData(Request $request, CategoriaMovimientoService $categoriaMovimientoService, BancoRepository $bancoRepository): Response
     {
         $form = $this->createForm(ExcelType::class);
         $form->handleRequest($request);

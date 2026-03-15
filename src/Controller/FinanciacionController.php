@@ -7,16 +7,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use App\Form\FinanciacionType;
-use App\MisClases\FinanciacionClass;
+use App\Service\FinanciacionService;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class FinanciacionController extends AbstractController
 {
-    /**
-     * @Route("/admin/financiacion", name="app_financiacion")
-     */
+    #[Route('/admin/financiacion', name: 'app_financiacion')]
     public function index(Request $request): Response
     {
 
@@ -32,9 +30,9 @@ class FinanciacionController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
              $data = $form->getData();
-             $financiacion = new FinanciacionClass($data['Importe'], $data['Plazo']);
-             $mensualidad = array (2 => $financiacion->obtenermensualidad(2), 3=>$financiacion->obtenermensualidad(3), 4=>$financiacion->obtenermensualidad(4));
-             $totalabonar = array (2 => $financiacion->obtenermensualidad(2)*$data['Plazo'], 3=>$financiacion->obtenermensualidad(3)*$data['Plazo'], 4=>$financiacion->obtenermensualidad(4)*$data['Plazo']);
+             $financiacion = new FinanciacionService($data['Importe'], $data['Plazo']);
+             $mensualidad = array (2 => $financiacion->obtenerMensualidad(2), 3=>$financiacion->obtenerMensualidad(3), 4=>$financiacion->obtenerMensualidad(4));
+             $totalabonar = array (2 => $financiacion->obtenerMensualidad(2)*$data['Plazo'], 3=>$financiacion->obtenerMensualidad(3)*$data['Plazo'], 4=>$financiacion->obtenerMensualidad(4)*$data['Plazo']);
              $meses = $data['Plazo'];
              $coste = array (2 => $financiacion->costecomercio(2), 3=>$financiacion->costecomercio(3), 4=>$financiacion->costecomercio(4));
 

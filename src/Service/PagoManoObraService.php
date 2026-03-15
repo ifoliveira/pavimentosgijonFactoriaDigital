@@ -1,5 +1,5 @@
-<?php 
-namespace App\MisClases;
+<?php
+namespace App\Service;
 
 use App\Entity\Economicpresu;
 use App\Entity\Efectivo;
@@ -12,11 +12,10 @@ class PagoManoObraService
 
     public function registrarPago(int $presupuestoId, float $importe, string $tipopago): array
     {
-        // Buscar el registro pendiente de mano de obra
         $actualizar = $this->em->getRepository(Economicpresu::class)->findOneBy([
-            'estadoEco' => 1,
-            'aplicaEco' => 'M',
-            'idpresuEco' => $presupuestoId
+            'estadoEco'  => 1,
+            'aplicaEco'  => 'M',
+            'idpresuEco' => $presupuestoId,
         ]);
 
         if (!$actualizar) {
@@ -33,7 +32,6 @@ class PagoManoObraService
             $actualizar->setImporteEco($importeOriginal - $importe);
             $actualizar->setTimestamp(new \DateTime());
 
-            // Crear nuevo registro con el pago actual
             $nuevo = clone $actualizar;
             $nuevo->setEstadoEco($tipopago === 'Efectivo' ? 6 : 7);
             $nuevo->setImporteEco($importe);
