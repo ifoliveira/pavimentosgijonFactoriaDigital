@@ -1,5 +1,5 @@
-{% extends 'inicio2.html.twig' %}
-{% block eltiempo %} {% endblock %}
+{% extends 'base.html.twig' %}
+
 {% form_theme form 'fields.html.twig' %}
 {% block title %}New Forecast{% endblock %}
 {% block cabecera %} Forecast {% endblock %}
@@ -7,7 +7,7 @@
     <li class="breadcrumb-item"><a href="{{ path("forecast_consulta") }}">Forecast</a></li>
     <li class="breadcrumb-item active">Nuevo</li>
 {% endblock %}
-{% block cardbody1 %}
+{% block body %}
                 <!-- ============================================================== -->
                 <!-- End Bread crumb and right sidebar toggle -->
                 <!-- ============================================================== -->

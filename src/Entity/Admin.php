@@ -1,15 +1,15 @@
 <?php
-
 namespace App\Entity;
 
 use App\Repository\AdminRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: AdminRepository::class)]
-class Admin implements UserInterface
+class Admin implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -37,7 +37,7 @@ class Admin implements UserInterface
         $this->cestas = new ArrayCollection();
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->username;
     }
@@ -52,10 +52,20 @@ class Admin implements UserInterface
         return (string) $this->username;
     }
 
+    // Requerido por UserInterface en Symfony 5.x
     public function getUsername(): string
     {
         return (string) $this->username;
     }
+
+    // Requerido por UserInterface en Symfony 5.x
+    public function getSalt(): ?string
+    {
+        return null;
+    }
+
+
+
 
     public function setUsername(string $username): self
     {
@@ -87,13 +97,11 @@ class Admin implements UserInterface
         return $this;
     }
 
-    public function getSalt(): ?string
-    {
-        return null;
-    }
+    // getSalt() eliminado — obsoleto, bcrypt/argon2 no usan salt externo
 
     public function eraseCredentials(): void
     {
+        // Limpiar datos sensibles temporales si los hubiera (plainPassword, etc.)
     }
 
     /*
@@ -113,7 +121,6 @@ class Admin implements UserInterface
             $this->presupuestos[] = $presupuesto;
             $presupuesto->setUserPe($this);
         }
-
         return $this;
     }
 
@@ -124,7 +131,6 @@ class Admin implements UserInterface
                 $presupuesto->setUserPe(null);
             }
         }
-
         return $this;
     }
 
@@ -139,7 +145,6 @@ class Admin implements UserInterface
             $this->cestas[] = $cesta;
             $cesta->setUserAdmin($this);
         }
-
         return $this;
     }
 
@@ -150,7 +155,6 @@ class Admin implements UserInterface
                 $cesta->setUserAdmin(null);
             }
         }
-
         return $this;
     }
 }

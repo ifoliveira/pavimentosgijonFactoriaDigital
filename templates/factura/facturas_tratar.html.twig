@@ -1,6 +1,6 @@
-{% extends 'inicio2.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block eltiempo %}{% endblock %}
+
 {% block cabecera %}Tratar Factura{% endblock %}
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{{ path('factura_subir') }}">Subir</a></li>
@@ -8,7 +8,7 @@
 {% endblock %}
 {% block title %}Procesar Factura{% endblock %}
 
-{% block cardbody1 %}
+{% block body %}
     <h1>Procesar Factura Detectada</h1>
 
     <h2>Subir nueva factura</h2>

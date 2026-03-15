@@ -1,10 +1,10 @@
-{% extends 'inicio2.html.twig' %}
-{% block eltiempo %} {% endblock %}
+{% extends 'base.html.twig' %}
+
 {% form_theme form 'fields.html.twig' %}
 {% block cabecera %} Presupuestos {% endblock %}
 {% block breadcrumb %} <li class="breadcrumb-item active">Presupuestos List</li>{% endblock %}
 {% block title %}Presupuestos List{% endblock %}
-{% block cardbody1 %}
+{% block body %}
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
@@ -24,7 +24,7 @@
                         {% if presupuesto.EstadoPe.id > 3 and presupuesto.EstadoPe.id < 8 %}
                                     <div class="card">
                                         <div class="card-body">
-                                            {{ form_start(formestado) }}
+                                            {{ form_start(formestado,   {'attr': {'novalidate': 'novalidate'}}) }}
                                                     {{ form_row(formestado._token) }}
                                                     {% if presupuesto.EstadoPe.id == 4 %}
                                                     <h4 class="card-title">¿Ya se ha medido e incorporado fotos?</h4>
@@ -35,8 +35,8 @@
                                                     <button type="submit" class="btn btn-rounded btn-outline-success">Escoger finalizado </button>
                                                     {% endif %} 
                                                     {% if presupuesto.EstadoPe.id == 6 %}
-                                                    <h4 class="card-title">¿Presupuesto finalizado?</h4>
-                                                    <button type="submit" class="btn btn-rounded btn-outline-success">Presupuesto finalizado </button>
+                                                        <h4 class="card-title">¿Presupuesto finalizado?</h4>
+                                                        <button type="submit" class="btn btn-rounded btn-outline-success">Presupuesto finalizado </button>
                                                     {% endif %} 
                                                     {% if presupuesto.EstadoPe.id == 7 %}
                                                     <h4 class="card-title">¿Presupuesto Entregado?</h4>
@@ -185,7 +185,7 @@
 
                                     <div class="card">
 
-                                        {{ form_start(formmanoob) }}
+                                        {{ form_start(formmanoob,   {'attr': {'novalidate': 'novalidate'}}) }}
                                                 {{ form_row(formmanoob._token) }}
 
 
@@ -216,7 +216,7 @@
                             <div class="card">
                                 <div class="card-body">
                                     <h4 class="card-title">Subir fotos</h4>
-                                    {{ form_start(form) }}
+                                    {{ form_start(form,   {'attr': {'novalidate': 'novalidate'}}) }}
                                         
                                             <div class="card-body">
                                             <h6 class="card-subtitle"></code></h6>
@@ -257,11 +257,11 @@
                                                     {% set pagado = 0 %}
                                                     <td>{{ presupuesto.ticket.id }}</td>
                                                     <td>Materiales</td>
-                                                    <td align="right">{{ presupuesto.ticket.importeTotCs|format_currency('EUR', locale='es')  }}</td>
+                                                    <td class="text-right">{{ presupuesto.ticket.importeTotCs|format_currency('EUR', locale='es')  }}</td>
                                                     {% for pagos in presupuesto.ticket.pagos %}
                                                         {% set pagado = pagos.importePg + pagado %}
                                                     {% endfor %}
-                                                    <td align="right">{{ (presupuesto.ticket.importeTotCs - pagado) |format_currency('EUR', locale='es')   }}</td>
+                                                    <td class="text-right">{{ (presupuesto.ticket.importeTotCs - pagado) |format_currency('EUR', locale='es')   }}</td>
                                                     <td>
 
                                                        {% if (presupuesto.ticket.importeTotCs - pagado) == 0 %}
@@ -293,8 +293,8 @@
 
                                                             <td>{{ idmanoobra }}</td>
                                                             <td>Mano de Obra</td>
-                                                            <td align="right">{{ manoobratotal|format_currency('EUR', locale='es')  }}</td>
-                                                            <td align="right">{{ manoobrapdte|format_currency('EUR', locale='es')  }}</td>
+                                                            <td class="text-right">{{ manoobratotal|format_currency('EUR', locale='es')  }}</td>
+                                                            <td class="text-right">{{ manoobrapdte|format_currency('EUR', locale='es')  }}</td>
                                                             <td>
                                                             {% if manoobrapdte == 0 %}
                                                                 <h5> No hay nada pendiente </h5>
@@ -307,8 +307,8 @@
                                                 <tr>
                                                     <td></td>
                                                     <td>Total pendiente</td>
-                                                    <td align="right"></td>
-                                                    <td align="right">{{ (presupuesto.ticket.importeTotCs - pagado + manoobrapdte)|format_currency('EUR', locale='es')  }}</td>
+                                                    <td class="text-right"></td>
+                                                    <td class="text-right">{{ (presupuesto.ticket.importeTotCs - pagado + manoobrapdte)|format_currency('EUR', locale='es')  }}</td>
                                                     <td></td>
                                                 </tr>                                                
 
@@ -341,10 +341,10 @@
                                                             <td>{{ economicos.id }}</td>
                                                             <td>{{ economicos.conceptoEco}}</td>
                                                             {% if economicos.debehaberEco == 'D'  %}
-                                                                <td align="right">{{ (economicos.importeEco * -1)|format_currency('EUR', locale='es')}}</td>
+                                                                <td class="text-right">{{ (economicos.importeEco * -1)|format_currency('EUR', locale='es')}}</td>
                                                                 {% set importeapagar = (economicos.importeEco * -1) + importeapagar %}
                                                             {% else %}
-                                                                <td align="right">{{ economicos.importeEco|format_currency('EUR', locale='es')}}</td>
+                                                                <td class="text-right">{{ economicos.importeEco|format_currency('EUR', locale='es')}}</td>
                                                                 {% set importeapagar = (economicos.importeEco) + importeapagar %}
                                                             {% endif %}
 
@@ -419,12 +419,12 @@
                                         {% for detalle in project.getCesta(cestaId).getdetallecesta %}
                                             <tr>
                                                 <td>{{ detalle.productoDc.descripcionPd }}</td>
-                                                <td align="right">{{ detalle.pvpDc |format_currency('EUR', locale='es') }}</td>
-                                                <td align="center">{{ detalle.cantidadDC}}</td>
-                                                <td align="right">{{ (detalle.cantidadDC * detalle.pvpDc)|format_currency('EUR', locale='es') }}</td>
-                                                <td align="right">{{ (detalle.precioDC * detalle.cantidadDc)|format_currency('EUR', locale='es') }}</td>
-                                                <td align="right">{{ ((detalle.cantidadDC * detalle.pvpDc) - (detalle.precioDC * detalle.cantidadDc))|format_currency('EUR', locale='es') }}</td>
-                                                <td align="right">{{ (((detalle.cantidadDC * detalle.pvpDc) - (detalle.precioDC * detalle.cantidadDc))  / (detalle.pvpDc * detalle.cantidadDc))|format_percent_number }}</td>
+                                                <td class="text-right">{{ detalle.pvpDc |format_currency('EUR', locale='es') }}</td>
+                                                <td class="text-center">{{ detalle.cantidadDC}}</td>
+                                                <td class="text-right">{{ (detalle.cantidadDC * detalle.pvpDc)|format_currency('EUR', locale='es') }}</td>
+                                                <td class="text-right">{{ (detalle.precioDC * detalle.cantidadDc)|format_currency('EUR', locale='es') }}</td>
+                                                <td class="text-right">{{ ((detalle.cantidadDC * detalle.pvpDc) - (detalle.precioDC * detalle.cantidadDc))|format_currency('EUR', locale='es') }}</td>
+                                                <td class="text-right">{{ (((detalle.cantidadDC * detalle.pvpDc) - (detalle.precioDC * detalle.cantidadDc))  / (detalle.pvpDc * detalle.cantidadDc))|format_percent_number }}</td>
                                             </tr>
                                         {% else %}
                                             <tr>
@@ -527,8 +527,8 @@
                                             {% set manoobratotal = manodeobra.coste + manoobratotal %}
                                             <tr>
                                                 <td>{{ manodeobra.categoriaMo.TipoTm}}</td>
-                                                <td align="left">{{ manodeobra.textoMo}}</td>
-                                                <td align="right">{{ manodeobra.coste|format_currency('EUR', locale='es')}}</td>
+                                                <td class="text-left">{{ manodeobra.textoMo}}</td>
+                                                <td class="text-right">{{ manodeobra.coste|format_currency('EUR', locale='es')}}</td>
                                                 <td>
                                                         <a href="{{ path('mano_obra_edit', {'id': manodeobra.id}) }}" class="text-inverse pr-2"
                                                                 data-toggle="tooltip" title="Modificar">
@@ -556,7 +556,7 @@
                         {% if presupuesto.EstadoPe.id == 6 %}
                          
                             <div class="card">
-                                {{ form_start(formprod) }}
+                                {{ form_start(formprod,   {'attr': {'novalidate': 'novalidate'}})}}
                                     
                                         <div class="card-body">
                                         <h6 class="card-subtitle"></code></h6>
@@ -687,7 +687,7 @@
                             <div class="card">
                                 <div class="card-body">
 
-                                    {{ form_start(form) }}
+                                    {{ form_start(form,   {'attr': {'novalidate': 'novalidate'}}) }}
                                         
 
                                             <h6 class="card-subtitle"></code></h6>
@@ -708,7 +708,7 @@
                         {% if presupuesto.EstadoPe.id < 9 or presupuesto.EstadoPe.id == 12 %}
                         <div class="card">
                             <div class="card-body">
-                                    {{ form_start(formestadopr) }}
+                                    {{ form_start(formestadopr,   {'attr': {'novalidate': 'novalidate'}}) }}
                                         {{ form_row(formestadopr._token) }}
                                         
                                             <h6 class="card-subtitle"></code></h6>
@@ -762,7 +762,7 @@
 
 
 {% endblock %}
-{% block formulario %}{% endblock %}
+
 
 {% block jscustom %}
     <!-- ============================================================== -->
@@ -959,7 +959,7 @@
         ********************************************************/
 
         $(document).on('click', 'a[name="delete_detallemo"]' , async function(event) {
-            let id = this.id;
+                let id = this.id;
                 console.log (id);
 
             const swalWithBootstrapButtons = await Swal.mixin({
@@ -1028,7 +1028,7 @@
         *****************************************/
 
         $(document).on('click', 'i[name="delete_detalle"]' , function(event) {
-            let id = this.id;
+            let id = this.dataset.id;
             delete_line(id);
         })
         
@@ -1273,8 +1273,8 @@
         *****************************************/
 
         $(document).on('click', 'i[name="plus-minus"]' , function(event) {
-            console.log ("ooo");
-            let id = this.id;
+   
+            let id = this.dataset.id;
             this.dataset.cantidad;
             
             let cantidad = this.dataset.cantidad;

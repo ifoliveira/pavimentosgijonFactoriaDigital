@@ -1,8 +1,8 @@
-{% extends 'pages.html.twig' %}
+{% extends 'base.html.twig' %}
 {% block cabecera %} Tickets {% endblock %}
 {% block breadcrumb %} <li class="breadcrumb-item active">Efectivo</li>{% endblock %}
 {% block title %}Tickets{% endblock %}
-{% block tablas %}
+{% block body %}
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
@@ -86,14 +86,13 @@
 
 {% endblock %}
 
-{% block formulario %}{% endblock %}
+
 
 {% block jscustom %}
 
     <!--This page plugins -->
     <script src="../../assets/libs/datatables/media/js/jquery.dataTables.min.js"></script>
     <script src="../../dist/js/pages/datatable/custom-datatable.js"></script>
-    <script src="{{ asset('dist/js/pages/datatable/datatable-advanced.init.js') }}"></script>
     
     <!--Custom JavaScript -->
     

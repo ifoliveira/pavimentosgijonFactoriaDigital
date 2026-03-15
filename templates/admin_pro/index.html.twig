@@ -1,196 +1,182 @@
-{% extends 'inicio2.html.twig' %}
+{% extends 'base.html.twig' %}
+
 {% block title %}Administración Pavimentos Gijón{% endblock %}
-{% block eltiempo %}
-{% endblock %}
-    {% block jscustom %}
-    
-     
-        <!-- Chart JS -->
-        <script src="{{ asset('dist/js/pages/dashboards/dashboard.js') }}"></script>
-        <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
-        <!--Wave Effects -->
-        <script src="{{ asset('dist/js/waves.js') }}"></script>    
 
-              <script>
-                let forecast = {{ forecastChartData|json_encode|raw }};
-                let bancoTotal = {{ bancototal['sum(importe_bn)']|number_format(2, '.', '') }};
-                let efectivoTotal = {{ gastos['efectivototal']|number_format(2, '.', '') }}
-                let saldoefectivoLine = forecast.map(item => ({
-                  x: item.x,
-                  y: efectivoTotal
-                }));
-                let bancoLine = forecast.map(item => ({
-                  x: item.x,
-                  y: bancoTotal
-                }));
+{% block body %}
+    <div class="card">
+        <div class="card-body">
 
-                let bancoCajaLine = forecast.map(item => ({
-                  x: item.x,
-                  y: bancoTotal + efectivoTotal
-                }));                
-              </script>              
-
-    {% endblock %}      
-{% block cardbody1 %}
-              <div class="card">
-                <div class="card-body">
-                <!-- Cuentas generales -->
-                <form method="get" id="form-anio" class="mb-4">
-                    <div class="form-group row">
-                        <label for="anio" class="col-sm-2 col-form-label">Seleccionar año:</label>
-                        <div class="col-sm-3">
-                        {% set anioActual = "now"|date("Y")|number_format(0, '.', '') %}  {# fuerza a número sin decimales #}
+            {# Selector de año #}
+            <form method="get" id="form-anio" class="mb-4">
+                <div class="form-group row">
+                    <label for="anio" class="col-sm-2 col-form-label">Seleccionar año:</label>
+                    <div class="col-sm-3">
+                        {% set anioActual = "now"|date("Y")|number_format(0, '.', '') %}
                         {% set anioInicio = anioActual - 5 %}
-                        <select name="anio" id="anio" class="form-control" onchange="document.getElementById('form-anio').submit();">
+                        <select name="anio" id="anio" class="form-control"
+                                onchange="document.getElementById('form-anio').submit();">
                             {% for i in anioInicio..anioActual %}
                                 <option value="{{ i }}" {% if i == anio %}selected{% endif %}>{{ i }}</option>
                             {% endfor %}
                         </select>
-                        </div>
                     </div>
-                </form>   
-                <div class="row">             
-                  <div class="d-lg-flex">
-                    <div class="col-lg-4 d-flex align-items-stretch">
-                      <div class="card w-100">
-                        <div class="card-body">
-                          <div class="d-flex">
-                            <div class="mr-3 align-self-center">
-                              <span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/income.png" alt="Income" />
-                            </div>
-                            <div class="align-self-center">
-                              <h6 class="text-muted mt-2 mb-0">Banco a {{ bancototal['max(fecha_bn)'] |date("d/m/Y") }}</h6>
-                              <h2 id="bancototal" data-banco="{{ bancototal['sum(importe_bn)'] }}">{{ bancototal['sum(importe_bn)'] |format_currency('EUR', locale='es') }}</h2>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-lg-4 d-flex align-items-stretch">
-                      <div class="card w-100">
-                        <div class="card-body">
-                          <div class="d-flex">
-                            <div class="mr-3 align-self-center">
-                              <span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" />
-                            </div>
-                            <div class="align-self-center">
-                              <h6 class="text-muted mt-2 mb-0">Efectivo</h6>
-                              <h2 id="efectivototal" data-caja="{{ gastos['efectivototal'] }}">{{ gastos['efectivototal'] |format_currency('EUR', locale='es') }}</h2>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>                     
-                    <div class="col-lg-4 d-flex align-items-stretch">
-                      <div class="card w-100">
-                        <div class="card-body">
-                          <div class="d-flex">
-                            <div class="mr-3 align-self-center">
-                              <span class="lstick d-inline-block align-middle mr-3"></span><img src="../asset/img/icon/assets.png" alt="Income" />
-                            </div>
-                            <div class="align-self-center">
-                              <h6 class="text-muted mt-2 mb-0">Total</h6>
-                              <h2 id="cajatotal" data-caja="{{ bancototal['sum(importe_bn)'] + gastos['efectivototal'] }}">{{ (bancototal['sum(importe_bn)'] + gastos['efectivototal']) |format_currency('EUR', locale='es') }}</h2>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
+            </form>
 
-
-
-                    {% set totaltar = 0 %}
-                    {% set totalefe = 0 %}
-                    {% set totalmanob = 0 %}
-                    {% set totalmanob = manoobratotal %}   
-
-                    {% for ventatot in ventastotal %}
-                    <a id="datosmes{{ ventatot['mes'] }}" data-venta="{{ ventatot['importe'] }}"></a>  
-                        {% set totaltar = totaltar +  ventatot['importe'] %}
-                    {% endfor %}    
-                    {% set i = 0 %}
-                    {% for i in 1..12 %}
-                        <a id="datosmes{{ i }}" data-venta="0"></a>  
-                    {% endfor %}
-
-                    {% for efectivo in ventaefetotal %}
-                    <a id="efectivo{{ efectivo['mes'] }}" data-venta="{{ efectivo['importe'] }}"></a>  
-                         {% set totalefe = totalefe + efectivo['importe'] %}
-                    {% endfor %}   
-                    {% set i = 0 %}
-                    {% for i in 1..12 %}
-                        <a id="efectivo{{ i }}" data-venta="0"></a>  
-                    {% endfor %} 
-                    {% set ventaefectivo = totalefe %}
-                    {% set totalefe = ventahistefect + gastos['efectivototal'] %}
-
-                <div class="row">             
-                  <div class="d-lg-flex">
-                    <div class="card w-100">
-                      <div class="card-body">
-                          <div class="ms-auto" style="margin-left: auto !important;">
-                            <div>
-                              <h3 class="card-title">
-                                <span class="lstick d-inline-block align-middle"></span>Ventas
-                              </h3>
-                              <h6 class="card-subtitle">Año {{ anio }}</h6>
+            {# Tarjetas resumen #}
+            <div class="row">
+                <div class="d-lg-flex">
+                    <div class="col-lg-4 d-flex align-items-stretch">
+                        <div class="card w-100">
+                            <div class="card-body">
+                                <div class="d-flex">
+                                    <div class="mr-3 align-self-center">
+                                        <span class="lstick d-inline-block align-middle mr-3"></span>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <h6 class="text-muted mt-2 mb-0">Banco a {{ bancototal['max(fecha_bn)']|date('d/m/Y') }}</h6>
+                                        <h2 id="bancototal" data-banco="{{ bancototal['sum(importe_bn)'] }}">
+                                            {{ bancototal['sum(importe_bn)']|format_currency('EUR', locale='es') }}
+                                        </h2>
+                                    </div>
+                                </div>
                             </div>
-
-                            <ul class="list-inline">
-                              <li class="list-inline-item">
-                                <div class="d-flex">
-                                  <i class="ri-checkbox-blank-circle-fill fs-5 font-10 me-2 text-primary mt-2" style="content: '\eb7c'"></i>
-                                  <div>
-                                    <h3 class="mb-0">{{ totaltar + ventaefectivo }}</h3>
-                                    <h6 class="text-muted">Ventas</h6>
-                                  </div>
-                                </div>
-                              </li>
-                              <li class="list-inline-item">
-                                <div class="d-flex">
-                                  <i
-                                    class="
-                                      ri-checkbox-blank-circle-fill
-                                      fs-5
-                                      font-10
-                                      me-2
-                                      text-info
-                                      mt-2
-                                    "
-                                  ></i>
-                                  <div>
-                                    <h3 class="mb-0">{{ totaltar }}</h3>
-                                    <h6 class="text-muted">Presupuestos</h6>
-                                  </div>
-                                </div>
-                              </li>
-                              <li class="list-inline-item">
-                                <div class="d-flex">
-                                  <i
-                                    class="
-                                      ri-checkbox-blank-circle-fill
-                                      fs-5
-                                      font-10
-                                      me-2
-                                      text-muted
-                                      mt-2
-                                    "
-                                  ></i>
-                                  <div>
-                                    <h3 class="mb-0">{{ventaefectivo}}</h3>
-                                    <h6 class="text-muted">Dia a día</h6>
-                                  </div>
-                                </div>
-                              </li>
-                            </ul>
-                          </div>
                         </div>
-                      <div id="Sales-Overview"></div>
                     </div>
-                  </div>
-                
+                    <div class="col-lg-4 d-flex align-items-stretch">
+                        <div class="card w-100">
+                            <div class="card-body">
+                                <div class="d-flex">
+                                    <div class="mr-3 align-self-center">
+                                        <span class="lstick d-inline-block align-middle mr-3"></span>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <h6 class="text-muted mt-2 mb-0">Efectivo</h6>
+                                        <h2 id="efectivototal" data-caja="{{ gastos['efectivototal'] }}">
+                                            {{ gastos['efectivototal']|format_currency('EUR', locale='es') }}
+                                        </h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 d-flex align-items-stretch">
+                        <div class="card w-100">
+                            <div class="card-body">
+                                <div class="d-flex">
+                                    <div class="mr-3 align-self-center">
+                                        <span class="lstick d-inline-block align-middle mr-3"></span>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <h6 class="text-muted mt-2 mb-0">Total</h6>
+                                        <h2 id="cajatotal" data-caja="{{ bancototal['sum(importe_bn)'] + gastos['efectivototal'] }}">
+                                            {{ (bancototal['sum(importe_bn)'] + gastos['efectivototal'])|format_currency('EUR', locale='es') }}
+                                        </h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-              <!-- Row ends -->
-              {% endblock %}
+            {# Datos para la gráfica — anchors ocultos #}
+            {# AVISO: el segundo loop sobreescribe los datos del primero — revisar lógica #}
+            {% set totaltar = 0 %}
+            {% set totalefe = 0 %}
+            {% set totalmanob = manoobratotal %}
+
+            {# Ventas tarjeta por mes #}
+            {% for ventatot in ventastotal %}
+                <a id="datosmes{{ ventatot['mes'] }}" data-venta="{{ ventatot['importe'] }}"></a>
+                {% set totaltar = totaltar + ventatot['importe'] %}
+            {% endfor %}
+            {# Fallback para meses sin datos — necesario para dashboard.js #}
+            {% for i in 1..12 %}
+                {% if not ventastotal|filter(v => v['mes'] == i)|length %}
+                    <a id="datosmes{{ i }}" data-venta="0"></a>
+                {% endif %}
+            {% endfor %}
+
+            {# Ventas efectivo por mes #}
+            {% for efectivo in ventaefetotal %}
+                <a id="efectivo{{ efectivo['mes'] }}" data-venta="{{ efectivo['importe'] }}"></a>
+                {% set totalefe = totalefe + efectivo['importe'] %}
+            {% endfor %}
+            {# Fallback para meses sin datos #}
+            {% for i in 1..12 %}
+                {% if not ventaefetotal|filter(v => v['mes'] == i)|length %}
+                    <a id="efectivo{{ i }}" data-venta="0"></a>
+                {% endif %}
+            {% endfor %}
+
+            {% set ventaefectivo = totalefe %}
+            {% set totalefe = ventahistefect + gastos['efectivototal'] %}
+
+            {# Tarjeta de ventas con gráfica #}
+            <div class="row">
+                <div class="d-lg-flex w-100">
+                    <div class="card w-100">
+                        <div class="card-body">
+                            <div>
+                                <h3 class="card-title">
+                                    <span class="lstick d-inline-block align-middle"></span>Ventas
+                                </h3>
+                                <h6 class="card-subtitle">Año {{ anio }}</h6>
+                            </div>
+                            <ul class="list-inline">
+                                <li class="list-inline-item">
+                                    <div class="d-flex">
+                                        <i class="ri-checkbox-blank-circle-fill fs-5 font-10 me-2 text-primary mt-2"></i>
+                                        <div>
+                                            <h3 class="mb-0">{{ totaltar + ventaefectivo }}</h3>
+                                            <h6 class="text-muted">Ventas</h6>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="list-inline-item">
+                                    <div class="d-flex">
+                                        <i class="ri-checkbox-blank-circle-fill fs-5 font-10 me-2 text-info mt-2"></i>
+                                        <div>
+                                            <h3 class="mb-0">{{ totaltar }}</h3>
+                                            <h6 class="text-muted">Presupuestos</h6>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="list-inline-item">
+                                    <div class="d-flex">
+                                        <i class="ri-checkbox-blank-circle-fill fs-5 font-10 me-2 text-muted mt-2"></i>
+                                        <div>
+                                            <h3 class="mb-0">{{ ventaefectivo }}</h3>
+                                            <h6 class="text-muted">Día a día</h6>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="Sales-Overview"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscustom %}
+    {# ApexCharts — necesario para las gráficas de esta página #}
+    <script src="{{ asset('assets/libs/apexcharts/dist/apexcharts.min.js') }}"></script>
+
+    {# Variables que dashboard.js necesita — ANTES del script #}
+    <script>
+        let forecast         = {{ forecastChartData|json_encode|raw }};
+        let bancoTotal       = {{ bancototal['sum(importe_bn)']|number_format(2, '.', '') }};
+        let efectivoTotal    = {{ gastos['efectivototal']|number_format(2, '.', '') }};
+        let saldoefectivoLine = forecast.map(item => ({ x: item.x, y: efectivoTotal }));
+        let bancoLine        = forecast.map(item => ({ x: item.x, y: bancoTotal }));
+        let bancoCajaLine    = forecast.map(item => ({ x: item.x, y: bancoTotal + efectivoTotal }));
+    </script>
+
+    {# Script que consume las variables y renderiza las gráficas #}
+    <script src="{{ asset('dist/js/pages/dashboards/dashboard.js') }}"></script>
+{% endblock %}

@@ -64,7 +64,7 @@ class PresupuestosController extends AbstractController
             
         $products = $query->getResult();
 
-        return $this->render('presupuestos/index2.html.twig', [
+        return $this->render('presupuestos/index.html.twig', [
             'presupuestos' => $query->getResult(),
             'estados' => $estados,
         ]);
@@ -112,11 +112,9 @@ class PresupuestosController extends AbstractController
             $this->em->persist($cesta);
             $presupuesto->setTicket($cesta);            
             $this->em->persist($presupuesto);
+
             $this->em->flush();
-
-            die;
-
-            return $this->redirectToRoute('presupuestos_index');
+            return $this->redirectToRoute('presupuestos_show', ['id' => $presupuesto->getId()]);
         }
 
         return $this->render('presupuestos/new.html.twig', [

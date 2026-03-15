@@ -1,0 +1,171 @@
+<aside class="left-sidebar">
+        <!-- Sidebar scroll-->
+        <div class="scroll-sidebar">
+          <!-- Sidebar navigation-->
+          <nav class="sidebar-nav">
+            <ul id="sidebarnav">
+              <!-- User Profile-->
+              <li class="nav-small-cap">
+                <i class="mdi mdi-dots-horizontal"></i>
+                <span class="hide-menu">Personal</span>
+              </li>
+              <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i data-feather="home" class="feather-icon"></i><span class="hide-menu">Tickets </span></a>
+                  <ul aria-expanded="false" class="collapse  first-level">
+                      <li class="sidebar-item">
+                          <a href="{{ path('productos_index')}}" class="sidebar-link">
+                              <i class="mdi mdi-database-plus"></i>
+                              <span class="hide-menu">Nuevo</span>
+                          </a>
+                      </li>
+                      <li class="sidebar-item">
+                          <a href="{{ path('cestas_index')}}" class="sidebar-link">
+                               <i class="mdi  mdi-book-open-page-variant"></i>
+                               <span class="hide-menu">Consulta</span>
+                          </a>
+                      </li>
+                      <li class="sidebar-item">
+                          <a href="{{ path('pagos_index')}}" class="sidebar-link">
+                               <i class="mdi mdi-link-variant"></i>
+                               <span class="hide-menu">Conciliar</span>
+                          </a>
+                      </li>                      
+                  </ul>
+              </li>     
+
+             <li class="sidebar-item">
+                <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                    <i data-feather="box" class="feather-icon"></i>
+                                <span class="hide-menu">Presupuestos<span class="side-badge badge badge-info"></span></span>
+                </a>
+                <ul aria-expanded="false" class="collapse  first-level">
+                  <li class="sidebar-item">
+                      <a href="{{ path('clientes_new')}}" class="sidebar-link">
+                          <i class="mdi mdi-database-plus"></i>
+                          <span class="hide-menu">Nuevo</span>
+                      </a>
+                  </li>
+                  <li class="sidebar-item">
+                      <a href="{{ path('presupuestos_index')}}" class="sidebar-link">
+                          <i class="mdi  mdi-book-open-page-variant"></i>
+                          <span class="hide-menu">Lista presupuestos</span>
+                      </a>
+                  </li>
+                  <li class="sidebar-item">
+                      <a href="{{ path('presupuestos_finalizados')}}" class="sidebar-link">
+                          <i class="mdi  mdi-book-open-page-variant"></i>
+                          <span class="hide-menu">Presupuestos finalizados</span>
+                      </a>
+                  </li>                  
+                  <li class="sidebar-item">
+                      <a href="{{ path('app_financiacion')}}" class="sidebar-link">
+                          <i class="mdi  mdi-book-open-page-variant"></i>
+                          <span class="hide-menu">Simulación Financiación</span>
+                      </a>
+                  </li>                                                  
+                </ul>
+              </li>
+              <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i data-feather="credit-card" class=" "></i><span class="hide-menu">Contabilidad</span></a>
+
+                  <ul aria-expanded="false" class="collapse first-level">
+
+                      <a href="{{ path('admin_contabilidad')}}" class="sidebar-link">
+                              <i class="mdi  mdi-book-open-page-variant"></i>
+                              <span class="hide-menu">Resumen Económico</span>
+                      </a>
+                      <a href="{{ path('resumenventas')}}" class="sidebar-link">
+                              <i class="mdi  mdi-book-open-page-variant"></i>
+                              <span class="hide-menu">Resumen Ventas</span>
+                      </a>     
+                      <a href="{{ path('flujocaja')}}" class="sidebar-link">
+                              <i class="mdi  mdi-book-open-page-variant"></i>
+                              <span class="hide-menu">Flujo Caja</span>
+                      </a>                                        
+                      <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-bank"></i><span class="hide-menu">Banco</span></a>
+                          <ul aria-expanded="false" class="collapse second-level">
+                              <li class="sidebar-item"><a href="{{ path('uploadBank') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Insertar</span></a></li>
+                              <li class="sidebar-item"><a href="{{ path('banco_index') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu"> Consultar</span></a></li>
+                              <li class="sidebar-item"><a href="{{ path('forecast_index') }}" class="sidebar-link"><i class="mdi mdi-link-variant"></i><span class="hide-menu">Conciliar</span></a></li>
+                          </ul>
+                      </li>
+                      <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-cash-multiple"></i><span class="hide-menu">Efectivo</span></a>
+                          <ul aria-expanded="false" class="collapse second-level">
+                              <li class="sidebar-item"><a href="{{ path('efectivo_new') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Insertar</span></a></li>
+                              <li class="sidebar-item"><a href="{{ path('efectivo_index') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu">Consultar</span></a></li>
+                          </ul>
+                      </li>
+                      <li class="sidebar-item"><a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-cash-multiple"></i><span class="hide-menu">Forecast</span></a>
+                          <ul aria-expanded="false" class="collapse second-level">
+                              <li class="sidebar-item"><a href="{{ path('forecast_new') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Insertar</span></a></li>
+                              <li class="sidebar-item"><a href="{{ path('forecast_consulta') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu">Consultar</span></a></li>
+                              <li class="sidebar-item"><a href="{{ path('factura_nueva') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu">Procesar Facturas</span></a></li>
+                          </ul>
+                      </li>
+                   </ul>
+              </li>
+
+              <li class="sidebar-item">
+                  <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)"
+                      aria-expanded="false">
+                      <i data-feather="tag" class="feather-icon"></i>
+                      <span class="hide-menu">Productos</span>
+                  </a>
+                  <ul aria-expanded="false" class="collapse  first-level">
+                      <li class="sidebar-item">
+                          <a href="{{ path('productos_new') }}" class="sidebar-link">
+                              <i class="mdi mdi-database-plus"></i>
+                              <span class="hide-menu">Nuevo</span>
+                          </a>
+                      </li>
+                      <li class="sidebar-item">
+                          <a href="{{ path('productos_lista') }}" class="sidebar-link">
+                              <i class="mdi mdi-book-open-page-variant"></i>
+                              <span class="hide-menu">Consulta</span>
+                          </a>
+                      </li>
+                      
+                  </ul>
+              </li>
+              <li class="sidebar-item">
+                  <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)"
+                      aria-expanded="false">
+                      <i data-feather="tag" class="feather-icon"></i>
+                      <span class="hide-menu">Clientes</span>
+                  </a>
+                  <ul aria-expanded="false" class="collapse  first-level">
+                      <li class="sidebar-item">
+                          <a href="{{ path('logs_index') }}" class="sidebar-link">
+                              <i class="mdi mdi-database-plus"></i>
+                              <span class="hide-menu">Logs</span>
+                          </a>
+                      </li>
+                      <li class="sidebar-item">
+                          <a href="{{ path('clientes_index') }}" class="sidebar-link">
+                              <i class="mdi mdi-database-plus"></i>
+                              <span class="hide-menu">Listar Clientes</span>
+                          </a>
+                      </li>     
+
+                  </ul>
+                </li>
+
+              <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i data-feather="credit-card" class=" "></i><span class="hide-menu">Blog</span></a>
+
+                  <ul aria-expanded="false" class="collapse first-level">
+
+                      <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-bank"></i><span class="hide-menu">Entradas</span></a>
+                          <ul aria-expanded="false" class="collapse second-level">
+                              <li class="sidebar-item"><a href="{{ path('post_new') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Nueva</span></a></li>
+                              <li class="sidebar-item"><a href="{{ path('upload_img') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu"> Subir Imagenes</span></a></li>
+
+                          </ul>
+                      </li>
+                   </ul>
+              </li>
+
+              </li>
+            </ul>
+          </nav>
+          <!-- End Sidebar navigation -->
+        </div>
+        <!-- End Sidebar scroll-->
+      </aside>

@@ -1,10 +1,10 @@
-{% extends 'inicio2.html.twig' %}
-{% block eltiempo %} {% endblock %}
+{% extends 'base.html.twig' %}
+
 {% form_theme form 'fields.html.twig' %}
 {% block cabecera %} Presupuestos {% endblock %}
 {% block breadcrumb %} <li class="breadcrumb-item active">Presupuestos List</li>{% endblock %}
 {% block title %}Presupuestos List{% endblock %}
-{% block cardbody1 %}
+{% block body %}
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
@@ -96,10 +96,10 @@
                                         {% for detalle in project.getCesta(cestaId).getdetallecesta %}
                                             <tr>
                                                 <td>{{ detalle.productoDc.descripcionPd }}</td>
-                                                <td align="right">{{ detalle.pvpDc |format_currency('EUR', locale='es') }}</td>
-                                                <td align="center">{{ detalle.cantidadDC}}</td>
+                                                <td class="text-right">{{ detalle.pvpDc |format_currency('EUR', locale='es') }}</td>
+                                                <td class="text-center">{{ detalle.cantidadDC}}</td>
                                                 
-                                                <td align="right">{{ (detalle.cantidadDC * detalle.pvpDc)|format_currency('EUR', locale='es') }}</td>
+                                                <td class="text-right">{{ (detalle.cantidadDC * detalle.pvpDc)|format_currency('EUR', locale='es') }}</td>
                                             </tr>
                                         {% else %}
                                             <tr>
@@ -161,7 +161,7 @@
 
 
 {% endblock %}
-{% block formulario %}{% endblock %}
+
 
 {% block jscustom %}
     <!-- ============================================================== -->

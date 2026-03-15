@@ -1,22 +1,54 @@
-    <h5 class="card-title">RESUMEN - {{ project.getCantidadTot(cestaId) }} PRODUCTOS  ({{ project.getPrecioTot(cestaId)|round(2)}}) <b>({{ project.getImporteTot(cestaId)|round(2) - project.getPrecioTot(cestaId)|round(2)}})</b></h5>
-    {% if project.getCesta(cestaId).getdetallecesta is empty %}
-    {% else %}
-        <hr>
-    {% endif %}
-    {% for detalle in project.getCesta(cestaId).getdetallecesta %}
-            <div><small>{{ detalle.cantidadDC }} - {{ detalle.productoDc.descripcionPd }}  <i class="fas fa-plus-circle fa-lg op-3 text-dark fa-pull-right" name="plus-minus" id="{{ detalle.id }}" data-cantidad="{{ detalle.cantidadDC }}"> </i> <i class="fas fa-minus-circle fa-lg op-3 text-dark fa-pull-right px-2" name="plus-minus" id="{{ detalle.id }}" data-cantidad="{{ detalle.cantidadDC }}"></i>  <i class="fas fa-times-circle fa-lg op-3 text-dark fa-pull-right" name="delete_detalle" id="{{ detalle.id }}" data-cantidad="{{ detalle.cantidadDC * detalle.pvpDc }}" data-toggle="tooltip" data-placement="top" title="Borrar""> </i></small></div>
-            <h3 class="text-right {% if detalle.precioDc == 0 %} text-danger {% endif %}">
-            {{ (detalle.pvpDc * detalle.cantidadDC)|format_currency('EUR', locale='es')}} {% if detalle.descuentoDc != 0 %}- {{ (detalle.pvpDc * detalle.descuentoDc/100)|format_currency('EUR', locale='es  ')}} {% endif %} </h3>
+{% set ticket = [project.getCestaArray(cestaId)] %}
 
-    {% endfor %}
-    <hr>
-    <small>Total Ticket</small>
-    <h1 class="text-right" id="imptotal" data-importe="{{ project.getImporteTot(cestaId)  }}">{{ project.getImporteTot(cestaId) |format_currency('EUR', locale='es') }} </h1>
-    <hr>
-      {% set ticket = [project.getCestaArray(cestaId)] %}
+<h5 class="card-title">
+    RESUMEN — {{ project.getCantidadTot(cestaId) }} PRODUCTOS
+    ({{ project.getPrecioTot(cestaId) | round(2) }})
+    <b>({{ (project.getImporteTot(cestaId) | round(2)) - (project.getPrecioTot(cestaId) | round(2)) }})</b>
+</h5>
 
-    <div data-entry-info='{{ ticket|json_encode|raw }}'>
+{% if project.getCesta(cestaId).getdetallecesta is not empty %}
+    <hr>
+{% endif %}
+
+{% for detalle in project.getCesta(cestaId).getdetallecesta %}
+    <div>
+        <small>
+            {{ detalle.cantidadDC }} — {{ detalle.productoDc.descripcionPd }}
+            <i class="fas fa-plus-circle fa-lg op-3 text-dark fa-pull-right"
+               name="plus-minus"
+               id="plus_{{ detalle.id }}"
+               data-id="{{ detalle.id }}"
+               data-cantidad="{{ detalle.cantidadDC }}"></i>
+            <i class="fas fa-minus-circle fa-lg op-3 text-dark fa-pull-right px-2"
+               name="plus-minus"
+               id="minus_{{ detalle.id }}"
+               data-id="{{ detalle.id }}"
+               data-cantidad="{{ detalle.cantidadDC }}"></i>
+            <i class="fas fa-times-circle fa-lg op-3 text-dark fa-pull-right"
+               name="delete_detalle"
+               id="del_{{ detalle.id }}"
+               data-id="{{ detalle.id }}"
+               data-toggle="tooltip"
+               data-placement="top"
+               title="Borrar"></i>
+        </small>
     </div>
-    
+    <h3 class="text-right {% if detalle.precioDc == 0 %}text-danger{% endif %}">
+        {{ (detalle.pvpDc * detalle.cantidadDC) | format_currency('EUR', locale='es') }}
+        {% if detalle.descuentoDc != 0 %}
+            — {{ (detalle.pvpDc * detalle.descuentoDc / 100) | format_currency('EUR', locale='es') }}
+        {% endif %}
+    </h3>
+{% endfor %}
+
+<hr>
+<small>Total Ticket</small>
+<h1 class="text-right" id="imptotal"
+    data-importe="{{ project.getImporteTot(cestaId) }}">
+    {{ project.getImporteTot(cestaId) | format_currency('EUR', locale='es') }}
+</h1>
+<hr>
+
+<div data-entry-info='{{ ticket | json_encode | raw }}'></div>
 
 

@@ -47,7 +47,6 @@
         "twig/twig": "^2.12|^3.0"
     },
     "require-dev": {
-        "easycorp/easy-deploy-bundle": "^1.0",
         "symfony/debug-bundle": "^5.4",
         "symfony/maker-bundle": "^1.50",
         "symfony/stopwatch": "^5.4",

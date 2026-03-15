@@ -17,8 +17,8 @@
                                                     <td>id</td>
                                                     <td>{{ movimiento.categoriaBn }}</td>
                                                     <td>{{ movimiento.conceptoBn }}</td>
-                                                    <td align="center">{{ movimiento.fechaBn ? movimiento.fechaBn|date('Y-m-d') : '' }}</td>
-                                                    <td align="right">{{ movimiento.importeBn|number_format(2) }}</td>
+                                                    <td class="text-center">{{ movimiento.fechaBn ? movimiento.fechaBn|date('Y-m-d') : '' }}</td>
+                                                    <td class="text-right">{{ movimiento.importeBn|number_format(2) }}</td>
                                                 </tr>
                                             {% else %}
                                 

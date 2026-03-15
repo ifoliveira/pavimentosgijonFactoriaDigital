@@ -1,9 +1,34 @@
-{% extends 'pages.html.twig' %}
+{% extends 'base.html.twig' %}
 {% form_theme form 'fields.html.twig' %}
-{% block title %}New Presupuesto{% endblock %}
-{% block cabecera %} Presupuesto {% endblock %}
+
+{% block title %}Nuevo Presupuesto{% endblock %}
+{% block cabecera %}Nuevo Presupuesto{% endblock %}
 {% block breadcrumb %}
-<li class="breadcrumb-item">Presupuestos</li> 
-<li class="breadcrumb-item active">Nuevo</li>
+    <li class="breadcrumb-item"><a href="{{ path('presupuestos_index') }}">Presupuestos</a></li>
+    <li class="breadcrumb-item active">Nuevo</li>
 {% endblock %}
-{% block tablas %}{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-sm-12 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Nuevo presupuesto</h4>
+                    <hr>
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        {{ form_row(form._token) }}
+                        {{ form_rest(form) }}
+                        <div class="form-group mt-3">
+                            <button type="submit" class="btn btn-info waves-effect waves-light">
+                                Guardar
+                            </button>
+                            <a href="{{ path('presupuestos_index') }}" class="btn btn-secondary ml-2">
+                                Cancelar
+                            </a>
+                        </div>
+                    {{ form_end(form, {'render_rest': false}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

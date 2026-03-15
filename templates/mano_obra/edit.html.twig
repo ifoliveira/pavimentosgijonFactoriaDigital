@@ -1,6 +1,6 @@
-{% extends 'pages.html.twig' %}
+{% extends 'base.html.twig' %}
 {% form_theme form 'fields.html.twig' %}
-{% block formulario %}
+{% block body %}
     <div class="card-body row">
         <div class="col-sm-6 col-lg-6">
             <div class="card">
@@ -71,7 +71,7 @@
     <li class="breadcrumb-item">Mano de Obra</li> 
     <li class="breadcrumb-item active">Actualizar</li>
 {% endblock %}
-{% block tablas %}{% endblock %}
+
 {% block jscustom %}
 
  <script>

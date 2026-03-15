@@ -1,8 +1,8 @@
-{% extends 'pages.html.twig' %}
+{% extends 'base.html.twig' %}
 {% block cabecera %} Tickets Apgijon.es {% endblock %}
 {% block breadcrumb %} <li class="breadcrumb-item active">Efectivo</li>{% endblock %}
 {% block title %}T{% endblock %}
-{% block tablas %}
+{% block body %}
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
@@ -32,8 +32,8 @@
 
                                                 <tr>
                                                     <td>{{ cesta.Fecha_Fc }}</td>
-                                                    <td align="right">{{ cesta.ImporteTotal_Fc |number_format(2) }}</td>
-                                                    <td align="right">{{ cesta.Descuento_Fc |number_format(2) }}</td>
+                                                    <td class="text-right">{{ cesta.ImporteTotal_Fc |number_format(2) }}</td>
+                                                    <td class="text-right">{{ cesta.Descuento_Fc |number_format(2) }}</td>
                                                     <td>{{ cesta.TipoPago_Fc }}</td>
                                                     <td>{{ cesta.NumTicket_Fc }}</td>
 
@@ -74,13 +74,12 @@
             <!-- ============================================================== -->
 {% endblock %}
 
-{% block formulario %}{% endblock %}
+
 
 {% block jscustom %}
     <!--Custom JavaScript -->
     <script src="{{ asset('assets/libs/datatables/media/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('dist/js/pages/datatable/custom-datatable.js') }}"></script>
-    <script src="{{ asset('dist/js/pages/datatable/datatable-advanced.init.js') }}"></script>
     <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
     <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
     

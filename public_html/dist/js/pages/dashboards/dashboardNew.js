@@ -54,7 +54,17 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     },
     yaxis: {
-      labels: { style: { colors: "#add9bb" } }
+        labels: {
+            style: { colors: "#add9bb" },
+            formatter: function (value) {
+                return new Intl.NumberFormat('es-ES', {
+                    style: 'currency',
+                    currency: 'EUR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(value);
+            }
+        }
     },
     stroke: {
       curve: "smooth",
@@ -75,10 +85,20 @@ document.addEventListener("DOMContentLoaded", function () {
         stops: [0, 50, 100],
       },
     },
-    tooltip: {
+  tooltip: {
       x: { format: "dd/MM/yy" },
-      theme: "dark"
-    },
+      theme: "dark",
+      y: {
+          formatter: function (value) {
+              return new Intl.NumberFormat('es-ES', {
+                  style: 'currency',
+                  currency: 'EUR',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+              }).format(value);
+          }
+      }
+  },
 
   });
 
