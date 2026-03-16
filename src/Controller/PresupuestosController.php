@@ -42,6 +42,7 @@ class PresupuestosController extends AbstractController
         private EntityManagerInterface $em,
         private PagoService $pagoService,
         private EconomicoPresuService $economicoPresuService,
+        private CestaUserService $cestaUserService,
     ) {}
 
     #[Route('/', name: 'presupuestos_index', methods: ['GET'])]
@@ -411,10 +412,10 @@ class PresupuestosController extends AbstractController
     {
        
 
-        $cestauser = new CestaUser($this->em);
+        
         // Producto y cantidad a añadir
-        $subtotal = $cestauser->getImporteTot($presupuesto->getTicket()->getId());
-        $descuentototal = $cestauser->getDescuentoTot($presupuesto->getTicket()->getId()); 
+        $subtotal = $this->cestaUserService->getImporteTot($presupuesto->getTicket()->getId());
+        $descuentototal = $this->cestaUserService->getDescuentoTot($presupuesto->getTicket()->getId()); 
         $total = $subtotal + $presupuesto->getImportemanoobra();
 
         $financiacion = new FinanciacionService($total, 12);
@@ -725,13 +726,13 @@ class PresupuestosController extends AbstractController
     {
 
         // Funcion encargada de añadir producto a la cesta
-        $cestauser = new CestaUser($this->em);
+        
         // Obtener ID del presupuesto
         $datos = $request->query->get('id');
         // Obtener presupuesto
         $presupuesto = $this->em->getRepository('App\Entity\Presupuestos')->find($datos);
         // Producto y cantidad a añadir
-        $importe = $cestauser->getImporteTot($presupuesto->getTicket()->getId());
+        $importe = $this->cestaUserService->getImporteTot($presupuesto->getTicket()->getId());
 
         $presupuesto->setImportetotPe(round($importe,2));
 

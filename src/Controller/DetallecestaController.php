@@ -16,12 +16,10 @@ use Doctrine\ORM\EntityManagerInterface;
 class DetallecestaController extends AbstractController
 {
 
-    protected $em;
-
-    public function __construct( EntityManagerInterface $em )
-    {
-        $this->em = $em;
-    }
+    public function __construct(
+        private EntityManagerInterface $em,
+        private CestaUserService $cestaUserService,
+    ) {}
 
     #[Route('/', name: 'detallecesta_index', methods: ['GET'])]
     public function index(DetallecestaRepository $detallecestaRepository): Response
@@ -89,12 +87,10 @@ class DetallecestaController extends AbstractController
         $template =$this->render('productos/loop.html.twig',['cestaId'=>$detalle->getCestaDc()->getId()])->getContent();
         $response = new JsonResponse();
         $response->setStatusCode(200);
-        $cestauser = new CestaUser($this->em);
-
 
         // Cantidad total de elementos en la cesta
         $cant = $detallecestaRepository->cantotalCesta($detalle->getcestaDc()->getId());
-        $cesta->setImporteTotCs($cestauser->getImporteTot($cesta->getId()));
+        $cesta->setImporteTotCs($this->cestaUserService->getImporteTot($cesta->getId()));
         $this->em->persist($cesta);
         $this->em->flush();
 
