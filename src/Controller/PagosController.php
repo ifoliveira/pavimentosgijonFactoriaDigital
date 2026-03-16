@@ -38,7 +38,7 @@ class PagosController extends AbstractController
     {    
         $bancoId = $request->query->get('banco');
 
-        $this->PagosService->conciliar($pagos, $bancoId, $bancoRepository);
+        $this->pagoService->conciliar($pagos, $bancoId, $bancoRepository);
         $this->em->flush();
 
         $response = new JsonResponse();
