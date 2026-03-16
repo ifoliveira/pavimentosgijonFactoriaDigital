@@ -34,6 +34,7 @@ class CestasController extends AbstractController
     public function __construct(
         private EntityManagerInterface $em,
         private PagoService $pagoService,
+        private CestaUserService $cestaUserService,
     ) {}
 
     #[Route('/', name: 'cestas_index', methods: ['GET'])]
@@ -276,15 +277,10 @@ class CestasController extends AbstractController
     #[Route('/ticketpdf/{id}/imprimir', name: 'ticketpdf', methods: ['GET','POST'])]
     public function imprimir(Request $request, Cestas $cesta): jsonResponse
     {
-
-        // get EntityManager
-       
-        $cestauser = new CestaUser($this->em);
-
  
         // valores de data ajax
         $tipopago = $request->query->get('tipopago');
-        $importe = ('SI' == $request->query->get('espresu')) ? $request->query->get('importe') : $cestauser->getImporteTot($cesta->getId());
+        $importe = ('SI' == $request->query->get('espresu')) ? $request->query->get('importe') : $this->cestaUserService->getImporteTot($cesta->getId());
         $importesnal = $request->query->get('importesnal');
         //$importesnal = ('SI' == $request->query->get('espresu')) ? $request->query->get('importesnal') : 0;
         // Configure Dompdf según sus necesidades
