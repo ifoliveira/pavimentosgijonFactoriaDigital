@@ -108,7 +108,7 @@ class BankController extends AbstractController
                     
                     if ($fechacomp > $ultimaFecha)                         {
         
-                        $categoria = $categoriaMovimiento->getCategoriaPorConcepto($concepto);
+                        $categoria = $categoriaMovimientoService->getCategoriaPorConcepto($concepto);
 
                         $banco = new Banco();
                         $banco->setCategoriaBn($categoria);
@@ -139,7 +139,7 @@ class BankController extends AbstractController
                             if ($movimientoExiste == 0) {
                                
                                 // No existe aún, lo insertamos
-                                $categoria = $categoriaMovimiento->getCategoriaPorConcepto($concepto);
+                                $categoria = $categoriaMovimientoService->getCategoriaPorConcepto($concepto);
                                 $banco = new Banco();
                                 $banco->setCategoriaBn($categoria);
                                 $banco->setConceptoBn($concepto);
