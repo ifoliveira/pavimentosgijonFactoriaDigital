@@ -207,7 +207,7 @@
         function delete_line(id) {
             $.ajax({
                 url:      '{{ path("cesta_delete_ajax") }}',
-                type:     'GET',
+                type:     'POST',
                 data:     { id },
                 dataType: 'json',
                 success: function () {
