@@ -75,7 +75,7 @@ class ClientesController extends AbstractController
             $this->em->flush();
 
             $this->manoObraService->iniciarPresupuesto($presupuesto);
-
+            $this->em->flush();
             $micarpeta =  $this->getParameter("presupuestoDir") . '/' . $cliente->getNombreCl() . ' ' . $presupuesto->getFechainiPe()->format('Y-m-d') .'/fotos';
             if (!file_exists($micarpeta)) {
                 mkdir($micarpeta, 0777, true);

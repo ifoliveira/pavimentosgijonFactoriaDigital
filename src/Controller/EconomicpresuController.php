@@ -3,23 +3,25 @@
 namespace App\Controller;
 
 use App\Entity\Economicpresu;
-use App\Form\EconomicpresuType;
 use App\Entity\Efectivo;
-use App\Repository\EfectivoRepository;
+use App\Form\EconomicpresuType;
 use App\Repository\BancoRepository;
-use App\Entity\Tiposmovimiento;
-use App\Repository\TiposmovimientoRepository;
 use App\Repository\EconomicpresuRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Repository\TiposmovimientoRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[Route('/admin/economicpresu')]
 class EconomicpresuController extends AbstractController
 {
+    public function __construct(
+        private EntityManagerInterface $em,
+    ) {}
+
     #[Route('/', name: 'app_economicpresu_index', methods: ['GET'])]
     public function index(EconomicpresuRepository $economicpresuRepository): Response
     {
@@ -29,21 +31,22 @@ class EconomicpresuController extends AbstractController
     }
 
     #[Route('/new', name: 'app_economicpresu_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EconomicpresuRepository $economicpresuRepository): Response
+    public function new(Request $request): Response
     {
         $economicpresu = new Economicpresu();
         $form = $this->createForm(EconomicpresuType::class, $economicpresu);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $economicpresuRepository->add($economicpresu, true);
+            $this->em->persist($economicpresu);
+            $this->em->flush();
 
             return $this->redirectToRoute('app_economicpresu_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('economicpresu/new.html.twig', [
+        return $this->render('economicpresu/new.html.twig', [
             'economicpresu' => $economicpresu,
-            'form' => $form,
+            'form'          => $form->createView(),
         ]);
     }
 
@@ -56,166 +59,146 @@ class EconomicpresuController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_economicpresu_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Economicpresu $economicpresu, EconomicpresuRepository $economicpresuRepository): Response
+    public function edit(Request $request, Economicpresu $economicpresu): Response
     {
         $form = $this->createForm(EconomicpresuType::class, $economicpresu);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $economicpresuRepository->add($economicpresu, true);
+            $this->em->flush();
 
             return $this->redirectToRoute('app_economicpresu_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('economicpresu/edit.html.twig', [
+        return $this->render('economicpresu/edit.html.twig', [
             'economicpresu' => $economicpresu,
-            'form' => $form,
+            'form'          => $form->createView(),
         ]);
     }
 
     #[Route('/{id}', name: 'app_economicpresu_delete', methods: ['POST'])]
-    public function delete(Request $request, Economicpresu $economicpresu, EconomicpresuRepository $economicpresuRepository): Response
+    public function delete(Request $request, Economicpresu $economicpresu): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$economicpresu->getId(), $request->request->get('_token'))) {
-            $economicpresuRepository->remove($economicpresu, true);
+        if ($this->isCsrfTokenValid('delete' . $economicpresu->getId(), $request->request->get('_token'))) {
+            $this->em->remove($economicpresu);
+            $this->em->flush();
         }
 
         return $this->redirectToRoute('app_economicpresu_index', [], Response::HTTP_SEE_OTHER);
     }
 
+    // ANTES de /{id} para evitar conflicto de rutas
     #[Route('/estado/ajax', name: 'economic_estado', methods: ['GET','POST'])]
-    public function estadoajax(Request $request): jsonResponse
+    public function estadoajax(Request $request): JsonResponse
     {
-        $jsonData = array();
-        
-        $id = $request->query->get('id');
+        $id     = $request->query->get('id');
         $estado = $request->query->get('estado');
-        $entityManager = $this->em;
-                
-        $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $id]);
 
-        //actualizamos la cantidad
-        $actualizar->setestadoEco($estado);
-        $entityManager->persist($actualizar);
-        $entityManager->flush();
+        $actualizar = $this->em->getRepository(Economicpresu::class)->findOneBy(['id' => $id]);
 
-        //Volver a crear apartado del loop de la pantalla
-        $jsonData[0]= $id;
+        if (!$actualizar) {
+            return new JsonResponse(['error' => 'No encontrado'], 404);
+        }
 
-        return new jsonResponse($jsonData); 
+        $actualizar->setEstadoEco($estado);
+        $this->em->flush();
 
-    }     
-    
+        return new JsonResponse(['id' => $id]);
+    }
+
     #[Route('/importe/ajax', name: 'economic_importe', methods: ['GET','POST'])]
-    public function importeajax(Request $request): jsonResponse
+    public function importeajax(Request $request): JsonResponse
     {
-        $jsonData = array();
-        
-        $id = $request->query->get('id');
+        $id      = $request->query->get('id');
         $importe = $request->query->get('importe');
-        $entityManager = $this->em;
-                
-        $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $id]);
 
-        //actualizamos la cantidad
-        $actualizar->setimporteEco($importe);
-        $entityManager->persist($actualizar);
-        $entityManager->flush();
+        $actualizar = $this->em->getRepository(Economicpresu::class)->findOneBy(['id' => $id]);
 
-        //Volver a crear apartado del loop de la pantalla
-        $jsonData[0]= $id;
+        if (!$actualizar) {
+            return new JsonResponse(['error' => 'No encontrado'], 404);
+        }
 
-        return new jsonResponse($jsonData); 
+        $actualizar->setImporteEco($importe);
+        $this->em->flush();
 
-    }  
-    
+        return new JsonResponse(['id' => $id]);
+    }
+
     #[Route('/pagar/ajax', name: 'economic_pagar', methods: ['GET','POST'])]
-    public function pagarajax(Request $request): jsonResponse
+    public function pagarajax(Request $request, TiposmovimientoRepository $tiposmovimientoRepository): JsonResponse
     {
-        $jsonData = array();
-        
-        $id = $request->query->get('id');
-        $importe = $request->query->get('importe');
-        $entityManager = $this->em;
-        $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $id]);     
+        $id      = $request->query->get('id');
+        $importe = (float) $request->query->get('importe');
 
-        // Generamos movimiento efectivo
+        $actualizar = $this->em->getRepository(Economicpresu::class)->findOneBy(['id' => $id]);
+
+        if (!$actualizar) {
+            return new JsonResponse(['error' => 'No encontrado'], 404);
+        }
+
         $efectivo = new Efectivo();
-        $efectivo->setTipoEf($entityManager->getRepository('App\Entity\Tiposmovimiento')->findOneBy(['descripcionTm'=> 'Mano de Obra']));
+        $efectivo->setTipoEf($tiposmovimientoRepository->findOneBy(['descripcionTm' => 'Mano de Obra']));
         $efectivo->setImporteEf($importe * -1);
         $efectivo->setFechaEf(new \DateTime());
         $efectivo->setConceptoEf($actualizar->getConceptoEco() . ' ' . $actualizar->getIdpresuEco()->getClientePe()->getDireccionCl());
         $efectivo->setPresupuestoef($actualizar->getIdpresuEco());
-        $entityManager->persist($efectivo );
-        $entityManager->flush();
+        $this->em->persist($efectivo);
 
+        $restante = $actualizar->getImporteEco() - $importe;
 
-        if (($actualizar->getImporteEco() - ($importe)) == 0 || $actualizar->getImporteEco()== 0 || ($actualizar->getImporteEco() - ($importe)) < 0 ) {
+        if ($restante <= 0) {
             $actualizar->setImporteEco($importe);
             $actualizar->setTimestamp(new \DateTime());
-            $actualizar->setEstadoEco(8);    
+            $actualizar->setEstadoEco(8);
         } else {
-                $actualizar->setImporteEco($actualizar->getImporteEco() - ($importe));
-                $actualizar->setTimestamp(new \DateTime());
-                $economicnuevo = new economicpresu();
-                $economicnuevo = clone $actualizar;
-                $economicnuevo->setEstadoEco(8);  
-                $economicnuevo->setImporteEco($importe);  
-                $entityManager->persist($economicnuevo);   
-                          
-        };
+            $actualizar->setImporteEco($restante);
+            $actualizar->setTimestamp(new \DateTime());
 
+            $economicnuevo = clone $actualizar;
+            $economicnuevo->setEstadoEco(8);
+            $economicnuevo->setImporteEco($importe);
+            $this->em->persist($economicnuevo);
+        }
 
+        $this->em->flush();
 
-        $entityManager->persist($actualizar);
-        $entityManager->flush();
-
-        //Volver a crear apartado del loop de la pantalla
-        $jsonData[0]= $id;
-
-        return new jsonResponse($jsonData); 
-
-    }     
+        return new JsonResponse(['id' => $id]);
+    }
 
     #[Route('/conciliar/{id}', name: 'conciliar_presu', methods: ['GET'])]
-    public function conciliar(economicpresu $economicpresu, BancoRepository $bancoRepository): Response
+    public function conciliar(Economicpresu $economicpresu, BancoRepository $bancoRepository): Response
     {
-   
         return $this->render('economicpresu/conciliar.html.twig', [
             'economicpresu' => $economicpresu,
-            'bancos' => $bancoRepository->findAll(),
+            'bancos'        => $bancoRepository->findAll(),
         ]);
-    }       
+    }
 
     #[Route('/{id}/{idbanco}/conciliar', name: 'economicpresu_conciliar', methods: ['GET','POST'])]
-    public function conciliar_banco(Economicpresu $economicpresu, BancoRepository $bancoRepository, int $idbanco, TiposmovimientoRepository $tiposmovimientoRepository): Response
-    {
-        $entityManager = $this->em;
-        $banco = $bancoRepository->findOneBy(array('id' => $idbanco));
+    public function conciliar_banco(
+        Economicpresu $economicpresu,
+        BancoRepository $bancoRepository,
+        int $idbanco,
+        TiposmovimientoRepository $tiposmovimientoRepository
+    ): Response {
+        $banco = $bancoRepository->find($idbanco);
 
-        if ($economicpresu->getImporteEco() != $banco->getImporteBn()){
-
-            $banconuevo = clone $banco;  
+        if ($economicpresu->getImporteEco() != $banco->getImporteBn()) {
+            $banconuevo = clone $banco;
             $banconuevo->setImporteBn($economicpresu->getImporteEco());
-            $banconuevo->setCategoriabn($tiposmovimientoRepository->findOneBy(['descripcionTm'=> 'Mano de Obra']));  
+            $banconuevo->setCategoriaBn($tiposmovimientoRepository->findOneBy(['descripcionTm' => 'Mano de Obra']));
             $banconuevo->setConciliado(1);
-            $importenuevo= $banco->getImporteBn() - $economicpresu->getImporteEco();
-            $banco->setImporteBn($importenuevo);
+            $banco->setImporteBn($banco->getImporteBn() - $economicpresu->getImporteEco());
             $economicpresu->setBancoEco($banconuevo);
-
-            $entityManager->persist($banconuevo);
-
+            $this->em->persist($banconuevo);
         } else {
-
-            $economicpresu->setBancoEco($banco);    
-            $banco->setCategoriabn($tiposmovimientoRepository->findOneBy(['descripcionTm'=> 'Mano de Obra']));
+            $economicpresu->setBancoEco($banco);
+            $banco->setCategoriaBn($tiposmovimientoRepository->findOneBy(['descripcionTm' => 'Mano de Obra']));
             $banco->setConciliado(1);
         }
 
-        
-        $entityManager->flush();
+        $this->em->flush();
 
         return $this->redirectToRoute('cestas_index');
     }
-
 }

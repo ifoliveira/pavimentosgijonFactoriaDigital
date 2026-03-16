@@ -15,15 +15,16 @@ class EconomicoPresuService
      * Crea las líneas económicas iniciales de un presupuesto.
      * No hace flush — el controlador es responsable.
      */
-    public function iniciarPresu(float $importeManoObra, Presupuestos $presupuesto): void
+    public function iniciarPresu(?float $importeManoObra, Presupuestos $presupuesto): void
     {
         foreach ($presupuesto->getManoObra() as $tipo) {
             if ($tipo->getCoste() != 0 || $tipo->getTipoMo() === 'Otros') {
-                $this->alta($tipo->getTipoMo(), $tipo->getCoste(), 'D', $presupuesto, 'E');
+                $this->alta($tipo->getTipoMo(), (float) ($tipo->getCoste() ?? 0.0), 'D', $presupuesto, 'E');
+
             }
         }
 
-        $this->alta('Mano de Obra', $importeManoObra, 'H', $presupuesto, 'M');
+        $this->alta('Mano de Obra', (float) ($importeManoObra ?? 0.0), 'H', $presupuesto, 'M');
     }
 
     /**

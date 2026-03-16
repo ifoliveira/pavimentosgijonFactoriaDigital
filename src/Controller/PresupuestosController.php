@@ -217,7 +217,7 @@ class PresupuestosController extends AbstractController
             'formmanoob' => $formmanoob->createView(),
             'formestadopr' => $formestadopr->createView(),
             'fotos' => $ficheros,
-            'cestaId'=> $presupuesto->getTicket()->getId(),
+            'cestaId'=> $presupuesto->getTicket()?->getId(),
             'productos' => $productos,
         ]);
     }
@@ -287,7 +287,7 @@ class PresupuestosController extends AbstractController
             'presupuesto' => $presupuesto,
             'productos' => $productos,
             'economic' => $presupuesto->getEconomicpresus(),
-            'cestaId'=> $presupuesto->getTicket()->getId(),
+            'cestaId'=> $presupuesto->getTicket()?->getId(),
             'form' => $form->createView(),
         ]);
     }
@@ -552,16 +552,12 @@ class PresupuestosController extends AbstractController
         $presupuesto->getTicket()->setTimestampCs(new \DateTime());
  
         $this->em->persist($presupuesto);
+        $this->economicoPresuService->iniciarPresu($presupuesto->getimportemanoobra(), $presupuesto);
+        $this->pagoService->ticketPagoFinal($presupuesto->getTicket(), $importesenal, $tipopago, $tiposmovimientoRepository);
         $this->em->flush();
 
-        $this->economicoPresuService->iniciarPresu($presupuesto->getimportemanoobra(), $presupuesto);
-
-        // Creamos un pago con lo que llegue en la señal
-        $this->pagoService->ticketPagoFinal($presupuesto->getTicket(), $importesenal, $tipopago, $tiposmovimientoRepository);
         $response = new JsonResponse();
-
-        // Envía una respuesta de texto
-        return $response->setData(['respuesta' =>'presupuesto actualizado']);
+        return $response->setData(['respuesta' => 'presupuesto actualizado']);
         
        
     }
