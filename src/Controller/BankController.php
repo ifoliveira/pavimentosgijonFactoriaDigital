@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\CategoriaMovimientoService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,7 +13,6 @@ use App\Entity\Banco; // Asegúrate de que este use statement corresponda a tu e
 use App\Form\ExcelType; // Asegúrate de incluir tu nuevo formulario
 use App\Entity\Tiposmovimiento;
 use PhpOffice\PhpSpreadsheet\Calculation\DateTimeExcel\DateValue;
-use App\Service\CategoriaMovimientoService;
 use App\Repository\BancoRepository;
 
 class BankController extends AbstractController
