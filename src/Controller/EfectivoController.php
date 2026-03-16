@@ -7,6 +7,7 @@ use App\Form\EfectivoType;
 use App\Repository\EfectivoRepository;
 use App\Repository\DetallecestaRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -32,7 +33,7 @@ class EfectivoController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $this->em;
 
             $entityManager->persist($efectivo);
             $entityManager->flush();
@@ -61,7 +62,7 @@ class EfectivoController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('efectivo_index');
         }
@@ -76,7 +77,7 @@ class EfectivoController extends AbstractController
     public function delete(Request $request, Efectivo $efectivo): Response
     {
         if ($this->isCsrfTokenValid('delete'.$efectivo->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $this->em;
             $entityManager->remove($efectivo);
             $entityManager->flush();
         }
@@ -92,7 +93,7 @@ class EfectivoController extends AbstractController
         $datos = $request->query->get('id');
 
         // get EntityManager
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->em;
         // Obtener cesta
         $efectivo = $em->getRepository('App\Entity\Efectivo')->find($datos);
         if (is_object($efectivo)){

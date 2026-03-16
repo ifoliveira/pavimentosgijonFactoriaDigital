@@ -366,7 +366,7 @@ private function calcularPresupuestoDucha(array $datos): array
             // but, the original `$task` variable has also been updated
             $log = $form->getData();
 
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $this->em;
 
             $log->setIdLog(1);
             $log->setFecha(new \DateTime());

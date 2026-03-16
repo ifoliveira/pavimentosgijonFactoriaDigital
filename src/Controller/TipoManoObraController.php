@@ -6,6 +6,7 @@ use App\Entity\TipoManoObra;
 use App\Form\TipoManoObraType;
 use App\Repository\TipoManoObraRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,7 +30,7 @@ class TipoManoObraController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $this->em;
             $entityManager->persist($tipoManoObra);
             $entityManager->flush();
 
@@ -57,7 +58,7 @@ class TipoManoObraController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('tipo_mano_obra_index');
         }
@@ -72,7 +73,7 @@ class TipoManoObraController extends AbstractController
     public function delete(Request $request, TipoManoObra $tipoManoObra): Response
     {
         if ($this->isCsrfTokenValid('delete'.$tipoManoObra->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $this->em;
             $entityManager->remove($tipoManoObra);
             $entityManager->flush();
         }

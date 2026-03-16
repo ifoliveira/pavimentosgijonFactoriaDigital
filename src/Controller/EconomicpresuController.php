@@ -11,6 +11,7 @@ use App\Entity\Tiposmovimiento;
 use App\Repository\TiposmovimientoRepository;
 use App\Repository\EconomicpresuRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -89,7 +90,7 @@ class EconomicpresuController extends AbstractController
         
         $id = $request->query->get('id');
         $estado = $request->query->get('estado');
-        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager = $this->em;
                 
         $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $id]);
 
@@ -112,7 +113,7 @@ class EconomicpresuController extends AbstractController
         
         $id = $request->query->get('id');
         $importe = $request->query->get('importe');
-        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager = $this->em;
                 
         $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $id]);
 
@@ -135,7 +136,7 @@ class EconomicpresuController extends AbstractController
         
         $id = $request->query->get('id');
         $importe = $request->query->get('importe');
-        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager = $this->em;
         $actualizar = $entityManager->getRepository('App\Entity\Economicpresu')->findOneBy(['id'=> $id]);     
 
         // Generamos movimiento efectivo
@@ -189,7 +190,7 @@ class EconomicpresuController extends AbstractController
     #[Route('/{id}/{idbanco}/conciliar', name: 'economicpresu_conciliar', methods: ['GET','POST'])]
     public function conciliar_banco(Economicpresu $economicpresu, BancoRepository $bancoRepository, int $idbanco, TiposmovimientoRepository $tiposmovimientoRepository): Response
     {
-        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager = $this->em;
         $banco = $bancoRepository->findOneBy(array('id' => $idbanco));
 
         if ($economicpresu->getImporteEco() != $banco->getImporteBn()){

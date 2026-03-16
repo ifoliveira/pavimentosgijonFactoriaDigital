@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 
 #[Route('/admin/mano/obra')]
@@ -31,7 +32,7 @@ class ManoObraController extends AbstractController
     {
         $manoObra = new ManoObra();
 
-        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager = $this->em;
         $presupuesto = $presupuestosRepository->findBy(
             ['id' => $presu,],
         );
@@ -83,7 +84,7 @@ class ManoObraController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('presupuestos_show', array('id' => $manoObra->getIdPresu() ));
         }
@@ -98,7 +99,7 @@ class ManoObraController extends AbstractController
     public function delete(Request $request, ManoObra $manoObra): Response
     {
         if ($this->isCsrfTokenValid('delete'.$manoObra->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $this->em;
             $entityManager->remove($manoObra);
             $entityManager->flush();
         }
@@ -113,7 +114,7 @@ class ManoObraController extends AbstractController
         // Obtener ID del cesta
         $datos = $request->query->get('id');
         // get EntityManager
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->em;
         // Obtener cesta
         $manoobra = $em->getRepository('App\Entity\ManoObra')->find($datos);
         // Borrado del detalle

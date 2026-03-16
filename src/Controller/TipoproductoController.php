@@ -6,6 +6,7 @@ use App\Entity\Tipoproducto;
 use App\Form\TipoproductoType;
 use App\Repository\TipoproductoRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,7 +30,7 @@ class TipoproductoController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $this->em;
             $entityManager->persist($tipoproducto);
             $entityManager->flush();
 
@@ -57,7 +58,7 @@ class TipoproductoController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('tipoproducto_index');
         }
@@ -72,7 +73,7 @@ class TipoproductoController extends AbstractController
     public function delete(Request $request, Tipoproducto $tipoproducto): Response
     {
         if ($this->isCsrfTokenValid('delete'.$tipoproducto->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $this->em;
             $entityManager->remove($tipoproducto);
             $entityManager->flush();
         }

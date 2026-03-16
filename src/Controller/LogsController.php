@@ -6,6 +6,7 @@ use App\Entity\Logs;
 use App\Form\LogsType;
 use App\Repository\LogsRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -37,7 +38,7 @@ class LogsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $this->em;
             $entityManager->persist($log);
             $entityManager->flush();
 
@@ -65,7 +66,7 @@ class LogsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $this->em->flush();
 
             return $this->redirectToRoute('logs_index');
         }
@@ -80,7 +81,7 @@ class LogsController extends AbstractController
     public function delete(Request $request, Logs $log): Response
     {
         if ($this->isCsrfTokenValid('delete'.$log->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $this->em;
             $entityManager->remove($log);
             $entityManager->flush();
         }
