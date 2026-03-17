@@ -25,6 +25,16 @@ class AdminProController extends AbstractController
         private ForecastService $forecastService,
         private CestasService $cestasService,
     ) {}
+
+    /**
+     * Método utilitario para obtener el año, por parámetro o valor actual
+     */
+    private function getAnio(Request $request): int
+    {
+        return $request->query->getInt('anio', (int) date('Y'));
+    }
+
+
     
     #[Route('/', name: 'admin_pro')]
     public function index(PresupuestosRepository $presupuestosRepository): Response
@@ -39,7 +49,7 @@ class AdminProController extends AbstractController
     public function flujocaja(
         Request $request,
         BancoRepository $bancoRepository,
-        EfectivoRepository $efectivoRepository,
+        EfectivoRepository $efectivoRepository
     ): Response {
         $forecast = $this->forecastService->getForecastPendiente();
 
@@ -52,8 +62,6 @@ class AdminProController extends AbstractController
             'forecastChartData' => $forecast['chartData'],
         ]);
 
-        $response->headers->setCookie(new Cookie('Mensaje', 'No mostrar', time() + 3600 * 18));
-
         return $response;
     }
 
@@ -62,9 +70,9 @@ class AdminProController extends AbstractController
         Request $request,
         DetallecestaRepository $detallecestaRepository,
         BancoRepository $bancoRepository,
-        EfectivoRepository $efectivoRepository,
+        EfectivoRepository $efectivoRepository
     ): Response {
-        $anio     = $request->query->getInt('anio', (int) date('Y'));
+        $anio     = $this->getAnio($request);
         $forecast = $this->forecastService->getForecastPendiente();
 
         $manoobratotal = intval($efectivoRepository->manoobraEfectivo()["sum(importe_ef)"])
@@ -83,7 +91,6 @@ class AdminProController extends AbstractController
             'forecastChartData' => $forecast['chartData'],
         ]);
 
-        $response->headers->setCookie(new Cookie('Mensaje', 'No mostrar', time() + 3600 * 18));
 
         return $response;
     }
@@ -94,9 +101,9 @@ class AdminProController extends AbstractController
         EconomicpresuRepository $economicpresuRepository,
         DetallecestaRepository $detallecestaRepository,
         BancoRepository $bancoRepository,
-        EfectivoRepository $efectivoRepository,
+        EfectivoRepository $efectivoRepository
     ): Response {
-        $anio     = $request->query->getInt('anio', (int) date('Y'));
+        $anio     = $this->getAnio($request);
         $totales  = $this->cestasService->getTotalesTicketsSnal();
 
         return $this->render('admin_pro/contabilidad.html.twig', [
@@ -121,12 +128,15 @@ class AdminProController extends AbstractController
         $id      = $request->request->get('id');
         $importe = $request->request->get('importe');
 
+        // Validación básica
+        if (!is_numeric($importe)) {
+            return $this->json(['error' => 'Importe no válido'], 400);
+        }
+        
         $detalle = $entityManager->getRepository(Detallecesta::class)->find($id);
-
         if (!$detalle) {
             return $this->json(['error' => 'Registro no encontrado'], 404);
         }
-
         $detalle->setPrecioDc($importe);
         $entityManager->flush();
 

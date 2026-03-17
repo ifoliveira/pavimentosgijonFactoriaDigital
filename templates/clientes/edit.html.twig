@@ -1,8 +1,40 @@
 {% extends 'base.html.twig' %}
 {% form_theme form 'fields.html.twig' %}
-{% block title %}New Cliente{% endblock %}
-{% block cabecera %} Cliente {% endblock %}
+
+{% block title %}Editar Cliente{% endblock %}
+{% block cabecera %}Editar Cliente{% endblock %}
+
 {% block breadcrumb %}
-<li class="breadcrumb-item">Cliente</li> 
-<li class="breadcrumb-item active">Actualizar</li>
+    <li class="breadcrumb-item">
+        <a href="{{ path('clientes_index') }}">Clientes</a>
+    </li>
+    <li class="breadcrumb-item active">Editar</li>
+{% endblock %}
+
+{% block body %}
+    <div class="card">
+        <div class="card-body">
+            <div class="col-sm-12 col-lg-8">
+                <div class="card p-4">
+                    {{ form_start(form) }}
+                    {# Añade aquí otros campos importantes del cliente #}
+
+                    <div class="mt-3">
+                        <button class="btn btn-success">Guardar</button>
+                        <a class="btn btn-secondary" href="{{ path('clientes_index') }}">Cancelar</a>
+                    </div>    
+                    {{ form_end(form) }}
+                
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscustom %}
+<script>
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+</script>
 {% endblock %}
