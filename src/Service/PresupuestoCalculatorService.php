@@ -2,337 +2,198 @@
 
 namespace App\Service;
 
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Yaml\Yaml;
+use App\Repository\PrecioRepository;
 
 class PresupuestoCalculatorService
 {
-    private array $precios = [];
-    private LoggerInterface $logger;
+    public function __construct(private PrecioRepository $precios) {}
 
-    public function __construct(LoggerInterface $logger)
+    public function calcular(string $tipo, array $d): array
     {
-        $this->logger = $logger;
+        return match($tipo) {
+            'ducha'         => $this->calcularDucha($d, $tipo),
+            'baño_completo' => $this->calcularBanoCompleto($d, $tipo),
+            default         => throw new \InvalidArgumentException("Tipo desconocido: $tipo"),
+        };
     }
 
-    // ====================================================
-    //  PUBLIC API
-    // ====================================================
-
-    public function calcular(string $tipo, array $jsonFinal): array
+    private function p(string $clave, string $tipo): float
     {
-        $this->cargarYaml($tipo);
+        return $this->precios->get($clave, $tipo);
+    }
 
-        $total = 0;
-        $manoObra = [];
-        $materiales = [];
-        $detalle = [];
-        $vars = []; // ← variables calculadas por cada regla (m2, etc.)
+    private function calcularDucha(array $d, string $tipo): array
+    {
+        $mo  = [];
+        $mat = [];
 
-        $this->logger->info("🔎 JSON FINAL RECIBIDO:", $jsonFinal);
+        // Base
+        $mo['Albañil']   = $this->p('albanil_base',   $tipo);
+        $mo['Fontanero'] = $this->p('fontanero_base',  $tipo);
 
-        foreach ($this->precios['reglas'] as $regla) {
+        // Alicatado
+        $clave = match($d['zona_azulejos']['categoria'] ?? '') {
+            'minimo'         => 'albanil_minimo',
+            'hasta_1m'       => 'albanil_hasta1m',
+            'hasta_el_techo' => 'albanil_hasta_techo',
+            'personalizado'  => 'albanil_personalizado',
+            default          => null,
+        };
+        if ($clave) $mo['Alicatado'] = $this->p($clave, $tipo);
 
-            $cond = $regla['si'] ?? null;
-
-            if ($cond === null) {
-                $this->logger->error("❌ Regla sin condición 'si': " . json_encode($regla));
-                continue;
-            }
-            if ($this->evaluarCondicion($cond, $jsonFinal)) {
-
-                $detalle[] = $cond;
-
-                // =====================
-                // 1) calcular:
-                // =====================
-                if (isset($regla['calcular'])) {
-
-                    foreach ($regla['calcular'] as $var => $expr) {
-
-                        $valor = $this->evaluarExpresionV2($expr, $jsonFinal, $vars);
-
-                        $vars[$var] = $valor;
-
-                        $this->logger->info("🧮 Variable calculada: $var = $valor");
-                    }
-                }
-
-                // =====================
-                // 2) sumar:
-                // =====================
-                if (isset($regla['sumar'])) {
-
-                    foreach ($regla['sumar'] as $ruta => $expr) {
-
-                        $valorRaw = $expr;
-                        $this->logger->info("🧮 Valor para sumar: $valorRaw ");
-                        // 1) ¿Es una ruta YAML?
-                        if (is_string($valorRaw) && preg_match('/^[a-zA-Z0-9_.]+$/', $valorRaw)) {
-
-                            // Entonces es una ruta del YAML -> hay que resolverla ANTES del eval.
-                            $importe = $this->extraer($this->precios, $valorRaw);
-
-                            // 2) descripción
-                            $rutaDescripcion = preg_replace('/\.precio$/', '.descripcion', $valorRaw);
-                            $descripcion = $this->extraer($this->precios, $rutaDescripcion);
-                            $this->logger->info("🧮 Descripcion: $valorRaw = $descripcion");
-  
-
-
-                        } else {
-
-                            // 2) Es una expresión matemática -> aquí sí evalúa
-                            $importe = $this->evaluarExpresionV2($valorRaw, $jsonFinal, $vars);
-                            // DESCRIPCIÓN manual para expresiones matemáticas
-                            $this->logger->info("🧮 Calcula la expresión con: $ruta ");
-                            $descripcion = $this->generarDescripcion($ruta);  
-                                    
-                             
-                            $rutaConcepto =  str_replace('_', '.', $ruta);; // ya es la buena
-
-                            $descripcion = $this->extraer(
-                                $this->precios,
-                                $rutaConcepto . '.descripcion'
-                            );
-                            $this->logger->info("🧮 Calcula la expresión devuelve: $descripcion  ");
-
-                        }
-
-                       
-                        $this->logger->info("💰 Sumado prev :$importe");  
-                        $this->acumular($manoObra, $materiales, $ruta, $importe, $descripcion);
-
-                        $total += $importe;
-
-                        $this->logger->info("💰 Sumado: $ruta = $importe");
-                    }
-                }
-            }
+        // Escayola
+        if (isset($d['mantener_escayola'])) {
+            $mo['Escayolista'] = $this->p('escayolista_base', $tipo);
         }
+
+        // Plato
+        $largo = $d['medida_platoducha']['largo_cm'] ?? 0;
+        $clavePlato = match(true) {
+            $largo < 140  => 'plato_pequeno',
+            $largo <= 160 => 'plato_medio',
+            default       => 'plato_grande',
+        };
+        $mat['Plato de ducha'] = $this->p($clavePlato, 'todos');
+
+        // Cola
+        $mat['Cola H40'] = $this->p('cola_h40', 'todos');
+
+        // Reposición azulejos
+        if ($d['reposicion_azulejos'] ?? false) {
+            $alturaM = ($d['zona_azulejos']['altura_cm'] ?? 30) / 100;
+            $largoM  = ($d['medida_platoducha']['largo_cm'] ?? 0) / 100;
+            $anchoM  = ($d['medida_platoducha']['ancho_cm'] ?? 0) / 100;
+            $m2      = round($alturaM * ($largoM + $anchoM * 2), 2);
+            $mat["Reposición azulejos ({$m2} m²)"] =
+                round($m2 * $this->p('azulejo_reposicion_m2', 'todos'));
+        }
+
+        // Mampara
+        $mat['Mampara']            = $this->p($this->claveMampara($d), 'todos');
+        $mo['Instalación mampara'] = $this->p('colocador_mampara', $tipo);
+
+        // Grifería
+        if ($d['accion_grifo'] ?? false) {
+            $mat['Grifería'] = $this->p($this->claveGriferia($d), 'todos');
+        }
+
+        return $this->resultado($mo, $mat);
+    }
+
+    private function calcularBanoCompleto(array $d, string $tipo): array
+    {
+        $mo  = [];
+        $mat = [];
+
+        // Base
+        $mo['Albañil']      = $this->p('albanil_base',        $tipo);
+        $mo['Fontanero']    = $this->p('fontanero_base',      $tipo);
+        $mo['Electricista'] = $this->p('electricidad_base',   $tipo);
+        $mo['Pintura']      = $this->p('escayolista_pintura', $tipo);
+
+        // Alicatado
+        $clave = match($d['zona_azulejos']['categoria'] ?? '') {
+            'hasta_1m'       => 'albanil_hasta1m',
+            'hasta_el_techo' => 'albanil_hasta_techo',
+            'personalizado'  => 'albanil_alicatado_m2',
+            default          => null,
+        };
+        if ($clave) $mo['Alicatado'] = $this->p($clave, $tipo);
+
+        // Escayola
+        if (isset($d['mantener_escayola'])) {
+            $mo['Escayolista'] = $this->p('escayolista_base', $tipo);
+        }
+
+        // Azulejos por m²
+        $alto  = ($d['medida_bano']['alto_cm']  ?? 240) / 100;
+        $largo = ($d['medida_bano']['largo_cm'] ?? 0)   / 100;
+        $ancho = ($d['medida_bano']['ancho_cm'] ?? 0)   / 100;
+        $m2    = round(($largo * $ancho) + ($largo * $alto * 2) + ($ancho * $alto * 2), 2);
+        $mat["Azulejos ({$m2} m²)"] =
+            round($m2 * $this->p('azulejo_reposicion_m2', 'todos'));
+
+        // Cola
+        $mat['Cola H40'] = $this->p('cola_h40', 'todos');
+
+        // Plato
+        if (($d['banera_o_ducha']['tipo'] ?? 'ducha') === 'ducha') {
+            $largoB     = $d['banera_o_ducha']['largo_cm'] ?? 120;
+            $clavePlato = match(true) {
+                $largoB < 140  => 'plato_pequeno',
+                $largoB <= 160 => 'plato_medio',
+                default        => 'plato_grande',
+            };
+            $mat['Plato de ducha'] = $this->p($clavePlato, 'todos');
+        }
+
+        // Mampara
+        $mat['Mampara']            = $this->p($this->claveMampara($d), 'todos');
+        $mo['Instalación mampara'] = $this->p('colocador_mampara', $tipo);
+
+        // Grifería
+        $mat['Grifería ducha']  = $this->p($this->claveGriferia($d), 'todos');
+        $mat['Grifería lavabo'] = $this->p('griferia_lavabo', 'todos');
+
+        // Inodoro
+        $mat['Inodoro'] = $this->p('inodoro_convencional', 'todos');
+
+        // Bidé / higiénico
+        match($d['bide_o_higienico'] ?? 'ninguno') {
+            'bide'      => $mat['Bidé']            = $this->p('bide_convencional',  'todos'),
+            'higienico' => $mat['Grupo higiénico'] = $this->p('griferia_higienico', 'todos'),
+            default     => null,
+        };
+
+        // Mueble
+        if ($d['mueble_bano']['quiere'] ?? false) {
+            $claveMueble = match($d['mueble_bano']['medida_cm'] ?? 80) {
+                90      => 'mueble_90cm',
+                100     => 'mueble_100cm',
+                default => 'mueble_80cm',
+            };
+            $mat['Mueble de baño'] = $this->p($claveMueble, 'todos');
+        }
+
+        // Iluminación y radiador
+        $mat['Iluminación LED']   = $this->p('iluminacion_led',  'todos');
+        $mat['Radiador toallero'] = $this->p('radiador_simple',  'todos');
+
+        return $this->resultado($mo, $mat);
+    }
+
+    private function claveMampara(array $d): string
+    {
+        return match($d['tipo_mampara'] ?? '') {
+            'Fijo'             => 'mampara_fija',
+            'Fijo + corredera' => 'mampara_fijo_corredera',
+            'Angular'          => 'mampara_angular',
+            'Doble corredera'  => 'mampara_doble_corredera',
+            default            => 'mampara_fijo_corredera',
+        };
+    }
+
+    private function claveGriferia(array $d): string
+    {
+        return match($d['tipo_griferia'] ?? 'normal') {
+            'barra'        => 'griferia_barra',
+            'termostatica' => 'griferia_termostatica',
+            default        => 'griferia_normal',
+        };
+    }
+
+    private function resultado(array $mo, array $mat): array
+    {
+        $mo    = array_filter($mo,  fn($v) => $v > 0);
+        $mat   = array_filter($mat, fn($v) => $v > 0);
+        $total = array_sum($mo) + array_sum($mat);
 
         return [
-            'total' => round($total, 2),
-            'mano_obra' => $manoObra,
-            'materiales' => $materiales,
-            'detalle' => $detalle,
-            'min' => round($total * 0.95, 2), // -5% para estimación mínima
-            'max' => round($total * 1.05, 2)  // +5% para estimación máxima
+            'total'      => round($total, 2),
+            'min'        => round($total * 0.95, 2),
+            'max'        => round($total * 1.05, 2),
+            'mano_obra'  => $mo,
+            'materiales' => $mat,
         ];
     }
-
-    // ====================================================
-    //  INTERNALS
-    // ====================================================
-
-    private function cargarYaml(string $tipo): void
-    {
-        $ruta = __DIR__ . "/../../config/precios_{$tipo}.yaml";
-
-        if (!file_exists($ruta)) {
-            throw new \Exception("No existe el archivo $ruta");
-        }
-
-        $this->precios = Yaml::parseFile($ruta);
-        $this->logger->info("📄 YAML cargado: precios_{$tipo}.yaml");
-    }
-
-    // ----------------------------------------------------
-
-    private function evaluarCondicion(string $condicion, array $json): bool
-    {
-        $condicionPHP = preg_replace_callback(
-            '/[a-zA-Z_][a-zA-Z0-9_\.]*/',
-            function ($m) use ($json) {
-
-                $clave = $m[0];
-
-                // Palabras reservadas → no tocar
-                if (in_array($clave, ['true','false','null','and','or','&&','||'])) {
-                    return $clave;
-                }
-
-                // RUTAS ANIDADAS: zona_azulejos.altura_cm
-                if (str_contains($clave, '.')) {
-                    $valor = $this->extraer($json, $clave);
-
-                    if ($valor === null) return 'null';
-                    if (is_bool($valor)) return $valor ? 'true' : 'false';
-                    if (is_numeric($valor)) return $valor;
-
-                    return "'$valor'";
-                }
-                $this->logger->info("Clave antes de fallar: $clave");
-                // CLAVES SIMPLES: accion_grifo, tipo_mampara...
-                if (array_key_exists($clave, $json)) {
-                    $valor = $json[$clave];
-
-                    if (is_bool($valor)) return $valor ? 'true' : 'false';
-                    if (is_numeric($valor)) return $valor;
-                    return "'$valor'";
-                }
-
-                // Dejar tal cual si no existe en JSON
-                return $clave;
-            },
-            $condicion
-        );
-
-        $this->logger->info("🧩 Condición evaluable: $condicionPHP");
-
-        try {
-            return eval("return ($condicionPHP);");
-        } catch (\Throwable $e) {
-            $this->logger->error("❌ Error evaluarCondicion: {$e->getMessage()}");
-            return false;
-        }
-    }
-
-
-    // ----------------------------------------------------
-
-    private function extraer(array $json, string $ruta)
-    {
-        foreach (explode('.', $ruta) as $p) {
-            if (!isset($json[$p])) return null;
-            $json = $json[$p];
-        }
-        return $json;
-    }
-
-    private function generarDescripcion(string $ruta): string
-    {
-        // Convertimos "materiales_azulejosReposicion" en "Reposición de azulejos"
-        $texto = preg_replace('/^materiales_/', '', $ruta);
-        $texto = str_replace('_', ' ', $texto);
-        return ucfirst($texto);
-    }
-
-
-    // ----------------------------------------------------
-
-    private function evaluarExpresion(string|float|int $expr, array $json, array $vars): float
-    {
-        if (is_numeric($expr)) {
-            return floatval($expr);
-        }
-
-        // 1. Variables del JSON
-        $altura_cm = $this->extraer($json, 'zona_azulejos.altura_cm');
-        $largo_cm  = $this->extraer($json, 'medida_platoducha.largo_cm');
-        $ancho_cm  = $this->extraer($json, 'medida_platoducha.ancho_cm');
-
-        // 2. Variables calculadas
-        foreach ($vars as $k => $v) {
-            ${$k} = $v;
-        }
-
-        // ----------------------------
-        // 3. Sustituir rutas del JSON
-        // ----------------------------
-        $expr = str_replace('zona_azulejos.altura_cm', '$altura_cm', $expr);
-        $expr = str_replace('medida_platoducha.largo_cm', '$largo_cm', $expr);
-        $expr = str_replace('medida_platoducha.ancho_cm', '$ancho_cm', $expr);
-
-        // 4. Sustituir variables calculadas
-        foreach ($vars as $k => $v) {
-            $expr = preg_replace('/\b' . preg_quote($k, '/') . '\b/', '$' . $k, $expr);
-        }
-
-        // -------------------------------------------
-        // 5. SUSTITUIR RUTAS DEL YAML DE PRECIOS
-        // -------------------------------------------
-        $expr = preg_replace_callback('/materiales\.[a-zA-Z0-9_.]+/', function($m) {
-            return $this->extraer($this->precios, $m[0]);
-        }, $expr);
-
-        $expr = preg_replace_callback('/manoObra\.[a-zA-Z0-9_.]+/', function($m) {
-            return $this->extraer($this->precios, $m[0]);
-        }, $expr);
-
-        try {
-            $valor = eval("return floatval($expr);");
-            return $valor ?: 0;
-        } catch (\Throwable $e) {
-            $this->logger->error("❌ Error evaluarExpresion: $expr — {$e->getMessage()}");
-            return 0;
-        }
-    }
-
-private function evaluarExpresionV2(string|float|int $expr, array $json, array $vars): float
-    {
-        if (is_numeric($expr)) {
-                return (float) $expr;
-            }
-
-            // 1. Sustituir variables calculadas
-            foreach ($vars as $k => $v) {
-                $expr = preg_replace('/\b' . preg_quote($k, '/') . '\b/', $v, $expr);
-            }
-
-            // 2. Sustituir rutas del JSON dinámicamente
-            $expr = preg_replace_callback(
-                '/([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z0-9_]+)+)/',
-                function ($m) use ($json) {
-                    $valor = $this->extraer($json, $m[1]);
-                    return $valor !== null ? $valor : $m[0];
-                },
-                $expr
-            );
-
-            // 3. Sustituir precios materiales
-            $expr = preg_replace_callback(
-                '/materiales\.[a-zA-Z0-9_.]+/',
-                fn($m) => $this->extraer($this->precios, $m[0]) ?? 0,
-                $expr
-            );
-
-            // 4. Sustituir precios mano de obra
-            $expr = preg_replace_callback(
-                '/manoObra\.[a-zA-Z0-9_.]+/',
-                fn($m) => $this->extraer($this->precios, $m[0]) ?? 0,
-                $expr
-            );
-
-            try {
-                return (float) eval("return $expr;");
-            } catch (\Throwable $e) {
-                $this->logger->error("❌ Error evaluarExpresion2: $expr — {$e->getMessage()}");
-                return 0;
-            }
-    }    
-
-    // ----------------------------------------------------
-        private function acumular(array &$manoObra, array &$materiales, string $ruta, float $importe, string $descripcion): void
-        {
-            // manoObra_base  → [manoObra][base]
-            // materiales_platoMedio → [materiales][platoMedio]
-
-            $pos = strpos($ruta, '_');
-            if ($pos === false) {
-                $this->logger->error("❌ Ruta inválida en acumular(): $ruta");
-                return;
-            }
-
-            $seccion = substr($ruta, 0, $pos);     // manoObra / materiales
-            $clave   = substr($ruta, $pos + 1);    // base / platoMedio / griferiaBarra...
- 
-            // MANO DE OBRA
-            if ($seccion === 'manoObra') {
-                // ❗ la descripción viene de $detalles
-                $manoObra[$descripcion] = ($manoObra[$descripcion] ?? 0) + $importe;
-      
-                return;
-            }
-
-            // MATERIALES
-            if ($seccion === 'materiales') {
-                $materiales[$descripcion] = ($materiales[$descripcion] ?? 0) + $importe;
-      
-                return;
-            }
-
-            $this->logger->error("❌ Sección '$seccion' desconocida en ruta '$ruta'");
-        }
-
 }

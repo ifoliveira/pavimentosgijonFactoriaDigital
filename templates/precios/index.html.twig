@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Precios de reformas{% endblock %}
+{% block cabecera %}Precios de reformas{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item active">Precios</li>
+{% endblock %}
+
+{% block body %}
+
+  {% for flash in app.flashes('success') %}
+    <div class="alert alert-success">{{ flash }}</div>
+  {% endfor %}
+
+  {% for tipo, grupos in precios %}
+
+    <h5 class="mt-4 text-uppercase text-muted">
+      {{ tipo == 'todos' ? 'Compartidos (ducha y baño completo)' : tipo|replace({'_': ' '}) }}
+    </h5>
+
+    {% for grupo, items in grupos %}
+
+      <h6 class="text-muted mt-3">{{ grupo|replace({'_': ' '})|upper }}</h6>
+
+      <div class="card mb-3">
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Concepto</th>
+                <th>Clave</th>
+                <th class="text-end">Precio</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for precio in items %}
+                <tr>
+                  <td>{{ precio.descripcion }}</td>
+                  <td class="text-muted small">{{ precio.clave }}</td>
+                  <td class="text-end fw-bold">{{ precio.valor|number_format(2, ',', '.') }} €</td>
+                  <td class="text-end">
+                    <a href="{{ path('admin_precios_editar', {id: precio.id}) }}"
+                       class="btn btn-sm btn-outline-info">
+                      Editar
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    {% endfor %}
+
+  {% endfor %}
+
+{% endblock %}

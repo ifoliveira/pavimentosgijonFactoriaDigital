@@ -174,25 +174,25 @@ reglas:
 
   # GRIFERÍA (solo si se cambia)
 
-  - si: tipo_griferia == 'normal'"
+  - si: "tipo_griferia == 'normal'"
     sumar:
       materiales_griferia: "materiales.griferia.normal.precio"
 
-  - si: tipo_griferia == 'barra'"
+  - si: "tipo_griferia == 'barra'"
     sumar:
       materiales_griferia: "materiales.griferia.barra.precio"
 
-  - si: tipo_griferia == 'termostatica'"
+  - si: "tipo_griferia == 'termostatica'"
     sumar:
       materiales_griferia: "materiales.griferia.termostatica.precio"
 
   # BIDE HIGIENICO (si se instala)
-  - si: bide_o_higienico == 'bide'
+  - si: "bide_o_higienico == 'bide'"
     sumar:
       materiales_bide: "materiales.bide.convencional.precio"
       griferia_bide: "materiales.griferia.bide.precio"  
 
-  - si: bide_o_higienico == 'higienico'
+  - si: "bide_o_higienico == 'higienico'"
     sumar:
       griferia_higienico: "materiales.griferia.grupohigienico.precio"
 
@@ -247,10 +247,6 @@ reglas:
       materiales_iluminacion: "materiales.iluminacion.focotechoLED.precio"  
       materiales_griferia_lavabo: "materiales.griferia.lavabo.precio"
 
-
-
-            
-  
   # ESCAYOLA
   - si: "exists(mantener_escayola)"
     sumar:
@@ -265,9 +261,6 @@ reglas:
       manoObra_escayolistaPintura: "manoObra.escayolista.pintura.precio"
 
   
-
-
-
   # ZONA AZULEJOS
 
   - si: "zona_azulejos.categoria == 'minimo'"

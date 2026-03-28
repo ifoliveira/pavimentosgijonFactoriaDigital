@@ -1,0 +1,133 @@
+{% extends 'layouts/base_public.html.twig' %}
+
+{% block title %}Pavimentos Gijón — Quiénes somos{% endblock %}
+{% block meta_description %}Más de 30 años transformando baños en Gijón. Conoce al equipo de Pavimentos Gijón: seriedad, trato cercano y soluciones integrales desde 1992.{% endblock %}
+{% block og_title %}Quiénes somos — Pavimentos Gijón{% endblock %}
+{% block og_description %}Descubre quién hay detrás de Pavimentos Gijón: más de tres décadas de experiencia en reformas de baño en Gijón.{% endblock %}
+
+{% block body %}
+
+<section class="hero-decision">
+  <div class="container">
+
+    <h1>Reformamos tu baño en Gijón<br>Más de 30 años de experiencia</h1>
+
+    <p class="hero-sub">
+      Desde 1992 · Equipo multidisciplinar ·
+      Trato cercano y profesional · Empresa local en Gijón
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ path('iapresupuesto') }}">
+        💬 Calcular presupuesto online
+      </a>
+
+      <a class="btn btn-secondary" href="{{ path('contacto') }}">
+        📍 Visítanos en Gijón
+      </a>
+    </div>
+
+  </div>
+
+  <div class="resenas-hero">
+    <div class="review-highlight">
+      <p>
+        <span>✅ Más de 30 años de experiencia</span>
+        <span>✅ Equipo propio y colaboradores</span>
+        <span>✅ Especialistas en Gijón</span>
+      </p>
+    </div>
+  </div>
+
+</section>
+
+
+
+<section class="home-image">
+
+  <div class="container trabajo-container">
+
+    <h2>Quiénes somos</h2>
+
+    <p class="intro-trabajo">
+      Bienvenido a Pavimentos Gijón, donde fusionamos más de tres décadas
+      de experiencia con un trato cercano y colaborativo en cada proyecto.
+      Desde 1992, nos dedicamos apasionadamente a ofrecer soluciones
+      integrales para transformar tu baño en un espacio elegante y cómodo.
+    </p>
+
+    <img class="trabajo-img"
+         src="{{ asset('/Light-HTML/img/about/nosotros.webp') }}"
+         alt="Reforma integral de baño moderno en Gijón">
+
+  </div>
+
+</section>
+
+
+
+<section class="seo-text">
+
+  <div class="container">
+
+    <h2>Nuestra forma de trabajar</h2>
+
+    <p>
+      Nos enorgullece destacar por nuestra seriedad y compromiso con la
+      satisfacción del cliente. En cada proyecto, desde reformas integrales
+      hasta el cambio de bañeras por duchas, contamos con un equipo
+      multidisciplinar que incluye albañiles, fontaneros, electricistas,
+      pintores y escayolistas.
+    </p>
+
+    <p>
+      Colaboramos estrechamente con estos profesionales altamente
+      cualificados para asegurar que cada aspecto de tu proyecto se lleve
+      a cabo con precisión y dedicación. Además de ofrecer productos de
+      alta calidad, nos esforzamos por crear una experiencia sin
+      complicaciones y amena.
+    </p>
+
+    <p>
+      Visítanos en
+      <a href="https://maps.app.goo.gl/WJDtn32tn7yT33LA6" target="_blank">
+        Avenida Schultz 28, Gijón
+      </a>
+      y explora nuestra extensa gama de productos para el baño.
+      Únete a nuestra larga lista de clientes satisfechos que han
+      experimentado la diferencia de trabajar con un equipo comprometido
+      y profesional.
+    </p>
+
+    <ul>
+      <li>Más de 30 años reformando baños en Gijón</li>
+      <li>Presupuesto transparente y sin compromiso</li>
+      <li>Atención personalizada en cada proyecto</li>
+    </ul>
+
+  </div>
+
+</section>
+
+
+
+<section class="home-presupuesto">
+
+  <div class="container">
+
+    <h2>¿Quieres reformar tu baño?</h2>
+
+    <p>
+      Cuéntanos tu proyecto y te damos un presupuesto orientativo
+      al momento, sin compromiso.
+    </p>
+
+    <a href="{{ path('iapresupuesto') }}" class="btn btn-primary">
+      💬 Calcular presupuesto ahora
+    </a>
+
+  </div>
+
+</section>
+
+{% endblock %}
