@@ -17,10 +17,18 @@ class FacturaPdfToJsonService
 
         if ($extension === 'pdf') {
             $parser = new Parser();
-            $texto  = $parser->parseFile($rutaPdf)->getText();
-            $texto  = preg_replace('/[ \t]+/', ' ', $texto);
-            $texto  = preg_replace('/[\r\n]+/', "\n", $texto);
-            $texto  = trim($texto);
+            $pdf    = $parser->parseFile($rutaPdf);
+
+            // Extrae página a página preservando saltos de línea reales
+            $paginas = [];
+            foreach ($pdf->getPages() as $page) {
+                $paginas[] = $page->getText();
+            }
+            $texto = implode("\n---\n", $paginas);
+
+            // Solo normaliza saltos múltiples, NO colapses espacios horizontales
+            $texto = preg_replace('/[\r\n]{3,}/', "\n\n", $texto);
+            $texto = trim($texto);
 
             $response = $this->client->request('POST', 'https://api.openai.com/v1/chat/completions', [
                 'headers' => [
@@ -28,7 +36,7 @@ class FacturaPdfToJsonService
                     'Content-Type'  => 'application/json',
                 ],
                 'json' => [
-                    'model'       => 'gpt-3.5-turbo',
+                    'model' => 'gpt-4o-mini',
                     'messages'    => [['role' => 'user', 'content' => $this->getPromptConJsonEstandar($texto)]],
                     'temperature' => 0.2,
                 ],
@@ -82,32 +90,34 @@ class FacturaPdfToJsonService
     private function getPromptConJsonEstandar(string $contenidoFactura): string
     {
         return <<<EOT
-    1. Extrae primero la tabla de artículos de la factura.
-    2. Para cada fila de la tabla identifica las columnas: 
-      - código, descripción, cantidad, precio unitario, descuento, importe final
-    3. Todos los valores numéricos deben estar en formato float con punto decimal.
-    4. No generes texto fuera del JSON.
-    5. Si hay campos no detectados, pon null.
+    Eres un extractor de datos de facturas españolas. Analiza el siguiente texto extraído de un PDF.
 
-    Devuélveme exclusivamente el siguiente JSON COMPLETO (sin explicaciones ni texto adicional).
+    REGLAS IMPORTANTES:
+    - El texto puede estar desordenado por columnas; reconstruye la tabla de artículos buscando patrones: código → descripción → cantidad → precio → importe.
+    - Las líneas sin importe (como válvulas incluidas gratis) tienen importe null o 0.
+    - Todos los números usan coma decimal en el original; conviértelos a float con punto (168,60 → 168.60).
+    - Las fechas en formato DD/MM/AAAA conviértelas a AAAA-MM-DD.
+    - Si un campo no aparece, pon null.
+    - Devuelve EXCLUSIVAMENTE el JSON, sin explicaciones, sin bloques de código, sin texto extra.
 
+    JSON a rellenar:
     {
-      "numero_factura": null,
-      "fecha_factura": null,
-      "cliente": { "nombre": null, "direccion": null, "cif": null, "telefono": [] },
-      "articulos": [{ "codigo": null, "descripcion": null, "cantidad": null, "precio_unitario": null, "descuento_porcentaje": null, "importe_final": null }],
-      "importe_bruto": null,
-      "base_imponible": null,
-      "iva": { "porcentaje": null, "importe": null },
-      "recargo_equivalencia": { "porcentaje": null, "importe": null },
-      "total_factura": null,
-      "forma_pago": null,
-      "vencimientos": [{ "fecha": null, "importe": null }],
-      "empresa_emisora": { "nombre": null, "cif": null, "direccion": null },
-      "cuenta_bancaria": null
+    "numero_factura": null,
+    "fecha_factura": null,
+    "cliente": { "nombre": null, "direccion": null, "cif": null, "telefono": [] },
+    "articulos": [{ "codigo": null, "descripcion": null, "cantidad": null, "precio_unitario": null, "descuento_porcentaje": null, "importe_final": null }],
+    "importe_bruto": null,
+    "base_imponible": null,
+    "iva": { "porcentaje": null, "importe": null },
+    "recargo_equivalencia": { "porcentaje": null, "importe": null },
+    "total_factura": null,
+    "forma_pago": null,
+    "vencimientos": [{ "fecha": null, "importe": null }],
+    "empresa_emisora": { "nombre": null, "cif": null, "direccion": null },
+    "cuenta_bancaria": null
     }
 
-    Contenido de la factura:
+    Texto de la factura:
     $contenidoFactura
     EOT;
     }

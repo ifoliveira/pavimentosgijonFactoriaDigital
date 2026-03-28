@@ -1,0 +1,488 @@
+{# templates/factura/subir.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Extractor de Facturas{% endblock %}
+{% block cabecera %}Extractor de Facturas{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item active">Extractor de Facturas</li>
+{% endblock %}
+
+{% block stylesheets %}
+    <link href="{{ asset('css/factura-extractor.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="factura-extractor">
+
+    <!-- Upload bar -->
+    <div class="fg-upload-bar">
+        <label class="fg-file-label" for="fg-factura">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            </svg>
+            Elegir PDF
+        </label>
+        <input type="file" id="fg-factura" accept=".pdf" style="display:none">
+        <span id="fg-file-name">Ningún archivo seleccionado</span>
+        <button class="fg-btn" id="fg-btn-submit" disabled>
+            <div class="fg-btn-spinner"></div>
+            <span class="fg-btn-label">⚡ Procesar factura</span>
+        </button>
+    </div>
+
+    <!-- Alert -->
+    <div class="fg-alert-bar" id="fg-alert-bar">
+        <div class="fg-alert" id="fg-alert-msg"></div>
+    </div>
+
+    <!-- Workspace -->
+    <div class="fg-workspace">
+
+        <!-- PDF -->
+        <div class="fg-panel">
+            <div class="fg-panel-header">
+                <span class="fg-dot"></span>
+                Previsualización PDF
+            </div>
+            <div class="fg-panel-body">
+                <div class="fg-empty" id="fg-pdf-ph">
+                    <svg width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Selecciona un PDF para previsualizarlo
+                </div>
+                <iframe id="fg-pdf-frame" title="Previsualización de factura"></iframe>
+            </div>
+        </div>
+
+        <!-- JSON -->
+        <div class="fg-panel">
+            <div class="fg-panel-header">
+                <span class="fg-dot green"></span>
+                JSON extraído
+                <button class="fg-copy-btn" id="fg-copy-btn" style="display:none">Copiar</button>
+                <button class="fg-forecast-btn" id="fg-forecast-btn" style="display:none">
+                    📅 Insertar en Forecast 
+                </button>
+                {# Junto a fg-copy-btn y fg-forecast-btn #}
+                <button class="fg-productos-btn" id="fg-productos-btn" style="display:none">
+                    📦 Productos
+                </button>                
+            </div>
+            <div class="fg-panel-body" id="fg-json-body">
+                <div class="fg-empty" id="fg-json-ph">
+                    <svg width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <polyline points="16 18 22 12 16 6"/>
+                        <polyline points="8 6 2 12 8 18"/>
+                    </svg>
+                    El JSON aparecerá aquí tras procesar
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+{# Modal Forecast #}
+<div class="fg-modal-overlay" id="fg-modal">
+    <div class="fg-modal">
+        <h4>📅 Insertar vencimientos en Forecast</h4>
+        <label style="font-size:.78rem;color:#64748b;display:block;margin-bottom:6px">Concepto</label>
+        <input type="text" class="fg-modal-concepto" id="fg-modal-concepto" placeholder="Ej: Factura B2B026 - GME División Baños">
+        <label style="font-size:.78rem;color:#64748b;display:block;margin-bottom:8px;margin-top:4px">Vencimientos a insertar</label>
+        <div class="fg-venc-list" id="fg-venc-list"></div>
+        <div class="fg-modal-actions">
+            <button class="fg-modal-cancel" id="fg-modal-cancel">Cancelar</button>
+            <button class="fg-modal-confirm" id="fg-modal-confirm">Confirmar inserción</button>
+        </div>
+    </div>
+</div>
+
+{# Modal Productos #}
+<div class="fg-modal-overlay" id="fg-modal-productos">
+    <div class="fg-modal" style="min-width:720px;max-width:900px">
+        <h4>📦 Insertar artículos en Productos</h4>
+
+        <div class="fg-iva-nota">
+            IVA aplicado: <span id="fg-iva-pct">21</span>% — el precio final incluye IVA
+        </div>
+
+        <div style="overflow-x:auto;background:#0f1117;border:1px solid #2a2f3d;border-radius:8px;margin-bottom:16px">
+            <table class="fg-art-table" id="fg-art-table">
+                <thead>
+                    <tr>
+                        <th style="width:32px"></th>{# eliminar #}
+                        <th>Descripción</th>
+                        <th style="width:60px;text-align:center">Cant.</th>
+                        <th style="width:100px;text-align:right">Coste c/IVA</th>
+                        <th style="width:160px">Tipo</th>
+                    </tr>
+                </thead>
+                <tbody id="fg-art-tbody"></tbody>
+            </table>
+        </div>
+
+        <div class="fg-modal-actions">
+            <button class="fg-modal-cancel" id="fg-prod-cancel">Cancelar</button>
+            <button class="fg-modal-confirm" id="fg-prod-confirm">
+                Confirmar inserción (<span id="fg-prod-count">0</span>)
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block jscustom %}
+<script>
+(function () {
+    const inputFile = document.getElementById('fg-factura');
+    const frame     = document.getElementById('fg-pdf-frame');
+    const pdfPH     = document.getElementById('fg-pdf-ph');
+    const fileName  = document.getElementById('fg-file-name');
+    const btn       = document.getElementById('fg-btn-submit');
+    const alertBar  = document.getElementById('fg-alert-bar');
+    const alertMsg  = document.getElementById('fg-alert-msg');
+    const jsonBody  = document.getElementById('fg-json-body');
+    const jsonPH    = document.getElementById('fg-json-ph');
+    const copyBtn   = document.getElementById('fg-copy-btn');
+
+    // Selección de archivo → previsualiza sin recargar
+    inputFile.addEventListener('change', () => {
+        const file = inputFile.files[0];
+        if (!file) return;
+        fileName.textContent = file.name;
+        btn.disabled = false;
+        hideAlert();
+        if (frame._objectUrl) URL.revokeObjectURL(frame._objectUrl);
+        const url = URL.createObjectURL(file);
+        frame._objectUrl = url;
+        frame.src = url;
+        frame.style.display = 'block';
+        pdfPH.style.display = 'none';
+    });
+
+    // Envío AJAX
+    btn.addEventListener('click', async () => {
+        const file = inputFile.files[0];
+        if (!file) return;
+        btn.disabled = true;
+        btn.classList.add('loading');
+        hideAlert();
+        showSkeleton();
+
+        const fd = new FormData();
+        fd.append('factura', file);
+
+        try {
+            const res  = await fetch('{{ path('factura_subir') }}', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (!res.ok || data.error) {
+                showAlert('error', '⚠ ' + (data.error ?? 'Error desconocido'));
+                showJsonPH();
+            } else {
+                showAlert('success', '✓ Factura procesada correctamente');
+                renderJson(data.resultado);
+            }
+        } catch (e) {
+            showAlert('error', '⚠ Error de red: ' + e.message);
+            showJsonPH();
+        } finally {
+            btn.disabled = false;
+            btn.classList.remove('loading');
+        }
+    });
+
+    // Copiar
+    copyBtn.addEventListener('click', () => {
+        const text = jsonBody.querySelector('.fg-json-output')?.textContent ?? '';
+        navigator.clipboard.writeText(text).then(() => {
+            copyBtn.textContent = '¡Copiado!';
+            setTimeout(() => copyBtn.textContent = 'Copiar', 2000);
+        });
+    });
+
+    // Helpers
+    function showAlert(type, msg) {
+        alertMsg.className = 'fg-alert fg-alert-' + type;
+        alertMsg.textContent = msg;
+        alertBar.classList.add('visible');
+    }
+    function hideAlert() { alertBar.classList.remove('visible'); }
+
+    function showJsonPH() {
+        jsonPH.style.display = 'flex';
+        jsonBody.querySelector('.fg-json-output, .fg-skeleton-wrap')?.remove();
+        copyBtn.style.display = 'none';
+    }
+
+    function showSkeleton() {
+        jsonPH.style.display = 'none';
+        jsonBody.querySelector('.fg-json-output, .fg-skeleton-wrap')?.remove();
+        const wrap = document.createElement('div');
+        wrap.className = 'fg-skeleton-wrap';
+        wrap.style.cssText = 'padding:18px 20px';
+        [60,90,75,85,50,70,95,65,80,55,88,72].forEach(w => {
+            const l = document.createElement('div');
+            l.className = 'fg-skeleton-line';
+            l.style.width = w + '%';
+            wrap.appendChild(l);
+        });
+        jsonBody.appendChild(wrap);
+        copyBtn.style.display = 'none';
+    }
+
+    function renderJson(obj) {
+        jsonBody.querySelector('.fg-json-output, .fg-skeleton-wrap')?.remove();
+        jsonPH.style.display = 'none';
+        const pre = document.createElement('div');
+        pre.className = 'fg-json-output';
+        pre.innerHTML = highlight(JSON.stringify(obj, null, 2));
+        jsonBody.appendChild(pre);
+        copyBtn.style.display = 'block';
+        jsonActual = obj;                        // ← añade
+        forecastBtn.style.display = 'block';     // ← añade        
+        productosBtn.style.display = 'block';  // ← añade            
+    }
+
+    function highlight(json) {
+        return json
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(
+                /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+                m => {
+                    if (/^"/.test(m)) return /:$/.test(m) ? `<span class="fg-json-key">${m}</span>` : `<span class="fg-json-str">${m}</span>`;
+                    if (/true|false/.test(m)) return `<span class="fg-json-bool">${m}</span>`;
+                    if (/null/.test(m))       return `<span class="fg-json-null">${m}</span>`;
+                    return `<span class="fg-json-num">${m}</span>`;
+                }
+            );
+    }
+
+    // ── Forecast ──
+    const forecastBtn    = document.getElementById('fg-forecast-btn');
+    const modal          = document.getElementById('fg-modal');
+    const modalConcepto  = document.getElementById('fg-modal-concepto');
+    const modalVencList  = document.getElementById('fg-venc-list');
+    const modalCancel    = document.getElementById('fg-modal-cancel');
+    const modalConfirm   = document.getElementById('fg-modal-confirm');
+
+    const TIPO_ID = 5; // ← pon aquí el id de Tiposmovimiento que corresponda
+
+    let jsonActual = null; // guardamos el objeto resultado
+
+    // Guarda el JSON cuando se renderiza (modifica tu función renderJson):
+    // Al final de renderJson(obj) añade:  jsonActual = obj;  forecastBtn.style.display = 'block';
+
+    forecastBtn.addEventListener('click', () => {
+        if (!jsonActual?.vencimientos?.length) return;
+
+        // Busca el elemento en el momento del click, no al cargar
+        const modalConcepto = document.getElementById('fg-modal-concepto');
+        const modalVencList = document.getElementById('fg-venc-list');
+        const modal         = document.getElementById('fg-modal');
+
+        if (!modalConcepto) {
+            console.error('No se encuentra #fg-modal-concepto en el DOM');
+            return;
+        }
+
+        const num     = jsonActual.numero_factura ?? '';
+        const empresa = jsonActual.empresa_emisora?.nombre ?? '';
+        modalConcepto.value = `Factura ${num} - ${empresa}`.trim();
+
+        modalVencList.innerHTML = jsonActual.vencimientos.map(v =>
+            `<div class="fg-venc-row">
+                <span>${v.fecha ?? '-'}</span>
+                <span>${Number(v.importe ?? 0).toFixed(2)} €</span>
+            </div>`
+        ).join('');
+
+        modal.classList.add('open');
+    });
+    modalCancel.addEventListener('click', () => modal.classList.remove('open'));
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
+
+    modalConfirm.addEventListener('click', async () => {
+        modalConfirm.disabled = true;
+        modalConfirm.textContent = 'Insertando…';
+
+        try {
+            const res  = await fetch('{{ path('factura_forecast') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tipo_id:     TIPO_ID,
+                    concepto:    modalConcepto.value,
+                    vencimientos: jsonActual.vencimientos,
+                }),
+            });
+            const data = await res.json();
+
+            if (!res.ok || data.error) {
+                showAlert('error', '⚠ ' + (data.error ?? 'Error desconocido'));
+            } else {
+                showAlert('success', `✓ ${data.insertados} vencimiento(s) insertado(s) en Forecast`);
+                forecastBtn.disabled = true;
+                forecastBtn.textContent = '✓ Insertado';
+            }
+        } catch (e) {
+            showAlert('error', '⚠ Error de red: ' + e.message);
+        } finally {
+            modal.classList.remove('open');
+            modalConfirm.disabled = false;
+            modalConfirm.textContent = 'Confirmar inserción';
+        }
+    });   
+
+// ── Productos ──
+const productosBtn = document.getElementById('fg-productos-btn');
+const modalProd    = document.getElementById('fg-modal-productos');
+const prodTbody    = document.getElementById('fg-art-tbody');
+const prodIvaPct   = document.getElementById('fg-iva-pct');
+const prodCancel   = document.getElementById('fg-prod-cancel');
+const prodConfirm  = document.getElementById('fg-prod-confirm');
+const prodCount    = document.getElementById('fg-prod-count');
+
+const LS_TIPO_KEY  = 'fg_ultimo_tipo_producto';
+const TIPOS = [
+    {id:1,nombre:'Otros'},{id:2,nombre:'Azulejo'},{id:3,nombre:'Mampara'},
+    {id:4,nombre:'Accesorios'},{id:5,nombre:'Colocación'},{id:6,nombre:'Grifería'},
+    {id:7,nombre:'Muebles'},{id:8,nombre:'Espejo'},{id:9,nombre:'Conjunto Mueble Espejo'}
+];
+
+function tipoOptions(seleccionado) {
+    return TIPOS.map(t =>
+        `<option value="${t.id}" ${t.id == seleccionado ? 'selected' : ''}>${t.nombre}</option>`
+    ).join('');
+}
+
+function calcularCosteConIva(art, ivaPct) {
+    const cantidad = parseInt(art.cantidad ?? 1) || 1;
+    let costeBase;
+    if (art.importe_final) {
+        costeBase = parseFloat(art.importe_final) / cantidad;
+    } else if (art.precio_unitario) {
+        const desc = parseFloat(art.descuento_porcentaje ?? 0);
+        costeBase  = parseFloat(art.precio_unitario) * (1 - desc / 100);
+    } else {
+        costeBase = 0;
+    }
+    return costeBase * (1 + ivaPct / 100);
+}
+
+function actualizarContador() {
+    const total = prodTbody.querySelectorAll('tr:not(.fg-row-eliminada)').length;
+    prodCount.textContent = total;
+}
+
+productosBtn.addEventListener('click', () => {
+    if (!jsonActual?.articulos?.length) return;
+
+    const ivaPct = parseFloat(jsonActual.iva?.porcentaje ?? 21);
+    prodIvaPct.textContent = ivaPct;
+
+    const ultimoTipo = localStorage.getItem(LS_TIPO_KEY) ?? '1';
+
+    prodTbody.innerHTML = jsonActual.articulos.map((art, i) => {
+        const cantidad     = parseInt(art.cantidad ?? 1) || 1;
+        const costeConIva  = calcularCosteConIva(art, ivaPct);
+        const desc         = (art.descripcion ?? '').replace(/"/g, '&quot;');
+
+        return `<tr data-idx="${i}">
+            <td>
+                <button class="fg-del-row" data-idx="${i}" title="Quitar fila">✕</button>
+            </td>
+            <td>
+                <input class="fg-td-input fg-desc" data-idx="${i}"
+                    value="${desc}" placeholder="Descripción">
+            </td>
+            <td>
+                <input class="fg-td-input num fg-cant" data-idx="${i}"
+                    type="number" min="1" value="${cantidad}">
+            </td>
+            <td>
+                <input class="fg-td-input num fg-precio" data-idx="${i}"
+                    type="number" step="0.01" min="0" value="${costeConIva.toFixed(2)}">
+            </td>
+            <td>
+                <select class="fg-td-select fg-tipo" data-idx="${i}">
+                    ${tipoOptions(ultimoTipo)}
+                </select>
+            </td>
+        </tr>`;
+    }).join('');
+
+    actualizarContador();
+    modalProd.classList.add('open');
+});
+
+// Eliminar / restaurar fila
+prodTbody.addEventListener('click', e => {
+    const btn = e.target.closest('.fg-del-row');
+    if (!btn) return;
+    const fila = btn.closest('tr');
+    const eliminada = fila.classList.toggle('fg-row-eliminada');
+    btn.textContent  = eliminada ? '↩' : '✕';
+    btn.title        = eliminada ? 'Restaurar' : 'Quitar fila';
+    btn.classList.toggle('restaurar', eliminada);
+    actualizarContador();
+});
+
+prodCancel.addEventListener('click', () => modalProd.classList.remove('open'));
+modalProd.addEventListener('click', e => {
+    if (e.target === modalProd) modalProd.classList.remove('open');
+});
+
+prodConfirm.addEventListener('click', async () => {
+    // Recoge solo las filas NO eliminadas
+    const filas = [...prodTbody.querySelectorAll('tr:not(.fg-row-eliminada)')];
+
+    if (!filas.length) {
+        showAlert('error', '⚠ No hay artículos seleccionados.');
+        return;
+    }
+
+    // Guarda el último tipo usado (el de la primera fila activa)
+    const primerTipo = filas[0].querySelector('.fg-tipo')?.value;
+    if (primerTipo) localStorage.setItem(LS_TIPO_KEY, primerTipo);
+
+    const articulos = filas.map(tr => ({
+        descripcion:    tr.querySelector('.fg-desc').value.trim(),
+        cantidad:       parseInt(tr.querySelector('.fg-cant').value) || 1,
+        coste_con_iva:  parseFloat(tr.querySelector('.fg-precio').value) || 0,
+        tipo_id:        parseInt(tr.querySelector('.fg-tipo').value),
+    })).filter(a => a.descripcion);
+
+    prodConfirm.disabled = true;
+    prodConfirm.textContent = 'Insertando…';
+
+    try {
+        const res  = await fetch('{{ path('factura_productos') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ articulos }),
+        });
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+            showAlert('error', '⚠ ' + (data.error ?? 'Error desconocido'));
+        } else {
+            showAlert('success', `✓ ${data.insertados} producto(s) insertado(s)`);
+            productosBtn.disabled = true;
+            productosBtn.textContent = '✓ Insertado';
+        }
+    } catch (e) {
+        showAlert('error', '⚠ Error de red: ' + e.message);
+    } finally {
+        modalProd.classList.remove('open');
+        prodConfirm.disabled = false;
+        prodConfirm.textContent = `Confirmar inserción (${prodCount.textContent})`;
+    }
+});
+
+})();
+</script>
+{% endblock %}
