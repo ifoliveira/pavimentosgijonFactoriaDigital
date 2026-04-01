@@ -215,7 +215,7 @@
         *****************************************/
 
         $(document).on('click', 'i[name="delete_detalle"]' , function(event) {
-            let id = this.id;
+            let id = this.dataset.id;
             this.dataset.cantidad;
             var cantidad = this.dataset.cantidad;       
             console.log(cantidad);
@@ -357,7 +357,7 @@ $('#tbprod').on('click', 'tbody tr[role="row"]', function() {
         *****************************************/
 
         $(document).on('click', 'i[name="plus-minus"]' , function(event) {
-            let id = this.id;
+            let id = this.dataset.id;
  
             let cantidad = this.dataset.cantidad;
 

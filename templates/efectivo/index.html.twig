@@ -85,7 +85,7 @@
     <script src="{{ asset('assets/extra-libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/extra-libs/datatables.net-bs4/js/dataTables.responsive.min.js') }}"></script>
 
-    
+    <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
 
     <!--Custom JavaScript -->
     
@@ -149,14 +149,14 @@
             await swalWithBootstrapButtons.fire({
                 title: 'Borrar efectivo',
                 text: "Se va a borrar el efectivo " + id + " ",
-                type: 'question',
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Adelante',
                 cancelButtonText: 'Noooo',
                 reverseButtons: true
             }).then((result) => {
                 
-                if (result.value) {
+                if (result.isConfirmed) {
 
                     delete_line(id);
                 }
@@ -175,7 +175,7 @@
                success: function(response) { 
                     let timerInterval
                     Swal.fire({
-                    type: 'success',
+                    icon: 'success',
                     title: 'Se ha borrado correctamente!',
                     html: 'Se cerrara en breve',
                     timer: 2000,

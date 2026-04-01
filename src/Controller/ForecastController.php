@@ -139,7 +139,7 @@ class ForecastController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->em->flush();
 
-            return $this->redirectToRoute('forecast_index');
+            return $this->redirectToRoute('forecast_consulta');
         }
 
         return $this->render('forecast/edit.html.twig', [

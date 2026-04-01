@@ -16,6 +16,14 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 #[Route('/admin/efectivo')]
 class EfectivoController extends AbstractController
 {
+
+    protected $em;
+
+    public function __construct( EntityManagerInterface $em )
+    {
+        $this->em = $em;
+    }
+        
     #[Route('/', name: 'efectivo_index', methods: ['GET'])]
     public function index(EfectivoRepository $efectivoRepository, DetallecestaRepository $detallecestaRepository): Response
     {
