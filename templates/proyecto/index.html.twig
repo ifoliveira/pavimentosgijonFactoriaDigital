@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Proyectos{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Proyectos</h1>
+            <p class="text-muted mb-0">Listado general de obras y proyectos.</p>
+        </div>
+        <a href="{{ path('app_proyecto_new') }}" class="btn btn-primary">
+            Nuevo proyecto
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            {% if proyectos|length > 0 %}
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Proyecto</th>
+                            <th>Cliente</th>
+                            <th>Inicio</th>
+                            <th class="text-end">Presupuestado</th>
+                            <th class="text-end">Facturado</th>
+                            <th class="text-end">Cobrado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for proyecto in proyectos %}
+                            <tr>
+                                <td>{{ proyecto.id }}</td>
+                                <td>{{ proyecto.nombre }}</td>
+                                <td>
+                                    {{ proyecto.cliente.nombreCl }}
+                                    {% if proyecto.cliente.apellidosCl %}
+                                        {{ proyecto.cliente.apellidosCl }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ proyecto.fechaInicio ? proyecto.fechaInicio|date('d/m/Y') : '—' }}</td>
+                                <td class="text-end">{{ proyecto.totalPresupuestado }} €</td>
+                                <td class="text-end">{{ proyecto.totalFacturado }} €</td>
+                                <td class="text-end">{{ proyecto.totalCobrado }} €</td>
+                                <td class="text-end">
+                                    <a href="{{ path('app_proyecto_show', {id: proyecto.id}) }}" class="btn btn-sm btn-outline-primary">
+                                        Ver
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="p-4 text-muted">
+                    No hay proyectos creados todavía.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

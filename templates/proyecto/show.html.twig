@@ -1,0 +1,363 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Proyecto {{ proyecto.nombre }}{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">{{ proyecto.nombre }}</h1>
+            <p class="text-muted mb-0">
+                Cliente:
+                {{ proyecto.cliente.nombreCl }}
+                {% if proyecto.cliente.apellidosCl %}
+                    {{ proyecto.cliente.apellidosCl }}
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="button"
+                    class="btn btn-outline-primary"
+                    id="btnNuevoGasto"
+                    data-url="{{ path('app_proyecto_gasto_new', {id: proyecto.id}) }}">
+                Añadir gasto
+            </button>
+
+            <a href="{{ path('app_proyecto_new') }}" class="btn btn-outline-primary">
+                Nuevo proyecto
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Total presupuestado</div>
+                    <div class="fs-5 fw-bold">{{ proyecto.totalPresupuestado|number_format(2, ',', '.') }} €</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Total facturado</div>
+                    <div class="fs-5 fw-bold">{{ proyecto.totalFacturado|number_format(2, ',', '.') }} €</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Total cobrado</div>
+                    <div class="fs-5 fw-bold">{{ proyecto.totalCobrado|number_format(2, ',', '.') }} €</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Pendiente</div>
+                    <div class="fs-5 fw-bold">
+                        {{ (proyecto.totalFacturado - proyecto.totalCobrado)|number_format(2, ',', '.') }} €
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white fw-semibold">Datos del proyecto</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="text-muted small">Fecha inicio</div>
+                    <div>{{ proyecto.fechaInicio ? proyecto.fechaInicio|date('d/m/Y') : '—' }}</div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="text-muted small">Fecha fin prevista</div>
+                    <div>{{ proyecto.fechaFinPrevista ? proyecto.fechaFinPrevista|date('d/m/Y') : '—' }}</div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="text-muted small">Creado</div>
+                    <div>{{ proyecto.creadoEn ? proyecto.creadoEn|date('d/m/Y H:i') : '—' }}</div>
+                </div>
+
+                <div class="col-12">
+                    <div class="text-muted small">Notas</div>
+                    <div>{{ proyecto.notas ?: 'Sin notas' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# GASTOS DEL PROYECTO #}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+            <span>Gastos del proyecto</span>
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    id="btnNuevoGastoSecundario"
+                    data-url="{{ path('app_proyecto_gasto_new', {id: proyecto.id}) }}">
+                Añadir gasto
+            </button>
+        </div>
+
+        <div class="card-body">
+            {% if proyecto.gastos is defined and proyecto.gastos|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Fecha prevista</th>
+                                <th>Estado</th>
+                                <th>Categoría</th>
+                                <th>Concepto</th>
+                                <th>Proveedor</th>
+                                <th class="text-end">Previsto</th>
+                                <th class="text-end">Real</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for gasto in proyecto.gastos %}
+                                <tr>
+                                    <td>
+                                        {{ gasto.fechaPrevista ? gasto.fechaPrevista|date('d/m/Y') : '—' }}
+                                    </td>
+
+                                    <td>
+                                        {% if gasto.estado == 'previsto' %}
+                                            <span class="badge bg-secondary">Previsto</span>
+                                        {% elseif gasto.estado == 'confirmado' %}
+                                            <span class="badge bg-info text-dark">Confirmado</span>
+                                        {% elseif gasto.estado == 'pagado' %}
+                                            <span class="badge bg-success">Pagado</span>
+                                        {% elseif gasto.estado == 'cancelado' %}
+                                            <span class="badge bg-dark">Cancelado</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark">{{ gasto.estado }}</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>{{ gasto.categoria ?: '—' }}</td>
+                                    <td>{{ gasto.concepto }}</td>
+                                    <td>{{ gasto.proveedor ?: '—' }}</td>
+
+                                    <td class="text-end">
+                                        {{ gasto.importePrevisto|number_format(2, ',', '.') }} €
+                                    </td>
+
+                                    <td class="text-end">
+                                        {% if gasto.importeReal is not null %}
+                                            {{ gasto.importeReal|number_format(2, ',', '.') }} €
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">Todavía no hay gastos asociados a este proyecto.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% set tienePresupuesto = false %}
+    {% for documento in proyecto.documentos %}
+        {% if documento.tipoDocumento == 'presupuesto' %}
+            {% set tienePresupuesto = true %}
+        {% endif %}
+    {% endfor %}
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+            <span>Documentos del proyecto</span>
+
+            {% if not tienePresupuesto %}
+                <form method="post"
+                      action="{{ path('app_proyecto_crear_presupuesto_inicial', {id: proyecto.id}) }}"
+                      onsubmit="return confirm('Se creará un presupuesto inicial para este proyecto. ¿Continuar?');">
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        Crear presupuesto inicial
+                    </button>
+                </form>
+            {% else %}
+                <button class="btn btn-sm btn-outline-secondary" disabled>
+                    Presupuesto inicial ya creado
+                </button>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+            {% if proyecto.documentos|length > 0 %}
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Número</th>
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for documento in proyecto.documentos %}
+                            <tr>
+                                <td>
+                                    <a href="{{ path('app_documento_show', {id: documento.id}) }}"
+                                       class="text-decoration-none fw-semibold">
+                                        {{ documento.numero ?? ('Documento #' ~ documento.id) }}
+                                    </a>
+                                </td>
+
+                                <td>
+                                    {% if documento.tipoDocumento|lower == 'presupuesto' %}
+                                        <span class="badge bg-primary">Presupuesto</span>
+                                    {% elseif documento.tipoDocumento|lower == 'factura' %}
+                                        <span class="badge bg-success">Factura</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ documento.tipoDocumento }}</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if documento.fechaDocumento is defined and documento.fechaDocumento %}
+                                        {{ documento.fechaDocumento|date('d/m/Y') }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-end">{{ documento.total|number_format(2, ',', '.') }} €</td>
+
+                                <td class="text-end">
+                                    <a href="{{ path('app_documento_show', {id: documento.id}) }}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Ver
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-muted mb-0">Todavía no hay documentos asociados a este proyecto.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# MODAL NUEVO GASTO #}
+<div class="modal fade" id="modalProyectoGasto" tabindex="-1" aria-labelledby="modalProyectoGastoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalProyectoGastoLabel">Nuevo gasto del proyecto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="modalProyectoGastoBody">
+                <div class="text-muted">Cargando formulario...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const botonesNuevoGasto = document.querySelectorAll('#btnNuevoGasto, #btnNuevoGastoSecundario');
+    const modalElement = document.getElementById('modalProyectoGasto');
+    const modalBody = document.getElementById('modalProyectoGastoBody');
+
+    if (!botonesNuevoGasto.length || !modalElement || !modalBody) {
+        return;
+    }
+
+    botonesNuevoGasto.forEach(function (boton) {
+        boton.addEventListener('click', async function () {
+            const url = this.dataset.url;
+
+            modalBody.innerHTML = '<div class="text-muted">Cargando formulario...</div>';
+
+            let modalInstance = null;
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (!modalInstance) {
+                    modalInstance = new bootstrap.Modal(modalElement);
+                }
+                modalInstance.show();
+            }
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const html = await response.text();
+                modalBody.innerHTML = html;
+
+                bindProyectoGastoForm(url);
+            } catch (error) {
+                modalBody.innerHTML = '<div class="alert alert-danger mb-0">No se pudo cargar el formulario.</div>';
+            }
+        });
+    });
+
+    function bindProyectoGastoForm(url) {
+        const form = document.getElementById('formProyectoGasto');
+        if (!form) {
+            return;
+        }
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+
+                if (contentType.includes('application/json')) {
+                    const data = await response.json();
+
+                    if (data.success) {
+                        window.location.reload();
+                        return;
+                    }
+                }
+
+                const html = await response.text();
+                modalBody.innerHTML = html;
+                bindProyectoGastoForm(url);
+
+            } catch (error) {
+                modalBody.innerHTML = '<div class="alert alert-danger mb-0">Error al guardar el gasto.</div>';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

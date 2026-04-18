@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ documento.tipoDocumento|capitalize }} {{ documento.numeroFormateado }}</title>
+    <style>
+        @page {
+            margin: 90px 35px 110px 35px;
+        }
+
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        .header {
+            position: fixed;
+            top: -65px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            border-bottom: 2px solid #1f2937;
+        }
+
+        .header-table,
+        .footer-table,
+        .meta-table,
+        .totals-table,
+        .lines-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: -85px;
+            left: 0;
+            right: 0;
+            height: 70px;
+            border-top: 1px solid #d1d5db;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .company-sub {
+            font-size: 11px;
+            color: #4b5563;
+            line-height: 1.4;
+        }
+
+        .document-box {
+            text-align: right;
+        }
+
+        .document-type {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #111827;
+        }
+
+        .document-number {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .section {
+            margin-bottom: 22px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #374151;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 4px;
+        }
+
+        .box {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+
+        .meta-table td {
+            vertical-align: top;
+            width: 50%;
+            padding-right: 10px;
+        }
+
+        .label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 3px;
+        }
+
+        .value {
+            font-size: 12px;
+            color: #111827;
+            line-height: 1.4;
+        }
+
+        .lines-table {
+            margin-top: 6px;
+        }
+
+        .lines-table thead th {
+            background: #f3f4f6;
+            color: #111827;
+            font-size: 10px;
+            text-transform: uppercase;
+            border: 1px solid #d1d5db;
+            padding: 8px 6px;
+            text-align: left;
+        }
+
+        .lines-table tbody td {
+            border: 1px solid #e5e7eb;
+            padding: 8px 6px;
+            vertical-align: top;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .desc-main {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .desc-sub {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .totals-wrapper {
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .totals-table {
+            width: 40%;
+            margin-left: auto;
+        }
+
+        .totals-table td {
+            padding: 7px 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .totals-table .total-final td {
+            font-size: 14px;
+            font-weight: bold;
+            border-top: 2px solid #111827;
+            border-bottom: 2px solid #111827;
+            background: #f9fafb;
+        }
+
+        .notes-box,
+        .conditions-box {
+            border: 1px solid #e5e7eb;
+            padding: 10px 12px;
+            background: #fcfcfc;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        .small {
+            font-size: 10px;
+        }
+
+        .footer-left {
+            width: 70%;
+            vertical-align: top;
+        }
+
+        .footer-right {
+            width: 30%;
+            text-align: right;
+            vertical-align: top;
+        }
+
+        .pill {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border: 1px solid #d1d5db;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    {# ===================== HEADER ===================== #}
+    <div class="header">
+        <table class="header-table">
+            <tr>
+                <td>
+                    <div class="company-name">Pavimentos Gijón</div>
+                    <div class="company-sub">
+                        Reformas de baño · Cambio de bañera por ducha<br>
+                        Gijón · Tel: 000 000 000 · Email: info@pavimentosgijon.es
+                    </div>
+                </td>
+                <td class="document-box">
+                    <div class="document-type">{{ documento.tipoDocumento }}</div>
+                    <div class="document-number">{{ documento.numeroFormateado }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {# ===================== FOOTER ===================== #}
+    <div class="footer">
+        <table class="footer-table">
+            <tr>
+                <td class="footer-left">
+                    <div class="small muted">
+                        Documento generado automáticamente. Los importes están expresados en euros (€).
+                    </div>
+                </td>
+                <td class="footer-right">
+                    <div class="small muted">
+                        Página 1
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {# ===================== DATOS PRINCIPALES ===================== #}
+    <div class="section">
+        <table class="meta-table">
+            <tr>
+                <td>
+                    <div class="section-title">Datos del cliente</div>
+                    <div class="box">
+                        <div class="label">Cliente</div>
+                        <div class="value">
+                            {% if documento.cliente %}
+                                {{ documento.cliente.nombreCl ?? '' }}
+                                {% if documento.cliente.apellidosCl is defined and documento.cliente.apellidosCl %}
+                                    {{ documento.cliente.apellidosCl }}
+                                {% endif %}
+                            {% else %}
+                                <span class="muted">Sin cliente asignado</span>
+                            {% endif %}
+                        </div>
+
+                        {% if documento.cliente and documento.cliente.direccionCl is defined and documento.cliente.direccionCl %}
+                            <div class="label" style="margin-top: 8px;">Dirección</div>
+                            <div class="value">{{ documento.cliente.direccionCl }}</div>
+                        {% endif %}
+
+                        {% if documento.cliente and documento.cliente.telefono1Cl is defined and documento.cliente.telefono1Cl %}
+                            <div class="label" style="margin-top: 8px;">Teléfono</div>
+                            <div class="value">{{ documento.cliente.telefono1Cl }}</div>
+                        {% endif %}
+                    </div>
+                </td>
+                <td>
+                    <div class="section-title">Datos del documento</div>
+                    <div class="box">
+                        <div class="label">Número</div>
+                        <div class="value">{{ documento.numeroFormateado }}</div>
+
+                        <div class="label" style="margin-top: 8px;">Fecha emisión</div>
+                        <div class="value">
+                            {{ documento.fechaEmision ? documento.fechaEmision|date('d/m/Y') : '—' }}
+                        </div>
+
+                        {% if documento.fechaVencimiento %}
+                            <div class="label" style="margin-top: 8px;">Validez hasta</div>
+                            <div class="value">{{ documento.fechaVencimiento|date('d/m/Y') }}</div>
+                        {% endif %}
+
+                        <div class="label" style="margin-top: 8px;">Estado</div>
+                        <div class="value">
+                            <span class="pill">{{ documento.estadoComercial }}</span>
+                            <span class="pill">{{ documento.estadoCobro }}</span>
+                            <span class="pill">{{ documento.estadoEjecucion }}</span>
+                        </div>
+
+                        {% if documento.proyecto %}
+                            <div class="label" style="margin-top: 8px;">Proyecto</div>
+                            <div class="value">{{ documento.proyecto.nombre }}</div>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {# ===================== LINEAS ===================== #}
+    <div class="section">
+        <div class="section-title">Detalle</div>
+
+        <table class="lines-table">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">#</th>
+                    <th style="width: 12%;">Tipo</th>
+                    <th style="width: 40%;">Descripción</th>
+                    <th style="width: 10%;" class="text-right">Cantidad</th>
+                    <th style="width: 10%;" class="text-right">Precio</th>
+                    <th style="width: 8%;" class="text-right">Dto.</th>
+                    <th style="width: 12%;" class="text-right">Importe</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for linea in documento.lineas %}
+                    <tr>
+                        <td class="text-center">{{ linea.posicion }}</td>
+                        <td>{{ linea.tipoLinea }}</td>
+                        <td>
+                            <div class="desc-main">{{ linea.descripcion }}</div>
+                            <div class="desc-sub">
+                                IVA {{ linea.tipoIva }}%
+                                {% if linea.unidad %} · {{ linea.unidad }}{% endif %}
+                            </div>
+                        </td>
+                        <td class="text-right">{{ linea.cantidad }}</td>
+                        <td class="text-right">{{ linea.precioUnitario }} €</td>
+                        <td class="text-right">{{ linea.descuento }} %</td>
+                        <td class="text-right">{{ linea.subtotal }} €</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center muted">No hay líneas en el documento.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="totals-wrapper">
+            <table class="totals-table">
+                <tr>
+                    <td>Base imponible</td>
+                    <td class="text-right">{{ documento.baseImponible }} €</td>
+                </tr>
+                <tr>
+                    <td>IVA</td>
+                    <td class="text-right">{{ documento.totalIva }} €</td>
+                </tr>
+                <tr class="total-final">
+                    <td>Total</td>
+                    <td class="text-right">{{ documento.total }} €</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    {# ===================== NOTAS ===================== #}
+    {% if documento.notas %}
+        <div class="section">
+            <div class="section-title">Observaciones</div>
+            <div class="notes-box">
+                {{ documento.notas|nl2br }}
+            </div>
+        </div>
+    {% endif %}
+
+    {# ===================== CONDICIONES ===================== #}
+    <div class="section">
+        <div class="section-title">Condiciones</div>
+        <div class="conditions-box">
+            <div>• Este presupuesto está sujeto a medición final y revisión técnica si fuese necesario.</div>
+            <div>• Los materiales y acabados se ajustarán a lo reflejado en este documento o a lo acordado posteriormente.</div>
+            <div>• El plazo de ejecución dependerá de disponibilidad de materiales y planificación de obra.</div>
+            <div>• La validez del presente presupuesto podrá estar limitada en el tiempo por cambios de precio de proveedor.</div>
+        </div>
+    </div>
+
+</body>
+</html>

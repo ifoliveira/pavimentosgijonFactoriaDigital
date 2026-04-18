@@ -36,6 +36,23 @@ class ProductosRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
+    /**
+     * @return Productos[]
+     */
+    public function findBySearchQuery(string $q, int $limit = 12): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.tipo_pd_id', 't')
+            ->addSelect('t')
+            ->where('p.descripcion_Pd LIKE :q')
+            ->andWhere('p.obsoleto = false OR p.obsoleto IS NULL')
+            ->setParameter('q', '%' . $q . '%')
+            ->orderBy('p.descripcion_Pd', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return Productos[] Returns an array of Productos objects
     //  */

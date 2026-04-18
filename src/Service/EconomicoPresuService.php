@@ -18,8 +18,8 @@ class EconomicoPresuService
     public function iniciarPresu(?float $importeManoObra, Presupuestos $presupuesto): void
     {
         foreach ($presupuesto->getManoObra() as $tipo) {
-            if ($tipo->getCoste() != 0 || $tipo->getTipoMo() === 'Otros') {
-                $this->alta($tipo->getTipoMo(), (float) ($tipo->getCoste() ?? 0.0), 'D', $presupuesto, 'E');
+            if ($tipo->getCoste() != 0 || $tipo->getCategoriaMo()->getTipoTm() === 'Otros') {
+                $this->alta($tipo->getCategoriaMo()->getTipoTm(), (float) ($tipo->getCoste() ?? 0.0), 'D', $presupuesto, 'E');
 
             }
         }

@@ -1,0 +1,185 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nuevo proyecto{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .proyecto-form .form-label {
+            min-height: 48px;
+            display: flex;
+            align-items: end;
+            margin-bottom: .5rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Nuevo proyecto</h1>
+            <p class="text-muted mb-0">Crea la obra y luego podrás añadir presupuestos, factura y cobros.</p>
+        </div>
+        <a href="{{ path('app_proyecto_index') }}" class="btn btn-outline-secondary">
+            Volver
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4 proyecto-form">
+            {{ form_start(form) }}
+
+            <div class="row g-3 align-items-start">
+                <div class="col-md-6">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-8">
+                            <label for="{{ form.cliente.vars.id }}" class="form-label fixed-label">Cliente *</label>
+                            {{ form_widget(form.cliente) }}
+                            {{ form_errors(form.cliente) }}
+                        </div>
+
+                        <div class="col-4">
+                            <label class="form-label fixed-label d-block">&nbsp;</label>
+                            <button type="button"
+                                    class="btn btn-outline-primary w-100"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalNuevoCliente">
+                                Nuevo cliente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="{{ form.nombre.vars.id }}" class="form-label fixed-label">Nombre del proyecto *</label>
+                    {{ form_widget(form.nombre) }}
+                    {{ form_errors(form.nombre) }}
+                </div>
+            </div>
+
+                <div class="col-md-6">
+                    {{ form_row(form.fechaInicio) }}
+                </div>
+
+                <div class="col-md-6">
+                    {{ form_row(form.fechaFinPrevista) }}
+                </div>
+
+                <div class="col-12">
+                    {{ form_row(form.notas) }}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a href="{{ path('app_proyecto_index') }}" class="btn btn-light">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    Guardar proyecto
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+{# MODAL NUEVO CLIENTE #}
+<div class="modal fade" id="modalNuevoCliente" tabindex="-1" aria-labelledby="modalNuevoClienteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="formNuevoCliente">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalNuevoClienteLabel">Nuevo cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="cliente-modal-alert"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre *</label>
+                            <input type="text" name="nombreCl" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Apellidos</label>
+                            <input type="text" name="apellidosCl" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono principal</label>
+                            <input type="text" name="telefono1Cl" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Ciudad</label>
+                            <input type="text" name="ciudadCl" class="form-control">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Dirección</label>
+                            <input type="text" name="direccionCl" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const formNuevoCliente = document.getElementById('formNuevoCliente');
+    const clienteSelect = document.getElementById('{{ form.cliente.vars.id }}');
+    const modalElement = document.getElementById('modalNuevoCliente');
+    const modal = new bootstrap.Modal(modalElement);
+    const alertBox = document.getElementById('cliente-modal-alert');
+
+    formNuevoCliente.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        alertBox.innerHTML = '';
+
+        const formData = new FormData(formNuevoCliente);
+
+        try {
+            const response = await fetch('{{ path('app_clientes_quick_create') }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                alertBox.innerHTML = `<div class="alert alert-danger mb-0">${data.message ?? 'No se pudo crear el cliente.'}</div>`;
+                return;
+            }
+
+            const option = document.createElement('option');
+            option.value = data.id;
+            option.text = data.label;
+            option.selected = true;
+
+            clienteSelect.appendChild(option);
+            clienteSelect.value = data.id;
+
+            formNuevoCliente.reset();
+            modal.hide();
+
+        } catch (error) {
+            alertBox.innerHTML = `<div class="alert alert-danger mb-0">Error de comunicación al crear el cliente.</div>`;
+        }
+    });
+});
+</script>
+{% endblock %}

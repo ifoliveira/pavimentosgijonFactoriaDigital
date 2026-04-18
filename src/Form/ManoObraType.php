@@ -19,8 +19,6 @@ class ManoObraType extends AbstractType
             $builder
             ->add('categoriaMo', null, array(
                 'label' => 'Categoria' ))
-            ->add('tipoMo', null, array(
-                'label' => 'Tipo' ))
             ->add('coste',  MoneyType::class, array(
                     'label' => 'Coste' ))       
             ->add('presupuestoMo', EntityType::class, array(

@@ -29,7 +29,7 @@
     <link href="{{ asset('dist/css/style.min.css') }}" rel="stylesheet">
     <link href="{{ asset('dist/css/icons/themify-icons/themify-icons.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css') }}" rel="stylesheet">
-
+    <link href="{{ asset('dist/css/private.css') }}" rel="stylesheet">
     {# CSS adicional por página (Select2, ApexCharts, etc.) #}
     {% block stylesheets %}{% endblock %}
 </head>
@@ -115,5 +115,6 @@
     ---------------------------------------------------------------- #}
     {% block jscustom %}{% endblock %}
 
+    {% block offcanvas %}{% endblock %}
 </body>
 </html>

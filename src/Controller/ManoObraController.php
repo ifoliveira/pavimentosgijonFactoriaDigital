@@ -46,6 +46,8 @@ class ManoObraController extends AbstractController
         return new JsonResponse();
     }
 
+
+
     #[Route('/{presu}/new', name: 'mano_obra_new', methods: ['GET','POST'])]
     public function new(Request $request, int $presu, PresupuestosRepository $presupuestosRepository): Response
     {
@@ -97,7 +99,7 @@ class ManoObraController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->em->flush();
 
-            return $this->redirectToRoute('presupuestos_show', ['id' => $manoObra->getIdPresu()]);
+            return $this->redirectToRoute('presupuestos_show', ['id' => $manoObra->getPresupuestoMo()->getId()]);
         }
 
         return $this->render('mano_obra/edit.html.twig', [

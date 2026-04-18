@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            margin: 0;
+            margin-top: 20mm;   /* ← páginas 2+ tendrán aire arriba */
+            size: A4;
+        }
+
+        @page :first {
+            margin: 0;          /* ← página 1 sin margen, normal */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 210mm;
+            font-family: 'DejaVu Sans', sans-serif;
+            font-size: 11px;
+            color: #1f2937;
+            background: #ffffff;
+            margin-top: 28px; 
+        }
+
+        .page {
+            width: 100%;
+        }
+
+        /* CABECERA */
+        .header {
+            margin-top: -28px;
+            background: #1f2937;
+            color: white;
+            padding: 26px 34px 22px;
+        }
+
+        /* Header fantasma que se repite en página 2+ como margen */
+        .header-pagina2 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 28px;  /* el margen que quieres arriba en pág 2 */
+            background: #ffffff;
+        }
+
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .header-logo {
+            width: 38%;
+            vertical-align: middle;
+        }
+
+        .header-logo img {
+            max-height: 56px;
+            max-width: 220px;
+        }
+
+        .header-right {
+            width: 62%;
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+        }
+
+        .header-subtitle {
+            font-size: 10px;
+            color: #cbd5e1;
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .hero-bar {
+            background: #185FA5;
+            color: white;
+            padding: 18px 34px;
+        }
+
+        .hero-bar-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .hero-left, .hero-right {
+            vertical-align: top;
+        }
+
+        .hero-left {
+            width: 60%;
+        }
+
+        .hero-right {
+            width: 40%;
+            text-align: right;
+        }
+
+        .hero-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #dbeafe;
+            margin-bottom: 4px;
+        }
+
+        .hero-value {
+            font-size: 12px;
+            font-weight: bold;
+            color: #ffffff;
+            line-height: 1.5;
+        }
+
+        .hero-doc {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        /* CONTENIDO */
+        .content {
+            padding: 26px 34px 0;
+        }
+
+        .section {
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #185FA5;
+            margin-bottom: 8px;
+        }
+
+        .card {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px 18px;
+        }
+
+        .intro-text {
+            font-size: 11px;
+            line-height: 1.7;
+            color: #374151;
+        }
+
+        .cliente-nombre {
+            font-size: 16px;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .cliente-dato {
+            font-size: 10px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        /* BLOQUES EN DOS COLUMNAS */
+        .two-cols {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .two-cols td {
+            vertical-align: top;
+        }
+
+        .col-left {
+            width: 58%;
+            padding-right: 8px;
+        }
+
+        .col-right {
+            width: 42%;
+            padding-left: 8px;
+        }
+
+        /* LISTA DE INCLUIDO */
+        .incluye-box {
+            background: #ffffff;
+            border: 1px solid #dbeafe;
+            border-left: 4px solid #185FA5;
+            border-radius: 6px;
+            padding: 14px 16px;
+        }
+
+        .incluye-item {
+            font-size: 11px;
+            color: #1f2937;
+            line-height: 1.7;
+            margin-bottom: 6px;
+        }
+
+        .incluye-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* MANO DE OBRA / DESCRIPCION */
+        .bloque-texto {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-left: 4px solid #185FA5;
+            border-radius: 6px;
+            padding: 14px 16px;
+        }
+
+        .subbloque {
+            margin-bottom: 12px;
+        }
+
+        .subbloque:last-child {
+            margin-bottom: 0;
+        }
+
+        .subbloque-titulo {
+            font-size: 10px;
+            font-weight: bold;
+            color: #111827;
+            border-bottom: 1px solid #d1d5db;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .subbloque-texto {
+            font-size: 10px;
+            color: #374151;
+            line-height: 1.7;
+        }
+
+        /* PRECIO FINAL */
+        .precio-final-wrap {
+            margin-top: 18px;
+        }
+
+        .precio-final-box {
+            background: #1f2937;
+            color: white;
+            border-radius: 10px;
+            padding: 22px 24px;
+        }
+
+        .precio-final-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .precio-left {
+            width: 55%;
+            vertical-align: middle;
+        }
+
+        .precio-right {
+            width: 45%;
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        .precio-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        .precio-texto {
+            font-size: 12px;
+            color: #f3f4f6;
+            line-height: 1.6;
+        }
+
+        .precio-importe {
+            font-size: 30px;
+            font-weight: bold;
+            color: #ffffff;
+            letter-spacing: -1px;
+        }
+
+        .precio-iva {
+            font-size: 10px;
+            color: #cbd5e1;
+            margin-top: 4px;
+        }
+
+        /* CONDICIONES */
+        .condiciones-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 4px solid #EF9F27;
+            border-radius: 6px;
+            padding: 14px 16px;
+        }
+
+        .condiciones-texto {
+            font-size: 10px;
+            color: #5b4a1b;
+            line-height: 1.7;
+        }
+
+        /* PIE */
+        .footer {
+            margin-top: 26px;
+            padding: 18px 34px 22px;
+            background: #f3f4f6;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .footer-left {
+            width: 60%;
+            vertical-align: top;
+            font-size: 9px;
+            color: #6b7280;
+            line-height: 1.7;
+        }
+
+        .footer-right {
+            width: 40%;
+            vertical-align: top;
+            text-align: right;
+            font-size: 9px;
+            color: #4b5563;
+            line-height: 1.7;
+        }
+
+        .footer-brand {
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .mb-8 { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    {# CABECERA #}
+    <div class="header">
+        <table class="header-table">
+            <tr>
+                <td class="header-logo">
+                    <img src="{{ logoPath }}" alt="Logo">
+                </td>
+                <td class="header-right">
+                    <div class="header-title">Propuesta económica</div>
+                    <div class="header-subtitle">Reforma · materiales · instalación</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="hero-bar">
+        <table class="hero-bar-table">
+            <tr>
+                <td class="hero-left">
+                    <div class="hero-label">Cliente</div>
+                    {% if documento.cliente %}
+                        <div class="hero-value">
+                            {{ documento.cliente.nombreCl }} {{ documento.cliente.apellidosCl }}
+                            {% if documento.cliente.direccionCl is defined and documento.cliente.direccionCl %}
+                                <br>{{ documento.cliente.direccionCl }}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="hero-value">Cliente pendiente de asignar</div>
+                    {% endif %}
+                </td>
+                <td class="hero-right">
+                    <div class="hero-label">Presupuesto</div>
+                    <div class="hero-doc">{{ documento.numeroFormateado ?? 'BORRADOR' }}</div>
+                    <div class="hero-value" style="font-size:10px; margin-top:6px;">
+                        {{ documento.fechaEmision ? documento.fechaEmision|date('d/m/Y') : '—' }}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="content">
+
+        {# INTRO / PRESENTACION #}
+        <div class="section">
+            <div class="section-title">Resumen de la propuesta</div>
+                <div class="card">
+                    <div class="intro-text">
+                        Sabemos que hacer una obra en casa genera dudas:
+                        los plazos, la limpieza, cómo va a ser el día a día…
+
+                        Por eso nuestro compromiso es claro:
+                        trabajar con orden, cumplir los tiempos y cuidar cada detalle durante todo el proceso.
+
+                        No se trata solo del resultado final, sino de que la obra no se convierta en un problema para ti.
+                        <br><br>
+                        Estos son los trabajos necesarios para ejecutar la obra correctamente, cuidando tanto el resultado como el proceso.
+                    </div>
+                </div>
+            </div>
+
+        {# DOS COLUMNAS: PROYECTO + INCLUIDO #}
+        <table class="two-cols">
+            <tr>
+                <td class="col-left">
+                    <div class="section">
+                        <div class="section-title">Qué vamos a realizar</div>
+                        <div class="bloque-texto">
+
+                            {% set hayManoObra = false %}
+                            {% for mo in documento.manoObra %}
+                                {% if mo.lineasRender|length > 0 %}
+                                    {% set hayManoObra = true %}
+                                {% endif %}
+                            {% endfor %}
+
+                        {% if hayManoObra %}
+
+                            {% for mo in documento.manoObra %}
+                                {% set lineas = mo.lineasRender %}
+
+                                {% if lineas|length > 0 %}
+
+                                    <div class="subbloque">
+                                        <div class="subbloque-titulo">
+                                            {{ mo.categoriaMo.tipoTm }}
+                                        </div>
+
+                                        <div class="subbloque-texto">
+                                            {% for linea in lineas %}
+                                                {{ linea }}<br>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+                                {% endif %}
+                            {% endfor %}
+
+                        {% else %}
+
+                            <div class="subbloque-texto">
+                                {{ documento.notas ?: 'Trabajos según visita, medición y necesidades acordadas con el cliente.' }}
+                            </div>
+
+                        {% endif %}
+                            {% if hayManoObra %}
+                                {% set tipoActual = null %}
+
+                                {% for mo in documento.manoObra %}
+                                    {% if mo.textoMo is not null and mo.textoMo|trim != '' %}
+                                        {% if tipoActual != mo.CategoriaMo.tipoTm %}
+                                            {% set tipoActual = mo.CategoriaMo.tipoTm %}
+                                            <div class="subbloque">
+                                                <div class="subbloque-titulo">{{ mo.CategoriaMo.tipoTm }}</div>
+                                                <div class="subbloque-texto">
+                                                    {{ mo.textoMo|replace({';': '<br>'})|raw }}
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div class="subbloque-texto mb-8">
+                                                {{ mo.textoMo|replace({';': '<br>'})|raw }}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <div class="subbloque-texto">
+                                    {{ documento.notas ?: 'Trabajos según visita, medición y necesidades acordadas con el cliente.' }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+
+                <td class="col-right">
+                    <div class="section">
+                        <div class="section-title">Incluido en este presupuesto</div>
+                        <div class="incluye-box">
+                            {% for linea in documento.lineas %}
+                               {% if linea.tipoLinea != 'comentario' and linea.tipoLinea != 'servicio' %}
+                                <div class="incluye-item">• {{ linea.descripcion }}</div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {% if documento.notas %}
+                        <div class="section">
+                            <div class="section-title">Observaciones</div>
+                            <div class="condiciones-box">
+                                <div class="condiciones-texto">
+                                    {{ documento.notas|nl2br }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+
+        {# PRECIO FINAL #}
+        <div class="precio-final-wrap">
+            <div class="precio-final-box">
+                <table class="precio-final-table">
+                    <tr>
+                        <td class="precio-left">
+                            <div class="precio-label">Importe final de la obra</div>
+                                <div class="precio-texto">
+                                Antes de ver el importe, hay algo importante:
+                                esta propuesta incluye todo lo necesario para realizar la obra de principio a fin, sin sorpresas.
+
+                                Sabemos que tomar la decisión de hacer una obra no es fácil...
+                            </div>
+                        </td>
+                        <td class="precio-right">
+                            <div class="precio-importe">
+                                {{ documento.total|number_format(2, ',', '.') }} €
+                            </div>
+                            <div class="precio-iva">
+                                IVA incluido
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        {# CONDICIONES #}
+        <div class="section" style="margin-top:18px;">
+            <div class="section-title">Condiciones</div>
+            <div class="condiciones-box">
+                <div class="condiciones-texto">
+                    Este documento tiene carácter de presupuesto y no constituye factura.<br>
+                    Validez de la oferta: 30 días desde la fecha de emisión.<br>
+                    Cualquier trabajo no contemplado expresamente en esta propuesta se presupuestará aparte, previo aviso al cliente.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {# PIE #}
+    <div class="footer">
+        <table class="footer-table">
+            <tr>
+                <td class="footer-left">
+                    Si tienes cualquier duda o quieres que ajustemos algún detalle, estamos a tu disposición.
+Estaremos encantados de ayudarte a dar el siguiente paso.    
+                </td>
+                <td class="footer-right">
+                    <span class="footer-brand">Pavimentos Gijón</span><br>
+                    Av. Schultz nº 28 Bajo · Gijón<br>
+                    985 391 326<br>
+                    684 608 811<br>
+                    buzon@pavimentosgijon.es
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

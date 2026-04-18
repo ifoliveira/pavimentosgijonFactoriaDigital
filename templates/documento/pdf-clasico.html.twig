@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+        <style>
+            @page {
+                margin: 0;
+                size: A4;
+            }
+            @page :first {
+                margin: 0;          /* ← página 1 sin margen, normal */
+            }
+
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            html, body {
+
+                padding: 0;
+                font-family: 'DejaVu Sans', sans-serif;
+                font-size: 11px;
+                color: #222;
+                background: #fff;
+                margin-top: 20px;
+            }
+
+            body {
+                width: auto;
+            }
+
+            .page {
+                width: auto;
+                padding: 15mm 14mm 16mm 14mm;
+            }
+
+            /* Margen superior para páginas 2+ en Dompdf */
+            .header-pagina2 {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 20px;
+                background: #ffffff;
+            }
+
+            /* ── TABLAS GENERALES ── */
+            .header-table,
+            .info-table,
+            .lineas-table,
+            .totales-table,
+            .footer-table,
+            .doc-meta-table,
+            .totales-row-table {
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed;
+            }
+
+            /* ── CABECERA ── */
+            .header {
+                border: 1px solid #666;
+                padding: 10px 12px;
+                margin-bottom: 10px;
+            }
+
+            .header-logo-cell {
+                width: 42%;
+                vertical-align: middle;
+            }
+
+            .header-logo-cell img {
+                max-height: 80px;   /* era 50px */
+                max-width: 260px;   /* era 180px */
+            }
+
+            .header-empresa-cell {
+                width: 58%;
+                vertical-align: top;
+                text-align: right;
+            }
+
+            .empresa-nombre {
+                font-size: 14px;
+                font-weight: bold;
+                color: #111;
+                margin-bottom: 4px;
+            }
+
+            .empresa-dato {
+                font-size: 9.5px;
+                color: #444;
+                line-height: 1.5;
+            }
+
+            /* ── BLOQUE DOCUMENTO + CLIENTE ── */
+            .info-section {
+                margin-bottom: 14px;
+            }
+
+            .doc-identity-cell {
+                width: 48%;
+                vertical-align: top;
+                padding-right: 6px;
+            }
+
+            .cliente-cell {
+                width: 4%;
+            }
+
+            .cliente-box-cell {
+                width: 48%;
+                vertical-align: top;
+                padding-left: 6px;
+            }
+
+            .boxed {
+                border: 1px solid #999;
+                padding: 10px 12px;
+            }
+
+            .doc-numero {
+                font-size: 20px;
+                font-weight: bold;
+                color: #111;
+                margin-bottom: 3px;
+            }
+
+            .doc-tipo {
+                font-size: 10px;
+                color: #555;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                margin-bottom: 10px;
+            }
+
+            .doc-meta-label {
+                font-size: 9px;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                padding: 3px 8px 3px 0;
+                white-space: nowrap;
+                vertical-align: top;
+            }
+
+            .doc-meta-value {
+                font-size: 10.5px;
+                color: #222;
+                font-weight: bold;
+                padding: 3px 0;
+            }
+
+            .cliente-label {
+                font-size: 9px;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                margin-bottom: 6px;
+                border-bottom: 1px solid #bbb;
+                padding-bottom: 4px;
+            }
+
+            .cliente-nombre {
+                font-size: 12px;
+                font-weight: bold;
+                color: #111;
+                margin-bottom: 4px;
+            }
+
+            .cliente-dato {
+                font-size: 10px;
+                color: #333;
+                line-height: 1.5;
+            }
+
+            /* ── NOTAS ── */
+            .notas-section {
+                margin-bottom: 14px;
+            }
+
+            .notas-box {
+                border: 1px solid #999;
+                padding: 10px 12px;
+                font-size: 10px;
+                color: #333;
+                line-height: 1.6;
+            }
+
+            .notas-titulo {
+                font-size: 9px;
+                font-weight: bold;
+                text-transform: uppercase;
+                color: #666;
+                letter-spacing: 0.04em;
+                border-bottom: 1px solid #bbb;
+                padding-bottom: 4px;
+                margin-bottom: 6px;
+            }
+
+            /* ── TABLA DE LÍNEAS ── */
+            .lineas-section {
+                margin-bottom: 16px;
+            }
+
+            .lineas-title {
+                font-size: 10px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: #444;
+                margin-bottom: 6px;
+            }
+
+            .lineas-table {
+                border: 1px solid #666;
+                table-layout: auto;  /* añade esto */
+            }
+
+            .lineas-table thead th {
+                background: #fff;
+                color: #111;
+                font-size: 9px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                padding: 6px 6px;
+                border-bottom: 1px solid #666;
+                border-right: 1px solid #ccc;
+            }
+
+            .lineas-table thead th:last-child {
+                border-right: none;
+            }
+
+            .lineas-table thead th.text-right {
+                text-align: right;
+            }
+
+            .lineas-table tbody td {
+                padding: 6px 6px;
+                vertical-align: top;
+                font-size: 10px;
+                color: #222;
+                border-bottom: 1px solid #ddd;
+                border-right: 1px solid #eee;
+            }
+
+            .lineas-table tbody td:last-child {
+                border-right: none;
+            }
+
+            .lineas-table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            .lineas-table tbody td.text-right {
+                text-align: right;
+            }
+
+            .lineas-table tbody td.text-center {
+                text-align: center;
+            }
+
+
+            .fila-comentario td {
+                font-style: italic;
+                color: #444;
+                background: #fafafa;
+            }
+
+            .td-desc-principal {
+                font-size: 10px;
+                font-weight: bold;
+                color: #111;
+            }
+
+            .td-subtotal {
+                font-size: 10px;
+                font-weight: bold;
+                color: #111;
+            }
+
+            .linea-comentario-text {
+                font-size: 10px;
+                color: #444;
+            }
+
+            /* ── TOTALES ── */
+            .totales-section {
+                margin-top: 8px;
+            }
+
+            .totales-spacer {
+                width: 58%;
+            }
+
+            .totales-content {
+                width: 42%;
+                vertical-align: top;
+            }
+
+            .totales-inner {
+                border: 1px solid #666;
+                padding: 10px 12px;
+            }
+
+            .totales-row-label {
+                font-size: 10px;
+                color: #333;
+                padding: 4px 0;
+            }
+
+            .totales-row-value {
+                font-size: 10.5px;
+                font-weight: bold;
+                color: #111;
+                text-align: right;
+                padding: 4px 0;
+            }
+
+            .totales-divider {
+                border: none;
+                border-top: 1px solid #999;
+                margin: 6px 0;
+            }
+
+            .totales-total-label {
+                font-size: 12px;
+                font-weight: bold;
+                color: #111;
+                padding-top: 4px;
+            }
+
+            .totales-total-value {
+                font-size: 15px;
+                font-weight: bold;
+                color: #111;
+                text-align: right;
+                padding-top: 4px;
+            }
+            /* ── MANO DE OBRA ── */    
+            .mano-obra-section {
+                margin-top: 18px;
+                border: 1px solid #999;
+                padding: 10px 12px;
+            }
+
+            .mano-obra-title {
+                font-size: 10px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: #444;
+                margin-bottom: 8px;
+            }
+
+            .mano-obra-subtitle {
+                font-size: 10px;
+                font-weight: bold;
+                color: #111;
+                border-bottom: 1px solid #bbb;
+                padding-bottom: 3px;
+                margin-top: 10px;
+                margin-bottom: 6px;
+            }
+
+            .mano-obra-texto {
+                font-size: 10px;
+                color: #333;
+                line-height: 1.6;
+                margin-bottom: 8px;
+            }
+
+            /* ── PIE ── */
+            .footer {
+                margin-top: 22px;
+                border-top: 1px solid #666;
+                padding-top: 8px;
+            }
+
+            .footer-legal {
+                font-size: 8.5px;
+                color: #555;
+                line-height: 1.5;
+                width: 65%;
+                vertical-align: top;
+            }
+
+            .footer-contacto {
+                font-size: 9px;
+                color: #333;
+                text-align: right;
+                vertical-align: top;
+                line-height: 1.6;
+                width: 35%;
+            }
+
+            .footer-contacto-strong {
+                font-weight: bold;
+                color: #111;
+            }
+
+            /* ── COBROS / PENDIENTE ── */
+            .cobros-section {
+                margin-top: 14px;
+            }
+
+            .cobros-box {
+                border: 1px solid #666;
+                padding: 10px 12px;
+            }
+
+            .cobros-title {
+                font-size: 10px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: #444;
+                margin-bottom: 8px;
+            }
+
+            .cobros-resumen-table,
+            .cobros-detalle-table {
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed;
+            }
+
+            .cobros-resumen-table td {
+                padding: 4px 0;
+                font-size: 10px;
+            }
+
+            .cobros-label {
+                color: #333;
+            }
+
+            .cobros-value {
+                text-align: right;
+                font-weight: bold;
+                color: #111;
+            }
+
+            .cobros-divider {
+                border: none;
+                border-top: 1px solid #bbb;
+                margin: 8px 0;
+            }
+
+            .pendiente-destacado {
+                font-size: 12px;
+                font-weight: bold;
+                color: #111;
+            }
+
+            .pendiente-ok {
+                font-size: 11px;
+                font-weight: bold;
+                color: #111;
+            }
+
+            .cobros-detalle-title {
+                font-size: 9px;
+                font-weight: bold;
+                text-transform: uppercase;
+                color: #666;
+                letter-spacing: 0.04em;
+                margin-bottom: 6px;
+            }
+
+            .cobros-detalle-table th {
+                font-size: 9px;
+                text-transform: uppercase;
+                color: #444;
+                text-align: left;
+                border-bottom: 1px solid #bbb;
+                padding: 5px 4px;
+            }
+
+            .cobros-detalle-table td {
+                font-size: 10px;
+                color: #222;
+                padding: 5px 4px;
+                border-bottom: 1px solid #eee;
+            }
+
+            .cobros-detalle-table td.text-right,
+            .cobros-detalle-table th.text-right {
+                text-align: right;
+            }
+
+            .estado-pendiente {
+                background: #fafafa;
+            }
+        </style>
+</head>
+<body>
+<div class="page">
+
+    {# ── CABECERA ── #}
+    <div class="header">
+        <table class="header-table">
+            <tr>
+                <td class="header-logo-cell">
+                    <img src="{{ logoPath }}" alt="Logo">
+                </td>
+                <td class="header-empresa-cell">
+                    <div class="empresa-nombre">Pavimentos Gijón</div>
+                    <div class="empresa-dato">
+                        Av. Schultz nº 28 Bajo · Gijón<br>
+                        NIF: 53543499M<br>
+                        Tel: 985 391 326<br>
+                        buzon@pavimentosgijon.es
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {# ── DATOS DOCUMENTO + CLIENTE ── #}
+    <div class="info-section">
+        <table class="info-table">
+            <tr>
+                <td class="doc-identity-cell">
+                    <div class="boxed">
+                        <div class="doc-numero">
+                            {{ documento.numeroFormateado ?? 'BORRADOR' }}
+                        </div>
+                        <div class="doc-tipo">{{ documento.tipoDocumento }}</div>
+
+                        <table class="doc-meta-table">
+                            <tr>
+                                <td class="doc-meta-label">Fecha emisión</td>
+                                <td class="doc-meta-value">
+                                    {{ documento.fechaEmision ? documento.fechaEmision|date('d/m/Y') : '—' }}
+                                </td>
+                            </tr>
+                            {% if documento.proyecto %}
+                                <tr>
+                                    <td class="doc-meta-label">Proyecto</td>
+                                    <td class="doc-meta-value">{{ documento.proyecto.nombre }}</td>
+                                </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </td>
+
+                <td class="cliente-cell"></td>
+
+                <td class="cliente-box-cell">
+                    <div class="boxed">
+                        <div class="cliente-label">Destinatario</div>
+                        {% if documento.cliente %}
+                            <div class="cliente-nombre">
+                                {{ documento.cliente.nombreCl }} {{ documento.cliente.apellidosCl }}
+                            </div>
+                            {% if documento.cliente.direccionCl is defined and documento.cliente.direccionCl %}
+                                <div class="cliente-dato">{{ documento.cliente.direccionCl }}</div>
+                            {% endif %}
+                            {% if documento.cliente.telefono1Cl is defined and documento.cliente.telefono1Cl %}
+                                <div class="cliente-dato">Tel: {{ documento.cliente.telefono1Cl }}</div>
+                            {% endif %}
+                        {% else %}
+                            <div class="cliente-nombre" style="color:#777;">Sin cliente asignado</div>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {# ── NOTAS ── #}
+    {% if documento.notas %}
+        <div class="notas-section">
+            <div class="notas-box">
+                <div class="notas-titulo">Observaciones</div>
+                {{ documento.notas }}
+            </div>
+        </div>
+    {% endif %}
+
+    {# ── LÍNEAS ── #}
+    <div class="lineas-section">
+        <div class="lineas-title">Detalle</div>
+
+        <table class="lineas-table">
+            <thead>
+                <tr>
+                    <th style="width:10px;">#</th>
+                    <th>Descripción</th>
+                    <th class="text-right" style="width:45px;">Cant.</th>
+                    <th class="text-right" style="width:55px;">Precio</th>
+                    <th class="text-right" style="width:45px;">Dto.</th>
+                    <th class="text-right" style="width:65px;">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for linea in documento.lineas %}
+                    {% if linea.tipoLinea == 'comentario' %}
+                        <tr class="fila-comentario">
+                            <td colspan="6">
+                                <span class="linea-comentario-text">{{ linea.descripcion }}</span>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td class="text-center" style="color:#666;">{{ linea.posicion }}</td>
+                            <td>
+                                <div class="td-desc-principal">{{ linea.descripcion }}</div>
+                            </td>
+                            <td class="text-right">
+                                {{ linea.cantidad|number_format(0, ',', '.') }} ud
+                            </td>
+                            <td class="text-right">
+                                {{ linea.precioUnitario|number_format(2, ',', '.') }} €
+                            </td>
+                            <td class="text-right">
+                                {% if linea.descuento > 0 %}
+                                    {{ linea.descuento|number_format(2, ',', '.') }} %
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td class="text-right td-subtotal">
+                                {{ linea.subtotal|number_format(2, ',', '.') }} €
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# ── TOTALES ── #}
+    <div class="totales-section">
+        <table class="totales-table">
+            <tr>
+                <td class="totales-spacer"></td>
+                <td class="totales-content">
+                    <div class="totales-inner">
+                        <table class="totales-row-table">
+                            <tr>
+                                <td class="totales-row-label">Base imponible</td>
+                                <td class="totales-row-value">
+                                    {{ documento.baseImponible|number_format(2, ',', '.') }} €
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="totales-row-label">IVA (21%)</td>
+                                <td class="totales-row-value">
+                                    {{ documento.totalIva|number_format(2, ',', '.') }} €
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2"><hr class="totales-divider"></td>
+                            </tr>
+                            <tr>
+                                <td class="totales-total-label">Total</td>
+                                <td class="totales-total-value">
+                                    {{ documento.total|number_format(2, ',', '.') }} €
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {% set totalCobrado = documento.totalCobrado ?? 0 %}
+    {% set pendiente = (documento.total ?? 0) - totalCobrado %}
+    {% if documento.tipoDocumento == 'factura' %}
+        {% if pendiente > 0.009 and documento.cobros is defined and documento.cobros|length > 0 %}
+            <div class="cobros-section">
+                <div class="cobros-box">
+                    <div class="cobros-title">Situación de cobro</div>
+
+                    {% if pendiente > 0.009 %}
+                        <table class="cobros-resumen-table">
+                            <tr>
+                                <td class="cobros-label">Importe total factura</td>
+                                <td class="cobros-value">
+                                    {{ documento.total|number_format(2, ',', '.') }} €
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="cobros-label">Total cobrado</td>
+                                <td class="cobros-value">
+                                    {{ totalCobrado|number_format(2, ',', '.') }} €
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2"><hr class="cobros-divider"></td>
+                            </tr>
+                            <tr class="estado-pendiente">
+                                <td class="cobros-label">Pendiente de pago</td>
+                                <td class="cobros-value">
+                                    <span class="pendiente-destacado">
+                                        {{ pendiente|number_format(2, ',', '.') }} €
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    {% else %}
+                        <table class="cobros-resumen-table">
+                            <tr>
+                                <td class="cobros-label">Estado</td>
+                                <td class="cobros-value">
+                                    <span class="pendiente-ok">Factura cobrada</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="cobros-label">Importe total factura</td>
+                                <td class="cobros-value">
+                                    {{ documento.total|number_format(2, ',', '.') }} €
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="cobros-label">Total cobrado</td>
+                                <td class="cobros-value">
+                                    {{ totalCobrado|number_format(2, ',', '.') }} €
+                                </td>
+                            </tr>
+                        </table>
+                    {% endif %}
+
+                    {% if documento.cobros is defined and documento.cobros|length > 0 %}
+                        <hr class="cobros-divider">
+
+                        <div class="cobros-detalle-title">
+                            {% if pendiente > 0.009 %}
+                                Cobros registrados
+                            {% else %}
+                                Detalle de cobros registrados
+                            {% endif %}
+                        </div>
+
+                        <table class="cobros-detalle-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 22%;">Fecha</th>
+                                    <th>Concepto</th>
+                                    <th style="width: 22%;">Método</th>
+                                    <th class="text-right" style="width: 22%;">Importe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cobro in documento.cobros %}
+                                    <tr>
+                                        <td>
+                                            {{ cobro.fecha ? cobro.fecha|date('d/m/Y') : '—' }}
+                                        </td>
+                                        <td>
+                                            {{ cobro.referencia ?: 'Cobro registrado' }}
+                                        </td>
+                                        <td>
+                                            {{ cobro.metodo ?: '—' }}
+                                        </td>
+                                        <td class="text-right">
+                                            {{ cobro.importeBruto|number_format(2, ',', '.') }} €
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <table class="cobros-resumen-table">
+                <tr>
+                    <td class="cobros-label">Estado</td>
+                    <td class="cobros-value">
+                        <span class="pendiente-ok">Factura cobrada</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="cobros-label">Importe total factura</td>
+                    <td class="cobros-value">
+                        {{ documento.total|number_format(2, ',', '.') }} €
+                    </td>
+                </tr>
+            </table>
+        {% endif %}
+    {% endif %}
+
+    {# ── PIE ── #}
+    <div class="footer">
+        <table class="footer-table">
+            <tr>
+                <td class="footer-legal">
+                    {% if documento.tipoDocumento == 'presupuesto' %}
+                        Este documento tiene carácter de presupuesto y no constituye factura.<br>
+                        Válido durante 30 días desde la fecha de emisión.<br>
+                        Los precios incluyen IVA al tipo vigente indicado.
+                    {% elseif documento.tipoDocumento == 'factura' %}
+                        Este documento tiene carácter de factura.<br>
+                        El importe pendiente, en caso de existir, corresponde al saldo no abonado a la fecha de emisión de este documento.<br>
+                        Los importes incluyen IVA al tipo vigente indicado.
+                    {% else %}
+                        Documento emitido por Pavimentos Gijón.<br>
+                        Los importes incluyen IVA al tipo vigente indicado.
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

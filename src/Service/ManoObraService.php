@@ -4,6 +4,7 @@ namespace App\Service;
 use App\Entity\ManoObra;
 use App\Entity\Presupuestos;
 use App\Entity\TipoManoObra;
+use App\Entity\Documento;
 use Doctrine\ORM\EntityManagerInterface;
 
 class ManoObraService
@@ -24,8 +25,24 @@ class ManoObraService
             $manoObra = new ManoObra();
             $manoObra->setPresupuestoMo($presupuesto);
             $manoObra->setCategoriaMo($tipo);
-            $manoObra->setTipoMo($tipo->getTipoTm());
-            $this->em->persist($manoObra);
+             $this->em->persist($manoObra);
         }
     }
+
+    /**
+     * Crea las líneas de mano de obra iniciales para un presupuesto.
+     * No hace flush — el controlador es responsable.
+     */
+    public function iniciarDocumento(Documento $documento): void
+    {
+        $tiposManoObra = $this->em->getRepository(TipoManoObra::class)->findAll();
+
+        foreach ($tiposManoObra as $tipo) {
+            $manoObra = new ManoObra();
+            $manoObra->setDocumentoMo($documento);
+            $manoObra->setCategoriaMo($tipo);
+             $this->em->persist($manoObra);
+        }
+    }
+
 }

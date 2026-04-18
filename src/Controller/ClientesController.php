@@ -9,6 +9,7 @@ use App\Entity\Consultas;
 use App\Entity\Presupuestos;
 use App\Form\ClientesType;
 use App\Form\PresupuestosType;
+use App\Form\Clientes2Type;
 use App\Repository\ClientesRepository;
 use App\Repository\EstadocestasRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -63,7 +64,7 @@ class ClientesController extends AbstractController
             $presupuesto->setUserPe($user);
             $presupuesto->setClientePe($cliente);
 
-      // Creamos la cesta para el presupuesto y la señal 
+    // Creamos la cesta para el presupuesto y la señal 
             $cesta = new Cestas();
             $user = $this->getUser();
             $cesta->setUserAdmin($user);
@@ -87,6 +88,28 @@ class ClientesController extends AbstractController
 
         return $this->render('clientes/new.html.twig', [
             'cliente' => $cliente,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/nuevo', name: 'clientes_nuevo', methods: ['GET', 'POST'])]
+    public function nuevo(Request $request, EntityManagerInterface $em): Response
+    {
+        $cliente = new Clientes();
+        $cliente->setTimestampaltaCl(new \DateTime());
+
+        $form = $this->createForm(Clientes2Type::class, $cliente);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($cliente);
+            $em->flush();
+
+            $this->addFlash('success', 'Cliente dado de alta correctamente.');
+            return $this->redirectToRoute('clientes_nuevo');
+        }
+
+        return $this->render('clientes/nuevo.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -169,5 +192,38 @@ class ClientesController extends AbstractController
         return $response;
 
     }  
+
+    #[Route('/clientes/quick-create', name: 'app_clientes_quick_create', methods: ['POST'])]
+    public function quickCreate(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $nombre = trim((string) $request->request->get('nombreCl', ''));
+        $apellidos = trim((string) $request->request->get('apellidosCl', ''));
+        $telefono1 = trim((string) $request->request->get('telefono1Cl', ''));
+        $ciudad = trim((string) $request->request->get('ciudadCl', ''));
+        $direccion = trim((string) $request->request->get('direccionCl', ''));
+
+        if ($nombre === '') {
+            return $this->json([
+                'success' => false,
+                'message' => 'El nombre es obligatorio.'
+            ], 400);
+        }
+
+        $cliente = new Clientes();
+        $cliente->setNombreCl($nombre);
+        $cliente->setApellidosCl($apellidos !== '' ? $apellidos : null);
+        $cliente->setTelefono1Cl($telefono1 !== '' ? $telefono1 : null);
+        $cliente->setCiudadCl($ciudad !== '' ? $ciudad : null);
+        $cliente->setDireccionCl($direccion !== '' ? $direccion : null);
+
+        $entityManager->persist($cliente);
+        $entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'id' => $cliente->getId(),
+            'label' => trim($cliente->getNombreCl() . ' ' . ($cliente->getApellidosCl() ?? '')),
+        ]);
+    }    
 
 }

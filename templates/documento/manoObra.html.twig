@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+{% form_theme form 'fields.html.twig' %}
+
+{% block title %}Mano de obra{% endblock %}
+{% block cabecera %}Mano de Obra{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <a href="{{ path('app_documento_show', {'id': documento.id}) }}">Documento</a>
+    </li>
+    <li class="breadcrumb-item">Mano de obra</li>
+    <li class="breadcrumb-item active">Nueva</li>
+{% endblock %}
+
+{% block body %}
+<div class="card-body row">
+
+    {# Panel izquierdo: formulario #}
+    <div class="col-sm-6 col-lg-6">
+        <div class="card">
+            {{ form_start(form) }}
+            <div class="card-body">
+
+                {% for mano in form.manoObra|reverse %}
+                    <div class="row mb-3">
+                        <div class="col-sm-12 col-md-4">
+                            {{ form_label(mano.categoriaMo, 'Categoría') }}
+                            {{ form_errors(mano.categoriaMo) }}
+                            {{ form_widget(mano.categoriaMo, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+                        <div class="col-sm-12 col-md-8">
+                            {{ form_label(mano.textoMo, 'Descripción') }}
+                            {{ form_errors(mano.textoMo) }}
+                            {{ form_widget(mano.textoMo, {'attr': {
+                                'class': 'form-control',
+                                'rows': 4,
+                                'placeholder': 'Trabajos a realizar...'
+                            }}) }}
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="action-form mt-3">
+                    <button type="submit" class="btn btn-info waves-effect waves-light">
+                        Guardar y añadir otra
+                    </button>
+                    <a href="{{ path('app_documento_show', {'id': documento.id}) }}"
+                       class="btn btn-outline-danger ms-2">
+                        Volver al documento
+                    </a>
+                </div>
+
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    {# Panel derecho: textos predefinidos por categoría #}
+    <div class="col-sm-4 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <thead>
+                            <tr><th>Concepto</th></tr>
+                        </thead>
+                        <tbody>
+                            {% set counter = 0 %}
+                            {% for texto in categoria.TextoManoObras ?? [] %}
+                                {% set counter = counter + 1 %}
+                                <tr>
+                                    <td>
+                                        <div class="d-inline-block mb-2">
+                                            <input
+                                                id="{{ counter }}"
+                                                type="checkbox"
+                                                data-toggle="toggle"
+                                                data-size="sm"
+                                            />
+                                        </div>
+                                        <div id="Text{{ counter }}">{{ texto.DescripcionXO }}</div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="button" id="Incluir" class="btn btn-info waves-effect waves-light">
+                        Incluir seleccionados
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block jscustom %}
+<script>
+$(function () {
+    const boton = document.querySelector("#Incluir");
+    const textarea = document.querySelector('textarea[name*="textoMo"]');
+
+    boton.addEventListener("click", function () {
+        let nuevoTexto = textarea.value;
+        const checkboxes = document.querySelectorAll('input[type=checkbox]');
+
+        checkboxes.forEach(function (chk) {
+            if (chk.checked) {
+                const linea = document.querySelector("#Text" + chk.id).innerText.trim();
+                if (nuevoTexto !== '') {
+                    nuevoTexto = nuevoTexto + ";\n" + linea;
+                } else {
+                    nuevoTexto = linea;
+                }
+            }
+        });
+
+        textarea.value = nuevoTexto;
+    });
+});
+</script>
+{% endblock %}

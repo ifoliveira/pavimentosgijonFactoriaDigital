@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            margin: 0;
+            size: A4;
+        }
+        @page :first {
+            margin: 0;          /* ← página 1 sin margen, normal */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DejaVu Sans', sans-serif;
+            font-size: 11px;
+            color: #1f2937;
+            background: #ffffff;
+            margin-top: 20px;
+        }
+
+        .page {
+                width: auto;
+                padding: 15mm 14mm 16mm 14mm;
+        }
+
+        /* PALETA SUAVE */
+        .accent {
+            color: #185FA5;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        /* CABECERA */
+        .header {
+            padding-bottom: 12px;
+            border-bottom: 2px solid #dbe7f3;
+        }
+
+        /* Margen superior para páginas 2+ en Dompdf */
+        .header-pagina2 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: #ffffff;
+        }
+
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .header-logo {
+            width: 40%;
+            vertical-align: middle;
+        }
+
+        .header-logo img {
+            max-height: 56px;
+            max-width: 220px;
+        }
+
+        .header-right {
+            width: 60%;
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* BLOQUE CLIENTE / DOCUMENTO */
+        .hero {
+            margin-top: 18px;
+            margin-bottom: 22px;
+        }
+
+        .hero-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .hero-left,
+        .hero-right {
+            vertical-align: top;
+        }
+
+        .hero-left {
+            width: 58%;
+            padding-right: 10px;
+        }
+
+        .hero-right {
+            width: 42%;
+            padding-left: 10px;
+        }
+
+        .info-card {
+            border: 1px solid #e5e7eb;
+            border-top: 3px solid #185FA5;
+            border-radius: 4px;
+            padding: 14px 16px;
+            background: #ffffff;
+        }
+
+        .info-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .info-value {
+            font-size: 12px;
+            color: #111827;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        .info-subvalue {
+            font-size: 10px;
+            color: #6b7280;
+            line-height: 1.6;
+            margin-top: 3px;
+        }
+
+        .doc-number {
+            font-size: 22px;
+            color: #185FA5;
+            font-weight: bold;
+            letter-spacing: -0.5px;
+        }
+
+        /* CONTENIDO */
+        .section {
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #185FA5;
+            margin-bottom: 8px;
+        }
+
+        .section-rule {
+            height: 1px;
+            background: #dbe7f3;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            border: 1px solid #e5e7eb;
+            border-left: 3px solid #185FA5;
+            border-radius: 4px;
+            padding: 14px 16px;
+            background: #ffffff;
+        }
+
+        .soft-card {
+            border: 1px solid #eceff3;
+            border-radius: 4px;
+            padding: 14px 16px;
+            background: #fafbfd;
+        }
+
+        .intro-text {
+            font-size: 11px;
+            line-height: 1.75;
+            color: #374151;
+        }
+
+        /* DOS COLUMNAS */
+        .two-cols {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .two-cols td {
+            vertical-align: top;
+        }
+
+        .col-left {
+            width: 58%;
+            padding-right: 8px;
+        }
+
+        .col-right {
+            width: 42%;
+            padding-left: 8px;
+        }
+
+        /* BLOQUE TEXTO */
+        .bloque-texto {
+            border: 1px solid #e5e7eb;
+            border-left: 3px solid #185FA5;
+            border-radius: 4px;
+            padding: 14px 16px;
+            background: #ffffff;
+        }
+
+        .subbloque {
+            margin-bottom: 12px;
+        }
+
+        .subbloque:last-child {
+            margin-bottom: 0;
+        }
+
+        .subbloque-titulo {
+            font-size: 10px;
+            font-weight: bold;
+            color: #111827;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .subbloque-texto {
+            font-size: 10px;
+            color: #374151;
+            line-height: 1.7;
+        }
+
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+
+        /* INCLUIDO */
+        .incluye-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 14px 16px;
+            background: #ffffff;
+        }
+
+        .incluye-item {
+            font-size: 11px;
+            color: #1f2937;
+            line-height: 1.7;
+            margin-bottom: 6px;
+        }
+
+        .incluye-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* PRECIO FINAL */
+        .precio-final-wrap {
+            margin-top: 18px;
+        }
+
+        .precio-final-box {
+            border: 2px solid #185FA5;
+            border-radius: 6px;
+            padding: 18px 20px;
+            background: #ffffff;
+        }
+
+        .precio-final-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .precio-left {
+            width: 62%;
+            vertical-align: middle;
+            padding-right: 10px;
+        }
+
+        .precio-right {
+            width: 38%;
+            text-align: right;
+            vertical-align: middle;
+            padding-left: 10px;
+        }
+
+        .precio-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #185FA5;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .precio-texto {
+            font-size: 11px;
+            color: #374151;
+            line-height: 1.7;
+        }
+
+        .precio-importe {
+            font-size: 30px;
+            font-weight: bold;
+            color: #185FA5;
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+
+        .precio-iva {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        /* CONDICIONES */
+        .condiciones-box {
+            border: 1px solid #ead9b3;
+            border-left: 3px solid #d79b2c;
+            border-radius: 4px;
+            padding: 14px 16px;
+            background: #fffdfa;
+        }
+
+        .condiciones-texto {
+            font-size: 10px;
+            color: #5b4a1b;
+            line-height: 1.7;
+        }
+
+        /* PIE */
+        .footer {
+            margin-top: 26px;
+            padding-top: 14px;
+            border-top: 1px solid #dbe7f3;
+        }
+
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .footer-left {
+            width: 60%;
+            vertical-align: top;
+            font-size: 9px;
+            color: #6b7280;
+            line-height: 1.7;
+            padding-right: 10px;
+        }
+
+        .footer-right {
+            width: 40%;
+            vertical-align: top;
+            text-align: right;
+            font-size: 9px;
+            color: #4b5563;
+            line-height: 1.7;
+            padding-left: 10px;
+        }
+
+        .footer-brand {
+            font-weight: bold;
+            color: #111827;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    {# CABECERA #}
+    <div class="header">
+        <table class="header-table">
+            <tr>
+                <td class="header-logo">
+                    <img src="{{ logoPath }}" alt="Logo">
+                </td>
+                <td class="header-right">
+                    <div class="header-title">Propuesta económica</div>
+                    <div class="header-subtitle">Reforma · materiales · instalación</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {# CLIENTE / DOCUMENTO #}
+    <div class="hero">
+        <table class="hero-table">
+            <tr>
+                <td class="hero-left">
+                    <div class="info-card">
+                        <div class="info-label">Cliente</div>
+                        {% if documento.cliente %}
+                            <div class="info-value">
+                                {{ documento.cliente.nombreCl }} {{ documento.cliente.apellidosCl }}
+                            </div>
+                            {% if documento.cliente.direccionCl is defined and documento.cliente.direccionCl %}
+                                <div class="info-subvalue">{{ documento.cliente.direccionCl }}</div>
+                            {% endif %}
+                        {% else %}
+                            <div class="info-value">Cliente pendiente de asignar</div>
+                        {% endif %}
+                    </div>
+                </td>
+                <td class="hero-right">
+                    <div class="info-card">
+                        <div class="info-label">Presupuesto</div>
+                        <div class="doc-number">{{ documento.numeroFormateado ?? 'BORRADOR' }}</div>
+                        <div class="info-subvalue" style="margin-top: 6px;">
+                            {{ documento.fechaEmision ? documento.fechaEmision|date('d/m/Y') : '—' }}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {# INTRO / PRESENTACION #}
+    <div class="section">
+        <div class="section-title">Resumen de la propuesta</div>
+        <div class="section-rule"></div>
+        <div class="soft-card">
+            <div class="intro-text">
+                Sabemos que hacer una obra en casa genera dudas:
+                los plazos, la limpieza, cómo va a ser el día a día…
+
+                Por eso nuestro compromiso es claro:
+                trabajar con orden, cumplir los tiempos y cuidar cada detalle durante todo el proceso.
+
+                No se trata solo del resultado final, sino de que la obra no se convierta en un problema para ti.
+                <br><br>
+                Estos son los trabajos necesarios para ejecutar la obra correctamente, cuidando tanto el resultado como el proceso.
+            </div>
+        </div>
+    </div>
+
+    {# DOS COLUMNAS: PROYECTO + INCLUIDO #}
+    <table class="two-cols">
+        <tr>
+            <td class="col-left">
+                <div class="section">
+                    <div class="section-title">Qué vamos a realizar</div>
+                    <div class="section-rule"></div>
+                    <div class="bloque-texto">
+
+                        {# ─── DETECTAR SI HAY MANO DE OBRA REAL ─── #}
+
+                        {% set hayManoObra = false %}
+                        {% for mo in documento.manoObra %}
+                            {% if mo.lineasRender|length > 0 %}
+                                {% set hayManoObra = true %}
+                            {% endif %}
+                        {% endfor %}
+
+
+                        {% if hayManoObra %}
+
+                            {% for mo in documento.manoObra %}
+                                {% set lineas = mo.lineasRender %}
+
+                                {% if lineas|length > 0 %}
+
+                                    <div class="subbloque">
+                                        <div class="subbloque-titulo">
+                                            {{ mo.categoriaMo.tipoTm }}
+                                        </div>
+
+                                        <div class="subbloque-texto">
+                                            {% for linea in lineas %}
+                                                {{ linea }}<br>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+                                {% endif %}
+                            {% endfor %}
+
+                        {% else %}
+
+                            <div class="subbloque-texto">
+                                {{ documento.notas ?: 'Trabajos según visita, medición y necesidades acordadas con el cliente.' }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+                </div>
+            </td>
+            <td class="col-right">
+                <div class="section">
+                    <div class="section-title">Incluido en este presupuesto</div>
+                    <div class="section-rule"></div>
+                    <div class="incluye-box">
+                        {% for linea in documento.lineas %}
+                            {% if linea.tipoLinea != 'comentario' and linea.tipoLinea != 'servicio' %}
+                                <div class="incluye-item">• {{ linea.descripcion }}</div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if documento.notas %}
+                    <div class="section">
+                        <div class="section-title">Observaciones</div>
+                        <div class="section-rule"></div>
+                        <div class="condiciones-box">
+                            <div class="condiciones-texto">
+                                {{ documento.notas|nl2br }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    {# PRECIO FINAL #}
+    <div class="precio-final-wrap">
+        <div class="precio-final-box">
+            <table class="precio-final-table">
+                <tr>
+                    <td class="precio-left">
+                        <div class="precio-label">Importe final de la obra</div>
+                        <div class="precio-texto">
+                            Antes de ver el importe, hay algo importante:
+                            esta propuesta incluye todo lo necesario para realizar la obra de principio a fin, sin sorpresas.
+
+                            Sabemos que tomar la decisión de hacer una obra no es fácil...
+                        </div>
+                    </td>
+                    <td class="precio-right">
+                        <div class="precio-importe">
+                            {{ documento.total|number_format(2, ',', '.') }} €
+                        </div>
+                        <div class="precio-iva">
+                            IVA incluido
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    {# CONDICIONES #}
+    <div class="section" style="margin-top:18px;">
+        <div class="section-title">Condiciones</div>
+        <div class="section-rule"></div>
+        <div class="condiciones-box">
+            <div class="condiciones-texto">
+                Este documento tiene carácter de presupuesto y no constituye factura.<br>
+                Validez de la oferta: 30 días desde la fecha de emisión.<br>
+                Cualquier trabajo no contemplado expresamente en esta propuesta se presupuestará aparte, previo aviso al cliente.
+            </div>
+        </div>
+    </div>
+
+    {# PIE #}
+    <div class="footer">
+        <table class="footer-table">
+            <tr>
+                <td class="footer-left">
+                    Si tienes cualquier duda o quieres que ajustemos algún detalle, estamos a tu disposición.
+                    Estaremos encantados de ayudarte a dar el siguiente paso.
+                </td>
+                <td class="footer-right">
+                    <span class="footer-brand">Pavimentos Gijón</span><br>
+                    Av. Schultz nº 28 Bajo · Gijón<br>
+                    985 391 326<br>
+                    684 608 811<br>
+                    buzon@pavimentosgijon.es
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

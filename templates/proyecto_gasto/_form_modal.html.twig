@@ -1,0 +1,54 @@
+{{ form_start(form, {
+    attr: {
+        id: 'formProyectoGasto',
+        novalidate: 'novalidate'
+    }
+}) }}
+
+<div class="row g-3">
+    <div class="col-md-6">
+        {{ form_row(form.categoria) }}
+    </div>
+    <div class="col-md-6">
+        {{ form_row(form.estado) }}
+    </div>
+
+    <div class="col-md-8">
+        {{ form_row(form.concepto) }}
+    </div>
+    <div class="col-md-4">
+        {{ form_row(form.proveedor) }}
+    </div>
+
+    <div class="col-md-6">
+        {{ form_row(form.documento) }}
+    </div>
+    <div class="col-md-6">
+        {{ form_row(form.generaForecast) }}
+    </div>
+
+    <div class="col-md-6">
+        {{ form_row(form.fechaPrevista) }}
+    </div>
+    <div class="col-md-6">
+        {{ form_row(form.importePrevisto) }}
+    </div>
+
+    <div class="col-md-6">
+        {{ form_row(form.fechaReal) }}
+    </div>
+    <div class="col-md-6">
+        {{ form_row(form.importeReal) }}
+    </div>
+
+    <div class="col-12">
+        {{ form_row(form.notas) }}
+    </div>
+</div>
+
+<div class="d-flex justify-content-end gap-2 mt-4">
+    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+    <button type="submit" class="btn btn-primary">Guardar gasto</button>
+</div>
+
+{{ form_end(form) }}

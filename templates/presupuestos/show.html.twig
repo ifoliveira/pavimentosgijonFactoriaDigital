@@ -424,7 +424,7 @@
                                                 <td class="text-right">{{ (detalle.cantidadDC * detalle.pvpDc)|format_currency('EUR', locale='es') }}</td>
                                                 <td class="text-right">{{ (detalle.precioDC * detalle.cantidadDc)|format_currency('EUR', locale='es') }}</td>
                                                 <td class="text-right">{{ ((detalle.cantidadDC * detalle.pvpDc) - (detalle.precioDC * detalle.cantidadDc))|format_currency('EUR', locale='es') }}</td>
-                                                <td class="text-right">{{ (((detalle.cantidadDC * detalle.pvpDc) - (detalle.precioDC * detalle.cantidadDc))  / (detalle.pvpDc * detalle.cantidadDc))|format_percent_number }}</td>
+                                                <td class="text-right">{{ (((detalle.cantidadDC * detalle.pvpDc) - (detalle.precioDC * detalle.cantidadDc))  /(detalle.pvpDc * detalle.cantidadDc))|format_percent_number }}</td>
                                             </tr>
                                         {% else %}
                                             <tr>

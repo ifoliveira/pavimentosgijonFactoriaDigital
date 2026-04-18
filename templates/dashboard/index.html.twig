@@ -1,0 +1,385 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Proyectos{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Panel de proyectos</h1>
+            <p class="text-muted mb-0">Vista general de obras, situación económica y accesos rápidos.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        {# RESUMEN #}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h2 class="h5 mb-0">Resumen de proyectos</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Sin presupuesto</div>
+                                <div class="fs-4 fw-bold">{{ dashboard.resumen.sinPresupuesto }}</div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Presupuesto borrador</div>
+                                <div class="fs-4 fw-bold">{{ dashboard.resumen.presupuestoBorrador }}</div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Aceptado / convertido</div>
+                                <div class="fs-4 fw-bold">{{ dashboard.resumen.aceptadoOConvertido }}</div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Facturados</div>
+                                <div class="fs-4 fw-bold">{{ dashboard.resumen.facturados }}</div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Pendiente cobro</div>
+                                <div class="fs-4 fw-bold">{{ dashboard.resumen.pendienteCobro }}</div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Cerrados</div>
+                                <div class="fs-4 fw-bold">{{ dashboard.resumen.cerrados }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# TABLA CENTRAL DE PROYECTOS #}
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h2 class="h5 mb-0">Últimos proyectos tocados</h2>
+                </div>
+                <div class="card-body">
+                    {% if dashboard.ultimosProyectos is empty %}
+                        <div class="text-muted">No hay proyectos recientes.</div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table align-middle table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Proyecto</th>
+                                        <th>Situación</th>
+                                        <th>Documentos</th>
+                                        <th>Económico</th>
+                                        <th class="text-end"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in dashboard.ultimosProyectos %}
+                                        {% set proyecto = item.proyecto %}
+                                        {% set presupuesto = item.presupuesto %}
+                                        {% set factura = item.factura %}
+                                        {% set situacion = item.situacion %}
+
+                                        {% set situacionTexto = 'En proceso' %}
+                                        {% set situacionClase = 'bg-primary' %}
+
+                                        {% if situacion == 'sin_presupuesto' %}
+                                            {% set situacionTexto = 'Sin presupuesto' %}
+                                            {% set situacionClase = 'bg-secondary' %}
+                                        {% elseif situacion == 'presupuesto_borrador' %}
+                                            {% set situacionTexto = 'Presupuesto borrador' %}
+                                            {% set situacionClase = 'bg-warning text-dark' %}
+                                        {% elseif situacion == 'aceptado_sin_factura' %}
+                                            {% set situacionTexto = 'Aceptado sin factura' %}
+                                            {% set situacionClase = 'bg-info text-dark' %}
+                                        {% elseif situacion == 'facturado_pendiente' %}
+                                            {% set situacionTexto = 'Facturado pendiente' %}
+                                            {% set situacionClase = 'bg-danger' %}
+                                        {% elseif situacion == 'cerrado' %}
+                                            {% set situacionTexto = 'Cerrado' %}
+                                            {% set situacionClase = 'bg-success' %}
+                                        {% endif %}
+
+                                        <tr>
+                                            <td style="min-width: 260px;">
+                                                <div class="fw-semibold">{{ proyecto.nombre }}</div>
+                                                <div class="small text-muted">
+                                                    {% if proyecto.cliente %}
+                                                        {{ proyecto.cliente.nombreCl }} {{ proyecto.cliente.apellidosCl }}
+                                                    {% else %}
+                                                        Sin cliente
+                                                    {% endif %}
+                                                </div>
+                                                <div class="small text-muted">
+                                                    Inicio:
+                                                    {{ proyecto.fechaInicio ? proyecto.fechaInicio|date('d/m/Y') : '-' }}
+                                                    {% if proyecto.fechaFinPrevista %}
+                                                        · Prevista:
+                                                        {{ proyecto.fechaFinPrevista|date('d/m/Y') }}
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+
+                                            <td style="min-width: 170px;">
+                                                <span class="badge {{ situacionClase }}">
+                                                    {{ situacionTexto }}
+                                                </span>
+                                                {% if proyecto.fechaFinReal %}
+                                                    <div class="small text-muted mt-1">
+                                                        Cerrado: {{ proyecto.fechaFinReal|date('d/m/Y') }}
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+
+                                            <td style="min-width: 170px;">
+                                                <div class="small">
+                                                    <div class="mb-1">
+                                                        <span class="text-muted">Presupuesto:</span><br>
+                                                        {% if presupuesto %}
+                                                            <span class="fw-semibold">
+                                                                {{ presupuesto.serie }}-{{ '%04d'|format(presupuesto.numero) }}
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="text-muted">—</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-muted">Factura:</span><br>
+                                                        {% if factura %}
+                                                            <span class="fw-semibold">
+                                                                {{ factura.serie }}-{{ '%04d'|format(factura.numero) }}
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="text-muted">—</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td style="min-width: 180px;">
+                                                <div class="small">
+                                                    <div class="mb-1">
+                                                        <span class="text-muted">Presupuestado:</span>
+                                                        <span class="fw-semibold">{{ proyecto.totalPresupuestado|number_format(2, ',', '.') }} €</span>
+                                                    </div>
+                                                    <div class="mb-1">
+                                                        <span class="text-muted">Facturado:</span>
+                                                        <span class="fw-semibold">{{ proyecto.totalFacturado|number_format(2, ',', '.') }} €</span>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-muted">Cobrado:</span>
+                                                        <span class="fw-semibold">{{ proyecto.totalCobrado|number_format(2, ',', '.') }} €</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td class="text-end" style="width: 120px;">
+                                                <a href="{{ path('app_proyecto_show', {id: proyecto.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                    Entrar
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# LATERAL DERECHO #}
+        <div class="col-12 col-xl-4">
+            <div class="row g-4">
+
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h2 class="h5 mb-0">Acciones rápidas</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('app_proyecto_new') }}" class="btn btn-primary">
+                                    Nuevo proyecto
+                                </a>
+                                <a href="{{ path('clientes_nuevo') }}" class="btn btn-outline-dark">
+                                    Nuevo cliente
+                                </a>
+                                <a href="#" class="btn btn-outline-primary">
+                                    Nuevo presupuesto
+                                </a>
+                                <a href="{{ path('app_proyecto_index') }}" class="btn btn-outline-secondary">
+                                    Listado de proyectos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h2 class="h5 mb-0">Pendientes</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="p-3 rounded border bg-light h-100">
+                                        <div class="small text-muted">Sin presupuesto</div>
+                                        <div class="fs-4 fw-bold">{{ dashboard.pendientes.sinPresupuesto }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 rounded border bg-light h-100">
+                                        <div class="small text-muted">Presupuesto borrador</div>
+                                        <div class="fs-4 fw-bold">{{ dashboard.pendientes.presupuestoBorrador }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 rounded border bg-light h-100">
+                                        <div class="small text-muted">Aceptados sin factura</div>
+                                        <div class="fs-4 fw-bold">{{ dashboard.pendientes.aceptadosSinFactura }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 rounded border bg-light h-100">
+                                        <div class="small text-muted">Pendiente cobro</div>
+                                        <div class="fs-4 fw-bold">{{ dashboard.pendientes.pendienteCobro }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        {# BUSCADOR #}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h2 class="h5 mb-0">Buscador central de proyectos</h2>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre del proyecto</label>
+                            <input type="text" name="nombre" class="form-control" value="{{ busqueda.nombre }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Cliente</label>
+                            <input type="text" name="cliente" class="form-control" value="{{ busqueda.cliente }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control" value="{{ busqueda.telefono }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Situación</label>
+                            <select name="situacion" class="form-select">
+                                <option value="">Todas</option>
+                                <option value="sin_presupuesto" {{ busqueda.situacion == 'sin_presupuesto' ? 'selected' : '' }}>Sin presupuesto</option>
+                                <option value="presupuesto_borrador" {{ busqueda.situacion == 'presupuesto_borrador' ? 'selected' : '' }}>Presupuesto borrador</option>
+                                <option value="aceptado_sin_factura" {{ busqueda.situacion == 'aceptado_sin_factura' ? 'selected' : '' }}>Aceptado sin factura</option>
+                                <option value="facturado_pendiente" {{ busqueda.situacion == 'facturado_pendiente' ? 'selected' : '' }}>Facturado pendiente</option>
+                                <option value="cerrado" {{ busqueda.situacion == 'cerrado' ? 'selected' : '' }}>Cerrado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button class="btn btn-dark w-100">Buscar</button>
+                        </div>
+                    </form>
+
+                    {% if busqueda.hayBusqueda %}
+                        <hr class="my-4">
+
+                        {% if busqueda.resultados is empty %}
+                            <div class="alert alert-light border mb-0">
+                                No se encontraron proyectos con esos filtros.
+                            </div>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table align-middle table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Proyecto</th>
+                                            <th>Cliente</th>
+                                            <th>Situación</th>
+                                            <th class="text-end"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in busqueda.resultados %}
+                                            {% set proyecto = item.proyecto %}
+                                            {% set situacion = item.situacion %}
+
+                                            {% set situacionTexto = 'En proceso' %}
+                                            {% set situacionClase = 'bg-primary' %}
+
+                                            {% if situacion == 'sin_presupuesto' %}
+                                                {% set situacionTexto = 'Sin presupuesto' %}
+                                                {% set situacionClase = 'bg-secondary' %}
+                                            {% elseif situacion == 'presupuesto_borrador' %}
+                                                {% set situacionTexto = 'Presupuesto borrador' %}
+                                                {% set situacionClase = 'bg-warning text-dark' %}
+                                            {% elseif situacion == 'aceptado_sin_factura' %}
+                                                {% set situacionTexto = 'Aceptado sin factura' %}
+                                                {% set situacionClase = 'bg-info text-dark' %}
+                                            {% elseif situacion == 'facturado_pendiente' %}
+                                                {% set situacionTexto = 'Facturado pendiente' %}
+                                                {% set situacionClase = 'bg-danger' %}
+                                            {% elseif situacion == 'cerrado' %}
+                                                {% set situacionTexto = 'Cerrado' %}
+                                                {% set situacionClase = 'bg-success' %}
+                                            {% endif %}
+
+                                            <tr>
+                                                <td>
+                                                    <div class="fw-semibold">{{ proyecto.nombre }}</div>
+                                                    <div class="small text-muted">
+                                                        Inicio: {{ proyecto.fechaInicio ? proyecto.fechaInicio|date('d/m/Y') : '-' }}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {% if proyecto.cliente %}
+                                                        {{ proyecto.cliente.nombreCl }} {{ proyecto.cliente.apellidosCl }}
+                                                    {% else %}
+                                                        <span class="text-muted">Sin cliente</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span class="badge {{ situacionClase }}">
+                                                        {{ situacionTexto }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <a href="{{ path('app_proyecto_show', {id: proyecto.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                        Entrar
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

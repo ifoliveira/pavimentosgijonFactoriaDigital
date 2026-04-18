@@ -1,0 +1,1686 @@
+{% extends 'base.html.twig' %}
+
+{% block cabecera %} Documentos {% endblock %}
+{% block breadcrumb %} <li class="breadcrumb-item active">Documento</li>{% endblock %}
+{% block title %}Documento{% endblock %}
+
+{% block body %}
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+
+                {# FILA 1: IDENTIDAD + ACCIONES #}
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                    <div>
+                        <h2 class="mb-0 fw-bold">
+                            {{ documento.numeroFormateado ?? 'BORRADOR' }}
+                        </h2>
+                        <div class="text-muted small text-uppercase mt-1">
+                            {{ documento.tipoDocumento }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2 mt-md-0">
+                            {% if acciones.puedeEditarCabecera %}
+                                <button class="btn btn-sm btn-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalCabecera">
+                                    Editar cabecera
+                                </button>
+                            {% endif %}
+
+                           <!-- <button class="btn btn-sm btn-success">
+                                Recalcular
+                            </button> -->
+
+                            
+                            <a href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'clasico'}) }}"
+                                target="_blank"
+                                class="btn btn-sm btn-outline-dark">
+                                    PDF Imprimible
+                            </a>                                
+                            {% if acciones.puedeGenerarPdf %}                              
+                            <a href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'moderno'}) }}"
+                                target="_blank"
+                                class="btn btn-sm btn-outline-dark">
+                                    PDF Email
+                            </a>     
+
+                            <a href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'cliente'}) }}"
+                                target="_blank"
+                                class="btn btn-sm btn-outline-dark">
+                                    PDF Cliente
+                            </a> 
+
+                            {% endif %}          
+
+                            {% if acciones.puedeEntregar %}
+                                <form method="post" action="{{ path('app_documento_entregar', {id: documento.id}) }}">
+                                    <button class="btn btn-sm btn-success">Marcar como entregado</button>
+                                </form>
+                            {% endif %}
+
+                            {% if acciones.puedeAceptar %}
+                                <form method="post" action="{{ path('app_documento_aceptar', {id: documento.id}) }}">
+                                    <button class="btn btn-sm btn-success">Aceptar</button>
+                                </form>
+                            {% endif %}
+
+                            {% if acciones.puedeRechazar %}
+                                <form method="post" action="{{ path('app_documento_rechazar', {id: documento.id}) }}">
+                                    <button class="btn btn-sm btn-danger">Rechazar</button>
+                                </form>
+                            {% endif %}                                         
+
+                    </div>
+                </div>
+
+                {# FILA 2: DATOS PRINCIPALES #}
+                <div class="row g-3 align-items-start">
+
+                    <div class="col-md-2">
+                        <div class="small text-muted">Fecha</div>
+                        <div class="fw-semibold">
+                            {{ documento.fechaEmision ? documento.fechaEmision|date('d/m/Y') : '—' }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="small text-muted">Cliente</div>
+                        <div class="fw-semibold">
+                            {% if documento.cliente %}
+                                {{ documento.cliente.nombreCl ?? documento.cliente }}
+                            {% else %}
+                                <span class="text-muted">Sin cliente</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="small text-muted">Proyecto</div>
+                        <div class="fw-semibold">
+                            {% if documento.proyecto %}
+                                {{ documento.proyecto.nombre }}
+                            {% else %}
+                                <span class="text-muted">Sin proyecto</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="small text-muted mb-1">Estados</div>
+                        <div class="d-flex flex-wrap gap-1">
+                            <span class="badge bg-secondary">
+                                {{ documento.estadoComercial }}
+                            </span>
+                            <span class="badge bg-warning text-dark">
+                                {{ documento.estadoCobro }}
+                            </span>
+                            <span class="badge bg-info text-dark">
+                                {{ documento.estadoEjecucion }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 ms-auto">
+                        <div class="d-flex gap-3 justify-content-end">
+
+                            <div class="text-center px-3 border-end">
+                                <div class="small text-muted">Base</div>
+                                <div class="fw-semibold">
+                                    {{ documento.baseImponible|number_format(2, ',', '.') }} €
+                                </div>
+                            </div>
+
+                            <div class="text-center px-3 border-end">
+                                <div class="small text-muted">IVA</div>
+                                <div class="fw-semibold">
+                                    {{ documento.totalIva|number_format(2, ',', '.') }} €
+                                </div>
+                            </div>
+
+                            <div class="text-center ps-3">
+                                <div class="small text-muted">Total</div>
+                                <div class="fw-bold fs-5 text-primary">
+                                    {{ documento.total|number_format(2, ',', '.') }} €
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+                {# FILA 3: NOTAS #}
+                {% if documento.notas %}
+                    <hr class="my-3">
+                    <div>
+                        <div class="small text-muted">Notas</div>
+                        <div>
+                            {{ documento.notas|nl2br }}
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+{# ── COBROS ── #}
+{% if acciones.puedeRegistrarCobro %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="border-bottom title-part-padding d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">Cobros</h4>
+                {% if documento.estadoCobro != 'cobrado' %}
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoCobro">
+                        + Registrar cobro
+                    </button>
+                {% endif %}
+            </div>
+            <div class="card-body">
+
+                {# Resumen importes #}
+                <div class="row mb-3 text-center">
+                    <div class="col-4">
+                        <div class="text-muted small">Total factura</div>
+                        <div class="fw-bold">{{ documento.total | format_currency('EUR', locale='es') }}</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted small">Cobrado</div>
+                        <div class="fw-bold text-success">{{ documento.totalCobrado | format_currency('EUR', locale='es') }}</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted small">Pendiente</div>
+                        {% set pendiente = documento.total - documento.totalCobrado %}
+                        <div class="fw-bold {{ pendiente > 0 ? 'text-danger' : 'text-success' }}">
+                            {{ pendiente | format_currency('EUR', locale='es') }}
+                        </div>
+                    </div>
+                </div>
+
+                {# Tabla de cobros #}
+                {% if documento.cobros is empty %}
+                    <p class="text-muted">Sin cobros registrados.</p>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Método</th>
+                                    <th class="text-end">Importe bruto</th>
+                                    <th class="text-end">% Recargo</th>
+                                    <th class="text-end">Recargo</th>
+                                    <th class="text-end">Neto</th>
+                                    <th>Referencia</th>
+                                    <th>Notas</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set metodoColores = {
+                                    'efectivo':      'success',
+                                    'tarjeta':       'primary',
+                                    'transferencia': 'info',
+                                    'bizum':         'warning',
+                                    'financiacion':  'secondary'
+                                } %}
+                                {% for cobro in documento.cobros %}
+                                    <tr>
+                                        <td class="text-nowrap">{{ cobro.fecha | date('d/m/Y') }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ metodoColores[cobro.metodo] ?? 'secondary' }}">
+                                                {{ cobro.metodo }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end">{{ cobro.importeBruto | format_currency('EUR', locale='es') }}</td>
+                                        <td class="text-end">
+                                            {% if cobro.porcentajeRecargo > 0 %}
+                                                {{ cobro.porcentajeRecargo }}%
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            {% if cobro.importeRecargo > 0 %}
+                                                {{ cobro.importeRecargo | format_currency('EUR', locale='es') }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">{{ cobro.importeNeto | format_currency('EUR', locale='es') }}</td>
+                                        <td>{{ cobro.referencia ?? '—' }}</td>
+                                        <td>{{ cobro.notas ?? '—' }}</td>
+                                        <td>
+                                            <a class="text-inverse" data-toggle="tooltip" title="Borrar cobro"
+                                               name="delete_cobro" data-id="{{ cobro.id }}">
+                                                <i class="ti-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# TABLA DE LÍNEAS #}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                    <div>
+                        <h4 class="mb-0">Líneas del documento</h4>
+                        <div class="text-muted small">
+                            Productos, mano de obra y servicios
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2 mt-md-0">
+                        {% if acciones.puedeAnadirLinea %}                    
+                        <button class="btn btn-sm btn-primary"
+                                data-bs-toggle="offcanvas"
+                                data-bs-target="#offcanvasLinea">
+                            Añadir línea
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if documento.lineas|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 60px;">#</th>
+                                    <th style="width: 120px;">Tipo</th>
+                                    <th>Descripción</th>
+                                    <th class="text-end" style="width: 90px;">Cant.</th>
+                                    <th style="width: 80px;">Unidad</th>
+                                    <th class="text-end" style="width: 110px;">Precio</th>
+                                    <th class="text-end" style="width: 90px;">Dto.</th>
+                                    <th class="text-end" style="width: 90px;">IVA</th>
+                                    <th class="text-end" style="width: 130px;">Subtotal</th>
+                                    <th class="text-end" style="width: 160px;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for linea in documento.lineas %}
+                                    <tr>
+                                        <td>{{ linea.posicion }}</td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                {{ linea.tipoLinea }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold">
+                                                {{ linea.descripcion }}
+                                            </div>
+
+                                            {% if linea.producto %}
+                                                <div class="small text-muted">
+                                                    Producto vinculado
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">{{ linea.cantidad|number_format(0, ',', '.') }}</td>
+                                        <td>{{ linea.unidad }}</td>
+                                        <td class="text-end">
+                                            {{ linea.precioUnitario|number_format(2, ',', '.') }} €
+                                        </td>
+                                        <td class="text-end">
+                                            {{ linea.descuento|number_format(2, ',', '.') }} %
+                                        </td>
+                                        <td class="text-end">
+                                            {{ linea.tipoIva|number_format(2, ',', '.') }} %
+                                        </td>
+                                        <td class="text-end fw-semibold">
+                                            {{ (linea.subtotal + linea.totalIva)|number_format(2, ',', '.') }} €
+                                        </td>
+                                        <td class="text-end">
+                                            {% if acciones.puedeEditarLineas %}
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-primary btn-sm"
+                                                            data-bs-toggle="offcanvas"
+                                                            data-bs-target="#offcanvasLinea"
+                                                            onclick="abrirEdicion(
+                                                                {{ linea.id }},
+                                                                '{{ linea.tipoLinea }}',
+                                                                '{{ linea.descripcion|e('js') }}',
+                                                                {{ linea.cantidad }},
+                                                                {{ linea.precioUnitario }},
+                                                                {{ linea.descuento }},
+                                                                {{ linea.producto ? linea.producto.id : 'null' }},
+                                                                '{{ linea.producto ? linea.producto.descripcionPd|e('js') : '' }}'
+                                                            )">
+                                                        Editar
+                                                    </button>
+                                                    <form method="post"
+                                                        action="{{ path('app_documento_linea_eliminar', {id: linea.id}) }}"
+                                                        class="d-inline"
+                                                        onsubmit="return confirm('¿Seguro que quieres eliminar esta línea?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('eliminar-linea-' ~ linea.id) }}">
+                                                        <button type="submit" class="btn btn-sm btn-danger">
+                                                            Borrar
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="border rounded p-4 bg-light-subtle">
+                        <div class="fw-semibold mb-1">Todavía no hay líneas</div>
+                        <div class="text-muted small">
+                            Empieza añadiendo un producto, una mano de obra o un servicio.
+                        </div>
+
+                    </div>
+                {% endif %}
+  
+            </div>
+         
+        </div>
+      
+    </div>
+    
+</div>
+
+
+
+{# ── MODAL NUEVO COBRO ── #}
+<div class="modal fade" id="modalNuevoCobro" tabindex="-1" aria-labelledby="modalNuevoCobroLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalNuevoCobroLabel">Registrar cobro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form method="post" action="{{ path('cobro_nuevo', {id: documento.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('cobro_nuevo_' ~ documento.id) }}">
+                <div class="modal-body row g-3">
+
+                    <div class="col-6">
+                        <label class="form-label">Fecha <span class="text-danger">*</span></label>
+                        <input type="date" name="fecha" class="form-control form-control-sm"
+                               value="{{ "now" | date('Y-m-d') }}" required>
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label">Método <span class="text-danger">*</span></label>
+                        <select name="metodo" class="form-select form-select-sm" required>
+                            <option value="">— Selecciona —</option>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="tarjeta">Tarjeta</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="bizum">Bizum</option>
+                            <option value="financiacion">Financiación</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label">Importe bruto <span class="text-danger">*</span></label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" name="importeBruto" class="form-control"
+                                   step="0.01" min="0.01" required
+                                   placeholder="{{ pendiente | number_format(2, '.', '') }}">
+                            <span class="input-group-text">€</span>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label">% Recargo</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" name="porcentajeRecargo" class="form-control"
+                                   step="0.01" min="0" value="0">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label">Importe recargo</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" name="importeRecargo" class="form-control"
+                                   step="0.01" min="0" value="0">
+                            <span class="input-group-text">€</span>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label">Importe neto</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" name="importeNeto" class="form-control"
+                                   step="0.01" min="0" value="0">
+                            <span class="input-group-text">€</span>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Referencia</label>
+                        <input type="text" name="referencia" class="form-control form-control-sm"
+                               placeholder="Nº transferencia, VISA *1234, ref. financiera…">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Notas</label>
+                        <textarea name="notas" class="form-control form-control-sm" rows="2"></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-primary">Guardar cobro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{# ── MANO DE OBRA ── #}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0 card-mano-obra-resumen">
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="mano-obra-icon-wrap">
+                                <i class="ti-write"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0">Mano de obra</h4>
+                                <div class="text-muted small">
+                                    Descripción técnica para presupuesto y control interno
+                                </div>
+                            </div>
+                        </div>
+
+                        {% set totalCategorias = documento.manoObra|length %}
+
+                        {% if totalCategorias > 0 %}
+                            <div class="text-muted small">
+                                {{ totalCategorias }} categoría{{ totalCategorias > 1 ? 's' : '' }} configurada{{ totalCategorias > 1 ? 's' : '' }}
+                            </div>
+                        {% else %}
+                            <div class="text-muted small">
+                                Todavía no has configurado la mano de obra descriptiva
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-primary"
+                            data-bs-toggle="offcanvas"
+                            data-bs-target="#offcanvasManoObra">
+                            Editar mano de obra
+                        </button>
+                    </div>
+                </div>
+
+                {% if documento.manoObra|length > 0 %}
+                    <div class="mb-3 d-flex flex-wrap gap-2">
+                        {% for mo in documento.manoObra %}
+                            <span class="badge badge-mano-obra">
+                                {{ mo.categoriaMo ? mo.categoriaMo.TipoTm : 'Sin categoría' }}
+                            </span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row g-3">
+                        {% for mo in documento.manoObra %}
+                            <div class="col-12 col-xl-6">
+                                <div class="mano-obra-resumen-item h-100">
+                                    <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                                        <div class="fw-semibold">
+                                            {{ mo.categoriaMo ? mo.categoriaMo.TipoTm : 'Sin categoría' }}
+                                        </div>
+                                        {% if mo.coste %}
+                                            <div class="small text-muted text-nowrap">
+                                                {{ mo.coste|format_currency('EUR', locale='es') }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="mano-obra-texto-preview">
+
+                                        {# ─── TEXTOS SELECCIONADOS ─── #}
+                                        {% set hayLineas = false %}
+
+                                        {% for sel in mo.seleccionesTexto %}
+                                            {% if sel.textoManoObra and sel.textoManoObra.descripcionXo|trim != '' %}
+                                                {% set hayLineas = true %}
+                                                <div class="mano-obra-bullet-line">
+                                                    <span class="mano-obra-bullet-dot"></span>
+                                                    <span>{{ sel.textoManoObra.descripcionXo }}</span>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        {# ─── TEXTO MANUAL ADICIONAL ─── #}
+                                        {% if mo.textoMo %}
+                                            {% for linea in mo.textoMo|split(';') %}
+                                                {% if linea|trim != '' %}
+                                                    {% set hayLineas = true %}
+                                                    <div class="mano-obra-bullet-line">
+                                                        <span class="mano-obra-bullet-dot"></span>
+                                                        <span>{{ linea|trim }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+
+                                        {# ─── VACÍO ─── #}
+                                        {% if not hayLineas %}
+                                            <span class="text-muted small">Sin descripción</span>
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="mano-obra-empty-state">
+                        <div class="mano-obra-empty-icon mb-3">
+                            <i class="ti-layout-list-thumb"></i>
+                        </div>
+                        <div class="fw-semibold mb-1">Aún no hay mano de obra definida</div>
+                        <div class="text-muted small mb-3">
+                            Selecciona por categorías los trabajos que formarán parte de la propuesta.
+                        </div>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-primary"
+                            data-bs-toggle="offcanvas"
+                            data-bs-target="#offcanvasManoObra">
+                            Empezar ahora
+                        </button>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalCabecera" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content modal-cabecera">
+
+      <div class="modal-stripe"></div>
+
+      <div class="modal-header border-0 pb-3 pt-3 px-4">
+        <div class="d-flex align-items-center gap-3">
+          <div class="modal-icon-wrap">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M3 13.5V15h1.5l8.83-8.83-1.5-1.5L3 13.5zM14.71 4.04a.996.996 0 0 0 0-1.41l-1.34-1.34a.996.996 0 0 0-1.41 0l-1.05 1.05 2.75 2.75 1.05-1.05z" fill="#185FA5"/>
+            </svg>
+          </div>
+          <div>
+            <h5 class="modal-title mb-0">Editar cabecera</h5>
+            <div class="modal-doc-ref">
+              {{ documento.numeroFormateado ?? 'BORRADOR' }} · {{ documento.tipoDocumento }}
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form method="post"
+            action="{{ path('app_documento_guardar_cabecera', {id: documento.id}) }}">
+
+        <div class="modal-body px-4 pt-3 pb-2">
+          <div class="row g-3">
+
+            <div class="col-md-4">
+              <label class="form-label form-label-upper">Cliente</label>
+              <select name="clienteId" class="form-select form-select-custom">
+                <option value="">Sin cliente</option>
+                {% for cliente in clientes %}
+                  <option value="{{ cliente.id }}"
+                    {% if documento.cliente and documento.cliente.id == cliente.id %}selected{% endif %}>
+                    {{ cliente.nombreCl }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label form-label-upper">Proyecto</label>
+              <select name="proyectoId" class="form-select form-select-custom">
+                <option value="">Sin proyecto</option>
+                {% for proyecto in proyectos %}
+                  <option value="{{ proyecto.id }}"
+                    {% if documento.proyecto and documento.proyecto.id == proyecto.id %}selected{% endif %}>
+                    {{ proyecto.nombre }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label form-label-upper">Fecha emisión</label>
+              <input type="date"
+                     name="fechaEmision"
+                     class="form-control form-control-custom"
+                     value="{{ documento.fechaEmision ? documento.fechaEmision|date('Y-m-d') : '' }}">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label form-label-upper">Notas</label>
+              <textarea name="notas"
+                        rows="3"
+                        class="form-control form-control-custom">{{ documento.notas }}</textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-footer border-top px-4 py-3">
+          <button type="button"
+                  class="btn btn-sm btn-modal-cancel"
+                  data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit"
+                  class="btn btn-sm btn-modal-save">Guardar cambios
+          </button>
+      
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block offcanvas %}
+<div class="offcanvas offcanvas-end offcanvas-linea"
+     tabindex="-1"
+     id="offcanvasLinea"
+     data-bs-backdrop="false"
+     data-bs-scroll="true">
+
+  <div class="offcanvas-stripe"></div>
+
+  <div class="offcanvas-header border-bottom px-4 pt-3 pb-3">
+    <div class="w-100">
+      <h5 class="offcanvas-title mb-0" id="offcanvas-title">Añadir línea</h5>
+      <div class="offcanvas-subtitle text-muted small mb-3" id="offcanvas-subtitle">
+        Busca un producto o añade una línea manual
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button"
+                class="btn btn-sm btn-primary flex-fill js-tipo-linea active"
+                id="btn-tipo-producto"
+                onclick="cambiarTipoLinea('producto')">
+          Producto
+        </button>
+        <button type="button"
+                class="btn btn-sm btn-outline-primary flex-fill js-tipo-linea"
+                id="btn-tipo-servicio"
+                onclick="cambiarTipoLinea('servicio')">
+          Servicio
+        </button>
+        <button type="button"
+                class="btn btn-sm btn-outline-primary flex-fill js-tipo-linea"
+                id="btn-tipo-comentario"
+                onclick="cambiarTipoLinea('comentario')">
+          Comentario
+        </button>
+      </div>
+    </div>
+
+    <button type="button" class="btn-close ms-3" data-bs-dismiss="offcanvas"></button>
+  </div>
+
+  <form method="post"
+        action="{{ path('app_documento_guardar_linea', {id: documento.id}) }}"
+        id="form-linea">
+
+    <input type="hidden" name="productoId" id="hidden-producto-id">
+    <input type="hidden" name="tipoLinea" id="hidden-tipo-linea" value="producto">
+    <input type="hidden" name="lineaId" id="hidden-linea-id" value="">
+
+    {# ── PRODUCTO: FASE 1 BUSCADOR ───────────────────────── #}
+    <div id="fase-busqueda-producto">
+      <div class="px-4 py-3 border-bottom">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light border-end-0">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <circle cx="5.5" cy="5.5" r="4" stroke="#888" stroke-width="1.2"/>
+              <path d="M9 9l2.5 2.5" stroke="#888" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <input type="text"
+                 id="producto-search"
+                 class="form-control form-control-sm border-start-0 ps-0"
+                 placeholder="Buscar por nombre..."
+                 autocomplete="off">
+        </div>
+      </div>
+
+      <div id="resultados-busqueda" class="offcanvas-scroll-area">
+        <div class="text-center text-muted py-4 small">
+          Empieza a escribir para buscar productos
+        </div>
+      </div>
+
+      <div class="border-top px-4 py-3">
+        <button type="button"
+                class="btn btn-sm btn-outline-secondary w-100"
+                onclick="cambiarTipoLinea('servicio')">
+          + Añadir línea de servicio
+        </button>
+      </div>
+    </div>
+
+    {# ── PRODUCTO: FASE 2 FORMULARIO ──────────────────────── #}
+    <div id="fase-formulario-producto" class="d-none">
+      <div class="px-4 py-3 border-bottom">
+        <div id="producto-seleccionado-tag"
+             class="alert alert-info alert-sm py-2 px-3 mb-0 d-flex align-items-center gap-2">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M2 7l3 3 6-6" stroke="#185FA5" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span id="producto-seleccionado-nombre" class="small fw-semibold flex-grow-1"></span>
+          <button type="button" class="btn-close btn-close-sm" onclick="limpiarProducto()"></button>
+        </div>
+      </div>
+
+      <div class="px-4 py-3 offcanvas-form-bg flex-grow-1">
+        <div class="mb-3">
+          <label class="form-label-upper">Descripción</label>
+          <textarea name="descripcion"
+                    id="f-descripcion"
+                    class="form-control form-control-custom"
+                    rows="2"
+                    required></textarea>
+        </div>
+
+        <div class="row g-2 mb-3">
+        <div class="col-4">
+            <label class="form-label-upper">Cantidad</label>
+            <input type="number"
+                name="cantidad"
+                id="f-cantidad"
+                class="form-control form-control-custom text-end js-recalcular-linea"
+                value="1"
+                min="1"
+                step="1"
+                required>
+        </div>
+        <div class="col-4">
+            <label class="form-label-upper">Precio s/IVA €</label>
+            <input type="number"
+                name="precioUnitario"
+                id="f-precio"
+                class="form-control form-control-custom text-end js-recalcular-linea"
+                step="0.01"
+                placeholder="0.00"
+                required>
+        </div>
+        <div class="col-4">
+            <label class="form-label-upper">Dto. %</label>
+            <input type="number"
+                name="descuento"
+                id="f-descuento"
+                class="form-control form-control-custom text-end js-recalcular-linea"
+                value="0"
+                min="0"
+                max="100"
+                step="1">
+        </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+        <div class="col-6">
+            <label class="form-label-upper">Precio c/IVA</label>
+            <input type="text"
+                id="f-precio-iva"
+                class="form-control form-control-custom text-end bg-light"
+                readonly>
+        </div>
+        <div class="col-6">
+            <label class="form-label-upper">IVA aplicado</label>
+            <input type="text"
+                id="f-tipo-iva-producto"
+                class="form-control form-control-custom text-end bg-light"
+                value="21 %"
+                readonly>
+        </div>
+        </div>
+
+        <div class="rounded-3 border bg-white px-3 py-2">
+        <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">Subtotal s/IVA</span>
+            <strong id="subtotal-sin-iva-producto">0,00 €</strong>
+        </div>
+        <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">IVA</span>
+            <strong id="importe-iva-producto">0,00 €</strong>
+        </div>
+        <div class="d-flex justify-content-between small">
+            <span class="text-muted">Total c/IVA</span>
+            <strong id="subtotal-preview-producto" class="text-primary">0,00 €</strong>
+        </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    {# ── SERVICIO ─────────────────────────────────────────── #}
+    <div id="fase-formulario-servicio" class="d-none">
+      <div class="px-4 py-3 offcanvas-form-bg flex-grow-1">
+        <div class="mb-3">
+          <label class="form-label-upper">Descripción</label>
+          <textarea name="descripcion"
+                    id="f-descripcion-servicio"
+                    class="form-control form-control-custom"
+                    rows="3"></textarea>
+        </div>
+
+        <div class="row g-2 mb-3">
+        <div class="col-4">
+            <label class="form-label-upper">Cantidad</label>
+            <input type="number"
+                name="cantidad"
+                id="f-cantidad-servicio"
+                class="form-control form-control-custom text-end js-recalcular-servicio"
+                value="1"
+                min="1"
+                step="1">
+        </div>
+        <div class="col-4">
+            <label class="form-label-upper">Precio s/IVA €</label>
+            <input type="number"
+                name="precioUnitario"
+                id="f-precio-servicio"
+                class="form-control form-control-custom text-end js-recalcular-servicio"
+                step="0.01"
+                placeholder="0.00">
+        </div>
+        <div class="col-4">
+            <label class="form-label-upper">Dto. %</label>
+            <input type="number"
+                name="descuento"
+                id="f-descuento-servicio"
+                class="form-control form-control-custom text-end js-recalcular-servicio"
+                value="0"
+                min="0"
+                max="100"
+                step="0.01">
+        </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+        <div class="col-6">
+            <label class="form-label-upper">Precio c/IVA</label>
+            <input type="text"
+                id="f-precio-iva-servicio"
+                class="form-control form-control-custom text-end bg-light"
+                readonly>
+        </div>
+        <div class="col-6">
+            <label class="form-label-upper">IVA aplicado</label>
+            <input type="text"
+                id="f-tipo-iva-servicio"
+                class="form-control form-control-custom text-end bg-light"
+                value="21 %"
+                readonly>
+        </div>
+        </div>
+
+        <div class="rounded-3 border bg-white px-3 py-2">
+        <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">Subtotal s/IVA</span>
+            <strong id="subtotal-sin-iva-servicio">0,00 €</strong>
+        </div>
+        <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">IVA</span>
+            <strong id="importe-iva-servicio">0,00 €</strong>
+        </div>
+        <div class="d-flex justify-content-between small">
+            <span class="text-muted">Total c/IVA</span>
+            <strong id="subtotal-preview-servicio" class="text-primary">0,00 €</strong>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── COMENTARIO ───────────────────────────────────────── #}
+    <div id="fase-formulario-comentario" class="d-none">
+      <div class="px-4 py-3 offcanvas-form-bg flex-grow-1">
+        <div class="mb-3">
+          <label class="form-label-upper">Comentario</label>
+          <textarea name="descripcion"
+                    id="f-descripcion-comentario"
+                    class="form-control form-control-custom"
+                    rows="5"></textarea>
+        </div>
+
+        {# campos ocultos para que el controlador siga recibiendo lo mismo #}
+        <input type="hidden" name="cantidad" id="f-cantidad-comentario" value="1">
+        <input type="hidden" name="precioUnitario" id="f-precio-comentario" value="0">
+        <input type="hidden" name="descuento" id="f-descuento-comentario" value="0">
+
+        <div class="small text-muted">
+          Esta línea no tendrá importe ni descuento.
+        </div>
+      </div>
+    </div>
+
+    <div class="offcanvas-footer border-top px-4 py-3 d-flex justify-content-end gap-2">
+      <button type="button"
+              class="btn btn-sm btn-modal-cancel"
+              onclick="cancelarOffcanvasLinea()">
+        Cancelar
+      </button>
+      <button type="submit"
+              class="btn btn-sm btn-modal-save">
+        Añadir línea
+      </button>
+    </div>
+  </form>
+</div>
+
+    {# ── MANO DE OBRA: CONSTRUCTOR VISUAL ─────────────────────── #}
+<div class="offcanvas offcanvas-end offcanvas-mano-obra"
+     tabindex="-1"
+     id="offcanvasManoObra"
+     data-bs-backdrop="false"
+     data-bs-scroll="true">
+
+    <div class="mb-3 d-flex gap-2">
+        <a href="{{ path('app_documento_mano_obra_preset', {id: documento.id, tipo: 'ducha'}) }}"
+        class="btn btn-sm btn-outline-primary" onclick="return confirm('Esto sustituirá la mano de obra actual. ¿Continuar?');">
+            🚿 Plato de ducha
+        </a>
+
+        <a href="{{ path('app_documento_mano_obra_preset', {id: documento.id, tipo: 'bano'}) }}"
+        class="btn btn-sm btn-outline-primary">
+            🛁 Baño completo
+        </a>
+    </div>     
+
+    <form method="post"
+          action="{{ path('app_documento_guardar_mano_obra', {id: documento.id}) }}"
+          class="h-100 d-flex flex-column"
+          id="form-mano-obra">
+
+        <div class="offcanvas-header border-bottom px-4 pt-3 pb-3">
+            <div class="w-100">
+                <h5 class="offcanvas-title mb-0">Editar mano de obra</h5>
+                <div class="text-muted small">
+                    Selecciona los trabajos por categoría
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+
+        {# aquí se generan automáticamente los hidden inputs #}
+        <div id="mano-obra-hidden-inputs"></div>
+
+        <div class="offcanvas-body p-0 d-flex">
+
+            <div class="mo-sidebar border-end">
+                <div class="mo-sidebar-title">Categorías</div>
+
+                {% for tipo in tiposManoObra %}
+                    {% set totalTextos = textosManoObra[tipo.id]|default([])|length %}
+                    <button type="button"
+                            class="mo-tab {% if loop.first %}active{% endif %}"
+                            onclick="cambiarCategoria({{ tipo.id }})"
+                            id="tab-{{ tipo.id }}">
+                        <span>{{ tipo.tipoTm }}</span>
+                        <span class="mo-tab-count" id="count-tipo-{{ tipo.id }}">0/{{ totalTextos }}</span>
+                    </button>
+                {% endfor %}
+            </div>
+
+            <div class="mo-content flex-grow-1">
+                {% for tipo in tiposManoObra %}
+                    {% set textos = textosManoObra[tipo.id]|default([]) %}
+
+                    <div class="mo-panel {% if not loop.first %}d-none{% endif %}"
+                         id="panel-{{ tipo.id }}">
+
+                        <div class="mo-panel-head d-flex justify-content-between align-items-start flex-wrap gap-2">
+                            <div>
+                                <div class="mo-panel-title">{{ tipo.tipoTm }}</div>
+                                <div class="mo-panel-subtitle">
+                                    Marca los trabajos que quieres incluir en esta categoría.
+                                </div>
+                            </div>
+
+                            {% if textos|length > 0 %}
+                                <div class="d-flex gap-2">
+                                    <button type="button"
+                                            class="btn btn-sm btn-light"
+                                            onclick="seleccionarTodoTipo({{ tipo.id }})">
+                                        Seleccionar todo
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-sm btn-light"
+                                            onclick="limpiarTipo({{ tipo.id }})">
+                                        Limpiar
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if textos|length > 0 %}
+                            <div class="mo-grid">
+                                {% for texto in textos %}
+                                    {% set seleccionadosTipo = seleccionadosManoObra[tipo.id]|default([]) %}
+
+                                    <div class="mo-card {% if texto.id in seleccionadosTipo %}active{% endif %}"
+                                        data-id="{{ texto.id }}"
+                                        data-tipo="{{ tipo.id }}"
+                                        onclick="toggleTexto(this)">
+                                        {{ texto.descripcionXo }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mt-3">
+                                <label class="form-label-upper">Texto adicional</label>
+
+                                <textarea
+                                    name="textoManual[{{ tipo.id }}]"
+                                    class="form-control form-control-custom"
+                                    rows="2"
+                                    placeholder="Añadir detalle manual...">{{ textosManuales[tipo.id]|default('') }}</textarea>
+                            </div>                            
+                        {% else %}
+                            <div class="mo-empty">
+                                No hay textos definidos para esta categoría.
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <div class="offcanvas-footer px-4 py-3 d-flex justify-content-between align-items-center gap-2">
+            <div class="small text-muted">
+                <span id="mano-obra-total-seleccionados">0</span> textos seleccionados
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="offcanvas">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-sm btn-modal-save">
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block jscustom %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    {% for message in app.flashes('success') %}
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '{{ message|e('js') }}',
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true
+        });
+    {% endfor %}
+
+    {% if app.request.query.get('error') %}
+        var modal = new bootstrap.Modal(document.getElementById('modalCabecera'));
+        modal.show();
+    {% endif %}
+
+    let searchTimer = null;
+    function abrirEdicion(id, tipo, descripcion, cantidad, precio, descuento, productoId, productoNombre) {
+        // Marcar que estamos editando
+        document.getElementById('hidden-linea-id').value = id;
+        document.getElementById('offcanvas-title').textContent = 'Editar línea';
+        document.getElementById('offcanvas-subtitle').textContent = 'Modifica los datos de la línea';
+        document.querySelector('#form-linea [type="submit"]').textContent = 'Guardar cambios';
+
+        // Seleccionar el tipo correcto
+        cambiarTipoLinea(tipo);
+
+        // Rellenar campos según tipo
+        if (tipo === 'producto') {
+            if (productoId) {
+                seleccionarProducto(productoId, productoNombre, precio);
+            } else {
+                activarFaseFormulario();
+            }
+            document.getElementById('f-descripcion').value = descripcion;
+            document.getElementById('f-cantidad').value = cantidad;
+            document.getElementById('f-precio').value = precio;
+            document.getElementById('f-descuento').value = descuento;
+        } else if (tipo === 'servicio' || tipo === 'mano_obra') {
+            document.getElementById('f-descripcion-servicio').value = descripcion;
+            document.getElementById('f-cantidad-servicio').value = cantidad;
+            document.getElementById('f-precio-servicio').value = precio;
+            document.getElementById('f-descuento-servicio').value = descuento;
+        } else if (tipo === 'comentario') {
+            document.getElementById('f-descripcion-comentario').value = descripcion;
+        }
+
+        calcularSubtotal();
+    }
+    function activarBotonTipo(tipo) {
+        document.querySelectorAll('.js-tipo-linea').forEach(btn => {
+            btn.classList.remove('btn-primary', 'active');
+            btn.classList.add('btn-outline-primary');
+        });
+
+        const btnActivo = document.getElementById('btn-tipo-' + tipo);
+        btnActivo.classList.remove('btn-outline-primary');
+        btnActivo.classList.add('btn-primary', 'active');
+    }
+
+    function ocultarTodasLasFases() {
+        document.getElementById('fase-busqueda-producto').classList.add('d-none');
+        document.getElementById('fase-formulario-producto').classList.add('d-none');
+        document.getElementById('fase-formulario-servicio').classList.add('d-none');
+        document.getElementById('fase-formulario-comentario').classList.add('d-none');
+    }
+
+    function limpiarNamesInactivos() {
+        document.getElementById('f-descripcion').disabled = true;
+        document.getElementById('f-cantidad').disabled = true;
+        document.getElementById('f-precio').disabled = true;
+        document.getElementById('f-descuento').disabled = true;
+
+        document.getElementById('f-descripcion-servicio').disabled = true;
+        document.getElementById('f-cantidad-servicio').disabled = true;
+        document.getElementById('f-precio-servicio').disabled = true;
+        document.getElementById('f-descuento-servicio').disabled = true;
+
+        document.getElementById('f-descripcion-comentario').disabled = true;
+        document.getElementById('f-cantidad-comentario').disabled = true;
+        document.getElementById('f-precio-comentario').disabled = true;
+        document.getElementById('f-descuento-comentario').disabled = true;
+
+        document.getElementById('f-descripcion').required = false;
+        document.getElementById('f-cantidad').required = false;
+        document.getElementById('f-precio').required = false;
+
+        document.getElementById('f-descripcion-servicio').required = false;
+        document.getElementById('f-cantidad-servicio').required = false;
+        document.getElementById('f-precio-servicio').required = false;
+
+        document.getElementById('f-descripcion-comentario').required = false;
+    }
+
+    function cambiarTipoLinea(tipo) {
+        document.getElementById('hidden-tipo-linea').value = tipo;
+        activarBotonTipo(tipo);
+        ocultarTodasLasFases();
+        limpiarNamesInactivos();
+
+        document.getElementById('hidden-producto-id').value = '';
+        document.getElementById('producto-seleccionado-nombre').textContent = '';
+
+        if (tipo === 'producto') {
+            document.getElementById('fase-busqueda-producto').classList.remove('d-none');
+            document.getElementById('offcanvas-subtitle').textContent = 'Busca un producto o añade una línea manual';
+
+            document.getElementById('f-descripcion').disabled = false;
+            document.getElementById('f-cantidad').disabled = false;
+            document.getElementById('f-precio').disabled = false;
+            document.getElementById('f-descuento').disabled = false;
+
+            document.getElementById('f-descripcion').required = true;
+            document.getElementById('f-cantidad').required = true;
+            document.getElementById('f-precio').required = true;
+
+            return;
+        }
+
+        if (tipo === 'servicio') {
+            document.getElementById('fase-formulario-servicio').classList.remove('d-none');
+            document.getElementById('offcanvas-subtitle').textContent = 'Añade una línea de servicio manual';
+
+            document.getElementById('f-descripcion-servicio').disabled = false;
+            document.getElementById('f-cantidad-servicio').disabled = false;
+            document.getElementById('f-precio-servicio').disabled = false;
+            document.getElementById('f-descuento-servicio').disabled = false;
+
+            document.getElementById('f-descripcion-servicio').required = true;
+            document.getElementById('f-cantidad-servicio').required = true;
+            document.getElementById('f-precio-servicio').required = true;
+
+            calcularSubtotalServicio();
+            return;
+        }
+
+        if (tipo === 'comentario') {
+            document.getElementById('fase-formulario-comentario').classList.remove('d-none');
+            document.getElementById('offcanvas-subtitle').textContent = 'Añade una línea de comentario';
+
+            document.getElementById('f-descripcion-comentario').disabled = false;
+            document.getElementById('f-cantidad-comentario').disabled = false;
+            document.getElementById('f-precio-comentario').disabled = false;
+            document.getElementById('f-descuento-comentario').disabled = false;
+
+            document.getElementById('f-descripcion-comentario').required = true;
+        }
+    }
+
+    function seleccionarProducto(id, nombre, pvp) {
+        document.getElementById('hidden-tipo-linea').value = 'producto';
+        activarBotonTipo('producto');
+        ocultarTodasLasFases();
+        limpiarNamesInactivos();
+
+
+        document.getElementById('hidden-producto-id').value = id;
+        document.getElementById('producto-seleccionado-nombre').textContent = nombre;
+
+        document.getElementById('f-descripcion').value = nombre;
+        document.getElementById('f-precio').value = parseFloat(pvp).toFixed(2);
+
+        document.getElementById('f-descripcion').disabled = false;
+        document.getElementById('f-cantidad').disabled = false;
+        document.getElementById('f-precio').disabled = false;
+        document.getElementById('f-descuento').disabled = false;
+
+        document.getElementById('f-descripcion').required = true;
+        document.getElementById('f-cantidad').required = true;
+        document.getElementById('f-precio').required = true;
+
+        document.getElementById('fase-formulario-producto').classList.remove('d-none');
+        document.getElementById('offcanvas-subtitle').textContent = 'Rellena los datos de la línea';
+
+        calcularSubtotalProducto();
+        actualizarPreviewProducto();
+    }
+
+    function limpiarProducto() {
+        document.getElementById('hidden-producto-id').value = '';
+        document.getElementById('producto-seleccionado-nombre').textContent = '';
+        document.getElementById('f-descripcion').value = '';
+        document.getElementById('f-precio').value = '';
+        document.getElementById('f-descuento').value = '0';
+        document.getElementById('subtotal-preview-producto').textContent = '';
+
+        cambiarTipoLinea('producto');
+    }
+
+    function calcularSubtotalProducto() {
+        const cant = parseFloat(document.getElementById('f-cantidad').value) || 0;
+        const precio = parseFloat(document.getElementById('f-precio').value) || 0;
+        const dto = parseFloat(document.getElementById('f-descuento').value) || 0;
+        const sub = cant * precio * (1 - dto / 100);
+
+        document.getElementById('subtotal-preview-producto').textContent = 'Subtotal: ' + sub.toFixed(2) + ' €';
+    }
+
+    function calcularSubtotalServicio() {
+        const cant = parseFloat(document.getElementById('f-cantidad-servicio').value) || 0;
+        const precio = parseFloat(document.getElementById('f-precio-servicio').value) || 0;
+        const dto = parseFloat(document.getElementById('f-descuento-servicio').value) || 0;
+        const sub = cant * precio * (1 - dto / 100);
+
+        document.getElementById('subtotal-preview-servicio').textContent = 'Subtotal: ' + sub.toFixed(2) + ' €';
+    }
+
+    function buscarProductos(q) {
+        fetch(`/admin/documento/productos/buscar?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => renderResultados(data))
+            .catch(() => {});
+    }
+
+    function renderResultados(productos) {
+        const container = document.getElementById('resultados-busqueda');
+
+        if (productos.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted py-4 small">Sin resultados. Prueba con la opción manual.</div>';
+            return;
+        }
+
+        container.innerHTML = productos.map(p => {
+            const stockHtml = p.stock === 0
+                ? '<span class="text-danger">Sin stock</span>'
+                : p.stock <= 5
+                    ? `<span class="text-warning">Stock: ${p.stock}</span>`
+                    : `<span class="text-success">Stock: ${p.stock}</span>`;
+
+            return `
+                <div class="resultado-item px-4 py-2 d-flex align-items-center gap-3"
+                     onclick="seleccionarProducto(${p.id}, '${(p.nombre ?? '').replace(/'/g, "\\'")}', ${p.pvp})">
+                    <div class="resultado-icono flex-shrink-0">
+                        ${(p.tipo ?? '?').substring(0, 2).toUpperCase()}
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="small fw-semibold text-truncate">${p.nombre ?? '—'}</div>
+                        <div class="d-flex gap-2" style="font-size:11px;">
+                            <span class="text-muted">${p.tipo ?? '—'}</span>
+                            ${stockHtml}
+                        </div>
+                    </div>
+                    <div class="small fw-semibold text-nowrap">${parseFloat(p.pvp).toFixed(2)} €</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function cancelarOffcanvasLinea() {
+        const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasLinea'));
+        offcanvas?.hide();
+    }
+
+    function resetOffcanvasLinea() {
+        document.getElementById('form-linea').reset();
+
+        document.getElementById('hidden-producto-id').value = '';
+        document.getElementById('hidden-tipo-linea').value = 'producto';
+        document.getElementById('producto-search').value = '';
+        document.getElementById('producto-seleccionado-nombre').textContent = '';
+
+        document.getElementById('f-cantidad').value = '1';
+        document.getElementById('f-descuento').value = '0';
+        document.getElementById('f-cantidad-servicio').value = '1';
+        document.getElementById('f-descuento-servicio').value = '0';
+
+        document.getElementById('subtotal-preview-producto').textContent = '';
+        document.getElementById('subtotal-preview-servicio').textContent = '';
+
+        document.getElementById('resultados-busqueda').innerHTML =
+            '<div class="text-center text-muted py-4 small">Empieza a escribir para buscar productos</div>';
+
+        cambiarTipoLinea('producto');
+    }
+    /****************************************
+    *      Nueva Mano de Obra             *
+    *****************************************/
+
+    function cambiarCategoria(id) {
+
+        document.querySelectorAll('.mo-panel').forEach(p => p.classList.add('d-none'));
+        document.getElementById('panel-' + id).classList.remove('d-none');
+
+        document.querySelectorAll('.mo-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + id).classList.add('active');
+    }
+
+    function toggleTexto(el) {
+        el.classList.toggle('active');
+    } 
+
+    function cambiarCategoria(id) {
+        document.querySelectorAll('.mo-panel').forEach(p => p.classList.add('d-none'));
+        const panel = document.getElementById('panel-' + id);
+        if (panel) {
+            panel.classList.remove('d-none');
+        }
+
+        document.querySelectorAll('.mo-tab').forEach(t => t.classList.remove('active'));
+        const tab = document.getElementById('tab-' + id);
+        if (tab) {
+            tab.classList.add('active');
+        }
+    }
+
+    function toggleTexto(el) {
+        el.classList.toggle('active');
+        refrescarInputsManoObra();
+    }
+
+    function seleccionarTodoTipo(tipoId) {
+        document
+            .querySelectorAll('.mo-card[data-tipo="' + tipoId + '"]')
+            .forEach(card => card.classList.add('active'));
+
+        refrescarInputsManoObra();
+    }
+
+    function limpiarTipo(tipoId) {
+        document
+            .querySelectorAll('.mo-card[data-tipo="' + tipoId + '"]')
+            .forEach(card => card.classList.remove('active'));
+
+        refrescarInputsManoObra();
+    }
+
+    function refrescarInputsManoObra() {
+        const container = document.getElementById('mano-obra-hidden-inputs');
+        container.innerHTML = '';
+
+        const cardsActivas = document.querySelectorAll('.mo-card.active');
+        let total = 0;
+        const contadorPorTipo = {};
+
+        cardsActivas.forEach((card, index) => {
+            const textoId = card.dataset.id;
+            const tipoId = card.dataset.tipo;
+
+            const inputTexto = document.createElement('input');
+            inputTexto.type = 'hidden';
+            inputTexto.name = `selecciones[${tipoId}][]`;
+            inputTexto.value = textoId;
+            container.appendChild(inputTexto);
+
+            total++;
+            contadorPorTipo[tipoId] = (contadorPorTipo[tipoId] || 0) + 1;
+        });
+
+        document.querySelectorAll('[id^="count-tipo-"]').forEach(el => {
+            const tipoId = el.id.replace('count-tipo-', '');
+            const totalCategoria = el.textContent.split('/')[1] || '0';
+            const seleccionados = contadorPorTipo[tipoId] || 0;
+            el.textContent = `${seleccionados}/${totalCategoria}`;
+        });
+
+        const totalEl = document.getElementById('mano-obra-total-seleccionados');
+        if (totalEl) {
+            totalEl.textContent = total;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        refrescarInputsManoObra();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const offcanvasEl = document.getElementById('offcanvasLinea');
+        document.body.appendChild(offcanvasEl);
+        new bootstrap.Offcanvas(offcanvasEl);
+
+        const backdrop = document.createElement('div');
+        backdrop.className = 'offcanvas-manual-backdrop';
+        backdrop.id = 'offcanvas-backdrop-manual';
+        document.body.appendChild(backdrop);
+
+        backdrop.addEventListener('click', function() {
+            bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasLinea'))?.hide();
+        });
+
+        document.getElementById('producto-search').addEventListener('input', function() {
+            clearTimeout(searchTimer);
+            const q = this.value.trim();
+
+            if (q.length < 2) {
+                document.getElementById('resultados-busqueda').innerHTML =
+                    '<div class="text-center text-muted py-4 small">Empieza a escribir para buscar productos</div>';
+                return;
+            }
+
+            searchTimer = setTimeout(() => buscarProductos(q), 280);
+        });
+
+        ['f-cantidad', 'f-precio', 'f-descuento'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', calcularSubtotalProducto);
+        });
+
+        ['f-cantidad-servicio', 'f-precio-servicio', 'f-descuento-servicio'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', calcularSubtotalServicio);
+        });
+
+        document.getElementById('offcanvasLinea').addEventListener('show.bs.offcanvas', function() {
+            document.getElementById('offcanvas-backdrop-manual').style.display = 'block';
+            document.getElementById('hidden-linea-id').value = '';
+            document.getElementById('offcanvas-title').textContent = 'Añadir línea';
+            document.getElementById('offcanvas-subtitle').textContent = 'Busca un producto o añade una línea manual';
+            document.querySelector('#form-linea [type="submit"]').textContent = 'Añadir línea';            
+            resetOffcanvasLinea();
+        });
+
+        document.getElementById('offcanvasLinea').addEventListener('hide.bs.offcanvas', function() {
+            document.getElementById('offcanvas-backdrop-manual').style.display = 'none';
+        });
+    });
+
+    $(document).on('click', 'a[name="delete_cobro"]', async function () {
+        const id = this.dataset.id;
+
+        const swal = Swal.mixin({
+            customClass: {
+                confirmButton: 'btn btn-success',
+                cancelButton:  'mr-2 btn btn-danger'
+            },
+            buttonsStyling: false
+        });
+
+        const result = await swal.fire({
+            title:             'Borrar cobro',
+            text:              'Esta acción no se puede deshacer.',
+            icon:              'question',
+            showCancelButton:  true,
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText:  'Cancelar',
+            reverseButtons:    true
+        });
+
+        if (result.isConfirmed) {
+            $.ajax({
+                url:      '{{ path("cobro_delete_ajax", {id: 0}) }}'.replace('/0/', '/' + id + '/'),
+                type:     'GET',
+                dataType: 'json',
+                success: function () {
+                    Swal.fire({
+                        icon:              'success',
+                        title:             '¡Cobro eliminado!',
+                        timer:             1800,
+                        showConfirmButton: false,
+                        timerProgressBar:  true
+                    }).then(() => location.reload());
+                },
+                error: (xhr) => alert('Error: ' + xhr.responseJSON?.error ?? 'desconocido')
+            });
+        }
+    });
+
+</script>
+
+
+<script>
+function formatearEuro(valor) {
+    return new Intl.NumberFormat('es-ES', {
+        style: 'currency',
+        currency: 'EUR'
+    }).format(valor || 0);
+}
+
+function redondear(valor) {
+    return Math.round((valor + Number.EPSILON) * 100) / 100;
+}
+
+function calcularImportesLinea(cantidad, precioSinIva, descuento, tipoIva) {
+    cantidad = parseFloat(cantidad) || 0;
+    precioSinIva = parseFloat(precioSinIva) || 0;
+    descuento = parseFloat(descuento) || 0;
+    tipoIva = parseFloat(tipoIva) || 0;
+
+    const brutoSinIva = cantidad * precioSinIva;
+    const descuentoImporte = brutoSinIva * (descuento / 100);
+    const subtotalSinIva = redondear(brutoSinIva - descuentoImporte);
+    const importeIva = redondear(subtotalSinIva * (tipoIva / 100));
+    const totalConIva = redondear(subtotalSinIva + importeIva);
+    const precioConIva = redondear(precioSinIva * (1 + tipoIva / 100));
+
+    return {
+        precioConIva,
+        subtotalSinIva,
+        importeIva,
+        totalConIva
+    };
+}
+
+function actualizarPreviewProducto() {
+    const cantidad = document.getElementById('f-cantidad')?.value;
+    const precio = document.getElementById('f-precio')?.value;
+    const descuento = document.getElementById('f-descuento')?.value;
+    const tipoIva = 21;
+
+    const datos = calcularImportesLinea(cantidad, precio, descuento, tipoIva);
+
+    const precioIva = document.getElementById('f-precio-iva');
+    const subtotalSinIva = document.getElementById('subtotal-sin-iva-producto');
+    const importeIva = document.getElementById('importe-iva-producto');
+    const totalConIva = document.getElementById('subtotal-preview-producto');
+
+    if (precioIva) precioIva.value = formatearEuro(datos.precioConIva);
+    if (subtotalSinIva) subtotalSinIva.textContent = formatearEuro(datos.subtotalSinIva);
+    if (importeIva) importeIva.textContent = formatearEuro(datos.importeIva);
+    if (totalConIva) totalConIva.textContent = formatearEuro(datos.totalConIva);
+}
+
+function actualizarPreviewServicio() {
+    const cantidad = document.getElementById('f-cantidad-servicio')?.value;
+    const precio = document.getElementById('f-precio-servicio')?.value;
+    const descuento = document.getElementById('f-descuento-servicio')?.value;
+    const tipoIva = 21;
+
+    const datos = calcularImportesLinea(cantidad, precio, descuento, tipoIva);
+
+    const precioIva = document.getElementById('f-precio-iva-servicio');
+    const subtotalSinIva = document.getElementById('subtotal-sin-iva-servicio');
+    const importeIva = document.getElementById('importe-iva-servicio');
+    const totalConIva = document.getElementById('subtotal-preview-servicio');
+
+    if (precioIva) precioIva.value = formatearEuro(datos.precioConIva);
+    if (subtotalSinIva) subtotalSinIva.textContent = formatearEuro(datos.subtotalSinIva);
+    if (importeIva) importeIva.textContent = formatearEuro(datos.importeIva);
+    if (totalConIva) totalConIva.textContent = formatearEuro(datos.totalConIva);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.js-recalcular-linea').forEach(el => {
+        el.addEventListener('input', actualizarPreviewProducto);
+    });
+
+    document.querySelectorAll('.js-recalcular-servicio').forEach(el => {
+        el.addEventListener('input', actualizarPreviewServicio);
+    });
+
+    actualizarPreviewProducto();
+    actualizarPreviewServicio();
+});
+</script>
+{% endblock %}
