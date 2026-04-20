@@ -114,7 +114,8 @@ class DocumentoEstadoService
         $factura->setFechaEmision(new \DateTime());
 
         $this->serieService->asignarNumeracion($factura);
-
+        $this->em->persist($factura);
+        
         // Copiar líneas del presupuesto a la factura
         foreach ($documento->getLineas() as $lineaOrigen) {
             $lineaFactura = new DocumentoLinea();
