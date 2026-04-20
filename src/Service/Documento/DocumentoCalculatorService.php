@@ -22,7 +22,7 @@ class DocumentoCalculatorService
         }
 
         $documento->setBaseImponible($baseImponible);
-        $documento->setTotalIva($baseImponible*$documento->getTipoIva()/100);
+        $documento->setTotalIva($totalIva);
         $documento->setTotal(bcadd($baseImponible, $totalIva, 2));
         $documento->setTotalCoste($totalCoste);
     }
