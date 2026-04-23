@@ -102,7 +102,6 @@ class DocumentoEstadoService
             throw new \RuntimeException('No se puede aceptar un documento sin líneas.');
         }
 
-        // Crear factura
         $factura = new Documento();
         $factura->setTipoDocumento('factura');
         $factura->setCliente($documento->getCliente());
@@ -115,8 +114,7 @@ class DocumentoEstadoService
 
         $this->serieService->asignarNumeracion($factura);
         $this->em->persist($factura);
-        
-        // Copiar líneas del presupuesto a la factura
+
         foreach ($documento->getLineas() as $lineaOrigen) {
             $lineaFactura = new DocumentoLinea();
             $lineaFactura->setPosicion($lineaOrigen->getPosicion());
@@ -132,28 +130,37 @@ class DocumentoEstadoService
             $lineaFactura->setAfectaStock($lineaOrigen->isAfectaStock());
             $lineaFactura->setStockMovido(false);
 
+            // COPIAR IMPORTES YA CALCULADOS
+            $lineaFactura->setSubtotal($lineaOrigen->getSubtotal());
+            $lineaFactura->setTotalIva($lineaOrigen->getTotalIva());
+            $lineaFactura->setSubTotal($lineaOrigen->getSubTotal());
+            $lineaFactura->setTotalCoste($lineaOrigen->getTotalCoste());
+
             $factura->addLinea($lineaFactura);
         }
 
-        // Copiar líneas del presupuesto a la factura
         foreach ($documento->getManoObra() as $manoObraOrigen) {
             $lineaManoObra = new ManoObra();
             $lineaManoObra->setCategoriaMo($manoObraOrigen->getCategoriaMo());
             $lineaManoObra->setCoste($manoObraOrigen->getCoste());
             $lineaManoObra->setPagado($manoObraOrigen->isPagado());
-            $lineaManoObra->setTextoMo($manoObraOrigen->getTextoMo());  
+            $lineaManoObra->setTextoMo($manoObraOrigen->getTextoMo());
             $lineaManoObra->setDocumentoMo($factura);
-            $factura->addManoObra($lineaManoObra);
 
+            $factura->addManoObra($lineaManoObra);
         }
 
-        // Marcar presupuesto como convertido y vincular factura
+        // COPIAR TOTALES DEL DOCUMENTO ORIGINAL
+        $factura->setBaseImponible($documento->getBaseImponible());
+        $factura->setTotalIva($documento->getTotalIva());
+        $factura->setTotal($documento->getTotal());
+        $factura->setTotalCoste($documento->getTotalCoste());
         $documento->setEstadoComercial('convertido');
         $documento->setFechaAceptacion(new \DateTime());
         $documento->setFacturaVinculada($factura);
 
-        // Recalcular factura
-        $this->documentoCalculatorService->recalcularDocumento($factura);
+        // NO RECALCULAR AQUÍ
+        // $this->documentoCalculatorService->recalcularDocumento($factura);
 
         $proyecto = $documento->getProyecto();
         if ($proyecto) {

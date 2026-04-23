@@ -42,7 +42,7 @@ class DocumentoAccionesService
             'puedeConvertirAFactura' => $esPresupuesto && $estaAceptado,
 
             // Flujo cobro
-            'puedeRegistrarCobro' => ($esFactura || $esTicket) && !$estaCobrado,
+            'puedeRegistrarCobro' => ($esFactura || $esTicket) ,
 
             // Informativas
             'esEditable' => !$bloqueado,
