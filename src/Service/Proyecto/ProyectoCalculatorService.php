@@ -68,7 +68,7 @@ class ProyectoCalculatorService
 
         if (
             $presupuestoInicial
-            && in_array($presupuestoInicial->getEstadoComercial(), ['aceptado', 'convertido', 'entregado'], true)
+            && in_array($presupuestoInicial->getEstadoComercial(), ['aceptado', 'convertido'], true)
         ) {
             return (float) $presupuestoInicial->getTotal();
         }
