@@ -5,6 +5,7 @@ namespace App\Service\Proyecto;
 use App\Entity\Proyecto;
 use App\Repository\DocumentoRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Documento;
 
 class ProyectoCalculatorService
 {
@@ -19,41 +20,94 @@ class ProyectoCalculatorService
     {
         $presupuestoInicial = $this->documentoRepository->findPresupuestoInicialDeProyecto($proyecto);
         $factura = $this->documentoRepository->findFacturaDeProyecto($proyecto);
+        $ticket = $this->documentoRepository->findTicketDeProyecto($proyecto);
 
         $totalPresupuestado = '0.00';
-        $totalFacturado = '0.00';
-        $totalCobrado = '0.00';
-        $fechaFinReal = null;
 
-        if ($presupuestoInicial && in_array($presupuestoInicial->getEstadoComercial(), ['aceptado', 'convertido'], true)) {
+        if (
+            $presupuestoInicial
+            && in_array($presupuestoInicial->getEstadoComercial(), ['aceptado', 'convertido', 'entregado', 'borrador'], true)
+        ) {
             $totalPresupuestado = $this->normalizarDecimal($presupuestoInicial->getTotal());
         }
 
-        if ($factura) {
-            $totalFacturado = $this->normalizarDecimal($factura->getTotal());
-            $totalCobrado = $this->normalizarDecimal($factura->getTotalCobrado());
+        $totalFacturadoFloat = $this->calcularTotalFacturadoProyecto(
+            factura: $factura,
+            ticket: $ticket,
+            presupuestoInicial: $presupuestoInicial
+        );
 
-            if ($factura->getEstadoCobro() === 'cobrado') {
-                $fechaFinReal = new \DateTime();
-            }
-        }
+        $totalCobradoFloat = $this->calcularTotalCobradoProyecto($proyecto);
 
         $proyecto->setTotalPresupuestado($totalPresupuestado);
-        $proyecto->setTotalFacturado($totalFacturado);
-        $proyecto->setTotalCobrado($totalCobrado);
-        $proyecto->setFechaFinReal($fechaFinReal);
+        $proyecto->setTotalFacturado(number_format($totalFacturadoFloat, 2, '.', ''));
+        $proyecto->setTotalCobrado(number_format($totalCobradoFloat, 2, '.', ''));
 
-
+        if ($totalFacturadoFloat > 0 && $totalCobradoFloat >= $totalFacturadoFloat) {
+            $proyecto->setFechaFinReal(new \DateTime());
+        } else {
+            $proyecto->setFechaFinReal(null);
+        }
 
         if ($flush) {
             $this->em->flush();
         }
     }
 
+    private function calcularTotalFacturadoProyecto(
+        ?Documento $factura,
+        ?Documento $ticket,
+        ?Documento $presupuestoInicial
+    ): float {
+        $totalFiscal = (float) ($factura?->getTotal() ?? 0)
+            + (float) ($ticket?->getTotal() ?? 0);
+
+        if ($totalFiscal > 0) {
+            return $totalFiscal;
+        }
+
+        if (
+            $presupuestoInicial
+            && in_array($presupuestoInicial->getEstadoComercial(), ['aceptado', 'convertido', 'entregado'], true)
+        ) {
+            return (float) $presupuestoInicial->getTotal();
+        }
+
+        return 0.0;
+    }
+
+    private function calcularTotalCobradoProyecto(Proyecto $proyecto): float
+    {
+        $total = 0.0;
+
+        foreach ($proyecto->getCobros() as $cobro) {
+            $total += (float) $cobro->getImporteBruto();
+        }
+
+        return $total;
+    }
+        
     private function normalizarDecimal(mixed $valor): string
     {
         return number_format((float) $valor, 2, '.', '');
     }
+
+    public function recalcularProyectoDesdeDocumento(int $documentoId, bool $flush = true): void
+    {
+        $documento = $this->documentoRepository->find($documentoId);
+
+        if (!$documento) {
+            throw new \RuntimeException('Documento no encontrado.');
+        }
+
+        $proyecto = $documento->getProyecto();
+
+        if (!$proyecto) {
+            return;
+        }
+
+        $this->recalcularProyecto($proyecto, $flush);
+    }    
 
 
 }

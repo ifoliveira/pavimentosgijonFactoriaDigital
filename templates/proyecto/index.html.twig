@@ -5,7 +5,17 @@
 {% block body %}
 <div class="container py-4">
     {% for message in app.flashes('success') %}
-        <div class="alert alert-success">{{ message }}</div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
     {% endfor %}
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -53,6 +63,18 @@
                                     <a href="{{ path('app_proyecto_show', {id: proyecto.id}) }}" class="btn btn-sm btn-outline-primary">
                                         Ver
                                     </a>
+
+                                    <form method="post"
+                                        action="{{ path('app_proyecto_delete', {id: proyecto.id}) }}"
+                                        style="display:inline-block"
+                                        onsubmit="return confirm('⚠️ Esto eliminará TODO el proyecto. ¿Continuar?');">
+                                        
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ proyecto.id) }}">
+                                        
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            Borrar
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         {% endfor %}

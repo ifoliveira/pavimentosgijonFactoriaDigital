@@ -1,0 +1,110 @@
+{# templates/factura_proveedor/index.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Facturas proveedor</h1>
+            <p class="text-muted mb-0">
+                Facturas importadas por OCR para revisar y asignar.
+            </p>
+        </div>
+
+        <a href="{{ path('factura_proveedor_subir') }}" class="btn btn-primary">
+            Subir nueva factura
+        </a>
+    </div>
+
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Proveedor</th>
+                <th>Nº factura</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Líneas</th>
+                <th class="text-end">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for factura in facturas %}
+            <tr>
+                <td>
+                    {{ factura.fechaFactura ? factura.fechaFactura|date('d/m/Y') : '-' }}
+                </td>
+
+                <td>
+                    {{ factura.proveedorNombre ?: 'Sin proveedor' }}
+                </td>
+
+                <td>
+                    {{ factura.numeroFactura ?: '-' }}
+                </td>
+
+                <td>
+                    {{ factura.totalFactura|default(0)|number_format(2, ',', '.') }} €
+                </td>
+
+                <td>
+                    {% if factura.estadoAsignacion == 'revision' %}
+                        <span class="badge bg-warning text-dark">En revisión</span>
+                    {% elseif factura.estadoAsignacion == 'pendiente' %}
+                        <span class="badge bg-info text-dark">Pendiente asignar</span>
+                    {% elseif factura.estadoAsignacion == 'parcial' %}
+                        <span class="badge bg-primary">Parcial</span>
+                    {% elseif factura.estadoAsignacion == 'asignada' %}
+                        <span class="badge bg-success">Asignada</span>
+                    {% elseif factura.estadoAsignacion == 'revisada' %}
+                        <span class="badge bg-dark">Revisada</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ factura.estadoAsignacion }}</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ factura.lineas|length }}
+                </td>
+
+                <td class="text-end">
+                    <div class="btn-group">
+                        {% if factura.estadoAsignacion == 'revision' %}
+                            <a href="{{ path('factura_proveedor_revisar', {id: factura.id}) }}"
+                               class="btn btn-sm btn-warning">
+                                Retomar revisión
+                            </a>
+                        {% elseif factura.estadoAsignacion in ['pendiente', 'parcial'] %}
+                            <a href="{{ path('factura_proveedor_asignar', {id: factura.id}) }}"
+                               class="btn btn-sm btn-primary">
+                                Retomar asignación
+                            </a>
+                        {% else %}
+                            <a href="{{ path('factura_proveedor_show', {id: factura.id}) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                Ver
+                            </a>
+                        {% endif %}
+
+                        <a href="{{ path('factura_proveedor_pdf', {id: factura.id}) }}"
+                           class="btn btn-sm btn-outline-secondary"
+                           target="_blank">
+                            PDF
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">
+                    No hay facturas proveedor todavía.
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

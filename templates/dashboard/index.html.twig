@@ -14,6 +14,78 @@
 
     <div class="row g-4">
 
+        {# RESUMEN ECONÓMICO #}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="h5 mb-0">Situación económica</h2>
+                        <div class="small text-muted">Importes acumulados de proyectos y documentos</div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Presupuestado</div>
+                                <div class="fs-5 fw-bold">
+                                    {{ dashboard.economico.totalPresupuestado|number_format(2, ',', '.') }} €
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Facturado</div>
+                                <div class="fs-5 fw-bold">
+                                    {{ dashboard.economico.totalFacturado|number_format(2, ',', '.') }} €
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Cobrado</div>
+                                <div class="fs-5 fw-bold text-success">
+                                    {{ dashboard.economico.totalCobrado|number_format(2, ',', '.') }} €
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Pendiente cobro</div>
+                                <div class="fs-5 fw-bold text-danger">
+                                    {{ dashboard.economico.totalPendienteCobro|number_format(2, ',', '.') }} €
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Coste previsto</div>
+                                <div class="fs-5 fw-bold">
+                                    {{ dashboard.economico.totalCostePrevisto|number_format(2, ',', '.') }} €
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Margen estimado</div>
+                                <div class="fs-5 fw-bold {{ dashboard.economico.margenEstimado >= 0 ? 'text-success' : 'text-danger' }}">
+                                    {{ dashboard.economico.margenEstimado|number_format(2, ',', '.') }} €
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {# RESUMEN #}
         <div class="col-12">
             <div class="card border-0 shadow-sm">
@@ -36,16 +108,17 @@
                         </div>
                         <div class="col-xl-2 col-md-4 col-6">
                             <div class="p-3 rounded border bg-light h-100">
+                                <div class="small text-muted">Entregados</div>
+                                <div class="fs-4 fw-bold">{{ dashboard.resumen.entregados }}</div>
+                            </div>
+                        </div>                        
+                        <div class="col-xl-2 col-md-4 col-6">
+                            <div class="p-3 rounded border bg-light h-100">
                                 <div class="small text-muted">Aceptado / convertido</div>
                                 <div class="fs-4 fw-bold">{{ dashboard.resumen.aceptadoOConvertido }}</div>
                             </div>
                         </div>
-                        <div class="col-xl-2 col-md-4 col-6">
-                            <div class="p-3 rounded border bg-light h-100">
-                                <div class="small text-muted">Facturados</div>
-                                <div class="fs-4 fw-bold">{{ dashboard.resumen.facturados }}</div>
-                            </div>
-                        </div>
+
                         <div class="col-xl-2 col-md-4 col-6">
                             <div class="p-3 rounded border bg-light h-100">
                                 <div class="small text-muted">Pendiente cobro</div>
@@ -109,6 +182,12 @@
                                         {% elseif situacion == 'cerrado' %}
                                             {% set situacionTexto = 'Cerrado' %}
                                             {% set situacionClase = 'bg-success' %}
+                                        {% elseif situacion == 'presupuesto_rechazado' %}
+                                            {% set situacionTexto = 'Presupuesto rechazado' %}
+                                            {% set situacionClase = 'bg-danger' %}
+                                        {% elseif situacion == 'presupuesto_entregado' %}
+                                            {% set situacionTexto = 'Presupuesto entregado' %}
+                                            {% set situacionClase = 'bg-info'  %}
                                         {% endif %}
 
                                         <tr>
@@ -167,19 +246,41 @@
                                                 </div>
                                             </td>
 
-                                            <td style="min-width: 180px;">
+                                            <td style="min-width: 230px;">
+                                                {% set pendienteCobro = proyecto.totalFacturado|default(0) - proyecto.totalCobrado|default(0) %}
+                                                {% set costePrevisto = proyecto.totalCostePrevisto is defined ? proyecto.totalCostePrevisto : 0 %}
+                                                {% set margen = proyecto.totalFacturado|default(0) - costePrevisto %}
+
                                                 <div class="small">
-                                                    <div class="mb-1">
+                                                    <div class="mb-1 d-flex justify-content-between gap-2">
                                                         <span class="text-muted">Presupuestado:</span>
-                                                        <span class="fw-semibold">{{ proyecto.totalPresupuestado|number_format(2, ',', '.') }} €</span>
+                                                        <span class="fw-semibold">{{ proyecto.totalPresupuestado|default(0)|number_format(2, ',', '.') }} €</span>
                                                     </div>
-                                                    <div class="mb-1">
+
+                                                    <div class="mb-1 d-flex justify-content-between gap-2">
                                                         <span class="text-muted">Facturado:</span>
-                                                        <span class="fw-semibold">{{ proyecto.totalFacturado|number_format(2, ',', '.') }} €</span>
+                                                        <span class="fw-semibold">{{ proyecto.totalFacturado|default(0)|number_format(2, ',', '.') }} €</span>
                                                     </div>
-                                                    <div>
+
+                                                    <div class="mb-1 d-flex justify-content-between gap-2">
                                                         <span class="text-muted">Cobrado:</span>
-                                                        <span class="fw-semibold">{{ proyecto.totalCobrado|number_format(2, ',', '.') }} €</span>
+                                                        <span class="fw-semibold text-success">{{ proyecto.totalCobrado|default(0)|number_format(2, ',', '.') }} €</span>
+                                                    </div>
+
+                                                    <div class="mb-1 d-flex justify-content-between gap-2">
+                                                        <span class="text-muted">Pendiente:</span>
+                                                        <span class="fw-semibold {{ pendienteCobro > 0 ? 'text-danger' : 'text-success' }}">
+                                                            {{ pendienteCobro|number_format(2, ',', '.') }} €
+                                                        </span>
+                                                    </div>
+
+                                                    <hr class="my-2">
+
+                                                    <div class="d-flex justify-content-between gap-2">
+                                                        <span class="text-muted">Margen:</span>
+                                                        <span class="fw-semibold {{ item.margen >= 0 ? 'text-success' : 'text-danger' }}">
+                                                            {{ item.margen|number_format(2, ',', '.') }} €
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </td>

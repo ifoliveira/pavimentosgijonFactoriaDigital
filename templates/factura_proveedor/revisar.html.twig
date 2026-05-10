@@ -1,0 +1,325 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Revisar factura proveedor{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Revisar factura proveedor</h1>
+            <p class="text-muted mb-0">
+                {{ factura.proveedorNombre ?: 'Proveedor desconocido' }}
+                {% if factura.numeroFactura %}
+                    · Factura {{ factura.numeroFactura }}
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="text-end">
+            <div class="small text-muted">Total factura</div>
+            <div class="h4 mb-0">
+                {{ factura.totalFactura|default(0)|number_format(2, ',', '.') }} €
+            </div>
+
+            <span class="badge bg-warning text-dark mt-2">
+                {{ factura.estadoAsignacion }}
+            </span>
+        </div>
+    </div>
+
+    <form method="post">
+
+        <div class="row g-4">
+            <a href="{{ path('factura_proveedor_asignar', {id: factura.id}) }}"
+            class="btn btn-primary">
+                ➡️ Continuar a asignación
+            </a>
+            {# 🟦 PDF IZQUIERDA #}
+            <div class="col-12 col-xl-5">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white">
+                        <h2 class="h5 mb-0">PDF original</h2>
+                    </div>
+
+                    <div class="card-body p-0" style="height: 75vh;">
+                        {% if factura.rutaPdf %}
+                            <iframe
+                                src="{{ path('factura_proveedor_pdf', {id: factura.id}) }}"
+                                style="width:100%; height:100%; border:0;">
+                            </iframe>
+                        {% else %}
+                            <div class="p-4 text-muted">
+                                No hay PDF disponible.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {# 🟩 TABLA DERECHA #}
+            <div class="col-12 col-xl-7">
+
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white">
+                        <h2 class="h5 mb-0">Líneas detectadas</h2>
+                        <div class="small text-muted">
+                            Corrige los datos antes de confirmar la factura
+                        </div>
+                    </div>
+
+                    <div class="card-body p-0">
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th class="text-end" style="width:90px;">Cant.</th>
+                                        <th class="text-end" style="width:120px;">P. unit.</th>
+                                        <th class="text-end" style="width:130px;">Bruto</th>
+                                        <th class="text-end" style="width:95px;">IVA %</th>
+                                        <th class="text-end" style="width:120px;">IVA</th>
+                                        <th class="text-center" style="width:80px;">R.E.</th>
+                                        <th class="text-end" style="width:95px;">RE %</th>
+                                        <th class="text-end" style="width:120px;">RE</th>
+                                        <th class="text-end" style="width:130px;">Total</th>
+                                        <th style="width:120px;">Estado</th>
+                                        <th class="text-end" style="width:170px;">Acciones</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for linea in factura.lineas %}
+                                        {% set disabled = linea.estado == 'ignorada' ? 'disabled' : '' %}
+
+                                        <tr class="{{ linea.estado == 'ignorada' ? 'table-secondary opacity-75' : '' }}" data-linea>
+                                            <td>
+                                                <input type="text"
+                                                    name="lineas[{{ linea.id }}][descripcion]"
+                                                    value="{{ linea.descripcion }}"
+                                                    class="form-control form-control-sm"
+                                                    {{ disabled }}>
+                                            </td>
+
+                                            <td>
+                                                <input type="number"
+                                                    step="0.01"
+                                                    name="lineas[{{ linea.id }}][cantidad]"
+                                                    value="{{ linea.cantidad }}"
+                                                    class="form-control form-control-sm text-end"
+                                                    {{ disabled }}>
+                                            </td>
+
+                                            <td>
+                                                <input type="number"
+                                                    step="0.01"
+                                                    name="lineas[{{ linea.id }}][precioUnitario]"
+                                                    value="{{ linea.precioUnitario }}"
+                                                    class="form-control form-control-sm text-end"
+                                                    {{ disabled }}>
+                                            </td>
+
+                                            <td>
+                                                <input type="number"
+                                                    step="0.01"
+                                                    name="lineas[{{ linea.id }}][importeBruto]"
+                                                    value="{{ linea.importeBruto|default(linea.base) }}"
+                                                    class="form-control form-control-sm text-end js-bruto"
+                                                    {{ disabled }}>
+                                            </td>
+
+                                            <td>
+                                                <input type="number"
+                                                    step="0.01"
+                                                    name="lineas[{{ linea.id }}][porcentajeIva]"
+                                                    value="{{ linea.porcentajeIva|default(21) }}"
+                                                    class="form-control form-control-sm text-end js-iva-pct"
+                                                    {{ disabled }}>
+                                            </td>
+
+                                            <td class="text-end">
+                                                <span class="js-iva-importe">
+                                                    {{ linea.importeIva|default(0)|number_format(2, ',', '.') }}
+                                                </span> €
+                                            </td>
+
+                                            <td class="text-center">
+                                                <input type="checkbox"
+                                                    name="lineas[{{ linea.id }}][tieneRecargoEquivalencia]"
+                                                    class="form-check-input js-re-check"
+                                                    {{ linea.tieneRecargoEquivalencia ? 'checked' : '' }}
+                                                    {{ disabled }}>
+                                            </td>
+
+                                            <td>
+                                                <input type="number"
+                                                    step="0.01"
+                                                    name="lineas[{{ linea.id }}][porcentajeRecargoEquivalencia]"
+                                                    value="{{ linea.porcentajeRecargoEquivalencia|default(5.2) }}"
+                                                    class="form-control form-control-sm text-end js-re-pct"
+                                                    {{ disabled }}>
+                                            </td>
+
+                                            <td class="text-end">
+                                                <span class="js-re-importe">
+                                                    {{ linea.importeRecargoEquivalencia|default(0)|number_format(2, ',', '.') }}
+                                                </span> €
+                                            </td>
+
+                                            <td class="text-end fw-semibold">
+                                                <span class="js-total-linea">
+                                                    {{ linea.total|default(0)|number_format(2, ',', '.') }}
+                                                </span> €
+                                            </td>
+
+                                            <td>
+                                                {% if linea.estado == 'revision' %}
+                                                    <span class="badge bg-warning text-dark">Revisión</span>
+                                                {% elseif linea.estado == 'pendiente' %}
+                                                    <span class="badge bg-primary">Confirmada</span>
+                                                {% elseif linea.estado == 'ignorada' %}
+                                                    <span class="badge bg-secondary">Ignorada</span>
+                                                {% elseif linea.estado == 'asignada' %}
+                                                    <span class="badge bg-success">Asignada</span>
+                                                {% else %}
+                                                    <span class="badge bg-light text-dark">{{ linea.estado }}</span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td class="text-end">
+                                                <button type="submit"
+                                                        name="accion"
+                                                        value="confirmar_linea"
+                                                        class="btn btn-sm btn-success"
+                                                        onclick="this.form.linea_id.value='{{ linea.id }}'">
+                                                    OK
+                                                </button>
+
+                                                <button type="submit"
+                                                        name="accion"
+                                                        value="ignorar_linea"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        onclick="this.form.linea_id.value='{{ linea.id }}'; return confirm('¿Ignorar esta línea?');">
+                                                    Quitar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="12" class="p-4 text-muted">
+                                                No hay líneas detectadas.
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th colspan="9" class="text-end">Total líneas activas</th>
+                                        <th class="text-end" id="total-lineas">0,00 €</th>
+                                        <th colspan="2"></th>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="9" class="text-end">Total factura OCR</th>
+                                        <th class="text-end">
+                                            {{ factura.totalFactura|default(0)|number_format(2, ',', '.') }} €
+                                        </th>
+                                        <th colspan="2"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+
+                        <div class="small text-muted">
+                            Guarda los cambios antes de confirmar
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="accion" value="guardar" class="btn btn-outline-primary">
+                                Guardar
+                            </button>
+
+                            <button type="submit" name="accion" value="confirmar"
+                                    class="btn btn-success"
+                                    onclick="return confirm('¿Confirmar factura?');">
+                                Confirmar factura
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+        <input type="hidden" name="linea_id" value="">
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const totalEl = document.getElementById('total-lineas');
+
+    function num(value) {
+        return parseFloat(String(value || '0').replace(',', '.')) || 0;
+    }
+
+    function euro(value) {
+        return value.toLocaleString('es-ES', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function recalcularFila(tr) {
+        const bruto = num(tr.querySelector('.js-bruto')?.value);
+        const ivaPct = num(tr.querySelector('.js-iva-pct')?.value);
+        const tieneRe = tr.querySelector('.js-re-check')?.checked;
+        const rePct = num(tr.querySelector('.js-re-pct')?.value);
+
+        const iva = Math.round((bruto * ivaPct / 100) * 100) / 100;
+        const re = tieneRe ? Math.round((bruto * rePct / 100) * 100) / 100 : 0;
+        const total = Math.round((bruto + iva + re) * 100) / 100;
+
+        tr.querySelector('.js-iva-importe').textContent = euro(iva);
+        tr.querySelector('.js-re-importe').textContent = euro(re);
+        tr.querySelector('.js-total-linea').textContent = euro(total);
+
+        return total;
+    }
+
+    function recalcularTodo() {
+        let total = 0;
+
+        document.querySelectorAll('tr[data-linea]').forEach(tr => {
+            if (tr.classList.contains('table-secondary')) {
+                return;
+            }
+
+            total += recalcularFila(tr);
+        });
+
+        totalEl.textContent = euro(total) + ' €';
+    }
+
+    document.querySelectorAll('.js-bruto, .js-iva-pct, .js-re-pct, .js-re-check').forEach(el => {
+        el.addEventListener('input', recalcularTodo);
+        el.addEventListener('change', recalcularTodo);
+    });
+
+    recalcularTodo();
+});
+</script>
+
+{% endblock %}

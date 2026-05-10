@@ -8,6 +8,7 @@ use App\Repository\ProductosRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\DocumentoLineaRepository;
 use App\Service\Proyecto\ProyectoCalculatorService;
+use App\Entity\CatalogoProducto;
 
 
 class DocumentoLineaService
@@ -27,7 +28,8 @@ class DocumentoLineaService
         float $descuento,
         ?int $productoId,
         float $lineaId,
-        string $tipo
+        string $tipo,
+        string $destinoFacturacion = DocumentoLinea::DESTINO_PENDIENTE,
     ): DocumentoLinea {
 
 
@@ -55,8 +57,10 @@ class DocumentoLineaService
             $linea->setTotalIva('0.00');
             $linea->setTotalCoste('0.00');
             $linea->setProducto(null);
+            $linea->setOrigenLinea('manual');
+            $linea->setCatalogoProducto(null);
 
-            $this->entityManager->persist($linea);
+            $this->em->persist($linea);
 
             return $linea;
         }
@@ -65,9 +69,17 @@ class DocumentoLineaService
         $linea->setDescuento(number_format($descuento, 2, '.', ''));
         $linea->setTipoIva('21.00');
 
+        if (!$destinoFacturacion) {
+            $destinoFacturacion = $this->resolverDestinoFacturacionPorDefecto($tipo);
+        }
+
+        $linea->setDestinoFacturacion($destinoFacturacion);
+
         if ($productoId) {
             $producto = $this->productosRepository->find($productoId);
             $linea->setProducto($producto);
+            $linea->setOrigenLinea('producto_legacy');
+            $linea->setCatalogoProducto(null);
 
             if ($producto && method_exists($producto, 'getCoste')) {
                 $linea->setCosteUnitario(number_format((float) $producto->getCoste(), 2, '.', ''));
@@ -76,6 +88,8 @@ class DocumentoLineaService
             }
         } else {
             $linea->setProducto(null);
+            $linea->setCatalogoProducto(null);
+            $linea->setOrigenLinea('manual');
             $linea->setCosteUnitario('0.00');
         }
 
@@ -92,7 +106,7 @@ class DocumentoLineaService
         return $linea;
     }
 
-    private function recalcularImportesLinea(DocumentoLinea $linea, float $precioSinIva): void
+    private function recalcularImportesLinea(DocumentoLinea $linea, float $precioConIva): void
     {
         $cantidad = (float) $linea->getCantidad();
         $descuento = (float) $linea->getDescuento();
@@ -103,36 +117,44 @@ class DocumentoLineaService
             $tipoIva = 0;
         }
 
-
-
-        // Precio unitario sin IVA
-        $precioConIva =  $tipoIva > 0
-            ? (float)  $precioSinIva * (1 + ($tipoIva / 100))
-            : (float)  $precioSinIva;
+        if ($cantidad <= 0) {
+            $cantidad = 1;
+        }
 
         $precioConIva = round($precioConIva, 2);
 
-        // Total bruto con IVA
+        /*
+        * 1. Precio unitario sin IVA
+        * Este es el que se guarda en precioUnitario
+        */
+        $precioSinIva = $precioConIva / (1 + ($tipoIva / 100));
+
+        /*
+        * 2. Total final con IVA, partiendo SIEMPRE del precio con IVA
+        */
         $totalBrutoConIva = $cantidad * $precioConIva;
-
-        // Descuento sobre el total con IVA
         $importeDescuentoConIva = $totalBrutoConIva * ($descuento / 100);
-
-        // Total final con IVA
         $totalConIva = round($totalBrutoConIva - $importeDescuentoConIva, 2);
 
-        // Subtotal sin IVA
+        /*
+        * 3. Base imponible total sin IVA
+        */
         $subtotalBruto = $cantidad * $precioSinIva;
         $importeDescuentoSinIva = $subtotalBruto * ($descuento / 100);
         $subtotal = round($subtotalBruto - $importeDescuentoSinIva, 2);
 
-        // IVA ajustado para cuadrar con el total
+        /*
+        * 4. IVA calculado por diferencia
+        * Así el total SIEMPRE cuadra con el precio con IVA
+        */
         $totalIva = round($totalConIva - $subtotal, 2);
 
-        // Coste total
+        /*
+        * 5. Coste
+        */
         $totalCoste = round($cantidad * $costeUnitario, 2);
 
-        $linea->setPrecioUnitario(number_format($precioSinIva, 2, '.', ''));
+        $linea->setPrecioUnitario(number_format($precioSinIva, 4, '.', ''));
         $linea->setSubtotal(number_format($subtotal, 2, '.', ''));
         $linea->setTotalIva(number_format($totalIva, 2, '.', ''));
         $linea->setTotalCoste(number_format($totalCoste, 2, '.', ''));
@@ -192,4 +214,98 @@ class DocumentoLineaService
             $posicion++;
         }
     }    
+
+    public function crearLineaDesdeConfigurador(
+        Documento $documento,
+        string $descripcion,
+        float $cantidad,
+        float $precioConIva,
+        float $costeUnitario,
+        string $tipoLinea,
+        ?CatalogoProducto $catalogoProducto = null,
+        string $origenLinea = 'configurador',
+        float $tipoIva = 21.00,
+        bool $flush = true
+    ): DocumentoLinea {
+        $linea = new DocumentoLinea();
+
+        $linea->setDocumento($documento);
+        $linea->setDescripcion(trim($descripcion));
+        $linea->setTipoLinea($tipoLinea);
+        $linea->setUnidad('ud');
+        $linea->setPosicion(count($documento->getLineas()) + 1);
+
+        $linea->setCantidad(number_format($cantidad, 3, '.', ''));
+        $linea->setDescuento('0.00');
+        $linea->setTipoIva(number_format($tipoIva, 2, '.', ''));
+        $linea->setCosteUnitario(number_format($costeUnitario, 2, '.', ''));
+
+        $linea->setProducto(null);
+        $linea->setCatalogoProducto($catalogoProducto);
+        $linea->setOrigenLinea($origenLinea);
+
+        $documento->addLinea($linea);
+
+        $this->em->persist($linea);
+
+        $this->recalcularImportesLinea($linea, $precioConIva);
+
+        if ($flush) {
+            $this->recalcularTotalesDocumento($documento);
+
+            if ($documento->getProyecto()) {
+                $this->proyectoService->recalcularProyecto($documento->getProyecto());
+            }
+
+            $this->em->flush();
+        }
+
+        return $linea;
+    }    
+
+    public function eliminarLineasDocumento(
+        Documento $documento,
+        bool $flush = true
+    ): void {
+        foreach ($documento->getLineas()->toArray() as $linea) {
+            $documento->removeLinea($linea);
+            $this->em->remove($linea);
+        }
+
+        $this->recalcularTotalesDocumento($documento);
+
+        if ($documento->getProyecto()) {
+            $this->proyectoService->recalcularProyecto($documento->getProyecto());
+        }
+
+        if ($flush) {
+            $this->em->flush();
+        }
+    }   
+    
+    public function recalcularDocumentoCompleto(
+        Documento $documento,
+        bool $flush = true
+    ): void {
+        $this->reordenarPosiciones($documento);
+        $this->recalcularTotalesDocumento($documento);
+
+        if ($documento->getProyecto()) {
+            $this->proyectoService->recalcularProyecto($documento->getProyecto());
+        }
+
+        if ($flush) {
+            $this->em->flush();
+        }
+    }    
+
+    private function resolverDestinoFacturacionPorDefecto(string $tipo): string
+    {
+        return match ($tipo) {
+            'producto' => DocumentoLinea::DESTINO_TICKET_TIENDA,
+            'servicio', 'mano_obra', 'descuento' => DocumentoLinea::DESTINO_FACTURA_OBRA,
+            'comentario' => DocumentoLinea::DESTINO_NO_FACTURABLE,
+            default => DocumentoLinea::DESTINO_PENDIENTE,
+        };
+    }
 }

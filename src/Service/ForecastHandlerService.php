@@ -4,6 +4,7 @@ namespace App\Service;
 use App\Entity\Forecast;
 use App\Entity\Tiposmovimiento;
 use App\Form\ForecastType;
+use App\Entity\ProyectoGasto;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,6 +14,7 @@ class ForecastHandlerService
     public function __construct(
         private EntityManagerInterface $em,
         private FormFactoryInterface $formFactory
+
     ) {}
 
     public function crearFormulariosForecast(array &$datos, Request $request): array
@@ -69,6 +71,35 @@ class ForecastHandlerService
 
         return $formularios;
     }
-}
 
+    public function sincronizarForecastSiProcede(ProyectoGasto $gasto): void
+    {
+        if (!$gasto->isGeneraForecast()) {
+            if ($gasto->getForecast()) {
+                $this->em->remove($gasto->getForecast());
+                $gasto->setForecast(null);
+            }
+
+            return;
+        }
+
+        $forecast = $gasto->getForecast();
+
+        if (!$forecast) {
+            $forecast = new Forecast();
+            $gasto->setForecast($forecast);
+            $this->em->persist($forecast);
+        }
+
+        $forecast->setTipoFr(
+                $this->em->getRepository(Tiposmovimiento::class)->findOneBy(['descripcionTm' => 'Proveedor'])
+         );
+        $forecast->setOrigenFr('Banco');
+        $forecast->setConceptoFr($gasto->getConcepto());
+        $forecast->setImporteFr($gasto->getImportePrevisto()*-1);
+        $forecast->setFechaFr($gasto->getFechaPrevista());
+        $forecast->setEstadoFr('P');
+        $forecast->setFijovarFr('V');
+    }
+}
 ?>

@@ -29,10 +29,10 @@ class ProyectoType extends AbstractType
                 'required' => true,
             ])
             ->add('nombre', TextType::class, [
-                'label' => 'Nombre del proyecto *',
-                'required' => true,
+                'label' => 'Nombre del proyecto',
+                'required' => false,
                 'attr' => [
-                    'placeholder' => 'Ej. Reforma baño completo - García - Calle Mayor 12',
+                    'placeholder' => 'Reforma baño completo / Cambio bañera por plato de ducha...',
                 ],
             ])
             ->add('fechaInicio', DateType::class, [

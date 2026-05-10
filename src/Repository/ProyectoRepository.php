@@ -61,6 +61,20 @@ class ProyectoRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    public function countProyectosConPresupuestoEntregado(): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(DISTINCT p.id)')
+            ->innerJoin('p.documentos', 'd')
+            ->andWhere('d.tipoDocumento = :tipo')
+            ->andWhere('d.estadoComercial IN (:estados)')
+            ->setParameter('tipo', 'presupuesto')
+            ->setParameter('estados', ['entregado'])
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+
     public function countProyectosPendientesCobro(): int
     {
         return (int) $this->createQueryBuilder('p')

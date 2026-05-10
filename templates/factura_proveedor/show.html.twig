@@ -1,0 +1,181 @@
+{# templates/factura_proveedor/show.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container py-4">
+
+    {# HEADER #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">
+                Factura proveedor #{{ factura.id }}
+            </h1>
+            <p class="text-muted mb-0">
+                {{ factura.proveedorNombre ?: 'Sin proveedor' }}
+                · {{ factura.numeroFactura ?: 'Sin número' }}
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{{ path('factura_proveedor_index') }}" class="btn btn-outline-secondary">
+                ← Listado
+            </a>
+
+            {% if factura.estadoAsignacion == 'revision' %}
+                <a href="{{ path('factura_proveedor_revisar', {id: factura.id}) }}"
+                   class="btn btn-warning">
+                    Retomar revisión
+                </a>
+            {% elseif factura.estadoAsignacion in ['pendiente', 'parcial'] %}
+                <a href="{{ path('factura_proveedor_asignar', {id: factura.id}) }}"
+                   class="btn btn-primary">
+                    Retomar asignación
+                </a>
+            {% endif %}
+
+            <a href="{{ path('factura_proveedor_pdf', {id: factura.id}) }}"
+               target="_blank"
+               class="btn btn-outline-dark">
+                Ver PDF
+            </a>
+        </div>
+    </div>
+
+    {# INFO GENERAL #}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="border rounded p-3 bg-light">
+                <div class="small text-muted">Fecha</div>
+                <div class="fw-semibold">
+                    {{ factura.fechaFactura ? factura.fechaFactura|date('d/m/Y') : '-' }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="border rounded p-3 bg-light">
+                <div class="small text-muted">Base</div>
+                <div class="fw-semibold">
+                    {{ factura.totalBase|default(0)|number_format(2, ',', '.') }} €
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="border rounded p-3 bg-light">
+                <div class="small text-muted">IVA</div>
+                <div class="fw-semibold">
+                    {{ factura.totalIva|default(0)|number_format(2, ',', '.') }} €
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="border rounded p-3 bg-light">
+                <div class="small text-muted">Total</div>
+                <div class="fw-bold text-primary">
+                    {{ factura.totalFactura|default(0)|number_format(2, ',', '.') }} €
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ESTADO #}
+    <div class="mb-4">
+        <span class="badge
+            {% if factura.estadoAsignacion == 'revision' %}bg-warning text-dark
+            {% elseif factura.estadoAsignacion == 'pendiente' %}bg-info text-dark
+            {% elseif factura.estadoAsignacion == 'parcial' %}bg-primary
+            {% elseif factura.estadoAsignacion == 'asignada' %}bg-success
+            {% elseif factura.estadoAsignacion == 'revisada' %}bg-dark
+            {% else %}bg-secondary
+            {% endif %}
+        ">
+            {{ factura.estadoAsignacion|upper }}
+        </span>
+    </div>
+
+    {# TABLA DE LÍNEAS #}
+    <div class="card">
+        <div class="card-header">
+            Líneas de factura
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Descripción</th>
+                        <th class="text-end">Cantidad</th>
+                        <th class="text-end">Base</th>
+                        <th class="text-end">IVA</th>
+                        <th class="text-end">RE</th>
+                        <th class="text-end">Total</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for linea in factura.lineas %}
+                    <tr class="
+                        {% if linea.estado == 'ignorada' %}table-secondary
+                        {% elseif linea.estado == 'parcial' %}table-warning
+                        {% elseif linea.estado == 'asignada' %}table-success
+                        {% endif %}
+                    ">
+                        <td>
+                            {{ linea.descripcion ?: '-' }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ linea.cantidad|default(1) }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ linea.base|default(0)|number_format(2, ',', '.') }} €
+                        </td>
+
+                        <td class="text-end">
+                            {{ linea.importeIva|default(0)|number_format(2, ',', '.') }} €
+                            <div class="small text-muted">
+                                {{ linea.porcentajeIva|default(0)|number_format(2, ',', '.') }} %
+                            </div>
+                        </td>
+
+                        <td class="text-end">
+                            {% if linea.tieneRecargoEquivalencia %}
+                                <span class="badge bg-warning text-dark mb-1">RE</span>
+                                <div>
+                                    {{ linea.importeRecargoEquivalencia|default(0)|number_format(2, ',', '.') }} €
+                                </div>
+                                <div class="small text-muted">
+                                    {{ linea.porcentajeRecargoEquivalencia|default(0)|number_format(2, ',', '.') }} %
+                                </div>
+                            {% else %}
+                                <span class="text-muted">No</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end fw-semibold">
+                            {{ linea.total|default(0)|number_format(2, ',', '.') }} €
+                        </td>
+
+                        <td>
+                            <span class="badge bg-light text-dark border">
+                                {{ linea.estado }}
+                            </span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No hay líneas.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

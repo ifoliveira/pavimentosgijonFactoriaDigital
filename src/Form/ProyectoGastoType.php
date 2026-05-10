@@ -43,7 +43,7 @@ class ProyectoGastoType extends AbstractType
                 ],
             ])
             ->add('proveedor', TextType::class, [
-                'label' => 'Proveedor / persona',
+                'label' => 'Proveedor',
                 'required' => false,
                 'attr' => [
                     'placeholder' => 'Ej: Juan / Proveedor X',

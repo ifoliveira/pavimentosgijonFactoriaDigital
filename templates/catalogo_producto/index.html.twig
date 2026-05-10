@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CatalogoProducto index{% endblock %}
+
+{% block body %}
+    <h1>CatalogoProducto index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Codigo</th>
+                <th>Nombre</th>
+                <th>Descripcion</th>
+                <th>Familia</th>
+                <th>Subfamilia</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Unidad</th>
+                <th>PrecioVenta</th>
+                <th>PrecioCoste</th>
+                <th>TipoIva</th>
+                <th>Ancho</th>
+                <th>Alto</th>
+                <th>Largo</th>
+                <th>Fondo</th>
+                <th>MedidaTexto</th>
+                <th>Atributos</th>
+                <th>ControlaStock</th>
+                <th>StockActual</th>
+                <th>StockMinimo</th>
+                <th>Activo</th>
+                <th>VisiblePresupuesto</th>
+                <th>CreatedAt</th>
+                <th>UpdatedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for catalogo_producto in catalogo_productos %}
+            <tr>
+                <td>{{ catalogo_producto.id }}</td>
+                <td>{{ catalogo_producto.codigo }}</td>
+                <td>{{ catalogo_producto.nombre }}</td>
+                <td>{{ catalogo_producto.descripcion }}</td>
+                <td>{{ catalogo_producto.familia }}</td>
+                <td>{{ catalogo_producto.subfamilia }}</td>
+                <td>{{ catalogo_producto.marca }}</td>
+                <td>{{ catalogo_producto.modelo }}</td>
+                <td>{{ catalogo_producto.unidad }}</td>
+                <td>{{ catalogo_producto.precioVenta }}</td>
+                <td>{{ catalogo_producto.precioCoste }}</td>
+                <td>{{ catalogo_producto.tipoIva }}</td>
+                <td>{{ catalogo_producto.ancho }}</td>
+                <td>{{ catalogo_producto.alto }}</td>
+                <td>{{ catalogo_producto.largo }}</td>
+                <td>{{ catalogo_producto.fondo }}</td>
+                <td>{{ catalogo_producto.medidaTexto }}</td>
+                <td>{{ catalogo_producto.atributos ? catalogo_producto.atributos|json_encode : '' }}</td>
+                <td>{{ catalogo_producto.controlaStock ? 'Yes' : 'No' }}</td>
+                <td>{{ catalogo_producto.stockActual }}</td>
+                <td>{{ catalogo_producto.stockMinimo }}</td>
+                <td>{{ catalogo_producto.activo ? 'Yes' : 'No' }}</td>
+                <td>{{ catalogo_producto.visiblePresupuesto ? 'Yes' : 'No' }}</td>
+                <td>{{ catalogo_producto.createdAt ? catalogo_producto.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ catalogo_producto.updatedAt ? catalogo_producto.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_catalogo_producto_show', {'id': catalogo_producto.id}) }}">show</a>
+                    <a href="{{ path('app_catalogo_producto_edit', {'id': catalogo_producto.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="26">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_catalogo_producto_new') }}">Create new</a>
+{% endblock %}

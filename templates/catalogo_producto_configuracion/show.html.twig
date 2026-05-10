@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CatalogoProductoConfiguracion{% endblock %}
+
+{% block body %}
+    <h1>CatalogoProductoConfiguracion</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ catalogo_producto_configuracion.id }}</td>
+            </tr>
+            <tr>
+                <th>ConfiguradorCodigo</th>
+                <td>{{ catalogo_producto_configuracion.configuradorCodigo }}</td>
+            </tr>
+            <tr>
+                <th>Uso</th>
+                <td>{{ catalogo_producto_configuracion.uso }}</td>
+            </tr>
+            <tr>
+                <th>Tipo</th>
+                <td>{{ catalogo_producto_configuracion.tipo }}</td>
+            </tr>
+            <tr>
+                <th>AnchoMin</th>
+                <td>{{ catalogo_producto_configuracion.anchoMin }}</td>
+            </tr>
+            <tr>
+                <th>AnchoMax</th>
+                <td>{{ catalogo_producto_configuracion.anchoMax }}</td>
+            </tr>
+            <tr>
+                <th>LargoMin</th>
+                <td>{{ catalogo_producto_configuracion.largoMin }}</td>
+            </tr>
+            <tr>
+                <th>LargoMax</th>
+                <td>{{ catalogo_producto_configuracion.largoMax }}</td>
+            </tr>
+            <tr>
+                <th>AltoMin</th>
+                <td>{{ catalogo_producto_configuracion.altoMin }}</td>
+            </tr>
+            <tr>
+                <th>AltoMax</th>
+                <td>{{ catalogo_producto_configuracion.altoMax }}</td>
+            </tr>
+            <tr>
+                <th>Prioridad</th>
+                <td>{{ catalogo_producto_configuracion.prioridad }}</td>
+            </tr>
+            <tr>
+                <th>Recomendado</th>
+                <td>{{ catalogo_producto_configuracion.recomendado ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Activo</th>
+                <td>{{ catalogo_producto_configuracion.activo ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Condiciones</th>
+                <td>{{ catalogo_producto_configuracion.condiciones ? catalogo_producto_configuracion.condiciones|json_encode : '' }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ catalogo_producto_configuracion.createdAt ? catalogo_producto_configuracion.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>UpdatedAt</th>
+                <td>{{ catalogo_producto_configuracion.updatedAt ? catalogo_producto_configuracion.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_catalogo_producto_configuracion_index') }}">back to list</a>
+
+    <a href="{{ path('app_catalogo_producto_configuracion_edit', {'id': catalogo_producto_configuracion.id}) }}">edit</a>
+
+    {{ include('catalogo_producto_configuracion/_delete_form.html.twig') }}
+{% endblock %}

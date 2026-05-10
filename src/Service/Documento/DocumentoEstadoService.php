@@ -11,6 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Service\Documento\SerieService;
 use App\Service\Documento\DocumentoCalculatorService;
 use App\Service\Proyecto\ProyectoCalculatorService;
+use App\Service\Proyecto\ProyectoService;
+use App\Service\Documento\DocumentoEstadoService;
 
 class DocumentoEstadoService
 {
@@ -19,7 +21,7 @@ class DocumentoEstadoService
         private EntityManagerInterface $em,
         private SerieService $serieService,
         private DocumentoCalculatorService $documentoCalculatorService,
-        private ProyectoCalculatorService $proyectoService,
+        private ProyectoCalculatorService $proyectoCalculatorService,
     ) {
     }
 
@@ -82,65 +84,179 @@ class DocumentoEstadoService
         return $documento;
     }
 
-    public function aceptarYGenerarFactura(int $documentoId): Documento
+        public function aceptarYGenerarFactura(int $documentoId): Documento
     {
-        $documento = $this->getDocumento($documentoId);
+        $presupuesto = $this->getDocumento($documentoId);
 
-        if ($documento->getTipoDocumento() !== 'presupuesto') {
+        if ($presupuesto->getTipoDocumento() !== 'presupuesto') {
             throw new \RuntimeException('Solo se puede aceptar y convertir un presupuesto.');
         }
 
-        if ($documento->getEstadoComercial() !== 'entregado') {
+        if ($presupuesto->getEstadoComercial() !== 'entregado') {
             throw new \RuntimeException('Solo se puede aceptar un documento entregado.');
         }
 
-        if (!$documento->getCliente()) {
+        if (!$presupuesto->getCliente()) {
             throw new \RuntimeException('No se puede aceptar un documento sin cliente.');
         }
 
-        if ($documento->getLineas()->isEmpty()) {
+        if (!$presupuesto->getProyecto()) {
+            throw new \RuntimeException('No se puede aceptar un presupuesto sin proyecto.');
+        }
+
+        if ($presupuesto->getLineas()->isEmpty()) {
             throw new \RuntimeException('No se puede aceptar un documento sin líneas.');
         }
 
-        $factura = new Documento();
-        $factura->setTipoDocumento('factura');
-        $factura->setCliente($documento->getCliente());
-        $factura->setProyecto($documento->getProyecto());
-        $factura->setNotas($documento->getNotas());
-        $factura->setEstadoComercial('borrador');
-        $factura->setEstadoCobro('pendiente');
-        $factura->setEstadoEjecucion('pendiente');
-        $factura->setFechaEmision(new \DateTime());
-
-        $this->serieService->asignarNumeracion($factura);
-        $this->em->persist($factura);
-
-        foreach ($documento->getLineas() as $lineaOrigen) {
-            $lineaFactura = new DocumentoLinea();
-            $lineaFactura->setPosicion($lineaOrigen->getPosicion());
-            $lineaFactura->setTipoLinea($lineaOrigen->getTipoLinea());
-            $lineaFactura->setProducto($lineaOrigen->getProducto());
-            $lineaFactura->setDescripcion($lineaOrigen->getDescripcion());
-            $lineaFactura->setCantidad($lineaOrigen->getCantidad());
-            $lineaFactura->setUnidad($lineaOrigen->getUnidad());
-            $lineaFactura->setPrecioUnitario($lineaOrigen->getPrecioUnitario());
-            $lineaFactura->setCosteUnitario($lineaOrigen->getCosteUnitario());
-            $lineaFactura->setDescuento($lineaOrigen->getDescuento());
-            $lineaFactura->setTipoIva($lineaOrigen->getTipoIva());
-            $lineaFactura->setAfectaStock($lineaOrigen->isAfectaStock());
-            $lineaFactura->setStockMovido(false);
-
-            // COPIAR IMPORTES YA CALCULADOS
-            $lineaFactura->setSubtotal($lineaOrigen->getSubtotal());
-            $lineaFactura->setTotalIva($lineaOrigen->getTotalIva());
-            $lineaFactura->setSubTotal($lineaOrigen->getSubTotal());
-            $lineaFactura->setTotalCoste($lineaOrigen->getTotalCoste());
-
-            $factura->addLinea($lineaFactura);
+        foreach ($presupuesto->getLineas() as $linea) {
+            if ($linea->isPendienteClasificarFacturacion()) {
+                throw new \RuntimeException('Hay líneas pendientes de clasificar para facturación.');
+            }
         }
 
-        foreach ($documento->getManoObra() as $manoObraOrigen) {
+        $lineasFactura = [];
+        $lineasTicket = [];
+
+        foreach ($presupuesto->getLineas() as $lineaOrigen) {
+            if ($lineaOrigen->isFacturaObra()) {
+                $lineasFactura[] = $lineaOrigen;
+            }
+
+            if ($lineaOrigen->isTicketTienda()) {
+                $lineasTicket[] = $lineaOrigen;
+            }
+        }
+
+        if (count($lineasFactura) === 0 && count($lineasTicket) === 0) {
+            throw new \RuntimeException('No hay líneas para generar factura ni ticket.');
+        }
+
+        $factura = null;
+        $ticket = null;
+
+        if (count($lineasFactura) > 0) {
+            $factura = $this->crearDocumentoDesdeLineas(
+                presupuestoOrigen: $presupuesto,
+                tipoDocumento: 'factura',
+                lineasOrigen: $lineasFactura
+            );
+
+            $this->copiarManoObra($presupuesto, $factura);
+        }
+
+        if (count($lineasTicket) > 0) {
+            $ticket = $this->crearDocumentoDesdeLineas(
+                presupuestoOrigen: $presupuesto,
+                tipoDocumento: 'ticket',
+                lineasOrigen: $lineasTicket
+            );
+        }
+
+        $presupuesto->setEstadoComercial('convertido');
+        $presupuesto->setFechaAceptacion(new \DateTime());
+
+        if ($factura) {
+            $presupuesto->setFacturaVinculada($factura);
+        }
+
+        $proyecto = $presupuesto->getProyecto();
+        $this->em->flush();
+
+        $this->proyectoCalculatorService->recalcularProyecto($proyecto, false);
+
+        return $factura ?? $ticket ?? $presupuesto;
+    }
+
+    private function crearDocumentoDesdeLineas(
+        Documento $presupuestoOrigen,
+        string $tipoDocumento,
+        array $lineasOrigen
+    ): Documento {
+        $documentoNuevo = new Documento();
+
+        $documentoNuevo->setTipoDocumento($tipoDocumento);
+        $documentoNuevo->setCliente($presupuestoOrigen->getCliente());
+        $documentoNuevo->setProyecto($presupuestoOrigen->getProyecto());
+        $documentoNuevo->setNotas($presupuestoOrigen->getNotas());
+        $documentoNuevo->setEstadoComercial('borrador');
+        $documentoNuevo->setEstadoCobro('no_aplica');
+        $documentoNuevo->setEstadoEjecucion('pendiente');
+        $documentoNuevo->setFechaEmision(new \DateTime());
+
+        $this->serieService->asignarNumeracion($documentoNuevo);
+
+        $this->em->persist($documentoNuevo);
+
+        $posicion = 1;
+
+        foreach ($lineasOrigen as $lineaOrigen) {
+            $lineaNueva = $this->copiarLineaDocumento($lineaOrigen);
+            $lineaNueva->setPosicion($posicion);
+
+            $documentoNuevo->addLinea($lineaNueva);
+
+            $posicion++;
+        }
+
+        $this->recalcularTotalesDocumento($documentoNuevo);
+
+        return $documentoNuevo;
+    }
+    private function copiarLineaDocumento(DocumentoLinea $lineaOrigen): DocumentoLinea
+    {
+        $lineaNueva = new DocumentoLinea();
+
+        $lineaNueva->setTipoLinea($lineaOrigen->getTipoLinea());
+        $lineaNueva->setProducto($lineaOrigen->getProducto());
+        $lineaNueva->setDescripcion($lineaOrigen->getDescripcion());
+        $lineaNueva->setCantidad($lineaOrigen->getCantidad());
+        $lineaNueva->setUnidad($lineaOrigen->getUnidad());
+        $lineaNueva->setPrecioUnitario($lineaOrigen->getPrecioUnitario());
+        $lineaNueva->setCosteUnitario($lineaOrigen->getCosteUnitario());
+        $lineaNueva->setDescuento($lineaOrigen->getDescuento());
+        $lineaNueva->setTipoIva($lineaOrigen->getTipoIva());
+        $lineaNueva->setAfectaStock($lineaOrigen->isAfectaStock());
+        $lineaNueva->setStockMovido(false);
+        $lineaNueva->setOrigenLinea($lineaOrigen->getOrigenLinea());
+        $lineaNueva->setCatalogoProducto($lineaOrigen->getCatalogoProducto());
+        $lineaNueva->setDestinoFacturacion($lineaOrigen->getDestinoFacturacion());
+
+        $lineaNueva->setSubtotal($lineaOrigen->getSubtotal());
+        $lineaNueva->setTotalIva($lineaOrigen->getTotalIva());
+        $lineaNueva->setTotalCoste($lineaOrigen->getTotalCoste());
+
+        return $lineaNueva;
+    }
+
+    private function recalcularTotalesDocumento(Documento $documento): void
+    {
+        $baseImponible = 0.0;
+        $totalIva = 0.0;
+        $total = 0.0;
+        $totalCoste = 0.0;
+
+        foreach ($documento->getLineas() as $linea) {
+            $subtotal = (float) $linea->getSubtotal();
+            $iva = (float) $linea->getTotalIva();
+            $coste = (float) $linea->getTotalCoste();
+
+            $baseImponible += $subtotal;
+            $totalIva += $iva;
+            $total += $subtotal + $iva;
+            $totalCoste += $coste;
+        }
+
+        $documento->setBaseImponible(number_format($baseImponible, 2, '.', ''));
+        $documento->setTotalIva(number_format($totalIva, 2, '.', ''));
+        $documento->setTotal(number_format($total, 2, '.', ''));
+        $documento->setTotalCoste(number_format($totalCoste, 2, '.', ''));
+    }
+
+    private function copiarManoObra(Documento $presupuestoOrigen, Documento $factura): void
+    {
+        foreach ($presupuestoOrigen->getManoObra() as $manoObraOrigen) {
             $lineaManoObra = new ManoObra();
+
             $lineaManoObra->setCategoriaMo($manoObraOrigen->getCategoriaMo());
             $lineaManoObra->setCoste($manoObraOrigen->getCoste());
             $lineaManoObra->setPagado($manoObraOrigen->isPagado());
@@ -149,27 +265,5 @@ class DocumentoEstadoService
 
             $factura->addManoObra($lineaManoObra);
         }
-
-        // COPIAR TOTALES DEL DOCUMENTO ORIGINAL
-        $factura->setBaseImponible($documento->getBaseImponible());
-        $factura->setTotalIva($documento->getTotalIva());
-        $factura->setTotal($documento->getTotal());
-        $factura->setTotalCoste($documento->getTotalCoste());
-        $documento->setEstadoComercial('convertido');
-        $documento->setFechaAceptacion(new \DateTime());
-        $documento->setFacturaVinculada($factura);
-
-        // NO RECALCULAR AQUÍ
-        // $this->documentoCalculatorService->recalcularDocumento($factura);
-
-        $proyecto = $documento->getProyecto();
-        if ($proyecto) {
-            $this->proyectoService->recalcularProyecto($proyecto);
-        }
-
-        $this->em->persist($factura);
-        $this->em->flush();
-
-        return $factura;
     }
 }

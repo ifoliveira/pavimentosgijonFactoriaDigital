@@ -51,6 +51,16 @@
                 </div>
 
                 <div class="col-md-6">
+                    <label class="form-label fixed-label">Tipo de obra</label>
+                    <select name="tipo_obra" id="tipo_obra" class="form-select">
+                        <option value="">Selecciona tipo de obra</option>
+                        <option value="ducha">Cambio bañera por ducha</option>
+                        <option value="bano_completo">Baño completo</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>                
+
+                <div class="col-md-6">
                     <label for="{{ form.nombre.vars.id }}" class="form-label fixed-label">Nombre del proyecto *</label>
                     {{ form_widget(form.nombre) }}
                     {{ form_errors(form.nombre) }}

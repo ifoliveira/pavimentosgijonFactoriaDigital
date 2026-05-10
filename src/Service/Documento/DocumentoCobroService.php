@@ -70,9 +70,6 @@ class DocumentoCobroService
 
         $documento = $cobro->getDocumento();
         
-        if ($documento && $documento->getProyecto()) {
-            $this->proyectoService->recalcularProyecto($documento->getProyecto());
-        }        
 
 
         $this->em->remove($cobro);
@@ -80,6 +77,12 @@ class DocumentoCobroService
         // Recalcular estado después de borrar
         $this->actualizarEstadoCobro($documento, null, $cobro->getId());
         $this->em->persist($documento);
+
+        if ($documento && $documento->getProyecto()) {
+            $this->proyectoService->recalcularProyecto($documento->getProyecto());
+        }        
+
+        
         $this->em->flush();
     }
 

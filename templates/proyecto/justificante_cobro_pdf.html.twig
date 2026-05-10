@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Justificante de cobro</title>
+
+    <style>
+        @page {
+            margin: 22mm 18mm;
+        }
+
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 12px;
+            color: #222;
+        }
+
+        .header {
+            border-bottom: 2px solid #222;
+            padding-bottom: 12px;
+            margin-bottom: 22px;
+        }
+
+        .titulo {
+            font-size: 22px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .subtitulo {
+            color: #666;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .bloque {
+            border: 1px solid #ddd;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+
+        .label {
+            color: #666;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .valor {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .importe {
+            margin: 22px 0;
+            padding: 18px;
+            border: 2px solid #222;
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            vertical-align: top;
+            padding: 5px 8px 5px 0;
+        }
+
+        .aviso {
+            margin-top: 22px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            font-size: 11px;
+            color: #444;
+        }
+
+        .firma {
+            margin-top: 45px;
+            width: 45%;
+            border-top: 1px solid #222;
+            padding-top: 8px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="titulo">Justificante de cobro</div>
+        <div class="subtitulo">
+            Pago recibido a cuenta de proyecto. Este documento no es factura.
+        </div>
+    </div>
+
+    <div class="bloque">
+        <table>
+            <tr>
+                <td>
+                    <div class="label">Cliente</div>
+                    <div class="valor">
+                        {{ cliente ? cliente.nombreCl : '—' }}
+                    </div>
+                </td>
+                <td>
+                    <div class="label">Fecha del cobro</div>
+                    <div class="valor">
+                        {{ cobro.fecha|date('d/m/Y') }}
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="label">Proyecto</div>
+                    <div class="valor">
+                        {{ proyecto.nombre }}
+                    </div>
+                </td>
+                <td>
+                    <div class="label">Presupuesto asociado</div>
+                    <div class="valor">
+                        {% if presupuesto %}
+                            {{ presupuesto.numeroFormateado ?? (presupuesto.serie ~ '-' ~ presupuesto.numero) }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="importe">
+        {{ cobro.importeBruto|format_currency('EUR', locale='es') }}
+    </div>
+
+    <div class="bloque">
+        <table>
+            <tr>
+                <td>
+                    <div class="label">Método de pago</div>
+                    <div class="valor">{{ cobro.metodo }}</div>
+                </td>
+                <td>
+                    <div class="label">Referencia</div>
+                    <div class="valor">{{ cobro.referencia ?? '—' }}</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="label">Total proyecto</div>
+                    <div class="valor">
+                        {{ proyecto.totalFacturado|format_currency('EUR', locale='es') }}
+                    </div>
+                </td>
+                <td>
+                    <div class="label">Pendiente tras este cobro</div>
+                    <div class="valor">
+                        {{ proyecto.pendienteCobro|format_currency('EUR', locale='es') }}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {% if cobro.notas %}
+        <div class="bloque">
+            <div class="label">Notas</div>
+            <div>{{ cobro.notas|nl2br }}</div>
+        </div>
+    {% endif %}
+
+    <div class="aviso">
+        Este justificante acredita la recepción del importe indicado como pago a cuenta del proyecto señalado.
+        No es una factura ni una factura simplificada, y no sustituye a los documentos fiscales correspondientes.
+    </div>
+
+    <div class="firma">
+        Recibido por Pavimentos Gijón
+    </div>
+
+</body>
+</html>

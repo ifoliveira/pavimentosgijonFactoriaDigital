@@ -30,6 +30,37 @@ class ProyectoController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // 👉 AQUÍ VA LA MAGIA
+            $cliente = $proyecto->getCliente();
+            $tipoObra = $request->request->get('tipo_obra');
+            $nombreManual = trim((string) $proyecto->getNombre());
+
+            $prefijo = match ($tipoObra) {
+                'ducha' => 'Cambio bañera por ducha',
+                'bano_completo' => 'Baño completo',
+                default => null,
+            };
+
+            if ($cliente) {
+                $direccion = trim((string) $cliente->getDireccionCl());
+
+                $partes = [];
+
+                if ($prefijo) {
+                    $partes[] = $prefijo;
+                }
+
+                if ($nombreManual !== '') {
+                    $partes[] = $nombreManual;
+                }
+
+                if ($direccion !== '') {
+                    $partes[] = $direccion;
+                }
+
+                $proyecto->setNombre(implode(' - ', $partes));
+            }
+
             $entityManager->persist($proyecto);
             $entityManager->flush();
 
@@ -143,5 +174,24 @@ class ProyectoController extends AbstractController
             'proyecto' => $proyecto,
         ]);
     }
+
+    #[Route('/{id}', name: 'app_proyecto_delete', methods: ['POST'])]
+    public function delete(Request $request, Proyecto $proyecto, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$proyecto->getId(), $request->request->get('_token'))) {
+
+            if ($proyecto->getTotalCobrado() > 0) {
+                $this->addFlash('error', 'No puedes borrar un proyecto con cobros.');
+                return $this->redirectToRoute('app_proyecto_index');
+            }
+
+            $em->remove($proyecto);
+            $em->flush();
+
+            $this->addFlash('success', 'Proyecto eliminado correctamente.');
+        }
+
+        return $this->redirectToRoute('app_proyecto_index');
+    }    
 
 }

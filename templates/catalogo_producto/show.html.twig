@@ -1,0 +1,118 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CatalogoProducto{% endblock %}
+
+{% block body %}
+    <h1>CatalogoProducto</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ catalogo_producto.id }}</td>
+            </tr>
+            <tr>
+                <th>Codigo</th>
+                <td>{{ catalogo_producto.codigo }}</td>
+            </tr>
+            <tr>
+                <th>Nombre</th>
+                <td>{{ catalogo_producto.nombre }}</td>
+            </tr>
+            <tr>
+                <th>Descripcion</th>
+                <td>{{ catalogo_producto.descripcion }}</td>
+            </tr>
+            <tr>
+                <th>Familia</th>
+                <td>{{ catalogo_producto.familia }}</td>
+            </tr>
+            <tr>
+                <th>Subfamilia</th>
+                <td>{{ catalogo_producto.subfamilia }}</td>
+            </tr>
+            <tr>
+                <th>Marca</th>
+                <td>{{ catalogo_producto.marca }}</td>
+            </tr>
+            <tr>
+                <th>Modelo</th>
+                <td>{{ catalogo_producto.modelo }}</td>
+            </tr>
+            <tr>
+                <th>Unidad</th>
+                <td>{{ catalogo_producto.unidad }}</td>
+            </tr>
+            <tr>
+                <th>PrecioVenta</th>
+                <td>{{ catalogo_producto.precioVenta }}</td>
+            </tr>
+            <tr>
+                <th>PrecioCoste</th>
+                <td>{{ catalogo_producto.precioCoste }}</td>
+            </tr>
+            <tr>
+                <th>TipoIva</th>
+                <td>{{ catalogo_producto.tipoIva }}</td>
+            </tr>
+            <tr>
+                <th>Ancho</th>
+                <td>{{ catalogo_producto.ancho }}</td>
+            </tr>
+            <tr>
+                <th>Alto</th>
+                <td>{{ catalogo_producto.alto }}</td>
+            </tr>
+            <tr>
+                <th>Largo</th>
+                <td>{{ catalogo_producto.largo }}</td>
+            </tr>
+            <tr>
+                <th>Fondo</th>
+                <td>{{ catalogo_producto.fondo }}</td>
+            </tr>
+            <tr>
+                <th>MedidaTexto</th>
+                <td>{{ catalogo_producto.medidaTexto }}</td>
+            </tr>
+            <tr>
+                <th>Atributos</th>
+                <td>{{ catalogo_producto.atributos ? catalogo_producto.atributos|json_encode : '' }}</td>
+            </tr>
+            <tr>
+                <th>ControlaStock</th>
+                <td>{{ catalogo_producto.controlaStock ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>StockActual</th>
+                <td>{{ catalogo_producto.stockActual }}</td>
+            </tr>
+            <tr>
+                <th>StockMinimo</th>
+                <td>{{ catalogo_producto.stockMinimo }}</td>
+            </tr>
+            <tr>
+                <th>Activo</th>
+                <td>{{ catalogo_producto.activo ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>VisiblePresupuesto</th>
+                <td>{{ catalogo_producto.visiblePresupuesto ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ catalogo_producto.createdAt ? catalogo_producto.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>UpdatedAt</th>
+                <td>{{ catalogo_producto.updatedAt ? catalogo_producto.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_catalogo_producto_index') }}">back to list</a>
+
+    <a href="{{ path('app_catalogo_producto_edit', {'id': catalogo_producto.id}) }}">edit</a>
+
+    {{ include('catalogo_producto/_delete_form.html.twig') }}
+{% endblock %}

@@ -3,10 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Forecast;
+use App\Entity\FacturaProveedor;
 use App\Form\ForecastType;
+use App\Entity\FacturaProveedorLineaAsignacion;
+use App\Entity\ProyectoGasto;
 use App\Repository\BancoRepository;
 use App\Repository\DetallecestaRepository;
 use App\Repository\ForecastRepository;
+use App\Repository\ProyectoRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,6 +21,8 @@ use App\Service\FacturaPdfToJsonService;
 use App\Repository\TiposmovimientoRepository;
 use App\Repository\TipoproductoRepository;
 use App\Entity\Productos;
+use App\Service\FacturaProveedor\FacturaProveedorService;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 #[Route('/admin/forecast')]
 class ForecastController extends AbstractController
@@ -191,137 +197,76 @@ class ForecastController extends AbstractController
         return $this->redirectToRoute('forecast_index');
     }
 
+    
 
-    #[Route('/factura/subir', name: 'factura_subir', methods: ['GET', 'POST'])]
-    public function subir(
-        Request $request,
-        FacturaPdfToJsonService $facturaPdfToJsonService
-    ): Response {
-        // Petición normal GET → renderiza la página
-        if ($request->isMethod('GET')) {
-            return $this->render('forecast/subir.html.twig');
+    private function toFloat(mixed $value): float
+    {
+        if ($value === null || $value === '') {
+            return 0.0;
         }
 
-        // Petición AJAX POST → devuelve JSON
-        $archivo = $request->files->get('factura');
-
-        if (!$archivo) {
-            return $this->json(['error' => 'No se ha recibido ningún archivo.'], 400);
-        }
-
-        if (strtolower($archivo->getClientOriginalExtension()) !== 'pdf') {
-            return $this->json(['error' => 'Solo se admiten archivos PDF.'], 400);
-        }
-        try {
-            $tmpPath = sys_get_temp_dir() . '/' . uniqid('factura_', true) . '.pdf';
-            $archivo->move(dirname($tmpPath), basename($tmpPath));
-            $resultado = $facturaPdfToJsonService->procesarFacturaPdf($tmpPath);
-            @unlink($tmpPath);
-
-            return $this->json(['resultado' => $resultado]);
-
-        } catch (\Throwable $e) {
-            return $this->json(['error' => 'Error procesando la factura: ' . $e->getMessage()], 500);
-        }
+        return (float) str_replace(',', '.', (string) $value);
     }
-    #[Route('/factura/forecast', name: 'factura_forecast', methods: ['POST'])]
-    public function insertarForecast(
-        Request $request,
-        EntityManagerInterface $em,
-        TiposmovimientoRepository $tiposRepo
-    ): Response {
-        $data = json_decode($request->getContent(), true);
 
-        if (!$data || empty($data['vencimientos']) || empty($data['concepto'])) {
-            return $this->json(['error' => 'Datos incompletos.'], 400);
+    private function calcularEstadoFacturaProveedor(FacturaProveedor $factura): string
+    {
+        $total = 0;
+        $revision = 0;
+        $pendiente = 0;
+        $ignorada = 0;
+
+        foreach ($factura->getLineas() as $linea) {
+            $total++;
+
+            if ($linea->getEstado() === 'revision') {
+                $revision++;
+            } elseif ($linea->getEstado() === 'pendiente') {
+                $pendiente++;
+            } elseif ($linea->getEstado() === 'ignorada') {
+                $ignorada++;
+            }
         }
 
-        // Busca el tipo "Proveedor" por descripción en lugar de por ID fijo
-        $tipo = $tiposRepo->findOneBy(['descripcionTm' => 'Proveedor']);
-        if (!$tipo) {
-            return $this->json(['error' => 'No se encontró el tipo de movimiento "Proveedor".'], 404);
+        if ($total === 0) {
+            return 'revision';
         }
 
-        $insertados = 0;
+        if ($revision > 0) {
+            return 'revision';
+        }
 
-        foreach ($data['vencimientos'] as $venc) {
-            if (empty($venc['fecha']) || !isset($venc['importe'])) {
-                continue;
+        if ($pendiente > 0) {
+            return 'pendiente';
+        }
+
+        return 'ignorada';
+    }    
+
+
+    private function calcularEstadoAsignacionFactura(FacturaProveedor $factura): string
+    {
+        $hayPendientes = false;
+        $hayParciales = false;
+        $hayAsignadas = false;
+
+        foreach ($factura->getLineas() as $linea) {
+            if ($linea->getEstado() === 'pendiente') {
+                $hayPendientes = true;
             }
 
-            $forecast = new Forecast();
-            $forecast->setTipoFr($tipo);
-            $forecast->setConceptoFr($data['concepto']);
-            $forecast->setFechaFr(new \DateTime($venc['fecha']));
-            $forecast->setImporteFr((float) $venc['importe']*-1);
-            $forecast->setOrigenFr('Banco');
-
-            $em->persist($forecast);
-            $insertados++;
-        }
-
-        if ($insertados === 0) {
-            return $this->json(['error' => 'No hay vencimientos válidos para insertar.'], 400);
-        }
-
-        $em->flush();
-
-        return $this->json(['ok' => true, 'insertados' => $insertados]);
-    }
-
-    #[Route('/factura/productos', name: 'factura_productos', methods: ['POST'])]
-    public function insertarProductos(
-        Request $request,
-        EntityManagerInterface $em,
-        TipoproductoRepository $tipoRepo
-    ): Response {
-        $data = json_decode($request->getContent(), true);
-
-        if (!$data || empty($data['articulos'])) {
-            return $this->json(['error' => 'No hay artículos.'], 400);
-        }
-
-        $insertados = 0;
-
-        foreach ($data['articulos'] as $art) {
-            if (empty($art['descripcion'])) continue;
-
-            $tipo = $tipoRepo->find($art['tipo_id'] ?? 1);
-            if (!$tipo) continue;
-
-            $producto = new Productos();
-            $producto->setDescripcionPd($art['descripcion']);
-            $coste = round((float) $art['coste_con_iva'], 2);
-            $pvpRaw = $coste * 1.50;
-
-            // Redondea al 0.95 del euro más cercano
-            $pvp = floor($pvpRaw) + 0.95;
-
-            // Si el redondeo al .95 se pasó hacia arriba más de 1€, retrocede
-            if ($pvp - $pvpRaw > 1) {
-                $pvp -= 1.0;
+            if ($linea->getEstado() === 'parcial') {
+                $hayParciales = true;
             }
 
-            // Si el precio exacto es más cercano (termina en .00) lo deja exacto
-            // En tu caso siempre quieres .95, así que lo dejamos fijo
-
-            $producto->setPrecioPd($coste);
-            $producto->setPvpPd($pvp);
-            $producto->setStockPd((int) $art['cantidad']);
-            $producto->setFecAltaPd(new \DateTime());
-            $producto->setTipoPdId($tipo);
-            $producto->setObsoleto(false);
-
-            $em->persist($producto);
-            $insertados++;
+            if ($linea->getEstado() === 'asignada') {
+                $hayAsignadas = true;
+            }
         }
 
-        if ($insertados === 0) {
-            return $this->json(['error' => 'No hay artículos válidos.'], 400);
+        if ($hayPendientes || $hayParciales) {
+            return $hayAsignadas ? 'parcial' : 'pendiente';
         }
 
-        $em->flush();
-
-        return $this->json(['ok' => true, 'insertados' => $insertados]);
-    }
+        return 'asignada';
+    }    
 }

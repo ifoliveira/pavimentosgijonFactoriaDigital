@@ -7,11 +7,14 @@ use App\Entity\ProyectoGasto;
 use App\Repository\DocumentoRepository;
 use App\Repository\ProyectoGastoRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;   
+use App\Service\ForecastHandlerService;
 
 class ProyectoGastoService
 {
     public function __construct(
         private EntityManagerInterface $em,
+        private ForecastHandlerService $forecastService
     ) {
     }
 
@@ -21,8 +24,7 @@ class ProyectoGastoService
             return;
         }
 
-        // Aquí luego meterás la lógica real de crear/actualizar Forecast.
-        // Por ahora lo dejamos preparado.
+        $this->forecastService->sincronizarForecastSiProcede($gasto);
     }
 
     public function recalcularProyecto(Proyecto $proyecto): void

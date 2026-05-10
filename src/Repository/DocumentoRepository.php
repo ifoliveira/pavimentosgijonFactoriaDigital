@@ -41,9 +41,23 @@ class DocumentoRepository extends ServiceEntityRepository
             ->andWhere('d.tipoDocumento = :tipo')
             ->setParameter('proyecto', $proyecto)
             ->setParameter('tipo', 'factura')
+            ->orderBy('d.id', 'DESC')
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }
+    public function findTicketDeProyecto(Proyecto $proyecto): ?Documento
+    {
+        return $this->createQueryBuilder('d')
+            ->andWhere('d.proyecto = :proyecto')
+            ->andWhere('d.tipoDocumento = :tipo')
+            ->setParameter('proyecto', $proyecto)
+            ->setParameter('tipo', 'ticket')
+            ->orderBy('d.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }    
 
     public function findPresupuestoInicialDeProyecto(Proyecto $proyecto): ?Documento
     {
@@ -53,7 +67,7 @@ class DocumentoRepository extends ServiceEntityRepository
             ->andWhere('d.estadoComercial IN (:estados)')
             ->setParameter('proyecto', $proyecto)
             ->setParameter('tipo', 'presupuesto')
-            ->setParameter('estados', ['convertido', 'aceptado'])
+            ->setParameter('estados', ['convertido', 'aceptado', 'borrador', 'rechazado', 'entregado'])
             ->orderBy('d.id', 'ASC')
             ->setMaxResults(1)
             ->getQuery()

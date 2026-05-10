@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CatalogoProductoConfiguracion index{% endblock %}
+
+{% block body %}
+    <h1>CatalogoProductoConfiguracion index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>ConfiguradorCodigo</th>
+                <th>Uso</th>
+                <th>Tipo</th>
+                <th>AnchoMin</th>
+                <th>AnchoMax</th>
+                <th>LargoMin</th>
+                <th>LargoMax</th>
+                <th>AltoMin</th>
+                <th>AltoMax</th>
+                <th>Prioridad</th>
+                <th>Recomendado</th>
+                <th>Activo</th>
+                <th>Condiciones</th>
+                <th>CreatedAt</th>
+                <th>UpdatedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for catalogo_producto_configuracion in catalogo_producto_configuracions %}
+            <tr>
+                <td>{{ catalogo_producto_configuracion.id }}</td>
+                <td>{{ catalogo_producto_configuracion.configuradorCodigo }}</td>
+                <td>{{ catalogo_producto_configuracion.uso }}</td>
+                <td>{{ catalogo_producto_configuracion.tipo }}</td>
+                <td>{{ catalogo_producto_configuracion.anchoMin }}</td>
+                <td>{{ catalogo_producto_configuracion.anchoMax }}</td>
+                <td>{{ catalogo_producto_configuracion.largoMin }}</td>
+                <td>{{ catalogo_producto_configuracion.largoMax }}</td>
+                <td>{{ catalogo_producto_configuracion.altoMin }}</td>
+                <td>{{ catalogo_producto_configuracion.altoMax }}</td>
+                <td>{{ catalogo_producto_configuracion.prioridad }}</td>
+                <td>{{ catalogo_producto_configuracion.recomendado ? 'Yes' : 'No' }}</td>
+                <td>{{ catalogo_producto_configuracion.activo ? 'Yes' : 'No' }}</td>
+                <td>{{ catalogo_producto_configuracion.condiciones ? catalogo_producto_configuracion.condiciones|json_encode : '' }}</td>
+                <td>{{ catalogo_producto_configuracion.createdAt ? catalogo_producto_configuracion.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ catalogo_producto_configuracion.updatedAt ? catalogo_producto_configuracion.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_catalogo_producto_configuracion_show', {'id': catalogo_producto_configuracion.id}) }}">show</a>
+                    <a href="{{ path('app_catalogo_producto_configuracion_edit', {'id': catalogo_producto_configuracion.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="17">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_catalogo_producto_configuracion_new') }}">Create new</a>
+{% endblock %}

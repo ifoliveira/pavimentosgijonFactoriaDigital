@@ -6,6 +6,7 @@ use App\Service\Documento\DocumentoCrearService;
 use App\Service\Documento\DocumentoVerService;
 use App\Service\Documento\DocumentoEstadoService;
 use App\Service\Documento\DocumentoManoObraService;
+use App\Service\Proyecto\ProyectoCalculatorService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -171,11 +172,15 @@ class DocumentoController extends AbstractController
             documento:   $documento,
             descripcion: trim($request->request->get('descripcion', '')),
             cantidad:    (float) $request->request->get('cantidad', 1),
-            precio:      (float) $request->request->get('precioUnitario', 0),
+            precio:      (float) $request->request->get('precioConIva', 0),
             descuento:   (float) $request->request->get('descuento', 0),
             productoId:  $request->request->get('productoId') ?: null,
             lineaId:    (float) $request->request->get('lineaId') ?: 0,
-            tipo:        $request->request->get('tipoLinea', 'producto')
+            tipo:        $request->request->get('tipoLinea', 'producto'),
+            destinoFacturacion: $request->request->get(
+                'destinoFacturacion',
+                DocumentoLinea::DESTINO_PENDIENTE),     
+
         );
 
         $this->addFlash('success', 'Línea añadida correctamente');
@@ -247,10 +252,13 @@ class DocumentoController extends AbstractController
     #[Route('/{id}/entregar', name: 'app_documento_entregar', methods: ['POST'])]
     public function entregar(
         int $id,
-        DocumentoEstadoService $estadoService
+        DocumentoEstadoService $estadoService,
+        ProyectoCalculatorService $proyectoService
     ): Response {
         try {
             $estadoService->marcarComoEntregado($id);
+            $proyectoService->recalcularProyectoDesdeDocumento($id);
+
             $this->addFlash('success', 'Documento marcado como entregado.');
         } catch (\RuntimeException $e) {
             $this->addFlash('error', $e->getMessage());

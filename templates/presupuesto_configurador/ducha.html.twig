@@ -1,0 +1,132 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Configurar ducha{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    {% endfor %}
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="h3 mb-1">{{ configurador.nombre }}</h1>
+            <p class="text-muted mb-0">
+                Documento #{{ documento.id }}
+                {% if documento.proyecto %}
+                    · {{ documento.proyecto.nombre }}
+                {% endif %}
+            </p>
+        </div>
+
+        <a href="{{ path('app_documento_show', {id: documento.id}) }}" class="btn btn-outline-secondary">
+            Volver al documento
+        </a>
+    </div>
+
+    <form method="post">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <strong>Datos rápidos de la obra</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-3">
+
+                    {% for campo in configurador.campos %}
+                        {% if campo.activo %}
+                            {% set valor = datos[campo.codigo] ?? null %}
+
+                            <div class="col-md-6">
+                                {% if campo.tipoCampo != 'boolean' %}
+                                    <label class="form-label">
+                                        {{ campo.etiqueta }}
+                                        {% if campo.obligatorio %}
+                                            <span class="text-danger">*</span>
+                                        {% endif %}
+                                    </label>
+                                {% endif %}
+
+                                {% if campo.tipoCampo == 'text' %}
+                                    <input type="text"
+                                           name="{{ campo.codigo }}"
+                                           class="form-control"
+                                           value="{{ valor }}">
+
+                                {% elseif campo.tipoCampo == 'number' %}
+                                    <input type="number"
+                                           step="0.01"
+                                           name="{{ campo.codigo }}"
+                                           class="form-control"
+                                           value="{{ valor }}">
+
+                                {% elseif campo.tipoCampo == 'select' %}
+                                    <select name="{{ campo.codigo }}" class="form-select">
+                                        <option value="">Selecciona...</option>
+                                        {% for opcion in campo.opciones %}
+                                            <option value="{{ opcion.value }}"
+                                                {% if valor == opcion.value %}selected{% endif %}>
+                                                {{ opcion.label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+
+                                {% elseif campo.tipoCampo == 'boolean' %}
+                                    <div class="form-check mt-4">
+                                        <input type="checkbox"
+                                               name="{{ campo.codigo }}"
+                                               id="{{ campo.codigo }}"
+                                               class="form-check-input"
+                                               value="1"
+                                               {% if valor %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ campo.codigo }}">
+                                            {{ campo.etiqueta }}
+                                        </label>
+                                    </div>
+
+                                {% elseif campo.tipoCampo == 'producto' %}
+                                    <select name="{{ campo.codigo }}" class="form-select">
+                                        <option value="">Pendiente selector productos...</option>
+                                        {% if valor %}
+                                            <option value="{{ valor }}" selected>Producto #{{ valor }}</option>
+                                        {% endif %}
+                                    </select>
+                                    <div class="form-text">
+                                        Luego conectamos esto con tu tabla de productos.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <div class="card-footer bg-white d-flex justify-content-end gap-2">
+                <a href="{{ path('app_documento_show', {id: documento.id}) }}" class="btn btn-light">
+                    Cancelar
+                </a>
+
+                <button type="submit" name="accion" value="guardar" class="btn btn-outline-primary">
+                    Guardar configuración
+                </button>
+
+                <button type="submit" name="accion" value="generar" class="btn btn-primary">
+                    Guardar y generar presupuesto
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

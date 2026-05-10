@@ -149,9 +149,13 @@ class Proyecto
      * Todos los documentos del proyecto (presupuestos y factura).
      * Se accede a ellos filtrando por tipoDocumento cuando sea necesario.
      */
-    #[ORM\OneToMany(mappedBy: 'proyecto', targetEntity: Documento::class)]
+    #[ORM\OneToMany(
+        mappedBy: 'proyecto',
+        targetEntity: Documento::class,
+        cascade: ['remove'],
+        orphanRemoval: true
+    )]
     private Collection $documentos;
-
     // -------------------------------------------------------------------------
     // RELACIÓN CON GASTOS
     // ------------------------------------------------------------------------- 
@@ -166,6 +170,39 @@ class Proyecto
 
     #[ORM\OneToMany(mappedBy: 'proyecto', targetEntity: ProyectoGasto::class, orphanRemoval: true)]
     private Collection $gastos;
+
+    // -------------------------------------------------------------------------
+    // RELACIÓN CON COBROS
+    // -------------------------------------------------------------------------
+    /*
+     * Representa los pagos recibidos del cliente asociados al proyecto completo.
+     *
+     * El cobro no se vincula necesariamente a una factura o ticket concreto,
+     * porque un mismo proyecto puede tener varios documentos:
+     * - presupuesto inicial
+     * - presupuestos adicionales
+     * - factura de obra
+     * - ticket de tienda
+     *
+     * La finalidad de esta relación es controlar la deuda real del cliente
+     * sobre la operación completa, independientemente de cómo se divida
+     * fiscalmente entre factura y ticket.
+     *
+     * Ejemplos:
+     * - entrega inicial antes de empezar la obra
+     * - pago parcial durante la ejecución
+     * - pago final al terminar
+     * - pago con tarjeta con comisión bancaria
+     * - ingreso por transferencia conciliado con Banco
+     *
+     * En los cálculos del proyecto:
+     * - importeBruto reduce la deuda pendiente del cliente
+     * - importeRecargo refleja la comisión o coste del método de pago
+     * - importeNeto indica el dinero realmente recibido
+     */
+        
+    #[ORM\OneToMany(mappedBy: 'proyecto', targetEntity: ProyectoCobro::class, cascade: ['persist'], orphanRemoval: true)]
+    private Collection $cobros;    
 
     // -------------------------------------------------------------------------
     // TIMESTAMPS
@@ -187,6 +224,7 @@ class Proyecto
         $this->fechaInicio = new \DateTime();
         $this->creadoEn = new \DateTime();
         $this->gastos = new ArrayCollection();
+        $this->cobros = new ArrayCollection();
 
     }
 
@@ -391,4 +429,34 @@ class Proyecto
 
         return $this;
     }    
+
+    /**
+     * @return Collection<int, ProyectoCobro>
+     */
+    public function getCobros(): Collection
+    {
+        return $this->cobros;
+    }
+
+    public function addCobro(ProyectoCobro $cobro): static
+    {
+        if (!$this->cobros->contains($cobro)) {
+            $this->cobros->add($cobro);
+            $cobro->setProyecto($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCobro(ProyectoCobro $cobro): static
+    {
+        if ($this->cobros->removeElement($cobro)) {
+            if ($cobro->getProyecto() === $this) {
+                $cobro->setProyecto(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

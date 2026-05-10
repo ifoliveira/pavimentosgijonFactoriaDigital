@@ -65,10 +65,17 @@
                 <button class="fg-forecast-btn" id="fg-forecast-btn" style="display:none">
                     📅 Insertar en Forecast 
                 </button>
+                <button class="fg-productos-btn" id="fg-revisar-btn" style="display:none">
+                    🧾 Revisar factura
+                </button>                
                 {# Junto a fg-copy-btn y fg-forecast-btn #}
                 <button class="fg-productos-btn" id="fg-productos-btn" style="display:none">
                     📦 Productos
+                </button>    
+                <button class="fg-productos-btn" id="fg-asignar-obra-btn" style="display:none">
+                    🏗️ Asignar a obra
                 </button>                
+
             </div>
             <div class="fg-panel-body" id="fg-json-body">
                 <div class="fg-empty" id="fg-json-ph">
@@ -148,6 +155,9 @@
     const jsonBody  = document.getElementById('fg-json-body');
     const jsonPH    = document.getElementById('fg-json-ph');
     const copyBtn   = document.getElementById('fg-copy-btn');
+    const asignarObraBtn = document.getElementById('fg-asignar-obra-btn');
+
+    let facturaProveedorId = null;
 
     // Selección de archivo → previsualiza sin recargar
     inputFile.addEventListener('change', () => {
@@ -177,13 +187,28 @@
         fd.append('factura', file);
 
         try {
-            const res  = await fetch('{{ path('factura_subir') }}', { method: 'POST', body: fd });
-            const data = await res.json();
+            const res = await fetch('{{ path('factura_proveedor_subir') }}', {
+                method: 'POST',
+                body: fd
+            });
+
+            const text = await res.text();
+
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Respuesta NO JSON del servidor:', text);
+                showAlert('error', '⚠ El servidor devolvió una respuesta no JSON. Mira la consola.');
+                showJsonPH();
+                return;
+            }
             if (!res.ok || data.error) {
                 showAlert('error', '⚠ ' + (data.error ?? 'Error desconocido'));
                 showJsonPH();
             } else {
                 showAlert('success', '✓ Factura procesada correctamente');
+                facturaProveedorId = data.facturaProveedorId ?? null;
                 renderJson(data.resultado);
             }
         } catch (e) {
@@ -242,9 +267,14 @@
         pre.innerHTML = highlight(JSON.stringify(obj, null, 2));
         jsonBody.appendChild(pre);
         copyBtn.style.display = 'block';
-        jsonActual = obj;                        // ← añade
-        forecastBtn.style.display = 'block';     // ← añade        
-        productosBtn.style.display = 'block';  // ← añade            
+        jsonActual = obj;
+        forecastBtn.style.display = 'block';
+        productosBtn.style.display = 'block';
+
+        if (facturaProveedorId) {
+            asignarObraBtn.style.display = 'block';
+            revisarBtn.style.display = 'block';
+        }         
     }
 
     function highlight(json) {
@@ -268,10 +298,12 @@
     const modalVencList  = document.getElementById('fg-venc-list');
     const modalCancel    = document.getElementById('fg-modal-cancel');
     const modalConfirm   = document.getElementById('fg-modal-confirm');
+    const revisarBtn     = document.getElementById('fg-revisar-btn');
 
     const TIPO_ID = 5; // ← pon aquí el id de Tiposmovimiento que corresponda
 
     let jsonActual = null; // guardamos el objeto resultado
+
 
     // Guarda el JSON cuando se renderiza (modifica tu función renderJson):
     // Al final de renderJson(obj) añade:  jsonActual = obj;  forecastBtn.style.display = 'block';
@@ -310,7 +342,7 @@
         modalConfirm.textContent = 'Insertando…';
 
         try {
-            const res  = await fetch('{{ path('factura_forecast') }}', {
+            const res  = await fetch('{{ path('factura_proveedor_forecast_insertar') }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -460,7 +492,7 @@ prodConfirm.addEventListener('click', async () => {
     prodConfirm.textContent = 'Insertando…';
 
     try {
-        const res  = await fetch('{{ path('factura_productos') }}', {
+        const res  = await fetch('{{ path('factura_proveedor_productos_insertar') }}', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ articulos }),
@@ -482,7 +514,22 @@ prodConfirm.addEventListener('click', async () => {
         prodConfirm.textContent = `Confirmar inserción (${prodCount.textContent})`;
     }
 });
+    asignarObraBtn.addEventListener('click', () => {
+        if (!facturaProveedorId) {
+            showAlert('error', '⚠ Primero debes procesar y guardar la factura.');
+            return;
+        }
 
+        window.location.href = `/factura-proveedor/${facturaProveedorId}/asignar`;
+    });
+    revisarBtn.addEventListener('click', () => {
+        if (!facturaProveedorId) {
+            showAlert('error', '⚠ Primero procesa la factura.');
+            return;
+        }
+
+        window.location.href = `/admin/facturas-proveedor/${facturaProveedorId}/revisar`;
+    });    
 })();
 </script>
 {% endblock %}

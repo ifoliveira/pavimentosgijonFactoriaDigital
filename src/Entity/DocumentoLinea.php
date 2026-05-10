@@ -67,6 +67,17 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'documento_linea')]
 class DocumentoLinea
 {
+    public const DESTINO_FACTURA_OBRA = 'factura_obra';
+    public const DESTINO_TICKET_TIENDA = 'ticket_tienda';
+    public const DESTINO_NO_FACTURABLE = 'no_facturable';
+    public const DESTINO_PENDIENTE = 'pendiente';
+
+    public const DESTINOS_FACTURACION = [
+        self::DESTINO_FACTURA_OBRA,
+        self::DESTINO_TICKET_TIENDA,
+        self::DESTINO_NO_FACTURABLE,
+        self::DESTINO_PENDIENTE,
+    ];
     // -------------------------------------------------------------------------
     // IDENTIFICACIÓN
     // -------------------------------------------------------------------------
@@ -101,6 +112,18 @@ class DocumentoLinea
      */
     #[ORM\Column(type: 'string', length: 20)]
     private ?string $tipoLinea = null;
+
+    /**
+     * Destino final de esta línea cuando el presupuesto se convierta.
+     *
+     * Valores:
+     * - factura_obra: irá a factura de obra / estimación directa
+     * - ticket_tienda: irá a ticket de tienda / recargo de equivalencia
+     * - no_facturable: línea informativa, comentario o separador
+     * - pendiente: falta clasificar
+     */
+    #[ORM\Column(type: 'string', length: 30, options: ['default' => self::DESTINO_PENDIENTE])]
+    private string $destinoFacturacion = self::DESTINO_PENDIENTE;
 
     /**
      * Producto del catálogo. Nullable.
@@ -227,6 +250,14 @@ class DocumentoLinea
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Documento $origenPresupuesto = null;
 
+
+    #[ORM\ManyToOne(targetEntity: CatalogoProducto::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?CatalogoProducto $catalogoProducto = null;
+
+    #[ORM\Column(type: 'string', length: 30)]
+    private string $origenLinea = 'manual';
+        
     // -------------------------------------------------------------------------
     // GETTERS Y SETTERS
     // -------------------------------------------------------------------------
@@ -422,4 +453,99 @@ class DocumentoLinea
         $this->origenPresupuesto = $origenPresupuesto;
         return $this;
     }
+    public function getCatalogoProducto(): ?CatalogoProducto
+    {
+        return $this->catalogoProducto;
+    }
+
+    public function setCatalogoProducto(?CatalogoProducto $catalogoProducto): static
+    {
+        $this->catalogoProducto = $catalogoProducto;
+
+        return $this;
+    }
+
+    public function getOrigenLinea(): string
+    {
+        return $this->origenLinea;
+    }
+
+    public function setOrigenLinea(string $origenLinea): static
+    {
+        $this->origenLinea = $origenLinea;
+
+        return $this;
+    }   
+    
+    public function getDestinoFacturacion(): string
+    {
+        return $this->destinoFacturacion;
+    }
+
+    public function setDestinoFacturacion(string $destinoFacturacion): static
+    {
+        if (!in_array($destinoFacturacion, self::DESTINOS_FACTURACION, true)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Destino de facturación no válido: %s',
+                $destinoFacturacion
+            ));
+        }
+
+        $this->destinoFacturacion = $destinoFacturacion;
+
+        return $this;
+    }
+
+    public function getDestinoFacturacionLabel(): string
+    {
+        return match ($this->destinoFacturacion) {
+            self::DESTINO_FACTURA_OBRA => 'Factura obra',
+            self::DESTINO_TICKET_TIENDA => 'Ticket tienda',
+            self::DESTINO_NO_FACTURABLE => 'No facturable',
+            self::DESTINO_PENDIENTE => 'Pendiente',
+            default => 'Pendiente',
+        };
+    }
+
+    public function getDestinoFacturacionBadgeClass(): string
+    {
+        return match ($this->destinoFacturacion) {
+            self::DESTINO_FACTURA_OBRA => 'bg-primary',
+            self::DESTINO_TICKET_TIENDA => 'bg-warning text-dark',
+            self::DESTINO_NO_FACTURABLE => 'bg-secondary',
+            self::DESTINO_PENDIENTE => 'bg-danger',
+            default => 'bg-danger',
+        };
+    }
+
+    public function isFacturaObra(): bool
+    {
+        return $this->destinoFacturacion === self::DESTINO_FACTURA_OBRA;
+    }
+
+    public function isTicketTienda(): bool
+    {
+        return $this->destinoFacturacion === self::DESTINO_TICKET_TIENDA;
+    }
+
+    public function isNoFacturable(): bool
+    {
+        return $this->destinoFacturacion === self::DESTINO_NO_FACTURABLE;
+    }
+
+    public function isPendienteClasificarFacturacion(): bool
+    {
+        return $this->destinoFacturacion === self::DESTINO_PENDIENTE;
+    }
+
+    public function getRegimenFiscalCalculado(): ?string
+    {
+        return match ($this->destinoFacturacion) {
+            self::DESTINO_FACTURA_OBRA => 'estimacion_directa',
+            self::DESTINO_TICKET_TIENDA => 'recargo_equivalencia',
+            self::DESTINO_NO_FACTURABLE => 'no_aplica',
+            self::DESTINO_PENDIENTE => null,
+            default => null,
+        };
+    }    
 }
