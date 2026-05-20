@@ -481,8 +481,8 @@
                                                                 {{ linea.id }},
                                                                 '{{ linea.tipoLinea }}',
                                                                 '{{ linea.descripcion|e('js') }}',
-                                                                {{ linea.cantidad }},
-                                                                {{ linea.precioUnitario }},
+                                                                {{ 1}},
+                                                                {{ (linea.subtotal + linea.totalIva) / (linea.cantidad |default(1)) }},
                                                                 {{ linea.descuento }},
                                                                 {{ linea.producto ? linea.producto.id : 'null' }},
                                                                 '{{ linea.producto ? linea.producto.descripcionPd|e('js') : '' }}',
@@ -1252,23 +1252,24 @@
         if (tipo === 'producto') {
             if (productoId) {
                 seleccionarProducto(productoId, productoNombre, precio);
+                activarFaseFormularioProducto();
             } else {
                 activarFaseFormularioProducto();
             }
 
-            document.getElementById('f-descripcion').value = descripcion;
-            document.getElementById('f-cantidad').value = cantidad;
-            document.getElementById('f-precio').value = precio;
-            document.getElementById('f-descuento').value = descuento;
+            document.getElementById('f-descripcion').value = descripcion || '';
+            document.getElementById('f-cantidad').value = cantidad || 1;
+            document.getElementById('f-precio-iva').value = precio || 0;
+            document.getElementById('f-descuento').value = descuento || 0;
 
             calcularSubtotalProducto();
         }
 
         if (tipo === 'servicio' || tipo === 'mano_obra') {
-            document.getElementById('f-descripcion-servicio').value = descripcion;
-            document.getElementById('f-cantidad-servicio').value = cantidad;
-            document.getElementById('f-precio-servicio').value = precio;
-            document.getElementById('f-descuento-servicio').value = descuento;
+            document.getElementById('f-descripcion-servicio').value = descripcion || '';
+            document.getElementById('f-cantidad-servicio').value = cantidad || 1;
+            document.getElementById('f-precio-iva-servicio').value = precio || 0;
+            document.getElementById('f-descuento-servicio').value = descuento || 0;
 
             calcularSubtotalServicio();
         }

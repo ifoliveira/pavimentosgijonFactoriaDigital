@@ -35,7 +35,8 @@ class PresupuestoConfiguradorFixtures extends Fixture
         $this->crearCampo($manager, $ducha, 'tipo_mampara', 'Tipo de mampara', 'select', true, 60, [
             ['value' => 'frontal_fijo_corredera', 'label' => 'Frontal fijo + corredera'],
             ['value' => 'angular', 'label' => 'Angular'],
-            ['value' => 'angular_doble', 'label' => 'Angular doble corredera / plegable'],
+            ['value' => 'angular_doble_corredera', 'label' => 'Angular doble corredera'],
+            ['value' => 'angular_plegable', 'label' => 'Angular plegable'],
             ['value' => 'sin_mampara', 'label' => 'Sin mampara'],
         ]);
 

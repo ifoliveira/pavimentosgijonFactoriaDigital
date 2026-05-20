@@ -225,7 +225,8 @@ class DocumentoLineaService
         ?CatalogoProducto $catalogoProducto = null,
         string $origenLinea = 'configurador',
         float $tipoIva = 21.00,
-        bool $flush = true
+        bool $flush = true,
+        string $destinoFacturacion = null
     ): DocumentoLinea {
         $linea = new DocumentoLinea();
 
@@ -244,7 +245,15 @@ class DocumentoLineaService
         $linea->setCatalogoProducto($catalogoProducto);
         $linea->setOrigenLinea($origenLinea);
 
+        if (!$destinoFacturacion) {
+            $destinoFacturacion = $this->resolverDestinoFacturacionPorDefecto($tipoLinea);
+        }
+
+        $linea->setDestinoFacturacion($destinoFacturacion);        
+
         $documento->addLinea($linea);
+
+ 
 
         $this->em->persist($linea);
 

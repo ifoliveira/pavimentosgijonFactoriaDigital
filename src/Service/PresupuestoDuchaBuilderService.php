@@ -34,7 +34,7 @@ class PresupuestoDuchaBuilderService
             tipoLinea: 'mano_obra',
             descripcion: 'Mano de obra cambio de bañera por plato de ducha',
             cantidad: 1,
-            precioConIva: 900,
+            precioConIva: 700,
             costeUnitario: 600
         );
 
@@ -56,7 +56,7 @@ class PresupuestoDuchaBuilderService
                 tipoLinea: 'mano_obra',
                 descripcion: 'Alicatado zona ducha hasta techo',
                 cantidad: 1,
-                precioConIva: 350,
+                precioConIva: 450,
                 costeUnitario: 200
             );
         }
@@ -100,21 +100,31 @@ class PresupuestoDuchaBuilderService
 
         // 6. Mampara desde catálogo
         if ($tipoMampara && $tipoMampara !== 'sin_mampara') {
-            $mampara = $this->selector->buscarProductoRecomendado(
-                configuradorCodigo: 'ducha',
-                uso: 'mampara',
-                tipo: $tipoMampara,
-                largo: null,
-                ancho: $largo > 0 ? $largo : null
+
+            $seleccionMampara = $this->selector->buscarMamparaRecomendada(
+                tipoMampara: $tipoMampara,
+                anchoFrontal: $largo > 0 ? $largo : null,
+                anchoLateral: $ancho > 0 ? $ancho : null
             );
 
-            if ($mampara) {
-                $this->crearLineaCatalogo(
-                    documento: $documento,
-                    producto: $mampara,
-                    tipoLinea: 'producto',
-                    cantidad: 1
-                );
+            if ($seleccionMampara) {
+                if ($seleccionMampara['frontal'] ?? null) {
+                    $this->crearLineaCatalogo(
+                        documento: $documento,
+                        producto: $seleccionMampara['frontal'],
+                        tipoLinea: 'producto',
+                        cantidad: 1
+                    );
+                }
+
+                if ($seleccionMampara['lateral'] ?? null) {
+                    $this->crearLineaCatalogo(
+                        documento: $documento,
+                        producto: $seleccionMampara['lateral'],
+                        tipoLinea: 'producto',
+                        cantidad: 1
+                    );
+                }
             } else {
                 [$descripcionMampara, $precioMampara] = $this->calcularMamparaFallback($tipoMampara);
 
@@ -127,6 +137,8 @@ class PresupuestoDuchaBuilderService
                     costeUnitario: $precioMampara * 0.65
                 );
             }
+
+
 
             $this->crearLineaEstimado(
                 documento: $documento,
