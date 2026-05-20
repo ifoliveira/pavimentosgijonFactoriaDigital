@@ -510,7 +510,7 @@
                     <div class="section-rule"></div>
                     <div class="incluye-box">
                         {% for linea in documento.lineas %}
-                            {% if linea.tipoLinea != 'comentario' and linea.tipoLinea != 'servicio' %}
+                            {% if linea.tipoLinea != 'comentario' and linea.tipoLinea != 'servicio' and linea.tipoLinea != 'mano_obra' %}
                                 <div class="incluye-item">• {{ linea.descripcion }}</div>
                             {% endif %}
                         {% endfor %}

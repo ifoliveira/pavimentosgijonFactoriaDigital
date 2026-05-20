@@ -466,31 +466,7 @@
                             </div>
 
                         {% endif %}
-                            {% if hayManoObra %}
-                                {% set tipoActual = null %}
 
-                                {% for mo in documento.manoObra %}
-                                    {% if mo.textoMo is not null and mo.textoMo|trim != '' %}
-                                        {% if tipoActual != mo.CategoriaMo.tipoTm %}
-                                            {% set tipoActual = mo.CategoriaMo.tipoTm %}
-                                            <div class="subbloque">
-                                                <div class="subbloque-titulo">{{ mo.CategoriaMo.tipoTm }}</div>
-                                                <div class="subbloque-texto">
-                                                    {{ mo.textoMo|replace({';': '<br>'})|raw }}
-                                                </div>
-                                            </div>
-                                        {% else %}
-                                            <div class="subbloque-texto mb-8">
-                                                {{ mo.textoMo|replace({';': '<br>'})|raw }}
-                                            </div>
-                                        {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                <div class="subbloque-texto">
-                                    {{ documento.notas ?: 'Trabajos según visita, medición y necesidades acordadas con el cliente.' }}
-                                </div>
-                            {% endif %}
                         </div>
                     </div>
                 </td>
@@ -500,7 +476,7 @@
                         <div class="section-title">Incluido en este presupuesto</div>
                         <div class="incluye-box">
                             {% for linea in documento.lineas %}
-                               {% if linea.tipoLinea != 'comentario' and linea.tipoLinea != 'servicio' %}
+                               {% if linea.tipoLinea != 'comentario' and linea.tipoLinea != 'servicio' and linea.tipoLinea != 'mano_obra' %}
                                 <div class="incluye-item">• {{ linea.descripcion }}</div>
                                 {% endif %}
                             {% endfor %}
