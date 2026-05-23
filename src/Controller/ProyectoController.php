@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Repository\ProyectoRepository;
+use App\Repository\DocumentoRepository;
+use App\Repository\ProyectoGastoRepository;
 use App\Entity\Proyecto;
 use App\Entity\ProyectoGasto;
 use App\Form\ProyectoGastoType;
@@ -193,5 +196,48 @@ class ProyectoController extends AbstractController
 
         return $this->redirectToRoute('app_proyecto_index');
     }    
+
+
+    #[Route('/cerrados', name: 'app_proyecto_cerrados', methods: ['GET'])]
+    public function cerrados(
+        ProyectoRepository $proyectoRepository,
+        DocumentoRepository $documentoRepository,
+        ProyectoGastoRepository $proyectoGastoRepository
+    ): Response {
+        $proyectos = $proyectoRepository->findAll();
+
+        $cerrados = [];
+
+        foreach ($proyectos as $proyecto) {
+            $factura = $documentoRepository->findFacturaDeProyecto($proyecto);
+
+            if (!$factura) {
+                continue;
+            }
+
+            $estaCerrado = $proyecto->getFechaFinReal() !== null
+                || $factura->getEstadoCobro() === 'cobrado';
+
+            if (!$estaCerrado) {
+                continue;
+            }
+
+            $presupuesto = $documentoRepository->findPresupuestoInicialDeProyecto($proyecto);
+            $coste = $proyectoGastoRepository->sumarImportePorProyecto($proyecto);
+            $margen = (float) $proyecto->getTotalFacturado() - $coste;
+
+            $cerrados[] = [
+                'proyecto' => $proyecto,
+                'presupuesto' => $presupuesto,
+                'factura' => $factura,
+                'coste' => $coste,
+                'margen' => $margen,
+            ];
+        }
+
+        return $this->render('proyecto/cerrados.html.twig', [
+            'cerrados' => $cerrados,
+        ]);
+    }
 
 }

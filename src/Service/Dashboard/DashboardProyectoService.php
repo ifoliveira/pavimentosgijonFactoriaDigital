@@ -22,16 +22,34 @@ class DashboardProyectoService
 
         $proyectosEnriquecidos = [];
         foreach ($ultimosProyectos as $proyecto) {
+
             $presupuesto = $this->documentoRepository->findPresupuestoInicialDeProyecto($proyecto);
+
             $factura = $this->documentoRepository->findFacturaDeProyecto($proyecto);
-            $situacion = $this->calcularSituacionProyecto($proyecto, $presupuesto, $factura);
+
+            // SOLO proyectos reales
+            if (!$factura) {
+                continue;
+            }
+
+            if ($this->calcularSituacionProyecto($proyecto, $presupuesto, $factura) === 'cerrado') {
+                continue;
+            }            
+
+            $situacion = $this->calcularSituacionProyecto(
+                $proyecto,
+                $presupuesto,
+                $factura
+            );
 
             $proyectosEnriquecidos[] = [
                 'proyecto' => $proyecto,
                 'presupuesto' => $presupuesto,
                 'factura' => $factura,
                 'situacion' => $situacion,
-                'margen' => $this->getCosteProyecto($proyecto) ? (float) $proyecto->getTotalFacturado() - $this->getCosteProyecto($proyecto) : null,
+                'margen' => $this->getCosteProyecto($proyecto)
+                    ? (float) $proyecto->getTotalFacturado() - $this->getCosteProyecto($proyecto)
+                    : null,
             ];
         }
 

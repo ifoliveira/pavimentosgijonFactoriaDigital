@@ -32,7 +32,7 @@ class ProyectoType extends AbstractType
                 'label' => 'Nombre del proyecto',
                 'required' => false,
                 'attr' => [
-                    'placeholder' => 'Reforma baño completo / Cambio bañera por plato de ducha...',
+                    'placeholder' => 'Ayuda a identificar el proyecto...',
                 ],
             ])
             ->add('fechaInicio', DateType::class, [

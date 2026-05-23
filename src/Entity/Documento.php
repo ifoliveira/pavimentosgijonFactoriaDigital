@@ -261,7 +261,14 @@ class Documento
         cascade: ['persist', 'remove'])]
     private Collection $cobros;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $motivoPerdida = null;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $notaComercial = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $fechaUltimoSeguimiento = null;
 
     // -------------------------------------------------------------------------
     // CONSTRUCTOR
@@ -504,6 +511,39 @@ class Documento
         return $this;
     }
 
+    public function getMotivoPerdida(): ?string
+    {
+        return $this->motivoPerdida;
+    }
+
+    public function setMotivoPerdida(?string $motivoPerdida): static
+    {
+        $this->motivoPerdida = $motivoPerdida;
+        return $this;
+    }
+
+    public function getNotaComercial(): ?string
+    {
+        return $this->notaComercial;
+    }   
+
+    public function setNotaComercial(?string $notaComercial): static
+    {
+        $this->notaComercial = $notaComercial;
+        return $this;
+    }
+
+    public function getFechaUltimoSeguimiento(): ?\DateTimeImmutable
+    {
+        return $this->fechaUltimoSeguimiento;
+    }   
+
+    public function setFechaUltimoSeguimiento(?\DateTimeImmutable $fechaUltimoSeguimiento): static
+    {
+        $this->fechaUltimoSeguimiento = $fechaUltimoSeguimiento;
+        return $this;
+    }
+    
     public function getCreadoEn(): ?\DateTimeInterface
     {
         return $this->creadoEn;
@@ -559,6 +599,7 @@ class Documento
         return bcsub($this->total, $this->totalCobrado, 2);
     }
 
+    
     /**
      * @return Collection|ManoObra[]
      */
@@ -585,4 +626,11 @@ class Documento
         }
         return $this;
     }    
+
+    public function __toString(): string
+    {
+        return $this->getNumeroFormateado() ?? 'Documento #' . $this->id;
+    }
+
+    
 }

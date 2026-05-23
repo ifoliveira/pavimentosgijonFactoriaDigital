@@ -17,6 +17,7 @@ class DocumentoAccionesService
         $esTicket = $tipo === 'ticket';
 
         $estaBorrador = $estadoComercial === 'borrador';
+        $estaNegociacion = $estadoComercial === 'negociacion';
         $estaEntregado = $estadoComercial === 'entregado';
         $estaAceptado = $estadoComercial === 'aceptado';
         $estaRechazado = $estadoComercial === 'rechazado';
@@ -35,7 +36,7 @@ class DocumentoAccionesService
             'puedeRecalcular' => !$bloqueado,
 
             // Flujo presupuesto
-            'puedeEntregar' => $esPresupuesto && $estaBorrador,
+            'puedeEntregar' => $esPresupuesto && ($estaBorrador || $estaNegociacion),
             'puedeGenerarPdf' => $esPresupuesto && ($estaEntregado || $estaConvertido),
             'puedeAceptar' => $esPresupuesto && $estaEntregado,
             'puedeRechazar' => $esPresupuesto && $estaEntregado,
