@@ -97,7 +97,7 @@ class ProyectoRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function findUltimosProyectosDashboard(int $limit = 10): array
+    public function findUltimosProyectosDashboard(int $limit = 100): array
     {
         return $this->createQueryBuilder('p')
             ->leftJoin('p.cliente', 'c')
