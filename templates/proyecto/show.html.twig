@@ -432,6 +432,7 @@
                                 <th>Proveedor</th>
                                 <th class="text-end">Previsto</th>
                                 <th class="text-end">Real</th>
+                                <th class="text-end">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -470,6 +471,75 @@
                                             <span class="text-muted">—</span>
                                         {% endif %}
                                     </td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+
+                                            {# Editar 
+                                            <button type="button"
+                                                    class="btn btn-outline-primary"
+                                                    data-url="{{ path('app_proyecto_gasto_edit', {id: gasto.id}) }}">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>#}
+
+                                            {% if gasto.estado == 'previsto' %}
+
+                                                <form method="post"
+                                                    action="{{ path('app_proyecto_gasto_confirmar', {id: gasto.id}) }}">
+                                                    <button class="btn btn-outline-info"
+                                                            title="Confirmar">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </form>
+
+                                                <form method="post"
+                                                    action="{{ path('app_proyecto_gasto_delete', {id: gasto.id}) }}"
+                                                    onsubmit="return confirm('¿Eliminar gasto?');">
+                                                    <button class="btn btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+
+                                            {% elseif gasto.estado == 'confirmado' %}
+
+                                                <form method="post"
+                                                    action="{{ path('app_proyecto_gasto_pagado', {id: gasto.id}) }}">
+                                                    <button class="btn btn-outline-success"
+                                                            title="Marcar pagado">
+                                                        <i class="bi bi-cash"></i>
+                                                    </button>
+                                                </form>
+
+                                                <form method="post"
+                                                    action="{{ path('app_proyecto_gasto_cancelar', {id: gasto.id}) }}">
+                                                    <button class="btn btn-outline-dark"
+                                                            title="Cancelar">
+                                                        <i class="bi bi-x-circle"></i>
+                                                    </button>
+                                                </form>
+
+                                            {% elseif gasto.estado == 'pagado' %}
+
+                                                {% if gasto.bancoMovimiento %}
+                                                    <a href="{{ path('admin_banco_movimiento_show', {id: gasto.bancoMovimiento.id}) }}"
+                                                    class="btn btn-outline-secondary"
+                                                    title="Ver movimiento">
+                                                        <i class="bi bi-bank"></i>
+                                                    </a>
+                                                {% endif %}
+
+                                            {% elseif gasto.estado == 'cancelado' %}
+
+                                                <form method="post"
+                                                    action="{{ path('app_proyecto_gasto_reactivar', {id: gasto.id}) }}">
+                                                    <button class="btn btn-outline-warning">
+                                                        <i class="bi bi-arrow-clockwise"></i>
+                                                    </button>
+                                                </form>
+
+                                            {% endif %}
+
+                                        </div>
+                                    </td>                                    
                                 </tr>
                             {% endfor %}
                         </tbody>

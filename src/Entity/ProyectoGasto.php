@@ -4,11 +4,24 @@ namespace App\Entity;
 
 use App\Repository\ProyectoGastoRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Banco;
+use App\Entity\Efectivo;
 
 #[ORM\Entity(repositoryClass: ProyectoGastoRepository::class)]
-#[ORM\Table(name: 'proyecto_gasto')]
+#[ORM\Table(name: 'proyecto_gasto', indexes: [
+    new ORM\Index(name: 'idx_estado', columns: ['estado']),
+    new ORM\Index(name: 'idx_fecha_prevista', columns: ['fecha_prevista']),
+    new ORM\Index(name: 'idx_categoria', columns: ['categoria']),
+])]
 class ProyectoGasto
 {
+
+    public const ESTADO_PREVISTO = 'previsto';
+    public const ESTADO_CONFIRMADO = 'confirmado';
+    public const ESTADO_PAGADO = 'pagado';
+    public const ESTADO_CANCELADO = 'cancelado';
+
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -76,6 +89,18 @@ class ProyectoGasto
     #[ORM\Column(type: 'date', nullable: true)]
     private ?\DateTimeInterface $fechaReal = null;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $fechaConfirmado = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $fechaPagado = null;    
+
+    #[ORM\Column(type: 'string', length: 30, nullable: true)]
+    private ?string $origen = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $afectaCaja = true;
+
     /**
      * Importe previsto del gasto.
      */
@@ -96,7 +121,7 @@ class ProyectoGasto
      * - cancelado
      */
     #[ORM\Column(type: 'string', length: 20)]
-    private string $estado = 'previsto';
+    private string $estado = self::ESTADO_PREVISTO;
 
     /**
      * Indica si este gasto debe reflejarse en forecast.
@@ -116,12 +141,20 @@ class ProyectoGasto
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $actualizadoEn = null;
 
+    #[ORM\ManyToOne(targetEntity: Banco::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Banco $bancoMovimiento = null;
+
+    #[ORM\ManyToOne(targetEntity: Efectivo::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Efectivo $efectivoMovimiento = null;
+
     public function __construct()
     {
         $this->creadoEn = new \DateTime();
-        $this->estado = 'previsto';
         $this->generaForecast = true;
         $this->importePrevisto = '0.00';
+        $this->estado = self::ESTADO_PREVISTO;
     }
 
     public function getId(): ?int
@@ -311,11 +344,100 @@ class ProyectoGasto
 
     public function estaPagado(): bool
     {
-        return $this->estado === 'pagado';
+        return $this->estado === self::ESTADO_PAGADO;
     }
 
     public function estaPendiente(): bool
     {
-        return \in_array($this->estado, ['previsto', 'confirmado'], true);
+        return \in_array($this->estado, [
+            self::ESTADO_PREVISTO,
+            self::ESTADO_CONFIRMADO,
+        ], true);
     }
+    public function getBancoMovimiento(): ?Banco
+    {
+        return $this->bancoMovimiento;
+    }
+
+    public function setBancoMovimiento(?Banco $bancoMovimiento): self
+    {
+        $this->bancoMovimiento = $bancoMovimiento;
+        return $this;
+    }   
+
+    public function getEfectivoMovimiento(): ?Efectivo
+    {
+        return $this->efectivoMovimiento;
+    }
+
+    public function setEfectivoMovimiento(?Efectivo $efectivoMovimiento): self
+    {
+        $this->efectivoMovimiento = $efectivoMovimiento;
+        return $this;
+    }   
+
+    public function isAfectaCaja(): bool
+    {
+        return $this->afectaCaja;
+    }
+
+    public function setAfectaCaja(bool $afectaCaja): self
+    {
+        $this->afectaCaja = $afectaCaja;
+        return $this;
+    }
+
+    public function getOrigen(): ?string
+    {
+        return $this->origen;
+    }
+
+    public function setOrigen(?string $origen): self
+    {
+        $this->origen = $origen;
+        return $this;       
+    }
+
+    public function confirmar(): void
+    {
+        $this->estado = self::ESTADO_CONFIRMADO;
+        $this->fechaConfirmado = new \DateTime();
+        $this->marcarActualizado();
+    }
+
+    public function marcarPagado(): void
+    {
+        $this->estado = self::ESTADO_PAGADO;
+        $this->fechaPagado = new \DateTime();
+        $this->fechaReal = new \DateTime();
+        $this->marcarActualizado();
+    }
+
+    public function cancelar(): void
+    {
+        $this->estado = self::ESTADO_CANCELADO;
+        $this->marcarActualizado();
+    }
+    
+    public function getFechaConfirmado(): ?\DateTimeInterface
+    {
+        return $this->fechaConfirmado;
+    }
+
+    public function setFechaConfirmado(?\DateTimeInterface $fechaConfirmado): self
+    {
+        $this->fechaConfirmado = $fechaConfirmado;
+        return $this;
+    }
+
+    public function getFechaPagado(): ?\DateTimeInterface
+    {
+        return $this->fechaPagado;
+    }
+
+    public function setFechaPagado(?\DateTimeInterface $fechaPagado): self
+    {
+        $this->fechaPagado = $fechaPagado;
+        return $this;
+    }    
 }

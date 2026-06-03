@@ -1,7 +1,54 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Revisar factura proveedor{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+        <style>
+            .factura-lineas-table {
+                table-layout: fixed;
+                min-width: 980px;
+            }
 
+            .factura-lineas-table input[type="text"] {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .factura-lineas-table .col-descripcion {
+                width: 34%;
+            }
+
+            .factura-lineas-table .col-num {
+                width: 75px;
+            }
+
+            .factura-lineas-table .col-money {
+                width: 105px;
+            }
+
+            .factura-lineas-table .col-iva {
+                width: 70px;
+            }
+
+            .factura-lineas-table .col-re {
+                width: 55px;
+            }
+
+            .factura-lineas-table .col-estado {
+                width: 95px;
+            }
+
+            .factura-lineas-table .col-acciones {
+                width: 125px;
+            }
+
+            .factura-lineas-table td,
+            .factura-lineas-table th {
+                vertical-align: middle;
+            }
+        </style>
+
+{% endblock %}
 {% block body %}
 <div class="container-fluid py-4">
 
@@ -75,21 +122,18 @@
                     <div class="card-body p-0">
 
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
+                            <table class="table table-hover align-middle mb-0 factura-lineas-table">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Descripción</th>
-                                        <th class="text-end" style="width:90px;">Cant.</th>
-                                        <th class="text-end" style="width:120px;">P. unit.</th>
-                                        <th class="text-end" style="width:130px;">Bruto</th>
-                                        <th class="text-end" style="width:95px;">IVA %</th>
-                                        <th class="text-end" style="width:120px;">IVA</th>
-                                        <th class="text-center" style="width:80px;">R.E.</th>
-                                        <th class="text-end" style="width:95px;">RE %</th>
-                                        <th class="text-end" style="width:120px;">RE</th>
-                                        <th class="text-end" style="width:130px;">Total</th>
-                                        <th style="width:120px;">Estado</th>
-                                        <th class="text-end" style="width:170px;">Acciones</th>
+                                        <th class="text-end col-num">Cant.</th>
+                                        <th class="text-end col-money">P. unit.</th>
+                                        <th class="text-end col-money">Bruto</th>
+                                        <th class="text-end col-iva">IVA %</th>
+                                        <th class="text-center col-re">R.E.</th>
+                                        <th class="text-end col-money">Total</th>
+                                        <th class="col-estado">Estado</th>
+                                        <th class="text-end col-acciones">Acciones</th>
                                     </tr>
                                 </thead>
 
@@ -98,7 +142,7 @@
                                         {% set disabled = linea.estado == 'ignorada' ? 'disabled' : '' %}
 
                                         <tr class="{{ linea.estado == 'ignorada' ? 'table-secondary opacity-75' : '' }}" data-linea>
-                                            <td>
+                                            <td class="col-descripcion">
                                                 <input type="text"
                                                     name="lineas[{{ linea.id }}][descripcion]"
                                                     value="{{ linea.descripcion }}"
@@ -107,8 +151,8 @@
                                             </td>
 
                                             <td>
-                                                <input type="number"
-                                                    step="0.01"
+                                                <input type="text"
+                                                    inputmode="decimal"
                                                     name="lineas[{{ linea.id }}][cantidad]"
                                                     value="{{ linea.cantidad }}"
                                                     class="form-control form-control-sm text-end"
@@ -116,8 +160,8 @@
                                             </td>
 
                                             <td>
-                                                <input type="number"
-                                                    step="0.01"
+                                                <input type="text"
+                                                    inputmode="decimal"
                                                     name="lineas[{{ linea.id }}][precioUnitario]"
                                                     value="{{ linea.precioUnitario }}"
                                                     class="form-control form-control-sm text-end"
@@ -125,8 +169,8 @@
                                             </td>
 
                                             <td>
-                                                <input type="number"
-                                                    step="0.01"
+                                                <input type="text"
+                                                    inputmode="decimal"
                                                     name="lineas[{{ linea.id }}][importeBruto]"
                                                     value="{{ linea.importeBruto|default(linea.base) }}"
                                                     class="form-control form-control-sm text-end js-bruto"
@@ -134,18 +178,12 @@
                                             </td>
 
                                             <td>
-                                                <input type="number"
-                                                    step="0.01"
+                                                <input type="text"
+                                                    inputmode="decimal"
                                                     name="lineas[{{ linea.id }}][porcentajeIva]"
                                                     value="{{ linea.porcentajeIva|default(21) }}"
                                                     class="form-control form-control-sm text-end js-iva-pct"
                                                     {{ disabled }}>
-                                            </td>
-
-                                            <td class="text-end">
-                                                <span class="js-iva-importe">
-                                                    {{ linea.importeIva|default(0)|number_format(2, ',', '.') }}
-                                                </span> €
                                             </td>
 
                                             <td class="text-center">
@@ -154,21 +192,11 @@
                                                     class="form-check-input js-re-check"
                                                     {{ linea.tieneRecargoEquivalencia ? 'checked' : '' }}
                                                     {{ disabled }}>
-                                            </td>
 
-                                            <td>
-                                                <input type="number"
-                                                    step="0.01"
+                                                <input type="hidden"
                                                     name="lineas[{{ linea.id }}][porcentajeRecargoEquivalencia]"
                                                     value="{{ linea.porcentajeRecargoEquivalencia|default(5.2) }}"
-                                                    class="form-control form-control-sm text-end js-re-pct"
-                                                    {{ disabled }}>
-                                            </td>
-
-                                            <td class="text-end">
-                                                <span class="js-re-importe">
-                                                    {{ linea.importeRecargoEquivalencia|default(0)|number_format(2, ',', '.') }}
-                                                </span> €
+                                                    class="js-re-pct">
                                             </td>
 
                                             <td class="text-end fw-semibold">
@@ -192,26 +220,28 @@
                                             </td>
 
                                             <td class="text-end">
-                                                <button type="submit"
-                                                        name="accion"
-                                                        value="confirmar_linea"
-                                                        class="btn btn-sm btn-success"
-                                                        onclick="this.form.linea_id.value='{{ linea.id }}'">
-                                                    OK
-                                                </button>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button type="submit"
+                                                            name="accion"
+                                                            value="confirmar_linea"
+                                                            class="btn btn-success"
+                                                            onclick="this.form.linea_id.value='{{ linea.id }}'">
+                                                        OK
+                                                    </button>
 
-                                                <button type="submit"
-                                                        name="accion"
-                                                        value="ignorar_linea"
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        onclick="this.form.linea_id.value='{{ linea.id }}'; return confirm('¿Ignorar esta línea?');">
-                                                    Quitar
-                                                </button>
+                                                    <button type="submit"
+                                                            name="accion"
+                                                            value="ignorar_linea"
+                                                            class="btn btn-outline-danger"
+                                                            onclick="this.form.linea_id.value='{{ linea.id }}'; return confirm('¿Ignorar esta línea?');">
+                                                        Quitar
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     {% else %}
                                         <tr>
-                                            <td colspan="12" class="p-4 text-muted">
+                                            <td colspan="9" class="p-4 text-muted">
                                                 No hay líneas detectadas.
                                             </td>
                                         </tr>
@@ -220,23 +250,22 @@
 
                                 <tfoot class="table-light">
                                     <tr>
-                                        <th colspan="9" class="text-end">Total líneas activas</th>
+                                        <th colspan="6" class="text-end">Total líneas activas</th>
                                         <th class="text-end" id="total-lineas">0,00 €</th>
-                                        <th colspan="2"></th>
+                                        <th></th>
+                                        <th></th>
                                     </tr>
                                     <tr>
-                                        <th colspan="9" class="text-end">Total factura OCR</th>
+                                        <th colspan="6" class="text-end">Total factura OCR</th>
                                         <th class="text-end">
                                             {{ factura.totalFactura|default(0)|number_format(2, ',', '.') }} €
                                         </th>
-                                        <th colspan="2"></th>
+                                        <th></th>
+                                        <th></th>
                                     </tr>
                                 </tfoot>
                             </table>
-
                         </div>
-
-                    </div>
 
                     <div class="card-footer bg-white d-flex justify-content-between align-items-center">
 
@@ -283,18 +312,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function recalcularFila(tr) {
-        const bruto = num(tr.querySelector('.js-bruto')?.value);
-        const ivaPct = num(tr.querySelector('.js-iva-pct')?.value);
-        const tieneRe = tr.querySelector('.js-re-check')?.checked;
-        const rePct = num(tr.querySelector('.js-re-pct')?.value);
+        const brutoEl = tr.querySelector('.js-bruto');
+        const ivaPctEl = tr.querySelector('.js-iva-pct');
+        const reCheckEl = tr.querySelector('.js-re-check');
+        const rePctEl = tr.querySelector('.js-re-pct');
+        const totalLineaEl = tr.querySelector('.js-total-linea');
 
-        const iva = Math.round((bruto * ivaPct / 100) * 100) / 100;
-        const re = tieneRe ? Math.round((bruto * rePct / 100) * 100) / 100 : 0;
-        const total = Math.round((bruto + iva + re) * 100) / 100;
+        if (!brutoEl || !ivaPctEl || !totalLineaEl) {
+            return 0;
+        }
 
-        tr.querySelector('.js-iva-importe').textContent = euro(iva);
-        tr.querySelector('.js-re-importe').textContent = euro(re);
-        tr.querySelector('.js-total-linea').textContent = euro(total);
+        const bruto = numero(brutoEl.value);
+        const ivaPct = numero(ivaPctEl.value);
+
+        let rePct = 0;
+        if (reCheckEl && reCheckEl.checked && rePctEl) {
+            rePct = numero(rePctEl.value);
+        }
+
+        const iva = bruto * ivaPct / 100;
+        const recargo = bruto * rePct / 100;
+        const total = bruto + iva + recargo;
+
+        totalLineaEl.textContent = euro(total);
 
         return total;
     }
@@ -311,6 +351,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         totalEl.textContent = euro(total) + ' €';
+    }
+
+    function numero(valor) {
+        if (!valor) {
+            return 0;
+        }
+
+        valor = valor.toString().trim();
+
+        // Si viene en formato español: 1.234,56
+        if (valor.includes(',') && valor.includes('.')) {
+            return parseFloat(valor.replace(/\./g, '').replace(',', '.')) || 0;
+        }
+
+        // Si viene en formato español simple: 12,50
+        if (valor.includes(',')) {
+            return parseFloat(valor.replace(',', '.')) || 0;
+        }
+
+        // Si viene en formato normal: 12.50
+        return parseFloat(valor) || 0;
+    }
+
+    function euro(valor) {
+        return valor.toLocaleString('es-ES', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
 
     document.querySelectorAll('.js-bruto, .js-iva-pct, .js-re-pct, .js-re-check').forEach(el => {

@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\StockMovimiento;
 
 #[Route('/admin/facturas-proveedor')]
 class FacturaProveedorController extends AbstractController
@@ -272,6 +273,95 @@ class FacturaProveedorController extends AbstractController
 
                     $asignacion->setProyecto($proyecto);
                     $asignacion->setProyectoGasto($gasto);
+                }
+
+                if ($tipoDestino === 'stock') {
+                    $stockMovimiento = new StockMovimiento();
+
+                    $stockMovimiento->setTipoMovimiento(StockMovimiento::TIPO_ENTRADA_FACTURA);
+                    $stockMovimiento->setCantidad($cantidadAsignada);
+                    $stockMovimiento->setFecha($factura->getFechaFactura() ?: new \DateTime());
+
+                    // Relación con la asignación, para poder llegar a la factura de proveedor
+                    $stockMovimiento->setFacturaProveedorLineaAsignacion($asignacion);
+
+                    // Producto todavía no obligatorio, para no duplicar catálogo
+                    $stockMovimiento->setProducto(null);
+
+                    // Identidad real del producto según la factura
+                    $stockMovimiento->setDescripcionProducto($linea->getDescripcion() ?: 'Producto sin descripción');
+                    $stockMovimiento->setReferenciaProveedor(null);
+
+                    // =========================
+                    // BLOQUE FISCAL UNITARIO
+                    // =========================
+
+                    $cantidadLinea = max((float) $linea->getCantidad(), 1);
+
+                    $baseTotalLinea = round((float) ($linea->getImporteBruto() ?? 0), 2);
+                    $totalLinea = round((float) ($linea->getTotal() ?? 0), 2);
+
+                    $ivaPct = (float) ($linea->getPorcentajeIva() ?? 0);
+
+                    $tieneRe = $linea->isTieneRecargoEquivalencia();
+                    $rePct = $tieneRe
+                        ? (float) ($linea->getPorcentajeRecargoEquivalencia() ?? 0)
+                        : 0.0;
+
+                    // Importes totales de la línea
+                    $ivaTotalLinea = round($baseTotalLinea * $ivaPct / 100, 2);
+                    $reTotalLinea = round($baseTotalLinea * $rePct / 100, 2);
+
+                    // Total recalculado y cuadrado al céntimo
+                    $totalCalculadoLinea = round($baseTotalLinea + $ivaTotalLinea + $reTotalLinea, 2);
+
+                    // Si el total real de la línea existe, lo usamos como verdad final.
+                    // Así evitamos descuadres por OCR/redondeos.
+                    if ($totalLinea > 0 && abs($totalLinea - $totalCalculadoLinea) <= 0.05) {
+                        $totalCalculadoLinea = $totalLinea;
+                    }
+
+                    // Importes unitarios
+                    $baseUnitaria = round($baseTotalLinea / $cantidadLinea, 2);
+                    $ivaUnitario = round($ivaTotalLinea / $cantidadLinea, 2);
+                    $reUnitario = round($reTotalLinea / $cantidadLinea, 2);
+
+                    // El total unitario lo calculamos desde el total final dividido entre cantidad
+                    $precioCosteUnitario = round($totalCalculadoLinea / $cantidadLinea, 2);
+
+                    // Ajuste de céntimos:
+                    // fuerza que base + IVA + RE = total unitario
+                    $descuadreUnitario = round(
+                        $precioCosteUnitario - ($baseUnitaria + $ivaUnitario + $reUnitario),
+                        2
+                    );
+
+                    if ($descuadreUnitario !== 0.0) {
+                        // Ajustamos preferentemente el IVA; si no hay IVA, ajustamos base.
+                        if ($ivaUnitario > 0) {
+                            $ivaUnitario = round($ivaUnitario + $descuadreUnitario, 2);
+                        } else {
+                            $baseUnitaria = round($baseUnitaria + $descuadreUnitario, 2);
+                        }
+                    }
+
+                    $stockMovimiento->setCosteUnitarioBase($baseUnitaria);
+                    $stockMovimiento->setPorcentajeIva($ivaPct);
+                    $stockMovimiento->setImporteIvaUnitario($ivaUnitario);
+                    $stockMovimiento->setTieneRecargoEquivalencia($tieneRe);
+                    $stockMovimiento->setPorcentajeRecargoEquivalencia($rePct);
+                    $stockMovimiento->setImporteRecargoUnitario($reUnitario);
+                    $stockMovimiento->setPrecioCosteUnitario($precioCosteUnitario);
+
+                    $stockMovimiento->setObservaciones(
+                        'Entrada en stock desde factura proveedor ' .
+                        ($factura->getNumeroFactura() ?: 'sin número') .
+                        ' · Proveedor: ' . ($factura->getProveedorNombre() ?: '-') .
+                        ' · Cantidad: ' . $cantidadAsignada .
+                        ' de ' . $cantidadLinea
+                    );
+
+                    $this->em->persist($stockMovimiento);
                 }
 
                 $this->em->persist($asignacion);
