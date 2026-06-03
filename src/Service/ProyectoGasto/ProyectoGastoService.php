@@ -146,4 +146,22 @@ class ProyectoGastoService
         // OJO: aquí NO haría flush si este método lo llama guardarCambios()
         // para evitar flush duplicados.
     }
+
+    public function reactivar(ProyectoGasto $gasto): void
+    {
+        if ($gasto->getEstado() !== ProyectoGasto::ESTADO_CANCELADO) {
+            throw new \LogicException('Solo se pueden reactivar gastos cancelados.');
+        }
+
+        $gasto->setEstado(ProyectoGasto::ESTADO_PREVISTO);
+        $gasto->marcarActualizado();
+
+        $this->sincronizarForecastSiProcede($gasto);
+
+        if ($gasto->getProyecto()) {
+            $this->recalcularProyecto($gasto->getProyecto());
+        }
+
+        $this->em->flush();
+    }    
 }

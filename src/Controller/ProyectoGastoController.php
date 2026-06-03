@@ -70,4 +70,18 @@ class ProyectoGastoController extends AbstractController
         ]);
     }    
 
+    #[Route('/{id}/reactivar', name: 'app_proyecto_gasto_reactivar', methods: ['POST'])]
+    public function reactivar(
+        ProyectoGasto $gasto,
+        ProyectoGastoService $proyectoGastoService
+    ): RedirectResponse {
+        $proyectoId = $gasto->getProyecto()->getId();
+
+        $proyectoGastoService->reactivar($gasto);
+
+        return $this->redirectToRoute('app_proyecto_show', [
+            'id' => $proyectoId,
+        ]);
+    }    
+
 }
