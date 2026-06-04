@@ -104,7 +104,7 @@ class ProyectoRepository extends ServiceEntityRepository
             ->leftJoin('p.cliente', 'c')
             ->addSelect('c')
             ->innerJoin('p.documentos', 'd')
-            ->andWhere('d.tipoDocumento in :tipoFactura')
+            ->andWhere('d.tipoDocumento in (:tipoFactura)')
             ->setParameter('tipoFactura', ['factura', 'ticket'])
             ->orderBy('p.creadoEn', 'DESC')
             ->setMaxResults($limit)
