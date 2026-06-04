@@ -18,7 +18,7 @@ class DashboardProyectoService
 
     public function getDashboardData(): array
     {
-        $ultimosProyectos = $this->proyectoRepository->findUltimosProyectosDashboard(10);
+        $ultimosProyectos = $this->proyectoRepository->findUltimosProyectosDashboard(100);
 
         $proyectosEnriquecidos = [];
         foreach ($ultimosProyectos as $proyecto) {
