@@ -100,9 +100,13 @@ class ProyectoRepository extends ServiceEntityRepository
     public function findUltimosProyectosDashboard(int $limit = 100): array
     {
         return $this->createQueryBuilder('p')
+            ->distinct()
             ->leftJoin('p.cliente', 'c')
             ->addSelect('c')
-            ->orderBy('p.actualizadoEn', 'DESC')
+            ->innerJoin('p.documentos', 'd')
+            ->andWhere('d.tipoDocumento = :tipoFactura')
+            ->setParameter('tipoFactura', 'factura')
+            ->orderBy('p.creadoEn', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
