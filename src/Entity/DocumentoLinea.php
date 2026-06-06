@@ -237,6 +237,10 @@ class DocumentoLinea
     #[ORM\Column(type: 'boolean')]
     private bool $stockMovido = false;
 
+    #[ORM\OneToOne(targetEntity: StockReserva::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?StockReserva $stockReserva = null;    
+
     // -------------------------------------------------------------------------
     // TRAZABILIDAD
     // -------------------------------------------------------------------------
@@ -443,6 +447,18 @@ class DocumentoLinea
         return $this;
     }
 
+    public function getStockReserva(): ?StockReserva
+    {
+        return $this->stockReserva;
+    }
+
+    public function setStockReserva(?StockReserva $stockReserva): static
+    {
+        $this->stockReserva = $stockReserva;
+
+        return $this;
+    }
+        
     public function getOrigenPresupuesto(): ?Documento
     {
         return $this->origenPresupuesto;

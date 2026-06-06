@@ -3,12 +3,15 @@
 namespace App\Service\Documento;
 
 use App\Entity\Documento;
+use App\Entity\StockReserva;
 use App\Entity\DocumentoLinea;
 use App\Repository\ProductosRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\DocumentoLineaRepository;
 use App\Service\Proyecto\ProyectoCalculatorService;
 use App\Entity\CatalogoProducto;
+use App\Repository\StockMovimientoRepository;
+use App\Repository\StockReservaRepository;
 
 
 class DocumentoLineaService
@@ -18,6 +21,8 @@ class DocumentoLineaService
         private ProductosRepository $productosRepository,
         private DocumentoLineaRepository $lineaRepository,
         private ProyectoCalculatorService $proyectoService,
+        private StockMovimientoRepository $stockMovimientoRepository,
+        private StockReservaRepository $stockReservaRepository
     ) {}
 
     public function crearLinea(
@@ -27,25 +32,40 @@ class DocumentoLineaService
         float $precio,
         float $descuento,
         ?int $productoId,
-        float $lineaId,
+        int $lineaId,
         string $tipo,
         string $destinoFacturacion = DocumentoLinea::DESTINO_PENDIENTE,
+        string $origenLinea = 'manual'
     ): DocumentoLinea {
-
 
         if ($lineaId) {
             // editar línea existente
             $linea = $this->lineaRepository->find($lineaId);
 
-        } else {
+            if (!$linea) {
+                throw new \RuntimeException('No se ha encontrado la línea a editar.');
+            }
 
+            // Al editar, actualizamos también estos campos básicos
+            $linea->setDescripcion(trim($descripcion));
+            $linea->setTipoLinea($tipo);
+
+        } else {
             $linea = new DocumentoLinea();
             $linea->setDocumento($documento);
             $linea->setDescripcion(trim($descripcion));
             $linea->setTipoLinea($tipo);
             $linea->setUnidad('ud');
             $linea->setPosicion(count($documento->getLineas()) + 1);
+
+            $documento->addLinea($linea);
         }
+
+        if (!$destinoFacturacion) {
+            $destinoFacturacion = $this->resolverDestinoFacturacionPorDefecto($tipo);
+        }
+
+        $linea->setDestinoFacturacion($destinoFacturacion);
 
         if ($tipo === 'comentario') {
             $linea->setCantidad('1.000');
@@ -57,10 +77,19 @@ class DocumentoLineaService
             $linea->setTotalIva('0.00');
             $linea->setTotalCoste('0.00');
             $linea->setProducto(null);
-            $linea->setOrigenLinea('manual');
             $linea->setCatalogoProducto(null);
+            $linea->setOrigenLinea('manual');
+            $linea->setAfectaStock(false);
+            $linea->setStockMovido(false);
 
             $this->em->persist($linea);
+            $this->recalcularTotalesDocumento($documento);
+
+            if ($documento->getProyecto()) {
+                $this->proyectoService->recalcularProyecto($documento->getProyecto());
+            }
+
+            $this->em->flush();
 
             return $linea;
         }
@@ -69,34 +98,69 @@ class DocumentoLineaService
         $linea->setDescuento(number_format($descuento, 2, '.', ''));
         $linea->setTipoIva('21.00');
 
-        if (!$destinoFacturacion) {
-            $destinoFacturacion = $this->resolverDestinoFacturacionPorDefecto($tipo);
-        }
-
-        $linea->setDestinoFacturacion($destinoFacturacion);
-
+        /*
+        * REGLA NUEVA:
+        * - Si hay productoId, viene de la tabla Productos.
+        * - Si no hay productoId, la línea puede seguir siendo tipo producto,
+        *   pero sin producto asociado.
+        */
         if ($productoId) {
             $producto = $this->productosRepository->find($productoId);
-            $linea->setProducto($producto);
-            $linea->setOrigenLinea('producto_legacy');
-            $linea->setCatalogoProducto(null);
 
-            if ($producto && method_exists($producto, 'getCoste')) {
-                $linea->setCosteUnitario(number_format((float) $producto->getCoste(), 2, '.', ''));
+            if ($producto) {
+                $linea->setProducto($producto);
+                $linea->setOrigenLinea('producto');
+                $linea->setCatalogoProducto(null);
+
+                if (method_exists($producto, 'getCoste')) {
+                    $linea->setCosteUnitario(number_format((float) $producto->getCoste(), 2, '.', ''));
+                } else {
+                    $linea->setCosteUnitario('0.00');
+                }
             } else {
+                // Si por lo que sea llega un id inválido, no bloqueamos la creación.
+                $linea->setProducto(null);
+                $linea->setCatalogoProducto(null);
+                $linea->setOrigenLinea($origenLinea ?: 'manual');
                 $linea->setCosteUnitario('0.00');
             }
+
+          
+
         } else {
             $linea->setProducto(null);
             $linea->setCatalogoProducto(null);
-            $linea->setOrigenLinea('manual');
+
+            // Aquí está el cambio importante:
+            // respetamos el origen que venga del formulario.
+            $linea->setOrigenLinea($origenLinea ?: 'manual');
+
+            // De momento, si no hay producto/stock asociado, coste 0.
+            // Más adelante, si viene de stock, aquí se podrá coger el coste de StockReserva.
             $linea->setCosteUnitario('0.00');
         }
 
-        $documento->addLinea($linea);
+        /*
+        * De momento, una línea manual no mueve stock.
+        * Cuando añadas StockReserva, entonces:
+        * origenLinea = stock
+        * afectaStock = true
+        */
+        if ($linea->getOrigenLinea() === 'stock') {
+            $linea->setAfectaStock(true);
+        } else {
+            $linea->setAfectaStock(false);
+        }
+
         $this->em->persist($linea);
+
         $this->recalcularImportesLinea($linea, $precio);
         $this->recalcularTotalesDocumento($documento);
+
+        $this->crearReservaSiHayStockDisponible($linea, $documento, (float) $linea->getCantidad());
+
+      
+
         if ($documento->getProyecto()) {
             $this->proyectoService->recalcularProyecto($documento->getProyecto());
         }
@@ -104,6 +168,56 @@ class DocumentoLineaService
         $this->em->flush();
 
         return $linea;
+    }
+
+    private function crearReservaSiHayStockDisponible(
+        DocumentoLinea $linea,
+        Documento $documento,
+        float $cantidad
+    ): void {
+        $producto = $linea->getProducto();
+
+        if (!$producto) {
+            return;
+        }
+
+        // Si la línea ya tenía reserva, no crear otra.
+        if ($linea->getStockReserva()) {
+            return;
+        }
+
+        $stockFisico = $this->stockMovimientoRepository->getStockFisicoPorProducto($producto);
+        $stockReservado = $this->stockReservaRepository->getCantidadReservadaPorProducto($producto);
+        $stockDisponible = $stockFisico - $stockReservado;
+
+        if ($stockDisponible < $cantidad) {
+            $linea->setAfectaStock(false);
+            return;
+        }
+
+        $reserva = new StockReserva();
+
+        $reserva->setProducto($producto);
+        $reserva->setDocumento($documento);
+        $reserva->setDocumentoLinea($linea);
+        $reserva->setProyecto($documento->getProyecto());
+        $reserva->setDescripcionProducto($linea->getDescripcion());
+        $reserva->setCantidad($cantidad);
+        $reserva->setCosteUnitario($linea->getCosteUnitario());
+        $reserva->setEstado(StockReserva::ESTADO_RESERVADA);
+        $reserva->setFechaCaducidad((new \DateTime())->modify('+30 days'));
+
+        $reserva->setObservaciones(
+            'Reserva creada automáticamente desde documento ' .
+            ($documento->getId() ?: '')
+        );
+
+        $linea->setStockReserva($reserva);
+        $linea->setOrigenLinea('stock');
+        $linea->setAfectaStock(true);
+        $linea->setStockMovido(false);
+
+        $this->em->persist($reserva);
     }
 
     private function recalcularImportesLinea(DocumentoLinea $linea, float $precioConIva): void

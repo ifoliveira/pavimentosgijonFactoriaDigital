@@ -795,6 +795,7 @@
     <input type="hidden" name="productoId" id="hidden-producto-id">
     <input type="hidden" name="tipoLinea" id="hidden-tipo-linea" value="producto">
     <input type="hidden" name="lineaId" id="hidden-linea-id" value="">
+    <input type="hidden" name="origenLinea" id="hidden-origen-linea" value="manual">
     <div class="px-4 py-3 border-bottom bg-light-subtle" id="bloque-destino-facturacion">
         <label class="form-label-upper">Destino de facturación</label>
 
@@ -835,13 +836,19 @@
         </div>
       </div>
 
-      <div class="border-top px-4 py-3">
+    <div class="border-top px-4 py-3 d-grid gap-2">
+        <button type="button"
+                class="btn btn-sm btn-outline-primary w-100"
+                onclick="crearProductoManual()">
+            + Añadir producto manual
+        </button>
+
         <button type="button"
                 class="btn btn-sm btn-outline-secondary w-100"
                 onclick="cambiarTipoLinea('servicio')">
-          + Añadir línea de servicio
+            + Añadir línea de servicio
         </button>
-      </div>
+    </div>
     </div>
 
     {# ── PRODUCTO: FASE 2 FORMULARIO ──────────────────────── #}
@@ -1367,6 +1374,8 @@
         document.getElementById('producto-seleccionado-nombre').textContent = '';
 
         if (tipo === 'producto') {
+            document.getElementById('hidden-origen-linea').value = 'manual';
+
             document.getElementById('fase-busqueda-producto').classList.remove('d-none');
             document.getElementById('offcanvas-subtitle').textContent = 'Busca un producto o añade una línea manual';
 
@@ -1380,6 +1389,7 @@
 
         if (tipo === 'servicio' || tipo === 'mano_obra') {
             document.getElementById('hidden-tipo-linea').value = 'servicio';
+            document.getElementById('hidden-origen-linea').value = 'manual';
             document.getElementById('fase-formulario-servicio').classList.remove('d-none');
             document.getElementById('offcanvas-subtitle').textContent = 'Añade una línea de servicio manual';
 
@@ -1393,6 +1403,7 @@
         }
 
         if (tipo === 'comentario') {
+            document.getElementById('hidden-origen-linea').value = 'manual';
             document.getElementById('fase-formulario-comentario').classList.remove('d-none');
             document.getElementById('offcanvas-subtitle').textContent = 'Añade una línea de comentario';
 
@@ -1416,8 +1427,30 @@
         document.getElementById('offcanvas-subtitle').textContent = 'Rellena los datos de la línea';
     }
 
+    function crearProductoManual() {
+        document.getElementById('hidden-tipo-linea').value = 'producto';
+        document.getElementById('hidden-origen-linea').value = 'manual';
+        document.getElementById('hidden-producto-id').value = '';
+
+        activarBotonTipo('producto');
+        activarFaseFormularioProducto();
+
+        document.getElementById('producto-seleccionado-nombre').textContent = 'Producto manual sin ficha asociada';
+
+        document.getElementById('f-descripcion').value = '';
+        document.getElementById('f-cantidad').value = '1';
+        document.getElementById('f-precio').value = '';
+        document.getElementById('f-precio-iva').value = '';
+        document.getElementById('f-descuento').value = '0';
+
+        document.getElementById('f-descripcion').focus();
+
+        calcularSubtotalProducto();
+    }    
+
     function seleccionarProducto(id, nombre, pvp) {
         document.getElementById('hidden-tipo-linea').value = 'producto';
+        document.getElementById('hidden-origen-linea').value = 'producto';
         document.getElementById('hidden-producto-id').value = id;
         document.getElementById('producto-seleccionado-nombre').textContent = nombre;
 
@@ -1523,29 +1556,60 @@
         const container = document.getElementById('resultados-busqueda');
 
         if (!productos.length) {
-            container.innerHTML = '<div class="text-center text-muted py-4 small">Sin resultados. Prueba con la opción manual.</div>';
+            container.innerHTML = `
+                <div class="text-center text-muted py-4 small px-4">
+                    <div class="mb-2">No hay productos parecidos.</div>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-primary w-100"
+                            onclick="crearProductoManual()">
+                        + Añadir como producto manual
+                    </button>
+                </div>
+            `;
             return;
         }
 
         container.innerHTML = productos.map(p => {
-            const stockHtml = p.stock === 0
-                ? '<span class="text-danger">Sin stock</span>'
-                : p.stock <= 5
-                    ? `<span class="text-warning">Stock: ${p.stock}</span>`
-                    : `<span class="text-success">Stock: ${p.stock}</span>`;
+            const stockFisico = parseFloat(p.stockFisico || 0);
+            const stockReservado = parseFloat(p.stockReservado || 0);
+            const stockDisponible = parseFloat(p.stockDisponible ?? p.stock ?? 0);
+
+            let stockHtml = '';
+
+            if (stockFisico <= 0) {
+                stockHtml = '<span class="text-muted">Sin stock</span>';
+            } else if (stockDisponible <= 0) {
+                stockHtml = `
+                    <span class="badge bg-warning text-dark">Reservado</span>
+                    <span class="text-muted">
+                        ${stockFisico} físico / ${stockReservado} reservado
+                    </span>
+                `;
+            } else {
+                stockHtml = `
+                    <span class="badge bg-success">Disponible: ${stockDisponible}</span>
+                    <span class="text-muted">
+                        ${stockFisico} físico / ${stockReservado} reservado
+                    </span>
+                `;
+            }
+
+            const claseStock = stockDisponible > 0
+                ? ' resultado-item-con-stock'
+                : '';
 
             const nombre = escaparJsTexto(p.nombre);
             const pvp = parseFloat(p.pvp || 0).toFixed(2);
 
             return `
-                <div class="resultado-item px-4 py-2 d-flex align-items-center gap-3"
-                     onclick="seleccionarProducto(${p.id}, '${nombre}', ${pvp})">
+                <div class="resultado-item${claseStock} px-4 py-2 d-flex align-items-center gap-3"
+                    onclick="seleccionarProducto(${p.id}, '${nombre}', ${pvp})">
                     <div class="resultado-icono flex-shrink-0">
                         ${(p.tipo ?? '?').substring(0, 2).toUpperCase()}
                     </div>
                     <div class="flex-grow-1 min-w-0">
                         <div class="small fw-semibold text-truncate">${p.nombre ?? '—'}</div>
-                        <div class="d-flex gap-2" style="font-size:11px;">
+                        <div class="d-flex gap-2 flex-wrap" style="font-size:11px;">
                             <span class="text-muted">${p.tipo ?? '—'}</span>
                             ${stockHtml}
                         </div>
@@ -1567,6 +1631,7 @@
         document.getElementById('hidden-linea-id').value = '';
         document.getElementById('hidden-producto-id').value = '';
         document.getElementById('hidden-tipo-linea').value = 'producto';
+        document.getElementById('hidden-origen-linea').value = 'manual';
         document.getElementById('f-destino-facturacion').value = 'ticket_tienda';
 
         document.getElementById('producto-search').value = '';

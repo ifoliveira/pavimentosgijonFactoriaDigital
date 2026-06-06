@@ -26,6 +26,7 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Repository\TipoManoObraRepository;
 use App\Repository\TextoManoObraRepository;
+use App\Repository\StockReservaRepository;
 
 /**
  * @Route("/admin/documento")
@@ -136,11 +137,13 @@ class DocumentoController extends AbstractController
         return $out;
     }    
 
+
     // ── Buscador AJAX de productos ──────────────────────────────
     #[Route('/productos/buscar', name: 'app_productos_buscar', methods: ['GET'])]
     public function buscarProductos(
         Request $request,
-        ProductosRepository $productosRepository
+        ProductosRepository $productosRepository,
+        StockReservaRepository $stockReservaRepository
     ): JsonResponse {
         $q = trim($request->query->get('q', ''));
 
@@ -148,15 +151,38 @@ class DocumentoController extends AbstractController
             return $this->json([]);
         }
 
-        $productos = $productosRepository->findBySearchQuery($q);
+        $productos = $productosRepository->findBySearchQueryConStock($q);
 
-        $data = array_map(fn($p) => [
-            'id'     => $p->getId(),
-            'nombre' => $p->getDescripcionPd(),
-            'pvp'    => $p->getPvpPd(),
-            'stock'  => $p->getStockPd(),
-            'tipo'   => $p->getTipoPdId()?->getDecripcionTp() ?? '—',
-        ], $productos);
+        $data = array_map(function (array $p) use ($productosRepository, $stockReservaRepository) {
+            $stockFisico = (float) $p['stock'];
+
+            $producto = $productosRepository->find($p['id']);
+            $stockReservado = $producto
+                ? $stockReservaRepository->getCantidadReservadaPorProducto($producto)
+                : 0.0;
+
+            $stockDisponible = $stockFisico - $stockReservado;
+
+            return [
+                'id' => $p['id'],
+                'nombre' => $p['nombre'],
+                'pvp' => (float) $p['pvp'],
+                'tipo' => $p['tipo'] ?? '—',
+
+                // Compatibilidad con tu JS actual
+                'stock' => $stockDisponible,
+
+                // Nuevos valores claros
+                'stockFisico' => $stockFisico,
+                'stockReservado' => $stockReservado,
+                'stockDisponible' => $stockDisponible,
+            ];
+        }, $productos);
+
+        usort($data, static function (array $a, array $b) {
+            return $b['stockDisponible'] <=> $a['stockDisponible']
+                ?: strcmp($a['nombre'], $b['nombre']);
+        });
 
         return $this->json($data);
     }
@@ -168,24 +194,41 @@ class DocumentoController extends AbstractController
         Documento $documento,
         DocumentoLineaService $lineaService
     ): Response {
+        $productoId = $request->request->get('productoId') ?: null;
+        $tipoLinea = $request->request->get('tipoLinea', 'producto');
+        $origenLinea = $request->request->get('origenLinea', 'manual');
+
+        /*
+        * Regla nueva:
+        * Si viene productoId, la línea viene de la tabla Productos.
+        * Si no viene productoId, puede seguir siendo tipo producto,
+        * pero será una línea manual sin producto asociado.
+        */
+        if ($productoId) {
+            $origenLinea = 'producto';
+        }
+
         $lineaService->crearLinea(
-            documento:   $documento,
+            documento: $documento,
             descripcion: trim($request->request->get('descripcion', '')),
-            cantidad:    (float) $request->request->get('cantidad', 1),
-            precio:      (float) $request->request->get('precioConIva', 0),
-            descuento:   (float) $request->request->get('descuento', 0),
-            productoId:  $request->request->get('productoId') ?: null,
-            lineaId:    (float) $request->request->get('lineaId') ?: 0,
-            tipo:        $request->request->get('tipoLinea', 'producto'),
+            cantidad: (float) $request->request->get('cantidad', 1),
+            precio: (float) $request->request->get('precioConIva', 0),
+            descuento: (float) $request->request->get('descuento', 0),
+            productoId: $productoId,
+            lineaId: (int) ($request->request->get('lineaId') ?: 0),
+            tipo: $tipoLinea,
             destinoFacturacion: $request->request->get(
                 'destinoFacturacion',
-                DocumentoLinea::DESTINO_PENDIENTE),     
-
+                DocumentoLinea::DESTINO_PENDIENTE
+            ),
+            origenLinea: $origenLinea,
         );
 
-        $this->addFlash('success', 'Línea añadida correctamente');
+        $this->addFlash('success', 'Línea guardada correctamente');
 
-        return $this->redirectToRoute('app_documento_show', ['id' => $documento->getId()]);
+        return $this->redirectToRoute('app_documento_show', [
+            'id' => $documento->getId(),
+        ]);
     }
 
     #[Route('/documento/linea/{id}/eliminar', name: 'app_documento_linea_eliminar', methods: ['POST'])]

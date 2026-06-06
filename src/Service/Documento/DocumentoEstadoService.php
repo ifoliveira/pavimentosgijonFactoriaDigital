@@ -13,6 +13,7 @@ use App\Service\Documento\DocumentoCalculatorService;
 use App\Service\Proyecto\ProyectoCalculatorService;
 use App\Service\Proyecto\ProyectoService;
 use App\Service\Documento\DocumentoEstadoService;
+use App\Service\Stock\StockReservaService;
 
 class DocumentoEstadoService
 {
@@ -22,6 +23,7 @@ class DocumentoEstadoService
         private SerieService $serieService,
         private DocumentoCalculatorService $documentoCalculatorService,
         private ProyectoCalculatorService $proyectoCalculatorService,
+        private StockReservaService $stockReservaService,
     ) {
     }
 
@@ -69,6 +71,10 @@ class DocumentoEstadoService
         }
 
         $documento->setEstadoComercial('rechazado');
+
+
+        // Libera las reservas activas asociadas a este presupuesto/documento.
+        $this->stockReservaService->liberarReservasDocumento($documento);
 
         $this->em->flush();
     }
@@ -159,6 +165,11 @@ class DocumentoEstadoService
             $presupuesto->setFacturaVinculada($factura);
         }
 
+
+        // Consume las reservas del presupuesto original.
+        // Esto crea StockMovimiento de salida y marca reservas como consumidas.
+        $this->stockReservaService->consumirReservasDocumento($presupuesto);        
+
         $proyecto = $presupuesto->getProyecto();
         $this->em->flush();
 
@@ -215,7 +226,7 @@ class DocumentoEstadoService
         $lineaNueva->setCosteUnitario($lineaOrigen->getCosteUnitario());
         $lineaNueva->setDescuento($lineaOrigen->getDescuento());
         $lineaNueva->setTipoIva($lineaOrigen->getTipoIva());
-        $lineaNueva->setAfectaStock($lineaOrigen->isAfectaStock());
+        $lineaNueva->setAfectaStock(false);
         $lineaNueva->setStockMovido(false);
         $lineaNueva->setOrigenLinea($lineaOrigen->getOrigenLinea());
         $lineaNueva->setCatalogoProducto($lineaOrigen->getCatalogoProducto());

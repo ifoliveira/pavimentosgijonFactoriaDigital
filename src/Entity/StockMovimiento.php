@@ -27,9 +27,9 @@ class StockMovimiento
 
     // Producto del catálogo asociado al movimiento, si se ha podido identificar.
     // No es obligatorio para evitar duplicar productos al importar facturas de proveedor.
-    #[ORM\ManyToOne(targetEntity: CatalogoProducto::class)]
+    #[ORM\ManyToOne(targetEntity: Productos::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    private ?CatalogoProducto $producto = null;
+    private ?Productos $producto = null;
 
     // Descripción del producto en el momento del movimiento.
     // Sirve aunque no exista todavía relación con CatalogoProducto.
@@ -89,12 +89,12 @@ class StockMovimiento
         return $this->id;
     }
 
-    public function getProducto(): ?CatalogoProducto
+    public function getProducto(): ?Productos
     {
         return $this->producto;
     }
 
-    public function setProducto(?CatalogoProducto $producto): static
+    public function setProducto(?Productos $producto): static
     {
         $this->producto = $producto;
 
