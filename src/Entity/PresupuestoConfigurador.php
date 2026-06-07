@@ -31,6 +31,9 @@ class PresupuestoConfigurador
     #[ORM\OrderBy(['orden' => 'ASC'])]
     private Collection $campos;
 
+    #[ORM\Column(nullable: true)]
+    private ?array $parametros = [];
+
     public function __construct()
     {
         $this->campos = new ArrayCollection();
@@ -115,4 +118,16 @@ class PresupuestoConfigurador
     {
         return $this->nombre ?? '';
     }
+
+    public function getParametros(): array
+    {
+        return $this->parametros ?? [];
+    }
+
+    public function setParametros(?array $parametros): static
+    {
+        $this->parametros = $parametros ?? [];
+
+        return $this;
+    }    
 }

@@ -17,9 +17,14 @@ class PresupuestoDuchaBuilderService
     public function generar(Documento $documento, DocumentoConfiguracion $configuracion): void
     {
         $datos = $configuracion->getDatos();
+        $parametros = $configuracion->getConfigurador()?->getParametros() ?? [];
 
         // 1. Borrar líneas anteriores usando el servicio central
-        $this->documentoLineaService->eliminarLineasDocumento($documento, flush: false);
+        $this->documentoLineaService->eliminarLineasDocumentoPorOrigenes(
+            documento: $documento,
+            origenes: ['configurador', 'configurador_estimado'],
+            flush: false
+        );
 
         // 2. Datos principales
         $largo = (float) ($datos['largo_plato'] ?? 0);
@@ -29,35 +34,31 @@ class PresupuestoDuchaBuilderService
         $griferia = $datos['griferia'] ?? 'mantener';
 
         // 3. Mano de obra base
+        $manoObraBase = $parametros['mano_obra_base'] ?? [
+            'descripcion' => 'Mano de obra cambio de bañera por plato de ducha',
+            'precio' => 700,
+            'coste' => 600,
+        ];        
         $this->crearLineaEstimado(
             documento: $documento,
             tipoLinea: 'mano_obra',
-            descripcion: 'Mano de obra cambio de bañera por plato de ducha',
+            descripcion:  $manoObraBase['descripcion'],
             cantidad: 1,
-            precioConIva: 700,
-            costeUnitario: 600
+            precioConIva: (float) $manoObraBase['precio_venta_con_iva'] ?? (float) $manoObraBase['precio'],
+            costeUnitario: (float) $manoObraBase['coste_sin_iva'] * ($manoObraBase['iva_coste'] + 100)/100
         );
 
         // 4. Alicatado
-        if ($alicatado === 'hasta_1m') {
-            $this->crearLineaEstimado(
-                documento: $documento,
-                tipoLinea: 'mano_obra',
-                descripcion: 'Alicatado zona ducha hasta 1 metro',
-                cantidad: 1,
-                precioConIva: 250,
-                costeUnitario: 150
-            );
-        }
+        $reglaAlicatado = $parametros['alicatado'][$alicatado] ?? null;
 
-        if ($alicatado === 'hasta_techo') {
+        if ($reglaAlicatado) {
             $this->crearLineaEstimado(
                 documento: $documento,
                 tipoLinea: 'mano_obra',
-                descripcion: 'Alicatado zona ducha hasta techo',
+                descripcion: $reglaAlicatado['descripcion'],
                 cantidad: 1,
-                precioConIva: 450,
-                costeUnitario: 200
+                precioConIva: (float) $reglaAlicatado['precio_venta_con_iva'] ?? (float) $reglaAlicatado['precio'],
+                costeUnitario: (float) $reglaAlicatado['coste_sin_iva'] * ($reglaAlicatado['iva_coste'] + 100)/100
             );
         }
 
@@ -140,13 +141,19 @@ class PresupuestoDuchaBuilderService
 
 
 
+            $colocacionMampara = $parametros['colocacion_mampara'] ?? [
+                'descripcion' => 'Colocación de mampara',
+                'precio' => 85,
+                'coste' => 60,
+            ];
+
             $this->crearLineaEstimado(
                 documento: $documento,
                 tipoLinea: 'mano_obra',
-                descripcion: 'Colocación de mampara',
+                descripcion: $colocacionMampara['descripcion'],
                 cantidad: 1,
-                precioConIva: 85,
-                costeUnitario: 60
+                precioConIva: (float) $colocacionMampara['precio_venta_con_iva'] ?? (float) $colocacionMampara['precio'],
+                costeUnitario: (float) $colocacionMampara['coste_sin_iva'] * ($colocacionMampara['iva_coste'] + 100)/100
             );
         }
 
@@ -241,7 +248,10 @@ class PresupuestoDuchaBuilderService
         float $cantidad,
         float $precioConIva,
         float $costeUnitario,
-        float $tipoIva = 21.00
+        float $tipoIva = 21.00,
+        float $ivaCoste = 0.00,
+        bool $tieneRecargoEquivalencia = false,
+        float $porcentajeRecargoEquivalencia = 0.00
     ): void {
         $this->documentoLineaService->crearLineaDesdeConfigurador(
             documento: $documento,
@@ -253,10 +263,12 @@ class PresupuestoDuchaBuilderService
             catalogoProducto: null,
             origenLinea: 'configurador_estimado',
             tipoIva: $tipoIva,
-            flush: false
+            flush: false,
+            ivaCoste: $ivaCoste,
+            tieneRecargoEquivalencia: $tieneRecargoEquivalencia,
+            porcentajeRecargoEquivalencia: $porcentajeRecargoEquivalencia
         );
     }
-
     private function calcularPrecioPlatoFallback(float $largo, float $ancho): float
     {
         if ($largo <= 140) {

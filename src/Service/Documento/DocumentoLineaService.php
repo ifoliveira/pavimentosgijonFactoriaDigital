@@ -38,6 +38,7 @@ class DocumentoLineaService
         string $origenLinea = 'manual'
     ): DocumentoLinea {
 
+
         if ($lineaId) {
             // editar línea existente
             $linea = $this->lineaRepository->find($lineaId);
@@ -46,7 +47,16 @@ class DocumentoLineaService
                 throw new \RuntimeException('No se ha encontrado la línea a editar.');
             }
 
-            // Al editar, actualizamos también estos campos básicos
+            if ($linea->getDocumento()?->getId() !== $documento->getId()) {
+                throw new \RuntimeException('La línea no pertenece a este documento.');
+            }
+
+            $linea->setDocumento($documento);
+
+            if (!$documento->getLineas()->contains($linea)) {
+                $documento->addLinea($linea);
+            }
+
             $linea->setDescripcion(trim($descripcion));
             $linea->setTipoLinea($tipo);
 
@@ -59,7 +69,7 @@ class DocumentoLineaService
             $linea->setPosicion(count($documento->getLineas()) + 1);
 
             $documento->addLinea($linea);
-        }
+        }        
 
         if (!$destinoFacturacion) {
             $destinoFacturacion = $this->resolverDestinoFacturacionPorDefecto($tipo);
@@ -112,10 +122,10 @@ class DocumentoLineaService
                 $linea->setOrigenLinea('producto');
                 $linea->setCatalogoProducto(null);
 
-                if (method_exists($producto, 'getCoste')) {
-                    $linea->setCosteUnitario(number_format((float) $producto->getCoste(), 2, '.', ''));
+                if (method_exists($producto, 'getPrecioPd')) {
+                    $linea->setPrecioCosteUnitario(number_format((float) $producto->getPrecioPd(), 2, '.', ''));
                 } else {
-                    $linea->setCosteUnitario('0.00');
+                    $linea->setPrecioCosteUnitario('0.00');
                 }
             } else {
                 // Si por lo que sea llega un id inválido, no bloqueamos la creación.
@@ -283,7 +293,11 @@ class DocumentoLineaService
             foreach ($documento->getLineas() as $linea) {
                 $baseImponible += (float) $linea->getSubtotal();
                 $totalIva += (float) $linea->getTotalIva();
-                $totalCoste += (float) $linea->getTotalCoste();
+                if ( (float) $linea->getPrecioCosteUnitario() <> 0) {
+                    $totalCoste += (float) $linea->getPrecioCosteUnitario() * (float) $linea->getCantidad();
+                } else {
+                    $totalCoste += (float) $linea->getSubtotal();
+                }
             }
 
             $documento->setBaseImponible(number_format($baseImponible, 2, '.', ''));
@@ -340,8 +354,11 @@ class DocumentoLineaService
         string $origenLinea = 'configurador',
         float $tipoIva = 21.00,
         bool $flush = true,
-        string $destinoFacturacion = null
-    ): DocumentoLinea {
+        string $destinoFacturacion = null,
+        ?float $ivaCoste = null,
+        bool $tieneRecargoEquivalencia = false,
+        ?float $porcentajeRecargoEquivalencia = null
+    ): DocumentoLinea { 
         $linea = new DocumentoLinea();
 
         $linea->setDocumento($documento);
@@ -354,6 +371,23 @@ class DocumentoLineaService
         $linea->setDescuento('0.00');
         $linea->setTipoIva(number_format($tipoIva, 2, '.', ''));
         $linea->setCosteUnitario(number_format($costeUnitario, 2, '.', ''));
+        $ivaCoste = $ivaCoste ?? 0.00;
+        $porcentajeRecargoEquivalencia = $porcentajeRecargoEquivalencia ?? 0.00;
+
+        $importeIvaCosteUnitario = $costeUnitario * ($ivaCoste / 100);
+        $importeRecargoUnitario = $costeUnitario * ($porcentajeRecargoEquivalencia / 100);
+
+        $precioCosteUnitario = $costeUnitario
+            + $importeIvaCosteUnitario
+            + $importeRecargoUnitario;
+
+        $linea->setCosteUnitarioBase(number_format($costeUnitario, 2, '.', ''));
+        $linea->setPorcentajeIva(number_format($ivaCoste, 2, '.', ''));
+        $linea->setImporteIvaUnitario(number_format($importeIvaCosteUnitario, 2, '.', ''));
+        $linea->setTieneRecargoEquivalencia($tieneRecargoEquivalencia);
+        $linea->setPorcentajeRecargoEquivalencia(number_format($porcentajeRecargoEquivalencia, 2, '.', ''));
+        $linea->setImporteRecargoUnitario(number_format($importeRecargoUnitario, 2, '.', ''));
+        $linea->setPrecioCosteUnitario(number_format($precioCosteUnitario, 2, '.', ''));        
 
         $linea->setProducto(null);
         $linea->setCatalogoProducto($catalogoProducto);
@@ -406,6 +440,31 @@ class DocumentoLineaService
         }
     }   
     
+    public function eliminarLineasDocumentoPorOrigenes(
+        Documento $documento,
+        array $origenes,
+        bool $flush = true
+    ): void {
+        foreach ($documento->getLineas()->toArray() as $linea) {
+            if (!in_array($linea->getOrigenLinea(), $origenes, true)) {
+                continue;
+            }
+
+            $documento->removeLinea($linea);
+            $this->em->remove($linea);
+        }
+
+        $this->recalcularTotalesDocumento($documento);
+
+        if ($documento->getProyecto()) {
+            $this->proyectoService->recalcularProyecto($documento->getProyecto());
+        }
+
+        if ($flush) {
+            $this->em->flush();
+        }
+    }
+
     public function recalcularDocumentoCompleto(
         Documento $documento,
         bool $flush = true

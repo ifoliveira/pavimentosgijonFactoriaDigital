@@ -37,7 +37,7 @@ class DocumentoAccionesService
 
             // Flujo presupuesto
             'puedeEntregar' => $esPresupuesto && ($estaBorrador || $estaNegociacion),
-            'puedeGenerarPdf' => $esPresupuesto && ($estaEntregado || $estaConvertido),
+            'puedeGenerarPdf' => $esPresupuesto && ($estaEntregado || $estaConvertido ||$estaBorrador || $estaNegociacion),
             'puedeAceptar' => $esPresupuesto && $estaEntregado,
             'puedeRechazar' => $esPresupuesto && $estaEntregado,
             'puedeConvertirAFactura' => $esPresupuesto && $estaAceptado,

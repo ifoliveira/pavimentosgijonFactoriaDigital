@@ -158,7 +158,13 @@
                     </div>
 
                     <div class="col-md-4 ms-auto">
-                        <div class="d-flex gap-3 justify-content-end">
+                        <div class="d-flex gap-4 justify-content-end">
+                            <div class="text-center px-3 border-end">
+                                <div class="small text-muted">Margen</div>
+                                <div class="fw-semibold">
+                                    {{ (documento.baseImponible-documento.TotalCoste)|number_format(2, ',', '.') }} €
+                                </div>
+                            </div>
 
                             <div class="text-center px-3 border-end">
                                 <div class="small text-muted">Base</div>
@@ -427,6 +433,7 @@
                                     <th>Descripción</th>
                                     <th class="text-end" style="width: 90px;">Cant.</th>
                                     <th style="width: 80px;">Unidad</th>
+                                    <th class="text-end" style="width: 110px;">Coste</th>
                                     <th class="text-end" style="width: 110px;">Precio</th>
                                     <th class="text-end" style="width: 90px;">Dto.</th>
                                     <th class="text-end" style="width: 90px;">IVA</th>
@@ -459,6 +466,14 @@
                                         </td>
                                         <td class="text-end">{{ linea.cantidad|number_format(0, ',', '.') }}</td>
                                         <td>{{ linea.unidad }}</td>
+                                        {% if linea.precioCosteUnitario > 0 %}
+
+                                                <td>{{ ((linea.precioUnitario - linea.precioCosteUnitario) * linea.cantidad)|number_format(2, ',', '.') }} €</td>
+
+                                        {% else %}
+                                            <td>[No disponible]</td>
+                                        {% endif %}
+
                                         <td class="text-end">
                                             {{ linea.precioUnitario|number_format(2, ',', '.') }} €
                                         </td>

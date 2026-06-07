@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\DocumentoLineaRepository;
+use App\Entity\Traits\FiscalTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -67,6 +68,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'documento_linea')]
 class DocumentoLinea
 {
+    use FiscalTrait;
+
     public const DESTINO_FACTURA_OBRA = 'factura_obra';
     public const DESTINO_TICKET_TIENDA = 'ticket_tienda';
     public const DESTINO_NO_FACTURABLE = 'no_facturable';
