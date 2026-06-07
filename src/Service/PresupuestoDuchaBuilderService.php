@@ -45,8 +45,7 @@ class PresupuestoDuchaBuilderService
             descripcion:  $manoObraBase['descripcion'],
             cantidad: 1,
             precioConIva: (float) $manoObraBase['precio_venta_con_iva'] ?? (float) $manoObraBase['precio'],
-            costeUnitario: (float) $manoObraBase['coste_sin_iva'] * ($manoObraBase['iva_coste'] + 100)/100
-        );
+            costeUnitario: (float) $manoObraBase['coste_sin_iva']);
 
         // 4. Alicatado
         $reglaAlicatado = $parametros['alicatado'][$alicatado] ?? null;
@@ -58,7 +57,7 @@ class PresupuestoDuchaBuilderService
                 descripcion: $reglaAlicatado['descripcion'],
                 cantidad: 1,
                 precioConIva: (float) $reglaAlicatado['precio_venta_con_iva'] ?? (float) $reglaAlicatado['precio'],
-                costeUnitario: (float) $reglaAlicatado['coste_sin_iva'] * ($reglaAlicatado['iva_coste'] + 100)/100
+                costeUnitario: (float) $reglaAlicatado['coste_sin_iva'] 
             );
         }
 
@@ -153,7 +152,7 @@ class PresupuestoDuchaBuilderService
                 descripcion: $colocacionMampara['descripcion'],
                 cantidad: 1,
                 precioConIva: (float) $colocacionMampara['precio_venta_con_iva'] ?? (float) $colocacionMampara['precio'],
-                costeUnitario: (float) $colocacionMampara['coste_sin_iva'] * ($colocacionMampara['iva_coste'] + 100)/100
+                costeUnitario: (float) $colocacionMampara['coste_sin_iva'] 
             );
         }
 
