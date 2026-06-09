@@ -90,10 +90,9 @@ class DocumentoManoObraService
     private const PRESETS = [
 
         'ducha' => [
-            1 => [3,4,5,6],          // albañilería
-            2 => [7,8,14,15],        // fontanería
-            5 => [17,18],            // electricidad
-            8 => [19,23],            // otros
+            1 => [24,25,5,6],          // albañilería
+            2 => [14,16],        // fontanería
+            8 => [23],            // otros
         ],
 
         'bano' => [

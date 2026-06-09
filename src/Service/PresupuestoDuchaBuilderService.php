@@ -61,6 +61,16 @@ class PresupuestoDuchaBuilderService
             );
         }
 
+        $this->crearLineaEstimado(
+                documento: $documento,
+                tipoLinea: 'producto',
+                descripcion: 'Azulejo',
+                cantidad: 4,
+                precioConIva: 34,
+                costeUnitario: 25
+            );
+
+
         // 5. Plato de ducha desde catálogo
         if ($largo > 0 && $ancho > 0) {
             $plato = $this->selector->buscarProductoRecomendado(
