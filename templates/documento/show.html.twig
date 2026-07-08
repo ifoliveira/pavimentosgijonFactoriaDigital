@@ -29,7 +29,13 @@
                     {% set btnDanger = btnBase ~ ' btn-outline-danger' %}
 
                     <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0 align-items-center">
-
+                        <a
+                            href="{{ path('app_proyecto_show', {id: documento.proyecto.id}) }}"
+                            target="_blank"
+                            class="{{ btnDark }}"
+                        >
+                            Volver a proyecto
+                        </a>
                         {% if acciones.puedeEditarCabecera %}
                             <button
                                 type="button"

@@ -569,9 +569,6 @@
                                 <div class="cliente-dato">{{ documento.cliente.direccionCl }}</div>
                             {% endif %}
 
-                            {% if documento.cliente.telefono1Cl is defined and documento.cliente.telefono1Cl %}
-                                <div class="cliente-dato">Tel: {{ documento.cliente.telefono1Cl }}</div>
-                            {% endif %}
                         {% else %}
                             <div class="cliente-nombre" style="color:#777;">Sin cliente asignado</div>
                         {% endif %}
@@ -679,10 +676,10 @@
         </table>
     </div>
 
-    {% set totalCobrado = documento.totalCobrado ?? 0 %}
+    {% set totalCobrado = documento.proyecto.totalCobrado ?? 0 %}
     {% set pendiente = (documento.total ?? 0) - totalCobrado %}
     {% if documento.tipoDocumento == 'factura' %}
-        {% if pendiente > 0.009 and documento.cobros is defined and documento.cobros|length > 0 %}
+        {% if pendiente > 0.009 and documento.cobros is defined and documento.proyecto.cobros|length > 0 %}
             <div class="cobros-section">
                 <div class="cobros-box">
                     <div class="cobros-title">Situación de cobro</div>
@@ -783,7 +780,7 @@
                 <tr>
                     <td class="cobros-label">Estado</td>
                     <td class="cobros-value">
-                        <span class="pendiente-ok">Factura cobrada</span>
+                        <span class="pendiente-ok">Factura pagada</span>
                     </td>
                 </tr>
                 <tr>
