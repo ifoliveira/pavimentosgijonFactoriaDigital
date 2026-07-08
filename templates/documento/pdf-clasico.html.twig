@@ -539,12 +539,6 @@
                                     {{ documento.fechaEmision ? documento.fechaEmision|date('d/m/Y') : '—' }}
                                 </td>
                             </tr>
-                            {% if documento.proyecto %}
-                                <tr>
-                                    <td class="doc-meta-label">Proyecto</td>
-                                    <td class="doc-meta-value">{{ documento.proyecto.nombre }}</td>
-                                </tr>
-                            {% endif %}
                         </table>
                     </div>
                 </td>
