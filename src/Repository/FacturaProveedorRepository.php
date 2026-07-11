@@ -159,4 +159,50 @@ class FacturaProveedorRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findPorAnioYTrimestre(
+        int $anio,
+        int $trimestre = 0,
+        string $filtroRecargo = 'todas'
+    ): array {
+        if ($trimestre >= 1 && $trimestre <= 4) {
+            $mesInicial = (($trimestre - 1) * 3) + 1;
+
+            $fechaInicio = new \DateTimeImmutable(
+                sprintf('%04d-%02d-01 00:00:00', $anio, $mesInicial)
+            );
+
+            $fechaFin = $fechaInicio->modify('+3 months');
+        } else {
+            $fechaInicio = new \DateTimeImmutable(
+                sprintf('%04d-01-01 00:00:00', $anio)
+            );
+
+            $fechaFin = $fechaInicio->modify('+1 year');
+        }
+
+        $qb = $this->createQueryBuilder('f')
+            ->andWhere('f.fechaFactura >= :fechaInicio')
+            ->andWhere('f.fechaFactura < :fechaFin')
+            ->setParameter('fechaInicio', $fechaInicio)
+            ->setParameter('fechaFin', $fechaFin);
+
+        if ($filtroRecargo === 'si') {
+            $qb->andWhere('f.tieneRecargoEquivalencia = :tieneRecargo')
+                ->setParameter('tieneRecargo', true);
+        }
+
+        if ($filtroRecargo === 'no') {
+            $qb->andWhere('f.tieneRecargoEquivalencia = :tieneRecargo')
+                ->setParameter('tieneRecargo', false);
+        }
+
+        return $qb
+            ->orderBy('f.fechaFactura', 'DESC')
+            ->addOrderBy('f.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+   
+
 }   

@@ -20,7 +20,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Entity\StockMovimiento;
+use Symfony\Component\Process\Process;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 #[Route('/admin/facturas-proveedor')]
 class FacturaProveedorController extends AbstractController
@@ -30,10 +35,62 @@ class FacturaProveedorController extends AbstractController
     ) {}
 
     #[Route('/', name: 'factura_proveedor_index', methods: ['GET'])]
-    public function index(FacturaProveedorRepository $repo): Response
-    {
+    public function index(
+        Request $request,
+        FacturaProveedorRepository $facturaProveedorRepository
+    ): Response {
+        $anioActual = (int) (new \DateTimeImmutable())->format('Y');
+
+        $anioSeleccionado = $request->query->getInt(
+            'anio',
+            $anioActual
+        );
+
+        $trimestreSeleccionado = $request->query->getInt(
+            'trimestre',
+            0
+        );
+
+        if (
+            $anioSeleccionado < 2020 ||
+            $anioSeleccionado > $anioActual + 1
+        ) {
+            $anioSeleccionado = $anioActual;
+        }
+
+        if (!in_array(
+            $trimestreSeleccionado,
+            [0, 1, 2, 3, 4],
+            true
+        )) {
+            $trimestreSeleccionado = 0;
+        }
+
+        $filtroRecargo = $request->query->get('recargo', 'todas');
+
+        if (!in_array($filtroRecargo, ['todas', 'si', 'no'], true)) {
+            $filtroRecargo = 'todas';
+        }   
+
+        $facturas = $facturaProveedorRepository->findPorAnioYTrimestre(
+            $anioSeleccionado,
+            $trimestreSeleccionado,
+            $filtroRecargo
+        );
+     
+
         return $this->render('factura_proveedor/index.html.twig', [
-            'facturas' => $repo->findUltimas(),
+
+            'facturas' => $facturas,
+            'anioSeleccionado' => $anioSeleccionado,
+            'trimestreSeleccionado' => $trimestreSeleccionado,
+            'filtroRecargo' => $filtroRecargo,
+
+            // Año actual y cinco años anteriores
+            'aniosDisponibles' => range(
+                $anioActual,
+                $anioActual - 5
+            ),
         ]);
     }
 
@@ -114,10 +171,73 @@ class FacturaProveedorController extends AbstractController
         Request $request
     ): Response {
         if ($request->isMethod('POST')) {
+
+            if (!$this->isCsrfTokenValid(
+                'revisar_factura_proveedor_' . $factura->getId(),
+                $request->request->get('_token')
+            )) {
+                throw $this->createAccessDeniedException(
+                    'Token CSRF no válido.'
+                );
+            }
+
             $accion = $request->request->get('accion');
             $lineaId = $request->request->getInt('linea_id');
+
+            $facturaPost = $request->request->all('factura');
             $lineasPost = $request->request->all('lineas');
-           
+
+            // -----------------------------------------------------------------
+            // CABECERA DE LA FACTURA
+            // -----------------------------------------------------------------
+
+            $factura->setProveedorNombre(
+                trim($facturaPost['proveedorNombre'] ?? '') ?: null
+            );
+
+            $factura->setNumeroFactura(
+                trim($facturaPost['numeroFactura'] ?? '') ?: null
+            );
+
+            $fechaFactura = $facturaPost['fechaFactura'] ?? null;
+
+            if ($fechaFactura) {
+                $fecha = \DateTime::createFromFormat('Y-m-d', $fechaFactura);
+
+                $factura->setFechaFactura(
+                    $fecha instanceof \DateTime ? $fecha : null
+                );
+            } else {
+                $factura->setFechaFactura(null);
+            }
+
+            $factura->setTotalBase(
+                $this->toFloat($facturaPost['totalBase'] ?? 0)
+            );
+
+            $factura->setTotalIva(
+                $this->toFloat($facturaPost['totalIva'] ?? 0)
+            );
+
+            $factura->setTotalFactura(
+                $this->toFloat($facturaPost['totalFactura'] ?? 0)
+            );
+
+            /*
+            * Todo o nada:
+            * si la factura tiene recargo, todas sus líneas lo tienen.
+            */
+            $facturaTieneRecargo = isset(
+                $facturaPost['tieneRecargoEquivalencia']
+            );
+
+            $factura->setTieneRecargoEquivalencia(
+                $facturaTieneRecargo
+            );
+
+            // -----------------------------------------------------------------
+            // LÍNEAS
+            // -----------------------------------------------------------------
 
             foreach ($factura->getLineas() as $linea) {
                 $id = $linea->getId();
@@ -132,25 +252,68 @@ class FacturaProveedorController extends AbstractController
 
                 $datos = $lineasPost[$id];
 
-                $bruto = $this->toFloat($datos['importeBruto'] ?? 0);
-                $ivaPct = $this->toFloat($datos['porcentajeIva'] ?? 21);
-                $tieneRe = isset($datos['tieneRecargoEquivalencia']);
-                $rePct = $tieneRe ? $this->toFloat($datos['porcentajeRecargoEquivalencia'] ?? 5.2) : 0;
+                $bruto = $this->toFloat(
+                    $datos['importeBruto'] ?? 0
+                );
 
-                $importeIva = round($bruto * ($ivaPct / 100), 2);
-                $importeRe = $tieneRe ? round($bruto * ($rePct / 100), 2) : 0;
-                $total = round($bruto + $importeIva + $importeRe, 2);
+                $ivaPct = $this->toFloat(
+                    $datos['porcentajeIva'] ?? 21
+                );
 
-                $linea->setDescripcion($datos['descripcion'] ?? null);
-                $linea->setCantidad($this->toFloat($datos['cantidad'] ?? 1));
-                $linea->setPrecioUnitario($this->toFloat($datos['precioUnitario'] ?? 0));
+                /*
+                * Ya no se decide por línea.
+                * Se usa siempre el dato de cabecera.
+                */
+                $tieneRe = $facturaTieneRecargo;
+
+                $rePct = $tieneRe
+                    ? $this->toFloat(
+                        $datos['porcentajeRecargoEquivalencia'] ?? 5.2
+                    )
+                    : 0;
+
+                $importeIva = round(
+                    $bruto * ($ivaPct / 100),
+                    2
+                );
+
+                $importeRe = $tieneRe
+                    ? round($bruto * ($rePct / 100), 2)
+                    : 0;
+
+                $total = round(
+                    $bruto + $importeIva + $importeRe,
+                    2
+                );
+
+                $linea->setDescripcion(
+                    trim($datos['descripcion'] ?? '') ?: null
+                );
+
+                $linea->setCantidad(
+                    $this->toFloat($datos['cantidad'] ?? 1)
+                );
+
+                $linea->setPrecioUnitario(
+                    $this->toFloat($datos['precioUnitario'] ?? 0)
+                );
+
                 $linea->setImporteBruto($bruto);
                 $linea->setBase($bruto);
+
                 $linea->setPorcentajeIva($ivaPct);
                 $linea->setImporteIva($importeIva);
+
                 $linea->setTieneRecargoEquivalencia($tieneRe);
-                $linea->setPorcentajeRecargoEquivalencia($tieneRe ? $rePct : null);
-                $linea->setImporteRecargoEquivalencia($tieneRe ? $importeRe : null);
+
+                $linea->setPorcentajeRecargoEquivalencia(
+                    $tieneRe ? $rePct : null
+                );
+
+                $linea->setImporteRecargoEquivalencia(
+                    $tieneRe ? $importeRe : null
+                );
+
                 $linea->setTotal($total);
 
                 if ($accion === 'confirmar_linea') {
@@ -162,18 +325,29 @@ class FacturaProveedorController extends AbstractController
                 }
             }
 
-            $factura->setEstadoAsignacion($this->calcularEstadoFacturaProveedor($factura));
+            $factura->setEstadoAsignacion(
+                $this->calcularEstadoFacturaProveedor($factura)
+            );
 
             $this->em->flush();
 
-            return $this->redirectToRoute('factura_proveedor_revisar', [
-                'id' => $factura->getId(),
-            ]);
+            $this->addFlash(
+                'success',
+                $accion === 'confirmar'
+                    ? 'Factura confirmada correctamente.'
+                    : 'Cambios guardados correctamente.'
+            );
+
+            return $this->redirectToRoute(
+                'factura_proveedor_revisar',
+                ['id' => $factura->getId()]
+            );
         }
 
-        return $this->render('factura_proveedor/revisar.html.twig', [
-            'factura' => $factura,
-        ]);
+        return $this->render(
+            'factura_proveedor/revisar.html.twig',
+            ['factura' => $factura]
+        );
     }
 
     #[Route('/{id}/asignar', name: 'factura_proveedor_asignar', methods: ['GET', 'POST'])]
@@ -624,4 +798,291 @@ class FacturaProveedorController extends AbstractController
 
         return 'asignada';
     }
+
+    private function obtenerFiltrosExportacion(Request $request): array
+    {
+        $anioActual = (int) (new \DateTimeImmutable())->format('Y');
+
+        $anio = $request->query->getInt('anio', $anioActual);
+        $trimestre = $request->query->getInt('trimestre', 0);
+        $recargo = $request->query->get('recargo', 'todas');
+
+        if (!in_array($trimestre, [0, 1, 2, 3, 4], true)) {
+            $trimestre = 0;
+        }
+
+        if (!in_array($recargo, ['todas', 'si', 'no'], true)) {
+            $recargo = 'todas';
+        }
+
+        return [
+            'anio' => $anio,
+            'trimestre' => $trimestre,
+            'recargo' => $recargo,
+        ];
+    }    
+
+    private function obtenerNombrePeriodo(
+        int $anio,
+        int $trimestre,
+        string $recargo
+    ): string {
+        $periodo = $trimestre === 0
+            ? (string) $anio
+            : sprintf('%dT-%d', $trimestre, $anio);
+
+        if ($recargo === 'si') {
+            $periodo .= '-con-recargo';
+        } elseif ($recargo === 'no') {
+            $periodo .= '-sin-recargo';
+        }
+
+        return $periodo;
+    }    
+
+
+    #[Route(
+        '/exportar/pdfs',
+        name: 'factura_proveedor_exportar_pdfs',
+        methods: ['GET']
+    )]
+    public function exportarPdfs(
+        Request $request,
+        FacturaProveedorRepository $facturaProveedorRepository
+    ): BinaryFileResponse {
+        $filtros = $this->obtenerFiltrosExportacion($request);
+
+        $facturas = $facturaProveedorRepository->findPorAnioYTrimestre(
+            $filtros['anio'],
+            $filtros['trimestre'],
+            $filtros['recargo']
+        );
+
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $archivosPdf = [];
+
+        foreach ($facturas as $factura) {
+            if (!$factura->getRutaPdf()) {
+                continue;
+            }
+
+            /*
+            * En tu caso rutaPdf parece guardar algo como:
+            * var/facturas-proveedor/factura_proveedor_xxx.pdf
+            */
+            $rutaAbsoluta = $projectDir . '/' . ltrim(
+                $factura->getRutaPdf(),
+                '/'
+            );
+
+            if (is_file($rutaAbsoluta)) {
+                $archivosPdf[] = $rutaAbsoluta;
+            }
+        }
+
+        if ($archivosPdf === []) {
+            throw $this->createNotFoundException(
+                'No hay archivos PDF disponibles con estos filtros.'
+            );
+        }
+
+        $nombrePeriodo = $this->obtenerNombrePeriodo(
+            $filtros['anio'],
+            $filtros['trimestre'],
+            $filtros['recargo']
+        );
+
+        $rutaSalida = sprintf(
+            '%s/var/tmp/facturas-proveedor-%s-%s.pdf',
+            $projectDir,
+            $nombrePeriodo,
+            bin2hex(random_bytes(5))
+        );
+
+        $directorioSalida = dirname($rutaSalida);
+
+        if (!is_dir($directorioSalida)) {
+            mkdir($directorioSalida, 0775, true);
+        }
+
+        /*
+        * pdfunite recibe:
+        * pdf1.pdf pdf2.pdf pdf3.pdf salida.pdf
+        */
+        $process = new Process([
+            'pdfunite',
+            ...$archivosPdf,
+            $rutaSalida,
+        ]);
+
+        $process->setTimeout(120);
+        $process->mustRun();
+
+        $response = new BinaryFileResponse($rutaSalida);
+
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'facturas-proveedor-' . $nombrePeriodo . '.pdf'
+        );
+
+        /*
+        * Symfony borra el temporal después de enviarlo.
+        */
+        $response->deleteFileAfterSend(true);
+
+        return $response;
+    }  
+    
+    #[Route(
+        '/exportar/csv',
+        name: 'factura_proveedor_exportar_csv',
+        methods: ['GET']
+    )]
+    public function exportarCsv(
+        Request $request,
+        FacturaProveedorRepository $facturaProveedorRepository
+    ): StreamedResponse {
+        $filtros = $this->obtenerFiltrosExportacion($request);
+
+        $facturas = $facturaProveedorRepository->findPorAnioYTrimestre(
+            $filtros['anio'],
+            $filtros['trimestre'],
+            $filtros['recargo'],
+            'ASC'
+        );
+
+        $nombrePeriodo = $this->obtenerNombrePeriodo(
+            $filtros['anio'],
+            $filtros['trimestre'],
+            $filtros['recargo']
+        );
+
+        $response = new StreamedResponse(function () use ($facturas): void {
+            $salida = fopen('php://output', 'wb');
+
+            /*
+            * BOM para que Excel abra correctamente los acentos.
+            */
+            fwrite($salida, "\xEF\xBB\xBF");
+
+            fputcsv($salida, [
+                'Fecha',
+                'Proveedor',
+                'Número de factura',
+                'Base imponible',
+                'IVA',
+                'Recargo de equivalencia',
+                'Total',
+                'Con R.E.',
+                'Estado',
+            ], ';');
+
+            foreach ($facturas as $factura) {
+                fputcsv($salida, [
+                    $factura->getFechaFactura()?->format('d/m/Y') ?? '',
+                    $factura->getProveedorNombre() ?? '',
+                    $factura->getNumeroFactura() ?? '',
+                    number_format(
+                        (float) $factura->getTotalBase(),
+                        2,
+                        ',',
+                        ''
+                    ),
+                    number_format(
+                        (float) $factura->getTotalIva(),
+                        2,
+                        ',',
+                        ''
+                    ),
+                    number_format(
+                        (float) $factura->getTotalRecargoEquivalencia(),
+                        2,
+                        ',',
+                        ''
+                    ),
+                    number_format(
+                        (float) $factura->getTotalFactura(),
+                        2,
+                        ',',
+                        ''
+                    ),
+                    $factura->isTieneRecargoEquivalencia() ? 'Sí' : 'No',
+                    $factura->getEstadoAsignacion(),
+                ], ';');
+            }
+
+            fclose($salida);
+        });
+
+        $response->headers->set(
+            'Content-Type',
+            'text/csv; charset=UTF-8'
+        );
+
+        $response->headers->set(
+            'Content-Disposition',
+            sprintf(
+                'attachment; filename="resumen-facturas-proveedor-%s.csv"',
+                $nombrePeriodo
+            )
+        );
+
+        return $response;
+    }    
+
+#[Route(
+    '/exportar/listado',
+    name: 'factura_proveedor_exportar_listado',
+    methods: ['GET']
+)]
+public function exportarListado(
+    Request $request,
+    FacturaProveedorRepository $facturaProveedorRepository
+): Response {
+    $filtros = $this->obtenerFiltrosExportacion($request);
+
+    $facturas = $facturaProveedorRepository->findPorAnioYTrimestre(
+        $filtros['anio'],
+        $filtros['trimestre'],
+        $filtros['recargo'],
+        'ASC'
+    );
+
+    $nombrePeriodo = $this->obtenerNombrePeriodo(
+        $filtros['anio'],
+        $filtros['trimestre'],
+        $filtros['recargo']
+    );
+
+    $html = $this->renderView(
+        'factura_proveedor/exportar_listado.html.twig',
+        [
+            'facturas' => $facturas,
+            'anio' => $filtros['anio'],
+            'trimestre' => $filtros['trimestre'],
+            'filtroRecargo' => $filtros['recargo'],
+        ]
+    );
+
+    $options = new Options();
+    $options->set('defaultFont', 'DejaVu Sans');
+    $options->set('isRemoteEnabled', true);
+
+    $dompdf = new Dompdf($options);
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'landscape');
+    $dompdf->render();
+
+    return new Response(
+        $dompdf->output(),
+        200,
+        [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf(
+                'attachment; filename="listado-facturas-proveedor-%s.pdf"',
+                $nombrePeriodo
+            ),
+        ]
+    );
+}    
 }

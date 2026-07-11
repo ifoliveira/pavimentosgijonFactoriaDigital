@@ -113,6 +113,13 @@ class FacturaProveedor
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $fechaCreacion;
 
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $tieneRecargoEquivalencia = false;
+
+    #[ORM\Column(type: 'decimal', precision: 12, scale: 2)]
+    private string $totalRecargoEquivalencia = '0.00';
+
     // -------------------------------------------------------------------------
     // RELACIONES
     // -------------------------------------------------------------------------
@@ -320,6 +327,28 @@ class FacturaProveedor
     public function setRutaPdf(?string $rutaPdf): self
     {
         $this->rutaPdf = $rutaPdf;
+        return $this;
+    }
+
+    public function isTieneRecargoEquivalencia(): bool
+    {
+        return $this->tieneRecargoEquivalencia;
+    }
+
+    public function setTieneRecargoEquivalencia(bool $tieneRecargoEquivalencia): self
+    {
+        $this->tieneRecargoEquivalencia = $tieneRecargoEquivalencia;
+        return $this;
+    }
+
+    public function getTotalRecargoEquivalencia(): string
+    {
+        return $this->totalRecargoEquivalencia;
+    }
+    
+    public function setTotalRecargoEquivalencia(string $totalRecargoEquivalencia): self
+    {
+        $this->totalRecargoEquivalencia = $totalRecargoEquivalencia;
         return $this;
     }
 }
