@@ -248,6 +248,15 @@ class Documento
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $actualizadoEn = null;
 
+    #[ORM\Column(type: 'string', length: 30, nullable: true)]
+    private ?string $origenMigracion = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $origenMigracionId = null;
+
+    #[ORM\Column(type: 'string', length: 55, nullable: true)]
+    private ?string $referenciaAnterior = null;    
+
     // -------------------------------------------------------------------------
     // RELACIONES HIJO
     // -------------------------------------------------------------------------
@@ -552,6 +561,42 @@ class Documento
     public function getActualizadoEn(): ?\DateTimeInterface
     {
         return $this->actualizadoEn;
+    }
+
+    public function getOrigenMigracion(): ?string
+    {
+        return $this->origenMigracion;
+    }
+
+    public function setOrigenMigracion(?string $origenMigracion): static
+    {
+        $this->origenMigracion = $origenMigracion;
+
+        return $this;
+    }
+
+    public function getOrigenMigracionId(): ?int
+    {
+        return $this->origenMigracionId;
+    }
+
+    public function setOrigenMigracionId(?int $origenMigracionId): static
+    {
+        $this->origenMigracionId = $origenMigracionId;
+
+        return $this;
+    }
+
+    public function getReferenciaAnterior(): ?string
+    {
+        return $this->referenciaAnterior;
+    }
+
+    public function setReferenciaAnterior(?string $referenciaAnterior): static
+    {
+        $this->referenciaAnterior = $referenciaAnterior;
+
+        return $this;
     }
 
     public function getLineas(): Collection

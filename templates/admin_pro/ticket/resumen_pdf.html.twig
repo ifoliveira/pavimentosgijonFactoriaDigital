@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <style>
+        @page {
+            margin: 15mm;
+        }
+
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 9px;
+            color: #222;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin-bottom: 3px;
+        }
+
+        .periodo {
+            color: #666;
+            margin-bottom: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #efefef;
+            text-align: left;
+            border: 1px solid #bbb;
+            padding: 5px;
+        }
+
+        td {
+            border: 1px solid #ccc;
+            padding: 5px;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .resumen {
+            margin-bottom: 20px;
+        }
+
+        .resumen td {
+            font-size: 11px;
+        }
+
+        .total {
+            font-weight: bold;
+        }
+
+        .bloque {
+            margin-top: 22px;
+        }
+
+        .titulo-bloque {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>
+        Resumen de tickets {{ trimestre }}T {{ anio }}
+    </h1>
+
+    <div class="periodo">
+        Del {{ fechaDesde|date('d/m/Y') }}
+        al {{ fechaHasta|date('d/m/Y') }}
+    </div>
+
+    <table class="resumen">
+        <tbody>
+            <tr>
+                <td>Número de tickets</td>
+                <td class="text-end">
+                    {{ resumen.numeroTickets }}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Base imponible</td>
+                <td class="text-end">
+                    {{ resumen.totalBase|number_format(2, ',', '.') }} €
+                </td>
+            </tr>
+
+            <tr>
+                <td>IVA</td>
+                <td class="text-end">
+                    {{ resumen.totalIva|number_format(2, ',', '.') }} €
+                </td>
+            </tr>
+
+            <tr class="total">
+                <td>Total ventas</td>
+                <td class="text-end">
+                    {{ resumen.totalVentas|number_format(2, ',', '.') }} €
+                </td>
+            </tr>
+
+            <tr>
+                <td>Total cobrado</td>
+                <td class="text-end">
+                    {{ resumen.totalCobrado|number_format(2, ',', '.') }} €
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="titulo-bloque">
+        Relación de tickets
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Fecha</th>
+                <th>Método</th>
+                <th class="text-end">Base</th>
+                <th class="text-end">IVA</th>
+                <th class="text-end">Total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for ticket in tickets %}
+            {% set primerCobro = ticket.cobros|first %}
+
+            <tr>
+                <td>{{ ticket.numeroFormateado }}</td>
+
+                <td>
+                    {{ ticket.fechaEmision|date('d/m/Y') }}
+                </td>
+
+                <td>
+                    {% if primerCobro %}
+                        {{ primerCobro.metodo|capitalize }}
+                    {% else %}
+                        Sin cobro
+                    {% endif %}
+                </td>
+
+                <td class="text-end">
+                    {{ ticket.baseImponible|number_format(2, ',', '.') }} €
+                </td>
+
+                <td class="text-end">
+                    {{ ticket.totalIva|number_format(2, ',', '.') }} €
+                </td>
+
+                <td class="text-end">
+                    {{ ticket.total|number_format(2, ',', '.') }} €
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+   
+</body>
+</html>

@@ -244,4 +244,41 @@ class DocumentoRepository extends ServiceEntityRepository
 
         return $qb->setMaxResults(25)->getQuery()->getResult();
     }
+
+    public function findTicketsPorPeriodo(
+        \DateTimeInterface $fechaDesde,
+        \DateTimeInterface $fechaHasta
+    ): array {
+        return $this->createQueryBuilder('d')
+            ->andWhere('d.tipoDocumento = :tipo')
+            ->andWhere('d.fechaEmision >= :fechaDesde')
+            ->andWhere('d.fechaEmision < :fechaHasta')
+            ->setParameter('tipo', 'ticket')
+            ->setParameter('fechaDesde', $fechaDesde)
+            ->setParameter('fechaHasta', $fechaHasta)
+            ->orderBy('d.fechaEmision', 'ASC')
+            ->addOrderBy('d.numero', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getResumenTicketsPorPeriodo(
+        \DateTimeInterface $fechaDesde,
+        \DateTimeInterface $fechaHasta
+    ): array {
+        return $this->createQueryBuilder('d')
+            ->select('COUNT(d.id) AS numeroTickets')
+            ->addSelect('COALESCE(SUM(d.baseImponible), 0) AS totalBase')
+            ->addSelect('COALESCE(SUM(d.totalIva), 0) AS totalIva')
+            ->addSelect('COALESCE(SUM(d.total), 0) AS totalVentas')
+            ->addSelect('COALESCE(SUM(d.totalCobrado), 0) AS totalCobrado')
+            ->andWhere('d.tipoDocumento = :tipo')
+            ->andWhere('d.fechaEmision >= :fechaDesde')
+            ->andWhere('d.fechaEmision < :fechaHasta')
+            ->setParameter('tipo', 'ticket')
+            ->setParameter('fechaDesde', $fechaDesde)
+            ->setParameter('fechaHasta', $fechaHasta)
+            ->getQuery()
+            ->getSingleResult();
+    }    
 }

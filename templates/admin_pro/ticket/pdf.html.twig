@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <style>
+        @page {
+            margin: 10px;
+        }
+
+        body {
+            margin: 0;
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 9px;
+            color: #111;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .empresa {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .separador {
+            border-top: 1px dashed #555;
+            margin: 8px 0;
+        }
+
+        .datos-ticket {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .lineas {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .lineas th {
+            text-align: left;
+            border-bottom: 1px solid #333;
+            padding: 3px 1px;
+        }
+
+        .lineas td {
+            vertical-align: top;
+            padding: 4px 1px;
+            border-bottom: 1px dotted #aaa;
+        }
+
+        .descripcion {
+            width: 48%;
+        }
+
+        .cantidad {
+            width: 12%;
+            text-align: right;
+        }
+
+        .precio {
+            width: 18%;
+            text-align: right;
+        }
+
+        .importe {
+            width: 22%;
+            text-align: right;
+        }
+
+        .totales {
+            width: 100%;
+            margin-top: 8px;
+            border-collapse: collapse;
+        }
+
+        .totales td {
+            padding: 2px 0;
+        }
+
+        .total-final {
+            font-size: 13px;
+            font-weight: bold;
+            border-top: 1px solid #333;
+            padding-top: 5px !important;
+        }
+
+        .pie {
+            margin-top: 12px;
+            text-align: center;
+            font-size: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'admin_pro/ticket/_contenido_pdf.html.twig'
+        with {
+            ticket: ticket
+        }
+    %}
+
+</body>
+</html>
