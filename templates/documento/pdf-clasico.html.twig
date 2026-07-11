@@ -557,6 +557,18 @@
                                 <div class="cliente-dato">
                                     NIF: {{ documento.cliente.dni }}
                                 </div>
+                            {% else %}
+                                <div class="cliente-dato">
+                                    NIF: No facilitado por cliente
+                                </div>
+                            {% endif %}
+
+                            {% if documento.cliente.telefono is defined and documento.cliente.telefono %}
+                                <div class="cliente-dato">Tel: {{ documento.cliente.telefono }}</div>
+                            {% endif %}
+
+                            {% if documento.cliente.email is defined and documento.cliente.email %}
+                                <div class="cliente-dato">Email: {{ documento.cliente.email }}</div>
                             {% endif %}
 
                             {% if documento.cliente.direccionCl is defined and documento.cliente.direccionCl %}
