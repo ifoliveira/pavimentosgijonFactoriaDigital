@@ -4,116 +4,170 @@
     <meta charset="UTF-8">
 
     <style>
-
-        .salto-pagina {
-            page-break-after: always;
-        }
-
         @page {
-            margin: 10px;
+            margin: 15mm;
         }
 
         body {
             margin: 0;
             font-family: DejaVu Sans, sans-serif;
-            font-size: 9px;
-            color: #111;
+            font-size: 10px;
+            color: #222;
         }
 
-        .text-center {
-            text-align: center;
+        .factura {
+            width: 100%;
+        }
+
+        .salto-pagina {
+            page-break-after: always;
+        }
+
+        .cabecera {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .empresa {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .empresa-datos {
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .titulo-factura {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .numero-factura {
+            text-align: right;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .fecha-factura {
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .cliente-box {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+
+        .cliente-box td {
+            border: 1px solid #bbb;
+            padding: 10px;
+        }
+
+        .cliente-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .cliente-nombre {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .cliente-dato {
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .lineas {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .lineas th {
+            background: #efefef;
+            border: 1px solid #bbb;
+            padding: 6px 4px;
+            font-size: 9px;
+        }
+
+        .lineas td {
+            border: 1px solid #ccc;
+            padding: 6px 4px;
+            vertical-align: top;
+        }
+
+        .descripcion {
+            width: 46%;
+            text-align: left;
+        }
+
+        .cantidad {
+            width: 10%;
+            text-align: right;
+        }
+
+        .precio {
+            width: 16%;
+            text-align: right;
+        }
+
+        .iva {
+            width: 10%;
+            text-align: right;
+        }
+
+        .importe {
+            width: 18%;
+            text-align: right;
+        }
+
+        .totales-wrapper {
+            width: 100%;
+        }
+
+        .totales {
+            width: 45%;
+            margin-left: auto;
+            border-collapse: collapse;
+        }
+
+        .totales td {
+            padding: 5px 6px;
+            border-bottom: 1px solid #ddd;
         }
 
         .text-end {
             text-align: right;
         }
 
-        .empresa {
+        .total-final td {
             font-size: 14px;
             font-weight: bold;
-            margin-bottom: 3px;
+            border-top: 2px solid #333;
+            border-bottom: none;
         }
 
-        .separador {
-            border-top: 1px dashed #555;
-            margin: 8px 0;
-        }
-
-        .datos-ticket {
-            width: 100%;
-            margin-bottom: 8px;
-        }
-
-        .lineas {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .lineas th {
-            text-align: left;
-            border-bottom: 1px solid #333;
-            padding: 3px 1px;
-        }
-
-        .lineas td {
-            vertical-align: top;
-            padding: 4px 1px;
-            border-bottom: 1px dotted #aaa;
-        }
-
-        .descripcion {
-            width: 48%;
-        }
-
-        .cantidad {
-            width: 12%;
-            text-align: right;
-        }
-
-        .precio {
-            width: 18%;
-            text-align: right;
-        }
-
-        .importe {
-            width: 22%;
-            text-align: right;
-        }
-
-        .totales {
-            width: 100%;
-            margin-top: 8px;
-            border-collapse: collapse;
-        }
-
-        .totales td {
-            padding: 2px 0;
-        }
-
-        .total-final {
-            font-size: 13px;
-            font-weight: bold;
-            border-top: 1px solid #333;
-            padding-top: 5px !important;
-        }
-
-        .pie {
-            margin-top: 12px;
-            text-align: center;
-            font-size: 8px;
+        .notas {
+            margin-top: 25px;
+            font-size: 9px;
         }
     </style>
 </head>
 
 <body>
 
-    {% for ticket in tickets %}
+    {% for factura in tickets %}
 
-        {% include 'admin_pro/ticket/_contenido_pdf.html.twig'
-            with {
-                ticket: ticket
-            }
-        %}
+        {% include 'admin_pro/factura/_contenido_pdf.html.twig' with {
+            factura: factura
+        } %}
 
         {% if not loop.last %}
             <div class="salto-pagina"></div>

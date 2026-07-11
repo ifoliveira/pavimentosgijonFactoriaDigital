@@ -90,14 +90,14 @@ final class FacturasController extends AbstractController
     #[Route('/{id}/pdf',name: 'admin_factura_pdf',methods: ['GET'])]
     public function pdf(Documento $ticket): Response
     {
-        if ($ticket->getTipoDocumento() !== 'ticket') {
+        if ($ticket->getTipoDocumento() !== 'factura') {
             throw $this->createNotFoundException(
                 'El documento indicado no es un ticket.'
             );
         }
 
         $html = $this->renderView(
-            'admin_pro/ticket/pdf.html.twig',
+            'admin_pro/factura/pdf.html.twig',
             [
                 'ticket' => $ticket,
             ]
@@ -114,10 +114,7 @@ final class FacturasController extends AbstractController
         * Para un ticket estrecho puedes usar un tamaño personalizado.
         * 80 mm de ancho son aproximadamente 226 puntos.
         */
-        $dompdf->setPaper(
-            [0, 0, 226.77, 600],
-            'portrait'
-        );
+        $dompdf->setPaper('A4', 'portrait');
 
         $dompdf->render();
 
@@ -161,7 +158,7 @@ final class FacturasController extends AbstractController
 
         $fechaHasta = $fechaDesde->modify('+3 months');
 
-        $tickets = $documentoRepository->findTicketsPorPeriodo(
+        $tickets = $documentoRepository->findFacturasPorPeriodo(
             $fechaDesde,
             $fechaHasta
         );
@@ -173,7 +170,7 @@ final class FacturasController extends AbstractController
         }
 
         $html = $this->renderView(
-            'admin_pro/ticket/pdf_trimestre.html.twig',
+            'admin_pro/factura/pdf_trimestre.html.twig',
             [
                 'tickets' => $tickets,
                 'anio' => $anio,
@@ -193,10 +190,7 @@ final class FacturasController extends AbstractController
         * Para enviar al asesor recomiendo A4.
         * Un ticket por página.
         */
-        $dompdf->setPaper(
-    [0, 0, 226.77, 500],
-    'portrait'
-);
+        $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
         $nombreArchivo = sprintf(
@@ -236,18 +230,18 @@ final class FacturasController extends AbstractController
             $trimestre
         );
 
-        $tickets = $documentoRepository->findTicketsPorPeriodo(
+        $tickets = $documentoRepository->findFacturasPorPeriodo(
             $fechaDesde,
             $fechaHasta
         );
 
-        $resumen = $documentoRepository->getResumenTicketsPorPeriodo(
+        $resumen = $documentoRepository->getResumenFacturasPorPeriodo(
             $fechaDesde,
             $fechaHasta
         );
 
         $html = $this->renderView(
-            'admin_pro/ticket/resumen_pdf.html.twig',
+            'admin_pro/factura/resumen_pdf.html.twig',
             [
                 'tickets' => $tickets,
                 'resumen' => $resumen,
@@ -297,13 +291,13 @@ final class FacturasController extends AbstractController
             $trimestre
         );
 
-        $tickets = $documentoRepository->findTicketsPorPeriodo(
+        $tickets = $documentoRepository->findFacturasPorPeriodo(
             $fechaDesde,
             $fechaHasta
         );
 
         $nombre = sprintf(
-            'Resumen_Tickets_%dT_%d.csv',
+            'Resumen_Facturas_%dT_%d.csv',
             $trimestre,
             $anio
         );

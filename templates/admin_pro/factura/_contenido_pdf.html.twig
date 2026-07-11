@@ -1,57 +1,113 @@
+<div class="factura">
 
-<div class="ticket">
-    <div class="text-center">
-        <div class="empresa">
-            PAVIMENTOS GIJÓN
-        </div>
-
-        <div>Av. Schultz nº 28 Bajo · Gijón
-        <div>NIF: 53543499M</div>
-        <div>Teléfono: 985 39 13 26</div>
-    </div>
-
-    <div class="separador"></div>
-
-    <table class="datos-ticket">
+    {# CABECERA #}
+    <table class="cabecera">
         <tr>
-            <td>
-                Ticket:
-            </td>
-            <td class="text-end">
-                <strong>{{ ticket.numeroFormateado }}</strong>
-            </td>
-        </tr>
+            <td style="width: 55%; vertical-align: top;">
+                <div class="empresa">
+                    PAVIMENTOS GIJÓN
+                </div>
 
-        <tr>
-            <td>
-                Fecha:
+                <div class="empresa-datos">
+                    Av. Schultz nº 28 Bajo · Gijón<br>
+                    NIF: 53543499M<br>
+                    Teléfono: 985 39 13 26
+                </div>
             </td>
-            <td class="text-end">
-                {{ ticket.fechaEmision|date('d/m/Y') }}
-            </td>
-        </tr>
 
-        <tr>
-            <td class="text-center" colspan="2">
-                FACTURA SIMPLIFICADA
+            <td style="width: 45%; vertical-align: top;">
+                <div class="titulo-factura">
+                    FACTURA
+                </div>
+
+                <div class="numero-factura">
+                    {{ factura.numeroFormateado }}
+                </div>
+
+                <div class="fecha-factura">
+                    Fecha:
+                    {{ factura.fechaEmision|date('d/m/Y') }}
+                </div>
             </td>
         </tr>
     </table>
 
+
+    {# CLIENTE #}
+    <table class="cliente-box">
+        <tr>
+            <td>
+                <div class="cliente-label">
+                    Destinatario
+                </div>
+
+                {% if factura.cliente %}
+
+                    <div class="cliente-nombre">
+                        {{ factura.cliente.nombreCl }}
+                        {{ factura.cliente.apellidosCl }}
+                    </div>
+
+                    {% if factura.cliente.dni is defined
+                        and factura.cliente.dni %}
+                        <div class="cliente-dato">
+                            NIF/DNI: {{ factura.cliente.dni }}
+                        </div>
+                    {% else %}
+                        <div class="cliente-dato">
+                            NIF/DNI: No disponible
+                        </div>
+                    {% endif %}
+
+                    {% if factura.cliente.direccionCl is defined
+                        and factura.cliente.direccionCl %}
+                        <div class="cliente-dato">
+                            {{ factura.cliente.direccionCl }}
+                        </div>
+                    {% endif %}
+
+
+                {% else %}
+
+                    <div class="cliente-nombre">
+                        Sin cliente asignado
+                    </div>
+
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+
+    {# LÍNEAS #}
     <table class="lineas">
         <thead>
             <tr>
-                <th class="descripcion">Concepto</th>
-                <th class="cantidad">Cant.</th>
-                <th class="precio">Precio</th>
-                <th class="importe">Total</th>
+                <th class="descripcion">
+                    Concepto
+                </th>
+
+                <th class="cantidad">
+                    Cant.
+                </th>
+
+                <th class="precio">
+                    Precio
+                </th>
+
+                <th class="iva">
+                    IVA
+                </th>
+
+                <th class="importe">
+                    Importe
+                </th>
             </tr>
         </thead>
 
         <tbody>
-        {% for linea in ticket.lineas %}
 
-            {% set totalLinea = linea.subtotal + linea.totalIva %}
+        {% for linea in factura.lineas %}
 
             <tr>
                 <td class="descripcion">
@@ -59,69 +115,74 @@
                 </td>
 
                 <td class="cantidad">
-                    {{ linea.cantidad|number_format(3, ',', '.') }}
+                    {{ linea.cantidad|number_format(2, ',', '.') }}
                 </td>
 
                 <td class="precio">
-                    {#
-                       Precio mostrado con IVA.
-                       Esto es precio unitario sin IVA × 1,21.
-                       Si hay varios tipos de IVA, se usa el de la línea.
-                    #}
-                    {{
-                        (
-                            linea.precioUnitario
-                            *
-                            (1 + linea.tipoIva / 100)
-                        )|number_format(2, ',', '.')
-                    }} €
+                    {{ linea.precioUnitario|number_format(2, ',', '.') }} €
+                </td>
+
+                <td class="iva">
+                    {{ linea.tipoIva|number_format(0, ',', '.') }} %
                 </td>
 
                 <td class="importe">
-                    {{ totalLinea|number_format(2, ',', '.') }} €
+                    {{ linea.subtotal|number_format(2, ',', '.') }} €
                 </td>
             </tr>
 
         {% endfor %}
+
         </tbody>
     </table>
 
-    <table class="totales">
-        <tr>
-            <td>Base imponible</td>
-            <td class="text-end">
-                {{ ticket.baseImponible|number_format(2, ',', '.') }} €
-            </td>
-        </tr>
 
-        <tr>
-            <td>IVA</td>
-            <td class="text-end">
-                {{ ticket.totalIva|number_format(2, ',', '.') }} €
-            </td>
-        </tr>
+    {# TOTALES #}
+    <div class="totales-wrapper">
 
-        <tr>
-            <td class="total-final">TOTAL</td>
-            <td class="text-end total-final">
-                {{ ticket.total|number_format(2, ',', '.') }} €
-            </td>
-        </tr>
-    </table>
+        <table class="totales">
 
-    {% set primerCobro = ticket.cobros|first %}
+            <tr>
+                <td>
+                    Base imponible
+                </td>
 
-    {% if primerCobro %}
-        <div class="separador"></div>
+                <td class="text-end">
+                    {{ factura.baseImponible|number_format(2, ',', '.') }} €
+                </td>
+            </tr>
 
-        <div>
-            Forma de pago:
-            <strong>{{ primerCobro.metodo|capitalize }}</strong>
+            <tr>
+                <td>
+                    IVA
+                </td>
+
+                <td class="text-end">
+                    {{ factura.totalIva|number_format(2, ',', '.') }} €
+                </td>
+            </tr>
+
+            <tr class="total-final">
+                <td>
+                    TOTAL
+                </td>
+
+                <td class="text-end">
+                    {{ factura.total|number_format(2, ',', '.') }} €
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    {# NOTAS #}
+    {% if factura.notas %}
+        <div class="notas">
+            <strong>Observaciones:</strong><br>
+            {{ factura.notas|nl2br }}
         </div>
     {% endif %}
-
-    <div class="pie">
-        Gracias por su compra.
-    </div>
 
 </div>
