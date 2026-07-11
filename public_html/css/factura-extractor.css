@@ -330,3 +330,66 @@
     .fg-productos-btn:disabled { opacity:.4; cursor:not-allowed; }
 
     @keyframes fg-shimmer { to { background-position: -200% 0; } }
+    .fg-venc-row {
+        display: grid;
+        grid-template-columns: minmax(170px, 1fr) minmax(140px, 180px);
+        gap: 14px;
+        align-items: end;
+        margin-bottom: 12px;
+        padding: 12px;
+        border: 1px solid #2a2f3d;
+        border-radius: 8px;
+        background: #0f1117;
+    }
+
+    .fg-venc-field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .fg-venc-field label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    .fg-venc-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 9px 10px;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        background: #181b23;
+        color: #f8fafc;
+        font: inherit;
+    }
+
+    .fg-venc-input:focus {
+        outline: none;
+        border-color: #64748b;
+    }
+
+    .fg-venc-importe-wrap {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .fg-venc-importe-wrap input {
+        text-align: right;
+    }
+
+    .fg-venc-importe-wrap span {
+        color: #94a3b8;
+    }
+
+    .fg-venc-input.is-invalid {
+        border-color: #ef4444;
+        background: rgba(239, 68, 68, 0.08);
+    }
+
+    @media (max-width: 600px) {
+        .fg-venc-row {
+            grid-template-columns: 1fr;
+        }
+    }

@@ -307,30 +307,129 @@
 
     // Guarda el JSON cuando se renderiza (modifica tu función renderJson):
     // Al final de renderJson(obj) añade:  jsonActual = obj;  forecastBtn.style.display = 'block';
+    function normalizarFechaInput(fecha) {
+    if (!fecha) {
+        return '';
+    }
+
+    const valor = String(fecha).trim();
+
+    // Ya viene en formato correcto: 2026-07-10
+    if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+        return valor;
+    }
+
+    // Convierte 10/07/2026 a 2026-07-10
+    const europea = valor.match(
+        /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/
+    );
+
+    if (europea) {
+        const dia = europea[1].padStart(2, '0');
+        const mes = europea[2].padStart(2, '0');
+        const anio = europea[3];
+
+        return `${anio}-${mes}-${dia}`;
+    }
+
+    return '';
+}
+
+    function normalizarImporteInput(valor) {
+        if (
+            valor === null ||
+            valor === undefined ||
+            valor === ''
+        ) {
+            return '';
+        }
+
+        if (typeof valor === 'number') {
+            return Number.isFinite(valor)
+                ? valor.toFixed(2)
+                : '';
+        }
+
+        let texto = String(valor)
+            .trim()
+            .replace(/[€\s]/g, '');
+
+        /*
+        * Formato español:
+        * 1.234,56 -> 1234.56
+        */
+        if (texto.includes(',')) {
+            texto = texto
+                .replace(/\./g, '')
+                .replace(',', '.');
+        }
+
+        const numero = Number(texto);
+
+        return Number.isFinite(numero)
+            ? numero.toFixed(2)
+            : '';
+    }
 
     forecastBtn.addEventListener('click', () => {
-        if (!jsonActual?.vencimientos?.length) return;
-
-        // Busca el elemento en el momento del click, no al cargar
-        const modalConcepto = document.getElementById('fg-modal-concepto');
-        const modalVencList = document.getElementById('fg-venc-list');
-        const modal         = document.getElementById('fg-modal');
-
-        if (!modalConcepto) {
-            console.error('No se encuentra #fg-modal-concepto en el DOM');
+        if (!jsonActual?.vencimientos?.length) {
+            showAlert('error', '⚠ La factura no contiene vencimientos.');
             return;
         }
 
-        const num     = jsonActual.numero_factura ?? '';
+        const num = jsonActual.numero_factura ?? '';
         const empresa = jsonActual.empresa_emisora?.nombre ?? '';
-        modalConcepto.value = `Factura ${num} - ${empresa}`.trim();
 
-        modalVencList.innerHTML = jsonActual.vencimientos.map(v =>
-            `<div class="fg-venc-row">
-                <span>${v.fecha ?? '-'}</span>
-                <span>${Number(v.importe ?? 0).toFixed(2)} €</span>
-            </div>`
-        ).join('');
+        modalConcepto.value =
+            `Factura ${num} - ${empresa}`.trim();
+
+        modalVencList.innerHTML = jsonActual.vencimientos
+            .map((vencimiento, index) => {
+                const fecha = normalizarFechaInput(
+                    vencimiento.fecha
+                );
+
+                const importe = normalizarImporteInput(
+                    vencimiento.importe
+                );
+
+                return `
+                    <div class="fg-venc-row" data-index="${index}">
+                        <div class="fg-venc-field">
+                            <label for="fg-venc-fecha-${index}">
+                                Fecha
+                            </label>
+
+                            <input
+                                type="date"
+                                id="fg-venc-fecha-${index}"
+                                class="fg-venc-input fg-venc-fecha"
+                                value="${fecha}"
+                            >
+                        </div>
+
+                        <div class="fg-venc-field">
+                            <label for="fg-venc-importe-${index}">
+                                Importe
+                            </label>
+
+                            <div class="fg-venc-importe-wrap">
+                                <input
+                                    type="number"
+                                    id="fg-venc-importe-${index}"
+                                    class="fg-venc-input fg-venc-importe"
+                                    value="${importe}"
+                                    min="0"
+                                    step="0.01"
+                                    inputmode="decimal"
+                                >
+                                <span>€</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            })
+            .join('');
 
         modal.classList.add('open');
     });
@@ -338,36 +437,131 @@
     modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
 
     modalConfirm.addEventListener('click', async () => {
+        const concepto = modalConcepto.value.trim();
+
+        if (!concepto) {
+            showAlert(
+                'error',
+                '⚠ Debes indicar un concepto para el Forecast.'
+            );
+            modalConcepto.focus();
+            return;
+        }
+
+        const filas = [
+            ...modalVencList.querySelectorAll('.fg-venc-row')
+        ];
+
+        const vencimientos = [];
+        let hayErrores = false;
+
+        filas.forEach((fila, index) => {
+            const fechaInput =
+                fila.querySelector('.fg-venc-fecha');
+
+            const importeInput =
+                fila.querySelector('.fg-venc-importe');
+
+            fechaInput.classList.remove('is-invalid');
+            importeInput.classList.remove('is-invalid');
+
+            const fecha = fechaInput.value;
+            const importeTexto = importeInput.value;
+            const importe = Number(importeTexto);
+
+            if (!fecha) {
+                fechaInput.classList.add('is-invalid');
+                hayErrores = true;
+            }
+
+            if (
+                importeTexto === '' ||
+                !Number.isFinite(importe) ||
+                importe <= 0
+            ) {
+                importeInput.classList.add('is-invalid');
+                hayErrores = true;
+            }
+
+            vencimientos.push({
+                fecha: fecha || null,
+                importe: Number.isFinite(importe)
+                    ? Math.round(importe * 100) / 100
+                    : null,
+            });
+        });
+
+        if (hayErrores) {
+            showAlert(
+                'error',
+                '⚠ Revisa las fechas y los importes de los vencimientos.'
+            );
+            return;
+        }
+
+        if (!vencimientos.length) {
+            showAlert(
+                'error',
+                '⚠ No hay vencimientos para insertar.'
+            );
+            return;
+        }
+
         modalConfirm.disabled = true;
         modalConfirm.textContent = 'Insertando…';
 
         try {
-            const res  = await fetch('{{ path('factura_proveedor_forecast_insertar') }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    tipo_id:     TIPO_ID,
-                    concepto:    modalConcepto.value,
-                    vencimientos: jsonActual.vencimientos,
-                }),
-            });
+            const res = await fetch(
+                '{{ path('factura_proveedor_forecast_insertar') }}',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tipo_id: TIPO_ID,
+                        concepto,
+                        vencimientos,
+                    }),
+                }
+            );
+
             const data = await res.json();
 
             if (!res.ok || data.error) {
-                showAlert('error', '⚠ ' + (data.error ?? 'Error desconocido'));
-            } else {
-                showAlert('success', `✓ ${data.insertados} vencimiento(s) insertado(s) en Forecast`);
-                forecastBtn.disabled = true;
-                forecastBtn.textContent = '✓ Insertado';
+                showAlert(
+                    'error',
+                    '⚠ ' + (data.error ?? 'Error desconocido')
+                );
+
+                return;
             }
-        } catch (e) {
-            showAlert('error', '⚠ Error de red: ' + e.message);
-        } finally {
+
+            /*
+            * Actualizamos también el JSON en memoria con
+            * las correcciones introducidas manualmente.
+            */
+            jsonActual.vencimientos = vencimientos;
+
+            showAlert(
+                'success',
+                `✓ ${data.insertados} vencimiento(s) insertado(s) en Forecast`
+            );
+
+            forecastBtn.disabled = true;
+            forecastBtn.textContent = '✓ Insertado';
+
             modal.classList.remove('open');
+        } catch (e) {
+            showAlert(
+                'error',
+                '⚠ Error de red: ' + e.message
+            );
+        } finally {
             modalConfirm.disabled = false;
             modalConfirm.textContent = 'Confirmar inserción';
         }
-    });   
+    }); 
 
 // ── Productos ──
 const productosBtn = document.getElementById('fg-productos-btn');
