@@ -281,4 +281,41 @@ class DocumentoRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleResult();
     }    
+
+    public function findFacturasPorPeriodo(
+        \DateTimeInterface $fechaDesde,
+        \DateTimeInterface $fechaHasta
+    ): array {
+        return $this->createQueryBuilder('d')
+            ->andWhere('d.tipoDocumento = :tipo')
+            ->andWhere('d.fechaEmision >= :fechaDesde')
+            ->andWhere('d.fechaEmision < :fechaHasta')
+            ->setParameter('tipo', 'factura')
+            ->setParameter('fechaDesde', $fechaDesde)
+            ->setParameter('fechaHasta', $fechaHasta)
+            ->orderBy('d.fechaEmision', 'ASC')
+            ->addOrderBy('d.numero', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getResumenFacturasPorPeriodo(
+        \DateTimeInterface $fechaDesde,
+        \DateTimeInterface $fechaHasta
+    ): array {
+        return $this->createQueryBuilder('d')
+            ->select('COUNT(d.id) AS numeroFacturas')
+            ->addSelect('COALESCE(SUM(d.baseImponible), 0) AS totalBase')
+            ->addSelect('COALESCE(SUM(d.totalIva), 0) AS totalIva')
+            ->addSelect('COALESCE(SUM(d.total), 0) AS totalVentas')
+            ->addSelect('COALESCE(SUM(d.totalCobrado), 0) AS totalCobrado')
+            ->andWhere('d.tipoDocumento = :tipo')
+            ->andWhere('d.fechaEmision >= :fechaDesde')
+            ->andWhere('d.fechaEmision < :fechaHasta')
+            ->setParameter('tipo', 'factura')
+            ->setParameter('fechaDesde', $fechaDesde)
+            ->setParameter('fechaHasta', $fechaHasta)
+            ->getQuery()
+            ->getSingleResult();
+    }      
 }

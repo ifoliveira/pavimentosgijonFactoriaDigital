@@ -1,0 +1,127 @@
+
+<div class="ticket">
+    <div class="text-center">
+        <div class="empresa">
+            PAVIMENTOS GIJÓN
+        </div>
+
+        <div>Av. Schultz nº 28 Bajo · Gijón
+        <div>NIF: 53543499M</div>
+        <div>Teléfono: 985 39 13 26</div>
+    </div>
+
+    <div class="separador"></div>
+
+    <table class="datos-ticket">
+        <tr>
+            <td>
+                Ticket:
+            </td>
+            <td class="text-end">
+                <strong>{{ ticket.numeroFormateado }}</strong>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                Fecha:
+            </td>
+            <td class="text-end">
+                {{ ticket.fechaEmision|date('d/m/Y') }}
+            </td>
+        </tr>
+
+        <tr>
+            <td class="text-center" colspan="2">
+                FACTURA SIMPLIFICADA
+            </td>
+        </tr>
+    </table>
+
+    <table class="lineas">
+        <thead>
+            <tr>
+                <th class="descripcion">Concepto</th>
+                <th class="cantidad">Cant.</th>
+                <th class="precio">Precio</th>
+                <th class="importe">Total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for linea in ticket.lineas %}
+
+            {% set totalLinea = linea.subtotal + linea.totalIva %}
+
+            <tr>
+                <td class="descripcion">
+                    {{ linea.descripcion }}
+                </td>
+
+                <td class="cantidad">
+                    {{ linea.cantidad|number_format(3, ',', '.') }}
+                </td>
+
+                <td class="precio">
+                    {#
+                       Precio mostrado con IVA.
+                       Esto es precio unitario sin IVA × 1,21.
+                       Si hay varios tipos de IVA, se usa el de la línea.
+                    #}
+                    {{
+                        (
+                            linea.precioUnitario
+                            *
+                            (1 + linea.tipoIva / 100)
+                        )|number_format(2, ',', '.')
+                    }} €
+                </td>
+
+                <td class="importe">
+                    {{ totalLinea|number_format(2, ',', '.') }} €
+                </td>
+            </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="totales">
+        <tr>
+            <td>Base imponible</td>
+            <td class="text-end">
+                {{ ticket.baseImponible|number_format(2, ',', '.') }} €
+            </td>
+        </tr>
+
+        <tr>
+            <td>IVA</td>
+            <td class="text-end">
+                {{ ticket.totalIva|number_format(2, ',', '.') }} €
+            </td>
+        </tr>
+
+        <tr>
+            <td class="total-final">TOTAL</td>
+            <td class="text-end total-final">
+                {{ ticket.total|number_format(2, ',', '.') }} €
+            </td>
+        </tr>
+    </table>
+
+    {% set primerCobro = ticket.cobros|first %}
+
+    {% if primerCobro %}
+        <div class="separador"></div>
+
+        <div>
+            Forma de pago:
+            <strong>{{ primerCobro.metodo|capitalize }}</strong>
+        </div>
+    {% endif %}
+
+    <div class="pie">
+        Gracias por su compra.
+    </div>
+
+</div>
