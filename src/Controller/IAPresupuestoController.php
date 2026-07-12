@@ -193,7 +193,9 @@ public function completar(Request $request, PresupuestoLeadService $leadService)
     try {
         $leadService->completarLead($token, $nombre, $email);
     } catch (\RuntimeException $e) {
-        return new JsonResponse(['ok' => false, 'error' => 'Presupuesto no encontrado'], 404);
+        return new JsonResponse(['ok' => false,
+                // Solo para depuración: devolvemos el mensaje real.
+        'error' => $e->getMessage()], 404);
     }
 
     return new JsonResponse(['ok' => true]);

@@ -179,6 +179,6 @@ class PresupuestoLeadService
             ->html($htmlEmail);
 
         $this->mailer->send($emailMsg);
-        $this->notifier->sendMessage("📩 Lead completado: {$nombre} | {$email} | {$lead->getTipoReforma()} | {$total} €");
+        $this->notifier->sendMessage("📩 Lead completado: {$nombre} | {$email} | 'baño' | {$total} €");
     }
 }

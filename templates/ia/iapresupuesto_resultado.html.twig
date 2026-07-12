@@ -211,38 +211,99 @@ function mostrarFormulario() {
 async function enviarDatos() {
   const nombre = document.getElementById('pdf-nombre').value.trim();
   const email  = document.getElementById('pdf-email').value.trim();
+
   document.getElementById('error-nombre').textContent = '';
   document.getElementById('error-email').textContent  = '';
 
   let valid = true;
-  if (!nombre) { document.getElementById('error-nombre').textContent = 'Este campo es obligatorio'; valid = false; }
-  if (!email || !email.includes('@')) { document.getElementById('error-email').textContent = 'Email no válido'; valid = false; }
+
+  // Validamos el nombre.
+  if (!nombre) {
+    document.getElementById('error-nombre').textContent = 'Este campo es obligatorio';
+    valid = false;
+  }
+
+  // Validamos el email.
+  if (!email || !email.includes('@')) {
+    document.getElementById('error-email').textContent = 'Email no válido';
+    valid = false;
+  }
+
   if (!valid) return;
 
   const btn      = document.getElementById('btn-enviar');
   const enviando = document.getElementById('enviando');
-  btn.disabled   = true;
+
+  btn.disabled = true;
   enviando.style.display = 'block';
 
   try {
-    const res = await fetch('/api/presupuesto/completar', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: TOKEN, nombre, email }),
+    // Mostramos en consola los datos que realmente se envían.
+    console.log('Datos enviados:', {
+      token: TOKEN,
+      nombre,
+      email
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (!data.ok) throw new Error('ko');
+
+    const res = await fetch('/api/presupuesto/completar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        token: TOKEN,
+        nombre,
+        email
+      }),
+    });
+
+    // Leemos primero el contenido de la respuesta.
+    const textoRespuesta = await res.text();
+
+    let data;
+
+    try {
+      // Intentamos convertir la respuesta en JSON.
+      data = JSON.parse(textoRespuesta);
+    } catch (error) {
+      // Si no es JSON, mostramos el contenido recibido.
+      console.error('Symfony no devolvió JSON:', textoRespuesta);
+
+      throw new Error(`Respuesta no válida del servidor. HTTP ${res.status}`);
+    }
+
+    console.log('Respuesta recibida:', {
+      status: res.status,
+      data
+    });
+
+    // Comprobamos el estado después de haber leído el JSON.
+    if (!res.ok) {
+      throw new Error(data.error || `Error HTTP ${res.status}`);
+    }
+
+    if (!data.ok) {
+      throw new Error(data.error || 'No se pudo completar el presupuesto');
+    }
 
     document.getElementById('formulario-datos').style.display = 'none';
     document.getElementById('confirmacion').style.display     = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
 
   } catch (err) {
     enviando.style.display = 'none';
     btn.disabled = false;
-    document.getElementById('error-email').textContent = '⚠️ Error al enviar. Inténtalo de nuevo.';
-    console.error(err);
+
+    // Mostramos el mensaje real devuelto por Symfony.
+    document.getElementById('error-email').textContent =
+      `⚠️ ${err.message}`;
+
+    console.error('Error al enviar los datos:', err);
   }
 }
 
