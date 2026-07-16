@@ -240,7 +240,7 @@ class PresupuestoDuchaBuilderService
         if ($producto->getMedidaTexto()) {
             $descripcion .= ' - ' . $producto->getMedidaTexto();
         }
-        var_dump($producto->getPrecioCoste() ?? null); // Depuración: muestra el ID del plato encontrado o null
+        
       
         $this->documentoLineaService->crearLineaDesdeConfigurador(
             documento: $documento,
