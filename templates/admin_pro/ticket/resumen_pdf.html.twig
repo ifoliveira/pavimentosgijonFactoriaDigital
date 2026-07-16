@@ -128,7 +128,6 @@
             <tr>
                 <th>Número</th>
                 <th>Fecha</th>
-                <th>Método</th>
                 <th class="text-end">Base</th>
                 <th class="text-end">IVA</th>
                 <th class="text-end">Total</th>
@@ -144,14 +143,6 @@
 
                 <td>
                     {{ ticket.fechaEmision|date('d/m/Y') }}
-                </td>
-
-                <td>
-                    {% if primerCobro %}
-                        {{ primerCobro.metodo|capitalize }}
-                    {% else %}
-                        Sin cobro
-                    {% endif %}
                 </td>
 
                 <td class="text-end">

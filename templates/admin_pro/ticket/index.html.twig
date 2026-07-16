@@ -204,7 +204,6 @@
                         <th>Número</th>
                         <th>Fecha</th>
                         <th>Referencia anterior</th>
-                        <th>Forma de pago</th>
                         <th class="text-end">Base</th>
                         <th class="text-end">IVA</th>
                         <th class="text-end">Total</th>
@@ -236,15 +235,7 @@
                             {% endif %}
                         </td>
 
-                        <td>
-                            {% if primerCobro %}
-                                {{ primerCobro.metodo|capitalize }}
-                            {% else %}
-                                <span class="text-muted">
-                                    Sin cobro
-                                </span>
-                            {% endif %}
-                        </td>
+
 
                         <td class="text-end">
                             {{ ticket.baseImponible|number_format(2, ',', '.') }} €

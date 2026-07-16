@@ -32,6 +32,8 @@ class PresupuestoDuchaBuilderService
         $alicatado = $datos['alicatado'] ?? 'minimo';
         $tipoMampara = $datos['tipo_mampara'] ?? null;
         $griferia = $datos['griferia'] ?? 'mantener';
+        $entreparedes = $datos['entreparedes'] ?? false;
+        $tiene_azulejo_cliente = $datos['tiene_azulejo_cliente'] ?? false;
 
         // 3. Mano de obra base
         $manoObraBase = $parametros['mano_obra_base'] ?? [
@@ -61,14 +63,17 @@ class PresupuestoDuchaBuilderService
             );
         }
 
-        $this->crearLineaEstimado(
-                documento: $documento,
-                tipoLinea: 'producto',
-                descripcion: 'Azulejo',
-                cantidad: 4,
-                precioConIva: 34,
-                costeUnitario: 25
-            );
+        if (!$tiene_azulejo_cliente) {
+
+            $this->crearLineaEstimado(
+                    documento: $documento,
+                    tipoLinea: 'producto',
+                    descripcion: 'Revestimiento cerámico de primera calidad',
+                    cantidad: 4,
+                    precioConIva: 34,
+                    costeUnitario: 25
+                );
+        }
 
 
         // 5. Plato de ducha desde catálogo
@@ -80,7 +85,7 @@ class PresupuestoDuchaBuilderService
                 largo: $largo,
                 ancho: $ancho
             );
-
+                       
             if ($plato) {
                 $this->crearLineaCatalogo(
                     documento: $documento,
@@ -219,7 +224,7 @@ class PresupuestoDuchaBuilderService
                 costeUnitario: 75
             );
         }
-
+     //   die;
         // 9. Un solo recalculo final y un solo flush
         $this->documentoLineaService->recalcularDocumentoCompleto($documento, flush: true);
     }
@@ -235,7 +240,8 @@ class PresupuestoDuchaBuilderService
         if ($producto->getMedidaTexto()) {
             $descripcion .= ' - ' . $producto->getMedidaTexto();
         }
-
+        var_dump($producto->getPrecioCoste() ?? null); // Depuración: muestra el ID del plato encontrado o null
+      
         $this->documentoLineaService->crearLineaDesdeConfigurador(
             documento: $documento,
             descripcion: $descripcion,

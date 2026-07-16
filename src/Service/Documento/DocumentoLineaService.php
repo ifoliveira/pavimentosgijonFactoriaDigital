@@ -372,6 +372,8 @@ class DocumentoLineaService
         $linea->setTipoIva(number_format($tipoIva, 2, '.', ''));
         $linea->setCosteUnitario(number_format($costeUnitario, 2, '.', ''));
         $ivaCoste = $ivaCoste ?? 0.00;
+
+
         $porcentajeRecargoEquivalencia = $porcentajeRecargoEquivalencia ?? 0.00;
 
         $importeIvaCosteUnitario = $costeUnitario * ($ivaCoste / 100);
