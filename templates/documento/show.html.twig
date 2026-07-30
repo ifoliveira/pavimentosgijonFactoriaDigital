@@ -1559,11 +1559,35 @@
         calcularSubtotalServicio();
     }
 
+    let ultimaBusqueda = '';
+
     function buscarProductos(q) {
+        q = q.trim();
+
+        if (q === ultimaBusqueda) {
+            return;
+        }
+
+        ultimaBusqueda = q;
+
         fetch(`/admin/documento/productos/buscar?q=${encodeURIComponent(q)}`)
-            .then(r => r.json())
-            .then(data => renderResultados(data))
-            .catch(() => {});
+            .then(async response => {
+                if (response.status === 429) {
+                    throw new Error('Límite temporal de búsquedas alcanzado');
+                }
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP ${response.status}`);
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                renderResultados(data);
+            })
+            .catch(error => {
+                console.error(error);
+            });
     }
 
     function escaparJsTexto(texto) {
@@ -1784,13 +1808,13 @@
 
             const q = this.value.trim();
 
-            if (q.length < 2) {
+            if (q.length < 3) {
                 document.getElementById('resultados-busqueda').innerHTML =
                     '<div class="text-center text-muted py-4 small">Empieza a escribir para buscar productos</div>';
                 return;
             }
 
-            searchTimer = setTimeout(() => buscarProductos(q), 280);
+            searchTimer = setTimeout(() => buscarProductos(q), 800);
         });
 
         ['f-cantidad', 'f-precio', 'f-descuento'].forEach(id => {

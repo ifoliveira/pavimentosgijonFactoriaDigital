@@ -136,12 +136,30 @@ class CatalogoProductoSelectorService
      */
     public function buscarMamparaRecomendada(
         string $tipoMampara,
+        bool $entreparedes,
         ?float $anchoFrontal = null,
         ?float $anchoLateral = null
     ): ?array {
         if ($tipoMampara === 'sin_mampara') {
             return null;
         }
+                
+        if ($tipoMampara === 'fijo') {
+            return $this->buscarMamparaAngularConLateral(
+                tipoMampara: $tipoMampara,
+                anchoFrontal: $anchoFrontal,
+                anchoLateral: $anchoLateral
+            );
+        }
+        
+        if (in_array($tipoMampara, ['fijo'], true)) {
+            return $this->buscarMamparaAngularConLateral(
+                tipoMampara: $tipoMampara,
+                anchoFrontal: $anchoFrontal,
+                anchoLateral: $anchoLateral
+            );
+        }
+
 
         if (in_array($tipoMampara, ['angular', 'angular_dobe'], true)) {
             return $this->buscarMamparaAngularConLateral(
