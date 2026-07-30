@@ -269,8 +269,19 @@ class DocumentoController extends AbstractController
 
         $template = sprintf('documento/pdf-%s.html.twig', $tpl);
 
+        $tipos = [4, 10, 21];
+
+        $porcentaje = ($documento->getTotalIva() / $documento->getBaseImponible()) * 100;
+
+        $iva = array_reduce($tipos, function ($mejor, $actual) use ($porcentaje) {
+            return abs($actual - $porcentaje) < abs($mejor - $porcentaje)
+                ? $actual
+                : $mejor;
+        });
+        
         $html = $this->renderView($template, [
             'documento' => $documento,
+            'iva' => $iva,
             'logoPath'  => $this->getParameter('kernel.project_dir') . '/public/img/logo.png',
         ]);
 
