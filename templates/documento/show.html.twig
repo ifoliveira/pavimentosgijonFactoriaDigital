@@ -502,7 +502,7 @@
                                                                 {{ linea.id }},
                                                                 '{{ linea.tipoLinea }}',
                                                                 '{{ linea.descripcion|e('js') }}',
-                                                                {{ 1}},
+                                                                {{ linea.cantidad}},
                                                                 {{ (linea.subtotal + linea.totalIva) / (linea.cantidad |default(1)) }},
                                                                 {{ linea.descuento }},
                                                                 {{ linea.producto ? linea.producto.id : 'null' }},
