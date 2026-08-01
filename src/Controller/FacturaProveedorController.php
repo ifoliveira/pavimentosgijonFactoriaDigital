@@ -582,7 +582,7 @@ class FacturaProveedorController extends AbstractController
 
         return $this->render('factura_proveedor/asignar.html.twig', [
             'factura' => $factura,
-            'proyectos' => $proyectoRepository->findBy([], ['id' => 'DESC']),
+            'proyectos' => $proyectoRepository->findAceptadosConCobros([], ['id' => 'DESC']),
         ]);
     }
 

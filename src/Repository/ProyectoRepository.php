@@ -37,6 +37,20 @@ class ProyectoRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    public function findAceptadosConCobros(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.totalCobrado > :tipo')
+            ->andWhere('p.fechaInicio >= :fechaInicio')
+            ->setParameter('tipo', 0)
+            ->setParameter('fechaInicio', new \DateTime('-120 days'))
+            ->distinct()
+            ->orderBy('p.nombre', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+
     public function countProyectosConPresupuestoAceptadoOConvertido(): int
     {
         return (int) $this->createQueryBuilder('p')
