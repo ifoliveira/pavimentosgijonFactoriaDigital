@@ -45,7 +45,7 @@ class ProyectoRepository extends ServiceEntityRepository
             ->setParameter('tipo', 0)
             ->setParameter('fechaInicio', new \DateTime('-120 days'))
             ->distinct()
-            ->orderBy('p.nombre', 'DESC')
+            ->orderBy('p.nombre', 'ASC')
             ->getQuery()
             ->getResult();
     }
