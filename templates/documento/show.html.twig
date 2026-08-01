@@ -817,26 +817,11 @@
     <input type="hidden" name="tipoLinea" id="hidden-tipo-linea" value="producto">
     <input type="hidden" name="lineaId" id="hidden-linea-id" value="">
     <input type="hidden" name="origenLinea" id="hidden-origen-linea" value="manual">
-    <div class="px-4 py-3 border-bottom bg-light-subtle" id="bloque-destino-facturacion">
-        <label class="form-label-upper">Destino de facturación</label>
 
-        <select name="destinoFacturacion"
-                id="f-destino-facturacion"
-                class="form-select form-select-sm">
-            <option value="pendiente">Pendiente de clasificar</option>
-            <option value="factura_obra">Factura obra</option>
-            <option value="ticket_tienda">Ticket tienda</option>
-            <option value="no_facturable">No facturable</option>
-        </select>
-
-        <div class="form-text small">
-            Define si esta línea acabará en factura de obra, ticket de tienda o solo como información.
-        </div>
-    </div>
     {# ── PRODUCTO: FASE 1 BUSCADOR ───────────────────────── #}
     <div id="fase-busqueda-producto">
       <div class="px-4 py-3 border-bottom">
-        <div class="input-group input-group-sm">
+        <div class="input-group">
           <span class="input-group-text bg-light border-end-0">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
               <circle cx="5.5" cy="5.5" r="4" stroke="#888" stroke-width="1.2"/>
@@ -967,6 +952,22 @@
         </div>
         </div>
       </div>
+        <div class="px-4 py-3 border-bottom bg-light-subtle" id="bloque-destino-facturacion">
+            <label class="form-label-upper">Destino de facturación</label>
+
+            <select name="destinoFacturacion"
+                    id="f-destino-facturacion"
+                    class="form-select"
+                <option value="pendiente">Pendiente de clasificar</option>
+                <option value="factura_obra">Factura obra</option>
+                <option value="ticket_tienda">Ticket tienda</option>
+                <option value="no_facturable">No facturable</option>
+            </select>
+
+            <div class="form-text small">
+                Define si esta línea acabará en factura de obra, ticket de tienda o solo como información.
+            </div>
+        </div>
     </div>
 
 
@@ -974,6 +975,34 @@
     {# ── SERVICIO ─────────────────────────────────────────── #}
     <div id="fase-formulario-servicio" class="d-none">
       <div class="px-4 py-3 offcanvas-form-bg flex-grow-1">
+        {# SERVICIOS HABITUALES #}
+        <div class="mb-4">
+        <label class="form-label-upper mb-2">Servicios habituales</label>
+
+        <div class="servicio-rapido"
+            onclick="seleccionarServicio('Mano de obra albañilería y fontanería')">
+            <div class="servicio-rapido-icono">MO</div>
+            <div class="servicio-rapido-titulo">
+            Mano de obra albañilería y fontanería
+            </div>
+        </div>
+
+        <div class="servicio-rapido"
+            onclick="seleccionarServicio('Colocación de mampara')">
+            <div class="servicio-rapido-icono">MA</div>
+            <div class="servicio-rapido-titulo">
+            Colocación de mampara
+            </div>
+        </div>
+
+        <div class="servicio-rapido"
+            onclick="seleccionarServicio('Colocación de mampara')">
+            <div class="servicio-rapido-icono">MA</div>
+            <div class="servicio-rapido-titulo">
+            Trabajos de pintura o escayola
+            </div>
+        </div>        
+        </div>      
         <div class="mb-3">
           <label class="form-label-upper">Descripción</label>
           <textarea name="descripcion"
@@ -1260,6 +1289,7 @@
 
     let searchTimer = null;
     const IVA = 21;
+    const PRODUCTOS = {{ productosBuscador|json_encode|raw }};
 
     function formatoEuro(valor) {
         return valor.toLocaleString('es-ES', {
@@ -1405,6 +1435,10 @@
                 ['f-descripcion', 'f-cantidad', 'f-precio-iva']
             );
 
+            setTimeout(() => {
+                document.getElementById('producto-search')?.focus();
+            }, 50);
+            
             return;
         }
 
@@ -1559,36 +1593,38 @@
         calcularSubtotalServicio();
     }
 
-    let ultimaBusqueda = '';
-
     function buscarProductos(q) {
-        q = q.trim();
-
-        if (q === ultimaBusqueda) {
+        q = normalizarTexto(q);
+        console.log('Buscando productos con query:', q);
+        if (q.length < 2) {
+            renderResultados([]);
             return;
         }
 
-        ultimaBusqueda = q;
+        const palabras = q.split(/\s+/).filter(Boolean);
 
-        fetch(`/admin/documento/productos/buscar?q=${encodeURIComponent(q)}`)
-            .then(async response => {
-                if (response.status === 429) {
-                    throw new Error('Límite temporal de búsquedas alcanzado');
-                }
+        const resultados = PRODUCTOS
+            .filter(producto => {
+                const texto = normalizarTexto(
+                    `${producto.nombre ?? ''} ${producto.referencia ?? ''}`
+                );
 
-                if (!response.ok) {
-                    throw new Error(`Error HTTP ${response.status}`);
-                }
-
-                return response.json();
+                return palabras.every(palabra =>
+                    texto.includes(palabra)
+                );
             })
-            .then(data => {
-                renderResultados(data);
-            })
-            .catch(error => {
-                console.error(error);
-            });
+            .slice(0, 20);
+
+        renderResultados(resultados);
     }
+
+    function normalizarTexto(texto) {
+        return String(texto ?? '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
+    }    
 
     function escaparJsTexto(texto) {
         return String(texto ?? '')
@@ -1653,8 +1689,8 @@
                         ${(p.tipo ?? '?').substring(0, 2).toUpperCase()}
                     </div>
                     <div class="flex-grow-1 min-w-0">
-                        <div class="small fw-semibold text-truncate">${p.nombre ?? '—'}</div>
-                        <div class="d-flex gap-2 flex-wrap" style="font-size:11px;">
+                        <div class="fw-semibold text-truncate">${p.nombre ?? '—'}</div>
+                        <div class="d-flex gap-2 flex-wrap">
                             <span class="text-muted">${p.tipo ?? '—'}</span>
                             ${stockHtml}
                         </div>
@@ -1741,6 +1777,60 @@
         refrescarInputsManoObra();
     }
 
+    function prepararSiguienteLinea() {
+        document.getElementById('form-linea').reset();
+
+        document.getElementById('hidden-linea-id').value = '';
+        document.getElementById('hidden-producto-id').value = '';
+        document.getElementById('hidden-tipo-linea').value = 'producto';
+        document.getElementById('hidden-origen-linea').value = 'manual';
+
+        document.getElementById('f-destino-facturacion').value = 'ticket_tienda';
+
+        document.getElementById('producto-search').value = '';
+        document.getElementById('producto-seleccionado-nombre').textContent = '';
+
+        document.getElementById('f-cantidad').value = '1';
+        document.getElementById('f-descuento').value = '0';
+        document.getElementById('f-precio').value = '';
+        document.getElementById('f-precio-iva').value = '';
+
+        document.getElementById('subtotal-sin-iva-producto').textContent = '0,00 €';
+        document.getElementById('importe-iva-producto').textContent = '0,00 €';
+        document.getElementById('subtotal-preview-producto').textContent = '0,00 €';
+
+        document.getElementById('resultados-busqueda').innerHTML = `
+            <div class="text-center text-muted py-4 small">
+                Empieza a escribir para buscar productos
+            </div>
+        `;
+
+        cambiarTipoLinea('producto');
+
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Línea añadida',
+            showConfirmButton: false,
+            timer: 1200
+        });
+
+        setTimeout(() => {
+            document.getElementById('producto-search')?.focus();
+        }, 50);
+    }
+    function seleccionarServicio(descripcion) {
+        document.getElementById('f-descripcion-servicio').value = descripcion;
+        document.getElementById('f-cantidad-servicio').value = '1';
+        document.getElementById('f-descuento-servicio').value = '0';
+
+        setTimeout(() => {
+            const precio = document.getElementById('f-precio-iva-servicio');
+            precio?.focus();
+            precio?.select();
+        }, 50);
+    }
     function refrescarInputsManoObra() {
         const container = document.getElementById('mano-obra-hidden-inputs');
 
@@ -1808,14 +1898,68 @@
 
             const q = this.value.trim();
 
-            if (q.length < 3) {
+            if (q.length < 2) {
                 document.getElementById('resultados-busqueda').innerHTML =
                     '<div class="text-center text-muted py-4 small">Empieza a escribir para buscar productos</div>';
                 return;
             }
 
-            searchTimer = setTimeout(() => buscarProductos(q), 800);
+             buscarProductos(q);
         });
+
+    // -----------------------------------------
+    // GUARDAR LÍNEA SIN CERRAR EL OFFCANVAS
+    // -----------------------------------------
+
+        document.getElementById('form-linea')
+            ?.addEventListener('submit', async function (e) {
+
+                e.preventDefault();
+
+                const form = this;
+                const botonGuardar = form.querySelector('[type="submit"]');
+
+                botonGuardar.disabled = true;
+                botonGuardar.textContent = 'Guardando...';
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    if (!data.ok) {
+                        throw new Error(data.error ?? 'No se pudo guardar la línea');
+                    }
+
+                    prepararSiguienteLinea();
+
+                } catch (error) {
+                    console.error('Error guardando línea:', error);
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: error.message,
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+
+                } finally {
+                    botonGuardar.disabled = false;
+                    botonGuardar.textContent = 'Añadir línea';
+                }
+            });
 
         ['f-cantidad', 'f-precio', 'f-descuento'].forEach(id => {
             document.getElementById(id)?.addEventListener('input', calcularSubtotalProducto);
@@ -1834,6 +1978,24 @@
             document.getElementById('offcanvas-backdrop-manual').style.display = 'block';
         });
 
+
+        document.getElementById('offcanvasLinea')
+            ?.addEventListener('shown.bs.offcanvas', function () {
+
+                if (document.getElementById('hidden-tipo-linea').value !== 'producto') {
+                    return;
+                }
+
+                setTimeout(() => {
+                    const buscador = document.getElementById('producto-search');
+
+                    if (buscador) {
+                        buscador.focus();
+                        buscador.select();
+                    }
+                }, 100);
+            });
+
         document.getElementById('offcanvasLinea')?.addEventListener('hidden.bs.offcanvas', function () {
             resetOffcanvasLinea();
         });
@@ -1841,6 +2003,8 @@
         document.getElementById('offcanvasLinea')?.addEventListener('hide.bs.offcanvas', function () {
             document.getElementById('offcanvas-backdrop-manual').style.display = 'none';
         });
+
+
     });
 
     $(document).on('click', 'a[name="delete_cobro"]', async function () {

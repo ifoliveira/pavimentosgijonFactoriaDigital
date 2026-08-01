@@ -37,6 +37,21 @@ class ProductosRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
+    public function findAllParaBuscador(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->select(
+                'p.id',
+                'p.descripcion_Pd AS nombre',
+                'p.pvp_Pd AS pvp',
+                'p.precio_Pd AS precio',
+            )
+            ->orderBy('p.descripcion_Pd', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+    }
+
+
     /**
      * @return Productos[]
      */

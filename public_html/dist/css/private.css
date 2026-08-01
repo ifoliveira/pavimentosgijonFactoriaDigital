@@ -154,15 +154,107 @@
 .offcanvas-form-bg {
   background: #8a95a3;
 }
+/* ==================================================
+   RESULTADOS DE BÚSQUEDA
+   ================================================== */
 
-.resultado-item {
-  cursor: pointer;
-  border-bottom: 0.5px solid #eee;
-  transition: background 0.12s;
+.offcanvas-linea .resultado-item {
+    background: #ffffff;
+    border: 1px solid #d7dde5 !important;
+    border-radius: 10px;
+    margin: 0.55rem 1rem;
+    min-height: 68px;
+    cursor: pointer;
+
+    transition:
+        background-color .15s ease,
+        border-color .15s ease,
+        box-shadow .15s ease,
+        transform .15s ease;
 }
-.resultado-item:hover { background: #f0f3f7; }
-.resultado-item:last-child { border-bottom: none; }
 
+/* Nombre / descripción */
+.offcanvas-linea .resultado-item .fw-semibold {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1e2530 !important;
+}
+
+/* Tipo, stock, textos secundarios */
+.offcanvas-linea .resultado-item .text-muted {
+    font-size: 0.9rem;
+    color: #687486 !important;
+}
+
+/* Precio */
+.offcanvas-linea .resultado-item > div:last-child {
+    font-size: 1.1rem !important;
+    font-weight: 700;
+    color: #185fa5 !important;
+}
+
+/* Icono */
+.offcanvas-linea .resultado-icono {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+
+    background: #e8eef5 !important;
+    color: #185fa5 !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+
+/* ==================================================
+   HOVER
+   ================================================== */
+
+.offcanvas-linea .resultado-item:hover {
+    background: #185fa5 !important;
+    border-color: #185fa5 !important;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    transform: translateY(-1px);
+}
+
+/* Descripción en hover */
+.offcanvas-linea .resultado-item:hover .fw-semibold {
+    color: #ffffff !important;
+}
+
+/* Textos secundarios en hover */
+.offcanvas-linea .resultado-item:hover .text-muted {
+    color: #dbe9f7 !important;
+}
+
+/* Precio en hover */
+.offcanvas-linea .resultado-item:hover > div:last-child {
+    color: #ffffff !important;
+}
+
+/* Icono en hover */
+.offcanvas-linea .resultado-item:hover .resultado-icono {
+    background: rgba(255, 255, 255, 0.16) !important;
+    color: #ffffff !important;
+}
+
+/* Badges en hover */
+.offcanvas-linea .resultado-item:hover .badge {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* Click */
+.offcanvas-linea .resultado-item:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
 .resultado-icono {
   width: 32px;
   height: 32px;
@@ -184,7 +276,7 @@
 
 /* Offcanvas con fondo oscuro como la cabecera del modal */
 .offcanvas-linea {
-    width: 400px !important;
+    width: min(700px, 95vw) !important;
     background: #1e2530 !important;
 }
 
@@ -218,7 +310,7 @@
 }
 
 /* Texto genérico y muted */
-.offcanvas-linea .text-muted { color: #8a95a3 !important; }
+
 .offcanvas-linea small { color: #8a95a3; }
 
 /* Zona del formulario */
@@ -234,7 +326,14 @@
     border-color: #378ADD !important;
     box-shadow: 0 0 0 3px rgba(55, 138, 221, 0.15) !important;
 }
-.offcanvas-linea .form-label-upper { color: #8a95a3; }
+.offcanvas-linea .form-label-upper { 
+    color: #8a95a3;    
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 5px;
+}
 
 /* Botón manual */
 .offcanvas-linea .btn-outline-secondary {
@@ -254,6 +353,66 @@
 
 /* Subtotal preview */
 .offcanvas-linea #subtotal-preview { color: #7ab3e0 !important; }
+
+
+.servicio-rapido {
+    background: #ffffff;
+    border: 1px solid #d7dde5;
+    border-radius: 10px;
+    min-height: 64px;
+    margin-bottom: 0.6rem;
+    padding: 0.8rem 1rem;
+
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    cursor: pointer;
+
+    transition:
+        background-color .15s ease,
+        border-color .15s ease,
+        box-shadow .15s ease,
+        transform .15s ease;
+}
+
+.servicio-rapido:hover {
+    background: #185fa5;
+    border-color: #185fa5;
+    box-shadow: 0 4px 12px rgba(0,0,0,.18);
+    transform: translateY(-1px);
+}
+
+.servicio-rapido-icono {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #e8eef5;
+    color: #185fa5;
+    font-size: .75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.servicio-rapido-titulo {
+    color: #1e2530;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.servicio-rapido:hover .servicio-rapido-titulo {
+    color: #ffffff;
+}
+
+.servicio-rapido:hover .servicio-rapido-icono {
+    background: rgba(255,255,255,.16);
+    color: #ffffff;
+}
 
 /* ==================================================
    3. PÁGINA DE LISTADO DE DOCUMENTOS

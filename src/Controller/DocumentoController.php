@@ -28,6 +28,7 @@ use App\Repository\TipoManoObraRepository;
 use App\Repository\TextoManoObraRepository;
 use App\Repository\StockReservaRepository;
 
+
 /**
  * @Route("/admin/documento")
  */
@@ -61,13 +62,15 @@ class DocumentoController extends AbstractController
         ProyectoRepository $proyectoRepository,
         DocumentoAccionesService $documentoAccionesService,
         TipoManoObraRepository $tipoManoObraRepository,
-        TextoManoObraRepository $textoManoObraRepository
+        TextoManoObraRepository $textoManoObraRepository,
+        ProductosRepository $productosRepository
     ): Response {
         $documento = $documentoVerService->obtenerPorId($id);
         $editarCabecera = $request->query->getBoolean('editarCabecera');
         $acciones = $documentoAccionesService->getAccionesDisponibles($documento);
         $seleccionadosManoObra = $this->construirSeleccionadosPorRelacion($documento);
         $textosManuales = $this->construirTextosManual($documento);
+        $productos = $productosRepository->findAllParaBuscador();
 
         return $this->render('documento/show.html.twig', [
             'documento' => $documento,
@@ -79,6 +82,7 @@ class DocumentoController extends AbstractController
             'textosManoObra' => $this->agruparTextos($textoManoObraRepository->findAll()),
             'seleccionadosManoObra' => $seleccionadosManoObra,
             'textosManuales' => $textosManuales,
+            'productosBuscador' => $productos,
 
         ]);
     }
@@ -198,12 +202,6 @@ class DocumentoController extends AbstractController
         $tipoLinea = $request->request->get('tipoLinea', 'producto');
         $origenLinea = $request->request->get('origenLinea', 'manual');
 
-        /*
-        * Regla nueva:
-        * Si viene productoId, la línea viene de la tabla Productos.
-        * Si no viene productoId, puede seguir siendo tipo producto,
-        * pero será una línea manual sin producto asociado.
-        */
         if ($productoId) {
             $origenLinea = 'producto';
         }
@@ -223,6 +221,14 @@ class DocumentoController extends AbstractController
             ),
             origenLinea: $origenLinea,
         );
+
+        // Si viene por AJAX, no recargamos la página
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'ok' => true,
+                'message' => 'Línea guardada correctamente',
+            ]);
+        }
 
         $this->addFlash('success', 'Línea guardada correctamente');
 
