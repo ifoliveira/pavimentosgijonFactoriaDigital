@@ -245,6 +245,7 @@ class DocumentoController extends AbstractController
     ): Response {
         $documento = $linea->getDocumento();
 
+
         if (!$this->isCsrfTokenValid('eliminar-linea-' . $linea->getId(), $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Token CSRF no válido');
         }

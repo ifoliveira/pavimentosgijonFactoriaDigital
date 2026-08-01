@@ -511,11 +511,12 @@
                                                             )">
                                                         Editar
                                                     </button>
+                                                    {% set tokenEliminar = csrf_token('eliminar-linea-' ~ linea.id) %}
                                                     <form method="post"
                                                         action="{{ path('app_documento_linea_eliminar', {id: linea.id}) }}"
                                                         class="d-inline"
                                                         onsubmit="return confirm('¿Seguro que quieres eliminar esta línea?');">
-                                                        <input type="hidden" name="_token" value="{{ csrf_token('eliminar-linea-' ~ linea.id) }}">
+                                                        <input type="hidden" name="_token" value="{{ tokenEliminar }}">
                                                         <button type="submit" class="btn btn-sm btn-danger">
                                                             Borrar
                                                         </button>

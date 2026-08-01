@@ -22,7 +22,8 @@ class DocumentoLineaService
         private DocumentoLineaRepository $lineaRepository,
         private ProyectoCalculatorService $proyectoService,
         private StockMovimientoRepository $stockMovimientoRepository,
-        private StockReservaRepository $stockReservaRepository
+        private StockReservaRepository $stockReservaRepository,
+        private DescripcionPresupuestoFormatter $descripcionPresupuestoFormatter
     ) {}
 
     public function crearLinea(
@@ -38,6 +39,7 @@ class DocumentoLineaService
         string $origenLinea = 'manual'
     ): DocumentoLinea {
 
+        $descripcionFormateada = $this->descripcionPresupuestoFormatter->formatear($descripcion);
 
         if ($lineaId) {
             // editar línea existente
@@ -63,7 +65,7 @@ class DocumentoLineaService
         } else {
             $linea = new DocumentoLinea();
             $linea->setDocumento($documento);
-            $linea->setDescripcion(trim($descripcion));
+            $linea->setDescripcion(trim($descripcionFormateada));
             $linea->setTipoLinea($tipo);
             $linea->setUnidad('ud');
             $linea->setPosicion(count($documento->getLineas()) + 1);
