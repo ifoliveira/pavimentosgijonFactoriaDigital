@@ -1290,6 +1290,7 @@
     let searchTimer = null;
     const IVA = 21;
     const PRODUCTOS = {{ productosBuscador|json_encode|raw }};
+    let hayCambiosEnLineas = false;
 
     function formatoEuro(valor) {
         return valor.toLocaleString('es-ES', {
@@ -1942,6 +1943,7 @@
                     }
 
                     prepararSiguienteLinea();
+                    hayCambiosEnLineas = true;
 
                 } catch (error) {
                     console.error('Error guardando línea:', error);
@@ -1996,9 +1998,16 @@
                 }, 100);
             });
 
-        document.getElementById('offcanvasLinea')?.addEventListener('hidden.bs.offcanvas', function () {
-            resetOffcanvasLinea();
-        });
+        document.getElementById('offcanvasLinea')
+            ?.addEventListener('hidden.bs.offcanvas', function () {
+
+                if (hayCambiosEnLineas) {
+                    window.location.reload();
+                    return;
+                }
+
+                resetOffcanvasLinea();
+            });
 
         document.getElementById('offcanvasLinea')?.addEventListener('hide.bs.offcanvas', function () {
             document.getElementById('offcanvas-backdrop-manual').style.display = 'none';
