@@ -43,9 +43,13 @@
                                                         <td class="text-right">{{ forecast.importeFr|format_currency('EUR', locale='es') }}</td>
                                                         <td>
                                                             <a href="{{ path('forecast_edit', {'id': forecast.id}) }}">edit</a>
+                                                            <a class="text-inverse pr-2" data-toggle="tooltip" title="Marcar como pagado" name="pagado_detalle" id="{{ forecast.id }}">
+                                                                <i class="ti-check"></i>
+                                                            </a>                                                                
                                                             <a class="text-inverse pr-2" data-toggle="tooltip" title="Borrar forecast" name="delete_detalle" id="{{ forecast.id }}">
                                                                 <i class="ti-trash"></i>
-                                                            </a>                                                             
+                                                            </a>    
+                                                      
                                                         </td>
                                                     </tr>
                                                 {% else %}
@@ -184,6 +188,65 @@
                     Swal.fire({
                     type: 'success',
                     title: 'Se ha borrado correctamente!',
+                    html: 'Se cerrara en breve',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    willClose: () => {
+                        clearInterval(timerInterval)
+                    }
+                    }).then((result) => {
+                    /* Read more about handling dismissals below */
+                    if (result.dismiss === Swal.DismissReason.timer) {
+                        location.reload();
+                    }
+                    })
+                   
+               },  
+               error : function(xhr, textStatus, errorThrown) {  
+                  alert(textStatus);  
+               }  
+            }); 
+        };  
+
+        /****************************************
+        *      Poner pagado un forecast             *
+        *****************************************/
+
+        $(document).on('click', 'a[name="pagado_detalle"]' , async function(event) {
+            let id = this.id;
+            console.log (id);
+
+            // Pop up con datos del producto
+                Swal.fire({
+                showCancelButton: true,  // Activamos el botón de cancelar
+                confirmButtonText: 'Poner pagado',
+                cancelButtonText: 'Cancelar',
+                title: "Poner pagado forecast  " + id + "" ,
+                }).then((result) => {
+
+                    if (result.value) {
+            // Llamamos al insert line
+
+                       pagado_line(id);
+                    }
+                })
+        });
+
+        function pagado_line(id) 
+        {
+            $.ajax({  
+               url:        '{{path("forecast_pagado_ajax")}}',  
+               type:       'GET',   
+               data:        ({id: id}),
+               dataType:   'json',  
+               async:      true,  
+               
+               success: function(response) { 
+                    let timerInterval
+                    Swal.fire({
+                    type: 'success',
+                    title: 'Se ha marcado como pagado correctamente!',
                     html: 'Se cerrara en breve',
                     timer: 2000,
                     showConfirmButton: false,

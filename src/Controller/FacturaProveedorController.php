@@ -13,6 +13,7 @@ use App\Repository\TipoproductoRepository;
 use App\Repository\TiposmovimientoRepository;
 use App\Service\FacturaPdfToJsonService;
 use App\Service\FacturaProveedor\FacturaProveedorService;
+use App\Service\FacturaProveedor\FacturaProveedorAsignacionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -355,201 +356,13 @@ class FacturaProveedorController extends AbstractController
         FacturaProveedor $factura,
         Request $request,
         ProyectoRepository $proyectoRepository,
-        FacturaProveedorRepository $facturaProveedorRepository
+        FacturaProveedorRepository $facturaProveedorRepository,
+        FacturaProveedorAsignacionService $asignacionService
     ): Response {
+
         if ($request->isMethod('POST')) {
-            $lineasPost = $request->request->all('lineas');
 
-            foreach ($factura->getLineas() as $linea) {
-                if (!in_array($linea->getEstado(), ['pendiente', 'parcial'], true)) {
-                    continue;
-                }
-
-                $lineaId = $linea->getId();
-
-                if (!isset($lineasPost[$lineaId])) {
-                    continue;
-                }
-
-                $datos = $lineasPost[$lineaId];
-
-                $tipoDestino = $datos['tipo_destino'] ?? null;
-                $proyectoId = $datos['proyecto_id'] ?? null;
-                $cantidadAsignada = $this->toFloat($datos['cantidad_asignada'] ?? 0);
-
-                if (!$tipoDestino || $cantidadAsignada <= 0) {
-                    continue;
-                }
-
-                $cantidadLinea = max((float) $linea->getCantidad(), 1);
-                $totalLinea = (float) $linea->getTotal();
-
-                $cantidadYaAsignada = 0.0;
-
-                foreach ($linea->getAsignaciones() as $asignacionExistente) {
-                    $cantidadYaAsignada += (float) $asignacionExistente->getCantidad();
-                }
-
-                $cantidadDisponible = max($cantidadLinea - $cantidadYaAsignada, 0);
-
-                if ($cantidadDisponible <= 0) {
-                    $linea->setEstado('asignada');
-                    continue;
-                }
-
-                if ($cantidadAsignada > $cantidadDisponible) {
-                    $cantidadAsignada = $cantidadDisponible;
-                }
-
-                $precioUnidad = $totalLinea / $cantidadLinea;
-                $importeAsignado = round($precioUnidad * $cantidadAsignada, 2);
-
-                $asignacion = new FacturaProveedorLineaAsignacion();
-                $asignacion->setLinea($linea);
-                $asignacion->setCantidad($cantidadAsignada);
-                $asignacion->setImporte((string) number_format($importeAsignado, 2, '.', ''));
-                $asignacion->setTipoDestino($tipoDestino);
-                $asignacion->setEstado('aplicada');
-
-                if ($tipoDestino === 'obra') {
-                    if (!$proyectoId) {
-                        continue;
-                    }
-
-                    $proyecto = $proyectoRepository->find($proyectoId);
-
-                    if (!$proyecto) {
-                        continue;
-                    }
-
-                    $gasto = new ProyectoGasto();
-                    $gasto->setProyecto($proyecto);
-                    $gasto->setCategoria('materiales');
-                    $gasto->setConcepto(
-                        ($factura->getProveedorNombre() ?: 'Proveedor') .
-                        ' - ' .
-                        ($linea->getDescripcion() ?: 'Línea factura')
-                    );
-                    $gasto->setProveedor($factura->getProveedorNombre());
-                    $gasto->setFechaPrevista($factura->getFechaFactura() ?: new \DateTime());
-                    $gasto->setImportePrevisto((string) number_format($importeAsignado, 2, '.', ''));
-                    $gasto->setEstado('confirmado');
-                    $gasto->setGeneraForecast(false);
-                    $gasto->setNotas(
-                        'Generado desde factura proveedor ' .
-                        ($factura->getNumeroFactura() ?: 'sin número') .
-                        ' · Línea: ' . ($linea->getDescripcion() ?: '-') .
-                        ' · Cantidad asignada: ' . $cantidadAsignada .
-                        ' de ' . $cantidadLinea
-                    );
-
-                    $this->em->persist($gasto);
-
-                    $asignacion->setProyecto($proyecto);
-                    $asignacion->setProyectoGasto($gasto);
-                }
-
-                if ($tipoDestino === 'stock') {
-                    $stockMovimiento = new StockMovimiento();
-
-                    $stockMovimiento->setTipoMovimiento(StockMovimiento::TIPO_ENTRADA_FACTURA);
-                    $stockMovimiento->setCantidad($cantidadAsignada);
-                    $stockMovimiento->setFecha($factura->getFechaFactura() ?: new \DateTime());
-
-                    // Relación con la asignación, para poder llegar a la factura de proveedor
-                    $stockMovimiento->setFacturaProveedorLineaAsignacion($asignacion);
-
-                    // Producto todavía no obligatorio, para no duplicar catálogo
-                    $stockMovimiento->setProducto(null);
-
-                    // Identidad real del producto según la factura
-                    $stockMovimiento->setDescripcionProducto($linea->getDescripcion() ?: 'Producto sin descripción');
-                    $stockMovimiento->setReferenciaProveedor(null);
-
-                    // =========================
-                    // BLOQUE FISCAL UNITARIO
-                    // =========================
-
-                    $cantidadLinea = max((float) $linea->getCantidad(), 1);
-
-                    $baseTotalLinea = round((float) ($linea->getImporteBruto() ?? 0), 2);
-                    $totalLinea = round((float) ($linea->getTotal() ?? 0), 2);
-
-                    $ivaPct = (float) ($linea->getPorcentajeIva() ?? 0);
-
-                    $tieneRe = $linea->isTieneRecargoEquivalencia();
-                    $rePct = $tieneRe
-                        ? (float) ($linea->getPorcentajeRecargoEquivalencia() ?? 0)
-                        : 0.0;
-
-                    // Importes totales de la línea
-                    $ivaTotalLinea = round($baseTotalLinea * $ivaPct / 100, 2);
-                    $reTotalLinea = round($baseTotalLinea * $rePct / 100, 2);
-
-                    // Total recalculado y cuadrado al céntimo
-                    $totalCalculadoLinea = round($baseTotalLinea + $ivaTotalLinea + $reTotalLinea, 2);
-
-                    // Si el total real de la línea existe, lo usamos como verdad final.
-                    // Así evitamos descuadres por OCR/redondeos.
-                    if ($totalLinea > 0 && abs($totalLinea - $totalCalculadoLinea) <= 0.05) {
-                        $totalCalculadoLinea = $totalLinea;
-                    }
-
-                    // Importes unitarios
-                    $baseUnitaria = round($baseTotalLinea / $cantidadLinea, 2);
-                    $ivaUnitario = round($ivaTotalLinea / $cantidadLinea, 2);
-                    $reUnitario = round($reTotalLinea / $cantidadLinea, 2);
-
-                    // El total unitario lo calculamos desde el total final dividido entre cantidad
-                    $precioCosteUnitario = round($totalCalculadoLinea / $cantidadLinea, 2);
-
-                    // Ajuste de céntimos:
-                    // fuerza que base + IVA + RE = total unitario
-                    $descuadreUnitario = round(
-                        $precioCosteUnitario - ($baseUnitaria + $ivaUnitario + $reUnitario),
-                        2
-                    );
-
-                    if ($descuadreUnitario !== 0.0) {
-                        // Ajustamos preferentemente el IVA; si no hay IVA, ajustamos base.
-                        if ($ivaUnitario > 0) {
-                            $ivaUnitario = round($ivaUnitario + $descuadreUnitario, 2);
-                        } else {
-                            $baseUnitaria = round($baseUnitaria + $descuadreUnitario, 2);
-                        }
-                    }
-
-                    $stockMovimiento->setCosteUnitarioBase($baseUnitaria);
-                    $stockMovimiento->setPorcentajeIva($ivaPct);
-                    $stockMovimiento->setImporteIvaUnitario($ivaUnitario);
-                    $stockMovimiento->setTieneRecargoEquivalencia($tieneRe);
-                    $stockMovimiento->setPorcentajeRecargoEquivalencia($rePct);
-                    $stockMovimiento->setImporteRecargoUnitario($reUnitario);
-                    $stockMovimiento->setPrecioCosteUnitario($precioCosteUnitario);
-
-                    $stockMovimiento->setObservaciones(
-                        'Entrada en stock desde factura proveedor ' .
-                        ($factura->getNumeroFactura() ?: 'sin número') .
-                        ' · Proveedor: ' . ($factura->getProveedorNombre() ?: '-') .
-                        ' · Cantidad: ' . $cantidadAsignada .
-                        ' de ' . $cantidadLinea
-                    );
-
-                    $this->em->persist($stockMovimiento);
-                }
-
-                $this->em->persist($asignacion);
-
-                $nuevaCantidadAsignada = $cantidadYaAsignada + $cantidadAsignada;
-
-                if ($nuevaCantidadAsignada >= $cantidadLinea) {
-                    $linea->setEstado('asignada');
-                } else {
-                    $linea->setEstado('parcial');
-                }
-            }
-
-            $factura->setEstadoAsignacion($this->calcularEstadoAsignacionFactura($factura));
+            $asignacionService->procesar($factura, $request->request->all('lineas'));
 
             $this->em->flush();
 
@@ -660,6 +473,7 @@ class FacturaProveedorController extends AbstractController
             $forecast->setFechaFr(new \DateTime($venc['fecha']));
             $forecast->setImporteFr((float) $venc['importe'] * -1);
             $forecast->setOrigenFr('Banco');
+            $forecast->setFacturaProveedor($this->em->getReference(FacturaProveedor::class, $data['factura_proveedor_id']));
 
             $this->em->persist($forecast);
             $insertados++;

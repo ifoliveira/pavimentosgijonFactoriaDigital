@@ -20,6 +20,8 @@ class ProyectoGasto
     public const ESTADO_CONFIRMADO = 'confirmado';
     public const ESTADO_PAGADO = 'pagado';
     public const ESTADO_CANCELADO = 'cancelado';
+    public const ORIGEN_MANUAL = 'manual';
+    public const ORIGEN_FACTURA_PROVEEDOR = 'factura_proveedor';
 
 
     #[ORM\Id]
@@ -30,7 +32,10 @@ class ProyectoGasto
     /**
      * Proyecto al que pertenece el gasto.
      */
-    #[ORM\ManyToOne(targetEntity: Proyecto::class)]
+    #[ORM\ManyToOne(
+        targetEntity: Proyecto::class,
+        inversedBy: 'gastos'
+    )]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Proyecto $proyecto = null;
 
@@ -102,18 +107,6 @@ class ProyectoGasto
     private bool $afectaCaja = true;
 
     /**
-     * Importe previsto del gasto.
-     */
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    private string $importePrevisto = '0.00';
-
-    /**
-     * Importe real del gasto, cuando ya se conoce.
-     */
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    private ?string $importeReal = null;
-
-    /**
      * Estado del gasto:
      * - previsto
      * - confirmado
@@ -141,6 +134,82 @@ class ProyectoGasto
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $actualizadoEn = null;
 
+    /**
+     * Importe TOTAL previsto del gasto.
+     * Es el dinero que realmente saldrá de banco/caja.
+     * Incluye IVA y, si procede, recargo de equivalencia.
+     */
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    private string $importePrevisto = '0.00';
+
+    /**
+     * Base imponible prevista.
+     * Es la referencia principal para calcular el coste económico del proyecto
+     * cuando el IVA es deducible.
+     */
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $basePrevista = null;
+
+    /**
+     * Tipo de IVA previsto: 0, 4, 10, 21...
+     */
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
+    private ?string $tipoIvaPrevisto = null;
+
+    /**
+     * Importe de IVA previsto.
+     */
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $ivaPrevisto = null;
+
+    /**
+     * Recargo de equivalencia previsto, si existe.
+     * Es importe, no porcentaje.
+     */
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $recargoPrevisto = null;
+
+
+    /**
+     * Importe TOTAL real del gasto.
+     * Es el importe finalmente pagado / facturado.
+     */
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $importeReal = null;
+
+    /**
+     * Base imponible real.
+     */
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $baseReal = null;
+
+    /**
+     * Tipo de IVA real.
+     */
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
+    private ?string $tipoIvaReal = null;
+
+    /**
+     * Importe de IVA real.
+     */
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $ivaReal = null;
+
+    /**
+     * Recargo de equivalencia real, si existe.
+     */
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $recargoReal = null;
+
+    /**
+     * Indica si el IVA de este gasto es fiscalmente deducible.
+     *
+     * Normalmente true para facturas de proveedor ordinarias.
+     * Permite que determinados gastos incorporen el IVA como coste real.
+     */
+    #[ORM\Column(type: 'boolean')]
+    private bool $ivaDeducible = true;
+
     #[ORM\ManyToOne(targetEntity: Banco::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Banco $bancoMovimiento = null;
@@ -148,6 +217,7 @@ class ProyectoGasto
     #[ORM\ManyToOne(targetEntity: Efectivo::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Efectivo $efectivoMovimiento = null;
+
 
     public function __construct()
     {
@@ -440,4 +510,118 @@ class ProyectoGasto
         $this->fechaPagado = $fechaPagado;
         return $this;
     }    
+
+    public function getBasePrevista(): ?string
+    {
+        return $this->basePrevista;
+    }
+
+    public function setBasePrevista(?string $basePrevista): self
+    {
+        $this->basePrevista = $basePrevista;
+
+        return $this;
+    }
+
+    public function getTipoIvaPrevisto(): ?string
+    {
+        return $this->tipoIvaPrevisto;
+    }
+
+    public function setTipoIvaPrevisto(?string $tipoIvaPrevisto): self
+    {
+        $this->tipoIvaPrevisto = $tipoIvaPrevisto;
+
+        return $this;
+    }
+
+    public function getIvaPrevisto(): ?string
+    {
+        return $this->ivaPrevisto;
+    }
+
+    public function setIvaPrevisto(?string $ivaPrevisto): self
+    {
+        $this->ivaPrevisto = $ivaPrevisto;
+
+        return $this;
+    }
+
+    public function getRecargoPrevisto(): ?string
+    {
+        return $this->recargoPrevisto;
+    }
+
+    public function setRecargoPrevisto(?string $recargoPrevisto): self
+    {
+        $this->recargoPrevisto = $recargoPrevisto;
+
+        return $this;
+    }
+
+    public function getBaseReal(): ?string
+    {
+        return $this->baseReal;
+    }
+
+    public function setBaseReal(?string $baseReal): self
+    {
+        $this->baseReal = $baseReal;
+
+        return $this;
+    }
+
+    public function getTipoIvaReal(): ?string
+    {
+        return $this->tipoIvaReal;
+    }
+
+    public function setTipoIvaReal(?string $tipoIvaReal): self
+    {
+        $this->tipoIvaReal = $tipoIvaReal;
+
+        return $this;
+    }
+
+    public function getIvaReal(): ?string
+    {
+        return $this->ivaReal;
+    }
+
+    public function setIvaReal(?string $ivaReal): self
+    {
+        $this->ivaReal = $ivaReal;
+
+        return $this;
+    }
+
+    public function getRecargoReal(): ?string
+    {
+        return $this->recargoReal;
+    }
+
+    public function setRecargoReal(?string $recargoReal): self
+    {
+        $this->recargoReal = $recargoReal;
+
+        return $this;
+    }
+
+    public function isIvaDeducible(): bool
+    {
+        return $this->ivaDeducible;
+    }
+
+    public function setIvaDeducible(bool $ivaDeducible): self
+    {
+        $this->ivaDeducible = $ivaDeducible;
+
+        return $this;
+    }    
+
+    public function esManual(): bool
+    {
+        return $this->origen === self::ORIGEN_MANUAL;
+    }
+
 }

@@ -898,3 +898,63 @@
     background: #161d27 !important;
     border-top: 1px solid #2e3848 !important;
 }
+
+
+
+/* =========================================================
+   TABLA GASTOS PROYECTO
+   ========================================================= */
+.tabla-gastos {
+    width: 100%;
+    min-width: 1150px;
+    table-layout: auto;
+}
+
+.tabla-gastos th,
+.tabla-gastos td {
+    vertical-align: middle;
+}
+
+.tabla-gastos th {
+    white-space: nowrap;
+}
+
+.tabla-gastos .col-fecha {
+    width: 115px;
+    white-space: nowrap;
+}
+
+.tabla-gastos .col-estado {
+    width: 105px;
+    white-space: nowrap;
+}
+
+.tabla-gastos .col-categoria {
+    width: 120px;
+    white-space: nowrap;
+}
+
+.tabla-gastos .col-concepto {
+    min-width: 280px;
+}
+
+.tabla-gastos .col-proveedor {
+    min-width: 160px;
+}
+
+.tabla-gastos .col-importe {
+    min-width: 125px;
+    width: 125px;
+    white-space: nowrap !important;
+}
+
+.tabla-gastos .col-acciones {
+    min-width: 130px;
+    width: 130px;
+    white-space: nowrap;
+}
+
+.tabla-gastos .btn-group {
+    display: inline-flex;
+    flex-wrap: nowrap;
+}

@@ -2,11 +2,13 @@
 namespace App\Service;
 
 use App\Repository\ForecastRepository;
+use App\Entity\Forecast;
 
 class ForecastService
 {
     public function __construct(
         private ForecastRepository $forecastRepository,
+
     ) {}
 
     /**
@@ -37,4 +39,5 @@ class ForecastService
             'chartData' => $chartData,
         ];
     }
+
 }

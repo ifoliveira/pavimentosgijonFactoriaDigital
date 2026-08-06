@@ -80,6 +80,73 @@ class ProyectoController extends AbstractController
         ]);
     }
 
+    #[Route('/admin/proyecto/gasto/{id}/editar',name: 'app_proyecto_gasto_edit',methods: ['GET', 'POST'] )]
+    public function edit(
+        ProyectoGasto $gasto,
+        Request $request,
+        ProyectoGastoService $proyectoGastoService
+    ): Response {
+
+        $proyecto = $gasto->getProyecto();
+
+        if ($gasto->getEstado() !== ProyectoGasto::ESTADO_PREVISTO) {
+            return new Response(
+                'Solo se pueden editar gastos previstos.',
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        $form = $this->createForm(ProyectoGastoType::class, $gasto, [
+            'documentos_proyecto' => $proyecto->getDocumentos()->toArray(),
+
+            'action' => $this->generateUrl(
+                'app_proyecto_gasto_edit',
+                ['id' => $gasto->getId()]
+            ),
+        ]);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $proyectoGastoService->guardar(
+                $gasto,
+                esNuevo: false
+            );
+
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'Gasto actualizado correctamente.',
+                ]);
+            }
+
+            $this->addFlash(
+                'success',
+                'Gasto actualizado correctamente.'
+            );
+
+            return $this->redirectToRoute('app_proyecto_show', [
+                'id' => $proyecto->getId(),
+            ]);
+        }
+
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('proyecto_gasto/_form_modal.html.twig', [
+                'form' => $form->createView(),
+                'proyecto' => $proyecto,
+                'gasto' => $gasto,
+                'modo' => 'editar',
+            ]);
+        }
+
+        return $this->render('proyecto_gasto/edit.html.twig', [
+            'form' => $form->createView(),
+            'proyecto' => $proyecto,
+            'gasto' => $gasto,
+        ]);
+    }
+
     #[Route('/{id<\d+>}', name: 'app_proyecto_show', methods: ['GET'])]
     public function show(Proyecto $proyecto): Response
     {
@@ -143,12 +210,13 @@ class ProyectoController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
             $gasto->marcarActualizado();
+            $gasto->setOrigen(ProyectoGasto::ORIGEN_MANUAL);
 
             $entityManager->persist($gasto);
-            $entityManager->flush();
-
             $proyectoGastoService->sincronizarForecastSiProcede($gasto);
+            $entityManager->flush();
             $proyectoGastoService->recalcularProyecto($proyecto);
 
             if ($request->isXmlHttpRequest()) {
@@ -169,10 +237,11 @@ class ProyectoController extends AbstractController
             return $this->render('proyecto_gasto/_form_modal.html.twig', [
                 'form' => $form->createView(),
                 'proyecto' => $proyecto,
+                'modo' => 'nuevo',
             ]);
         }
 
-        return $this->render('proyecto_gasto/new.html.twig', [
+        return $this->render('proyecto/show.html.twig', [
             'form' => $form->createView(),
             'proyecto' => $proyecto,
         ]);

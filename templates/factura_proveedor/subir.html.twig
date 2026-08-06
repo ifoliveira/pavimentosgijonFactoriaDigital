@@ -372,25 +372,35 @@
     }
 
     forecastBtn.addEventListener('click', () => {
-        if (!jsonActual?.vencimientos?.length) {
-            showAlert('error', '⚠ La factura no contiene vencimientos.');
-            return;
-        }
 
-        const num = jsonActual.numero_factura ?? '';
-        const empresa = jsonActual.empresa_emisora?.nombre ?? '';
+        const num = jsonActual?.numero_factura ?? '';
+        const empresa = jsonActual?.empresa_emisora?.nombre ?? '';
 
         modalConcepto.value =
             `Factura ${num} - ${empresa}`.trim();
 
-        modalVencList.innerHTML = jsonActual.vencimientos
+        let vencimientos = jsonActual?.vencimientos ?? [];
+
+        // Si OCR no encontró vencimientos,
+        // generamos una fila manual vacía
+        if (!vencimientos.length) {
+            vencimientos = [
+                {
+                    fecha: '',
+                    importe: jsonActual?.total_factura ?? ''
+                }
+            ];
+        }
+
+        modalVencList.innerHTML = vencimientos
             .map((vencimiento, index) => {
+
                 const fecha = normalizarFechaInput(
-                    vencimiento.fecha
+                    vencimiento.fecha ?? ''
                 );
 
                 const importe = normalizarImporteInput(
-                    vencimiento.importe
+                    vencimiento.importe ?? ''
                 );
 
                 return `
@@ -509,7 +519,13 @@
 
         modalConfirm.disabled = true;
         modalConfirm.textContent = 'Insertando…';
-
+        if (!facturaProveedorId) {
+            showAlert(
+                'error',
+                '⚠ No se ha podido identificar la factura de proveedor.'
+            );
+            return;
+        }
         try {
             const res = await fetch(
                 '{{ path('factura_proveedor_forecast_insertar') }}',
@@ -522,6 +538,7 @@
                         tipo_id: TIPO_ID,
                         concepto,
                         vencimientos,
+                        factura_proveedor_id: facturaProveedorId,
                     }),
                 }
             );

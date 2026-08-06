@@ -36,12 +36,14 @@ class ProyectoGastoType extends AbstractType
                 ],
                 'placeholder' => 'Selecciona categoría',
             ])
+
             ->add('concepto', TextType::class, [
                 'label' => 'Concepto *',
                 'attr' => [
                     'placeholder' => 'Ej: Pago a alicatador',
                 ],
             ])
+
             ->add('proveedor', TextType::class, [
                 'label' => 'Proveedor',
                 'required' => false,
@@ -49,6 +51,7 @@ class ProyectoGastoType extends AbstractType
                     'placeholder' => 'Ej: Juan / Proveedor X',
                 ],
             ])
+
             ->add('documento', EntityType::class, [
                 'class' => Documento::class,
                 'choices' => $documentos,
@@ -64,15 +67,35 @@ class ProyectoGastoType extends AbstractType
                 'required' => false,
                 'placeholder' => 'Sin documento asociado',
             ])
+
             ->add('fechaPrevista', DateType::class, [
                 'label' => 'Fecha prevista *',
                 'widget' => 'single_text',
             ])
+
             ->add('importePrevisto', MoneyType::class, [
-                'label' => 'Importe previsto *',
+                'label' => 'Importe previsto (IVA incluido) *',
                 'currency' => 'EUR',
                 'divisor' => 1,
             ])
+
+            ->add('tipoIvaPrevisto', ChoiceType::class, [
+                'label' => 'IVA previsto',
+                'choices' => [
+                    '21 %' => '21.00',
+                    '10 %' => '10.00',
+                    '4 %' => '4.00',
+                    'Sin IVA' => '0.00',
+                ],
+                'placeholder' => 'Selecciona IVA',
+                'required' => false,
+            ])
+
+            ->add('ivaDeducible', CheckboxType::class, [
+                'label' => 'IVA deducible',
+                'required' => false,
+            ])
+
             ->add('estado', ChoiceType::class, [
                 'label' => 'Estado *',
                 'choices' => [
@@ -82,21 +105,25 @@ class ProyectoGastoType extends AbstractType
                     'Cancelado' => 'cancelado',
                 ],
             ])
+
             ->add('fechaReal', DateType::class, [
                 'label' => 'Fecha real',
                 'widget' => 'single_text',
                 'required' => false,
             ])
+
             ->add('importeReal', MoneyType::class, [
                 'label' => 'Importe real',
                 'currency' => 'EUR',
                 'required' => false,
                 'divisor' => 1,
             ])
+
             ->add('generaForecast', CheckboxType::class, [
                 'label' => 'Generar movimiento en forecast',
                 'required' => false,
             ])
+
             ->add('notas', TextareaType::class, [
                 'label' => 'Notas',
                 'required' => false,

@@ -9,12 +9,19 @@ use App\Repository\ProyectoGastoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;   
 use App\Service\ForecastHandlerService;
+use App\Repository\FacturaProveedorLineaAsignacionRepository;
+use App\Service\Efectivo\EfectivoService;
+use App\Entity\FacturaProveedor;
+use App\Entity\FacturaProveedorLinea;
 
 class ProyectoGastoService
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private ForecastHandlerService $forecastService
+        private ForecastHandlerService $forecastService,
+        private FacturaProveedorLineaAsignacionRepository $facturaProveedorLineaAsignacionRepository,
+        private EfectivoService $efectivoService
+
     ) {
     }
 
@@ -37,6 +44,60 @@ class ProyectoGastoService
         $this->guardarCambios($gasto);
     }
 
+    public function marcarPendientePagoBanco(ProyectoGasto $gasto): void
+    {
+        if ($gasto->getEstado() === ProyectoGasto::ESTADO_CANCELADO) {
+            throw new \LogicException('No se puede pagar un gasto cancelado.');
+        }
+
+        if ($gasto->getImporteReal() === null) {
+            $gasto->setImporteReal($gasto->getImportePrevisto());
+        }
+
+        $gasto->marcarPendientePagoBanco();
+
+        $this->guardarCambios($gasto);
+    }   
+
+    public function marcarPagadoEnEfectivo(ProyectoGasto $gasto): void
+    {
+        if ($gasto->getEstado() !== ProyectoGasto::ESTADO_CONFIRMADO) {
+            throw new \LogicException(
+                'Solo se pueden pagar gastos confirmados.'
+            );
+        }
+
+        $importe = $gasto->getImporteReal()
+            ?? $gasto->getImportePrevisto();
+
+        $movimiento = $this->efectivoService->registrarSalida(
+            importe: $importe,
+            concepto: $gasto->getConcepto(),
+            fecha: new \DateTime()
+        );
+
+        $gasto->setEfectivoMovimiento($movimiento);
+        $gasto->setBancoMovimiento(null);
+
+        $gasto->setEstado(ProyectoGasto::ESTADO_PAGADO);
+        $gasto->setFechaPagado(new \DateTime());
+        $gasto->setFechaReal(new \DateTime());
+
+
+        /*
+        * Al haberse producido el pago, el Forecast
+        * correspondiente debe quedar realizado/resuelto.
+        *
+        * Aquí usarías tu lógica actual.*/
+        $this->forecastService->resolverForecast($gasto->getForecast());
+
+        $gasto->marcarActualizado();
+
+        $this->em->flush();
+
+        $this->recalcularProyecto($gasto->getProyecto());
+    }
+
     public function marcarPagado(ProyectoGasto $gasto): void
     {
         if ($gasto->getEstado() === ProyectoGasto::ESTADO_CANCELADO) {
@@ -50,7 +111,7 @@ class ProyectoGastoService
         $gasto->marcarPagado();
 
         $this->guardarCambios($gasto);
-    }
+    }    
 
     public function cancelar(ProyectoGasto $gasto): void
     {
@@ -70,8 +131,61 @@ class ProyectoGastoService
         }
 
         $proyecto = $gasto->getProyecto();
+        $forecast = $gasto->getForecast();
+
+        /*
+        * =========================
+        * DESHACER ASIGNACIÓN FACTURA
+        * =========================
+        */
+
+        $asignacion = $this->facturaProveedorLineaAsignacionRepository
+            ->findOneBy([
+                'proyectoGasto' => $gasto,
+            ]);
+
+        if ($asignacion !== null) {
+
+            $linea = $asignacion->getLinea();
+
+            $factura = $linea->getFacturaProveedor();
+
+            $factura->setEStadoAsignacion('pendiente');
+
+            /*
+            * Eliminamos la asignación que originó este gasto.
+            */
+            $this->em->remove($asignacion);
+
+            /*
+            * La línea vuelve a quedar pendiente de asignación.
+            */
+            if ($linea !== null) {
+                $linea->setEstado (
+                    'pendiente'
+                );
+            }
+        }
+
+
+        /*
+        * =========================
+        * FORECAST
+        * =========================
+        */
+
+        if ($forecast !== null && $gasto->esManual()) {
+            $this->em->remove($forecast);
+        }
+
+        /*
+        * =========================
+        * GASTO
+        * =========================
+        */
 
         $this->em->remove($gasto);
+
         $this->em->flush();
 
         if ($proyecto) {
@@ -82,7 +196,6 @@ class ProyectoGastoService
     public function puedeEliminar(ProyectoGasto $gasto): bool
     {
         return $gasto->getEstado() === ProyectoGasto::ESTADO_PREVISTO
-            && $gasto->getForecast() === null
             && $gasto->getBancoMovimiento() === null
             && $gasto->getEfectivoMovimiento() === null;
     }
@@ -164,4 +277,191 @@ class ProyectoGastoService
 
         $this->em->flush();
     }    
+
+    public function guardar(ProyectoGasto $gasto, bool $esNuevo = false): void
+    {
+        /*
+        * 1. Calcular desglose previsto
+        */
+        $total = (float) $gasto->getImportePrevisto();
+        $tipoIva = (float) ($gasto->getTipoIvaPrevisto() ?? 0);
+
+        if ($tipoIva > 0) {
+            $base = $total / (1 + ($tipoIva / 100));
+            $iva = $total - $base;
+        } else {
+            $base = $total;
+            $iva = 0;
+        }
+
+        $gasto->setBasePrevista(
+            number_format($base, 2, '.', '')
+        );
+
+        $gasto->setIvaPrevisto(
+            number_format($iva, 2, '.', '')
+        );
+
+        /*
+        * De momento, si no estamos introduciendo RE manualmente,
+        * lo dejamos a cero.
+        */
+        if ($gasto->getRecargoPrevisto() === null) {
+            $gasto->setRecargoPrevisto('0.00');
+        }
+
+        /*
+        * 2. Auditoría
+        */
+        $gasto->marcarActualizado();
+
+        /*
+        * 3. Persist únicamente si es nuevo.
+        *
+        * En edición Doctrine ya está gestionando la entidad.
+        */
+        if ($esNuevo) {
+            $this->em->persist($gasto);
+        }
+
+        /*
+        * 4. Crear / modificar / eliminar Forecast según corresponda.
+        */
+        $this->sincronizarForecastSiProcede($gasto);
+
+        /*
+        * 5. Guardamos gasto + forecast juntos.
+        */
+        $this->em->flush();
+
+        /*
+        * 6. Recalcular situación económica del proyecto.
+        */
+        $this->recalcularProyecto($gasto->getProyecto());
+    }    
+
+    public function crearDesdeFacturaProveedor(
+        Proyecto $proyecto,
+        FacturaProveedor $factura,
+        FacturaProveedorLinea $linea,
+        float $importeAsignado,
+        float $cantidadAsignada,
+        float $cantidadLinea
+    ): ProyectoGasto {
+
+        $gasto = new ProyectoGasto();
+
+        $gasto->setProyecto($proyecto);
+        $gasto->setOrigen(ProyectoGasto::ORIGEN_FACTURA_PROVEEDOR);
+        $gasto->setCategoria('materiales');
+
+        $gasto->setConcepto(
+            ($factura->getProveedorNombre() ?: 'Proveedor')
+            . ' - '
+            . ($linea->getDescripcion() ?: 'Línea factura')
+        );
+
+        $gasto->setProveedor(
+            $factura->getProveedorNombre()
+        );
+
+        $forecast = $factura->getForecasts()->first() ?: null;
+
+        $gasto->setFechaPrevista(
+            $forecast?->getFechaFr() ?? new \DateTime()
+        );
+
+        /*
+        * ------------------------------------------------------------
+        * IMPORTES
+        * ------------------------------------------------------------
+        */
+
+        $gasto->setImportePrevisto(
+            number_format($importeAsignado, 2, '.', '')
+        );
+
+        /*
+        * Al venir de una factura, conocemos ya el importe real.
+        */
+        $gasto->setImporteReal(
+            number_format($importeAsignado, 2, '.', '')
+        );
+
+        /*
+        * Calculamos qué parte de la línea corresponde a esta asignación.
+        */
+        $proporcion = $cantidadLinea > 0
+            ? $cantidadAsignada / $cantidadLinea
+            : 1;
+
+        $baseReal =
+            (float) ($linea->getImporteBruto() ?? 0)
+            * $proporcion;
+
+        $ivaReal =
+            (float) ($linea->getImporteIva() ?? 0)
+            * $proporcion;
+
+        $recargoReal =
+            (float) ($linea->getImporteRecargoEquivalencia() ?? 0)
+            * $proporcion;
+
+        $gasto->setBaseReal(
+            number_format($baseReal, 2, '.', '')
+        );
+
+        $gasto->setTipoIvaReal(
+            $linea->getPorcentajeIva() !== null
+                ? number_format(
+                    (float) $linea->getPorcentajeIva(),
+                    2,
+                    '.',
+                    ''
+                )
+                : null
+        );
+
+        $gasto->setIvaReal(
+            number_format($ivaReal, 2, '.', '')
+        );
+
+        $gasto->setRecargoReal(
+            number_format($recargoReal, 2, '.', '')
+        );
+
+        /*
+        * ------------------------------------------------------------
+        * ESTADO
+        * ------------------------------------------------------------
+        */
+
+        $gasto->setEstado(
+            ProyectoGasto::ESTADO_CONFIRMADO
+        );
+
+        /*
+        * No creamos Forecast.
+        * Utilizamos el que ya pertenece a la factura.
+        */
+        $gasto->setForecast($forecast);
+        $gasto->setGeneraForecast(false);
+
+        $gasto->setNotas(
+            'Generado desde factura proveedor '
+            . ($factura->getNumeroFactura() ?: 'sin número')
+            . ' · Línea: '
+            . ($linea->getDescripcion() ?: '-')
+            . ' · Cantidad asignada: '
+            . $cantidadAsignada
+            . ' de '
+            . $cantidadLinea
+        );
+
+        $gasto->marcarActualizado();
+
+        $this->em->persist($gasto);
+
+        return $gasto;
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Forecast;
 use App\Entity\FacturaProveedor;
+use App\Entity\Banco;
 use App\Form\ForecastType;
 use App\Entity\FacturaProveedorLineaAsignacion;
 use App\Entity\ProyectoGasto;
@@ -23,6 +24,7 @@ use App\Repository\TipoproductoRepository;
 use App\Entity\Productos;
 use App\Service\FacturaProveedor\FacturaProveedorService;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use App\Service\Forecast\ForecastConciliacionService;
 
 #[Route('/admin/forecast')]
 class ForecastController extends AbstractController
@@ -36,13 +38,109 @@ class ForecastController extends AbstractController
     }
 
     #[Route('/', name: 'forecast_index', methods: ['GET'])]
-    public function index(ForecastRepository $forecastRepository, BancoRepository $bancoRepository, DetallecestaRepository $detallecestaRepository): Response
-    {
+    public function index(
+        ForecastRepository $forecastRepository,
+        BancoRepository $bancoRepository
+    ): Response {
+
         return $this->render('forecast/conciliar.html.twig', [
-            'pagos' => $forecastRepository->findBy(['estadoFr' => "P"], ['fechaFr' => 'DESC']),
-            'bancos' => $bancoRepository->findBy(['categoria_Bn' => ['4', '2', '11'], 'conciliado' => "0"], ['fecha_Bn' => 'DESC']),
+
+            'bancos' => $bancoRepository->findBy(
+                [
+                    'categoria_Bn' => ['4', '2', '11'],
+                    'conciliado' => '0',
+                ],
+                [
+                    'fecha_Bn' => 'DESC',
+                ]
+            ),
+
+            'totalForecastPendientes' =>
+                $forecastRepository->count([
+                    'estadoFr' => 'P'
+                ]),
         ]);
     }
+
+    #[Route(
+        '/conciliacion/candidatos/{id}',
+        name: 'forecast_conciliacion_candidatos',
+        methods: ['GET']
+    )]
+    public function candidatos(
+        Banco $banco,
+        ForecastRepository $forecastRepository
+    ): JsonResponse {
+
+        $candidatos = $forecastRepository->findCandidatosParaBanco(
+            $banco,
+            10
+        );
+
+        return $this->json([
+            'success' => true,
+            'banco' => [
+                'id' => $banco->getId(),
+                'fecha' => $banco->getFechaBn()?->format('Y-m-d'),
+                'concepto' => $banco->getConceptoBn(),
+                'importe' => (float) $banco->getImporteBn(),
+            ],
+            'candidatos' => $candidatos,
+        ]);
+    }    
+
+
+
+    #[Route(
+        '/{id}/conciliar',
+        name: 'forecast_conciliar',
+        methods: ['POST']
+    )]
+    public function conciliar(
+        Forecast $forecast,
+        Request $request,
+        BancoRepository $bancoRepository,
+        ForecastConciliacionService $conciliacionService
+    ): JsonResponse {
+
+        $bancoId = $request->request->getInt('banco');
+
+        if (!$bancoId) {
+            return $this->json([
+                'success' => false,
+                'message' => 'No se ha indicado el movimiento bancario.',
+            ], 400);
+        }
+
+        $banco = $bancoRepository->find($bancoId);
+
+        if (!$banco) {
+            return $this->json([
+                'success' => false,
+                'message' => 'No se ha encontrado el movimiento bancario.',
+            ], 404);
+        }
+
+        try {
+
+            $conciliacionService->conciliar(
+                $forecast,
+                $banco
+            );
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Movimiento conciliado correctamente.',
+            ]);
+
+        } catch (\LogicException $e) {
+
+            return $this->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }    
 
     #[Route('/consulta', name: 'forecast_consulta', methods: ['GET'])]
     public function consulta(ForecastRepository $forecastRepository, DetallecestaRepository $detallecestaRepository): Response
@@ -186,18 +284,56 @@ class ForecastController extends AbstractController
 
     }  
 
-
-    #[Route('/{id}/{estado}/conciliar', name: 'forecast_conciliar', methods: ['GET','POST'])]
-    public function conciliar(Request $request, Forecast $forecast,  DetallecestaRepository $detallecestaRepository, string $estado): Response
+    #[Route('/pagar/fila', name: 'forecast_pagado_ajax', methods: ['GET','POST'])]
+    public function pagadoforecastajax(Request $request): JsonResponse
     {
+        // Funcion para borrar registro de producto de una cesta determinada
+        // Obtener ID del cesta
+        $datos = $request->query->get('id');
+        // Obtener cesta
+        $forecast = $this->em->getRepository('App\Entity\Forecast')->find($datos);
 
-        $forecast->setEstadoFr($estado);
+        // Marcado como pagado
+        $forecast->timestamp = new \DateTime();
+        $forecast->setEstadoFr('C');
         $this->em->flush();
 
-        return $this->redirectToRoute('forecast_index');
-    }
+        $response = new JsonResponse();
 
-    
+        return $response;
+
+    }  
+
+
+    #[Route(
+        '/conciliacion/buscar',
+        name: 'forecast_conciliacion_buscar',
+        methods: ['GET']
+    )]
+    public function buscarForecast(
+        Request $request,
+        ForecastRepository $forecastRepository
+    ): JsonResponse {
+
+        $q = trim((string) $request->query->get('q', ''));
+
+        if ($q === '') {
+            return $this->json([
+                'success' => true,
+                'resultados' => [],
+            ]);
+        }
+
+        $resultados = $forecastRepository->buscarPendientesConciliacion(
+            $q,
+            20
+        );
+
+        return $this->json([
+            'success' => true,
+            'resultados' => $resultados,
+        ]);
+    }
 
     private function toFloat(mixed $value): float
     {

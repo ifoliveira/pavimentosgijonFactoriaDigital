@@ -7,6 +7,8 @@ use App\Service\ProyectoGasto\ProyectoGastoService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 
 #[Route('/admin/proyecto-gasto')]
@@ -30,11 +32,56 @@ class ProyectoGastoController extends AbstractController
     #[Route('/{id}/pagado', name: 'app_proyecto_gasto_pagado', methods: ['POST'])]
     public function pagado(
         ProyectoGasto $gasto,
+        Request $request,
         ProyectoGastoService $proyectoGastoService
-    ): RedirectResponse {
+    ): Response {
+
         $proyectoId = $gasto->getProyecto()->getId();
 
-        $proyectoGastoService->marcarPagado($gasto);
+        $origen = $request->request->get('origen');
+
+        if ($origen === 'efectivo') {
+
+            $proyectoGastoService->marcarPagadoEnEfectivo($gasto);
+
+        } elseif ($origen === 'banco') {
+
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Debes esperar a que llegue el movimiento bancario.',
+                ], 400);
+            }
+
+           //* $proyectoGastoService->marcarPendientePagoBanco($gasto);
+
+        } else {
+
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Debes indicar cómo se ha realizado el pago.',
+                ], 400);
+            }
+
+            $this->addFlash(
+                'error',
+                'Debes indicar cómo se ha realizado el pago.'
+            );
+
+            return $this->redirectToRoute('app_proyecto_show', [
+                'id' => $proyectoId,
+            ]);
+        }
+
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'success' => true,
+                'message' => $origen === 'efectivo'
+                    ? 'Gasto pagado en efectivo.'
+                    : 'Gasto pendiente de conciliación bancaria.',
+            ]);
+        }
 
         return $this->redirectToRoute('app_proyecto_show', [
             'id' => $proyectoId,

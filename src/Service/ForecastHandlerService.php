@@ -74,6 +74,7 @@ class ForecastHandlerService
 
     public function sincronizarForecastSiProcede(ProyectoGasto $gasto): void
     {
+
         if (!$gasto->isGeneraForecast()) {
             if ($gasto->getForecast()) {
                 $this->em->remove($gasto->getForecast());
@@ -100,6 +101,19 @@ class ForecastHandlerService
         $forecast->setFechaFr($gasto->getFechaPrevista());
         $forecast->setEstadoFr('P');
         $forecast->setFijovarFr('V');
+
+        
     }
+
+    public function resolverForecast(Forecast $forecast): void
+    {
+        $forecast->setEstadoFr('C');
+        $forecast->setTimeStamp(new \DateTime());
+        $forecast->SetOrigenFr('Efectivo');
+
+        $this->em->persist($forecast);
+        $this->em->flush();
+    }
+
 }
 ?>

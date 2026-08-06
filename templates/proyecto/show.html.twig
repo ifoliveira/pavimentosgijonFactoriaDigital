@@ -410,137 +410,163 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
             <span>Gastos del proyecto</span>
-
-            <button type="button"
-                    class="btn btn-sm btn-outline-primary"
-                    id="btnNuevoGastoSecundario"
-                    data-url="{{ path('app_proyecto_gasto_new', {id: proyecto.id}) }}">
-                Añadir gasto
-            </button>
+                <button type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        id="btnNuevoGastoSecundario"
+                        data-url="{{ path('app_proyecto_gasto_new', {id: proyecto.id}) }}">
+                    Añadir gasto
+                </button>
         </div>
 
         <div class="card-body">
             {% if proyecto.gastos is defined and proyecto.gastos|length > 0 %}
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Fecha prevista</th>
-                                <th>Estado</th>
-                                <th>Categoría</th>
-                                <th>Concepto</th>
-                                <th>Proveedor</th>
-                                <th class="text-end">Previsto</th>
-                                <th class="text-end">Real</th>
-                                <th class="text-end">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for gasto in proyecto.gastos %}
-                                <tr>
-                                    <td>
-                                        {{ gasto.fechaPrevista ? gasto.fechaPrevista|date('d/m/Y') : '—' }}
-                                    </td>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 tabla-gastos">
+                <thead>
+                    <tr>
+                        <th>Fecha prevista</th>
+                        <th>Estado</th>
+                        <th>Categoría</th>
+                        <th>Concepto</th>
+                        <th>Proveedor</th>
+                        <th class="text-end">Previsto</th>
+                        <th class="text-end">Real</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
 
-                                    <td>
+                <tbody>
+                    {% for gasto in proyecto.gastos %}
+                        <tr>
+                            <td class="gasto-fecha">
+                                {{ gasto.fechaPrevista ? gasto.fechaPrevista|date('d/m/Y') : '—' }}
+                            </td>
+
+                            <td class="gasto-estado">
+                                {% if gasto.estado == 'previsto' %}
+                                    <span class="badge bg-secondary">Previsto</span>
+                                {% elseif gasto.estado == 'confirmado' %}
+                                    <span class="badge bg-success">Confirmado</span>
+                                {% elseif gasto.estado == 'pagado' %}
+                                    <span class="badge bg-success">Pagado</span>
+                                {% elseif gasto.estado == 'cancelado' %}
+                                    <span class="badge bg-dark">Cancelado</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">{{ gasto.estado }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="gasto-categoria">
+                                    {{ gasto.categoria ?: '—' }}
+                                </td>
+
+                                <td class="gasto-concepto"
+                                    title="{{ gasto.concepto }}">
+                                    {{ gasto.concepto }}
+                                </td>
+
+                                <td class="gasto-proveedor"
+                                    title="{{ gasto.proveedor ?: '' }}">
+                                    {{ gasto.proveedor ?: '—' }}
+                                </td>
+
+                                <td class="gasto-importe text-end">
+                                    {{ gasto.importePrevisto|number_format(2, ',', '.') }}&nbsp;€
+                                </td>
+
+                                <td class="gasto-importe text-end">
+                                    {% if gasto.importeReal is not null %}
+                                        {{ gasto.importeReal|number_format(2, ',', '.') }}&nbsp;€
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td class="gasto-acciones text-end">
+                                    <div class="btn-group btn-group-sm">
+
+
+
                                         {% if gasto.estado == 'previsto' %}
-                                            <span class="badge bg-secondary">Previsto</span>
-                                        {% elseif gasto.estado == 'confirmado' %}
-                                            <span class="badge bg-info text-dark">Confirmado</span>
-                                        {% elseif gasto.estado == 'pagado' %}
-                                            <span class="badge bg-success">Pagado</span>
-                                        {% elseif gasto.estado == 'cancelado' %}
-                                            <span class="badge bg-dark">Cancelado</span>
-                                        {% else %}
-                                            <span class="badge bg-light text-dark">{{ gasto.estado }}</span>
-                                        {% endif %}
-                                    </td>
 
-                                    <td>{{ gasto.categoria ?: '—' }}</td>
-                                    <td>{{ gasto.concepto }}</td>
-                                    <td>{{ gasto.proveedor ?: '—' }}</td>
-
-                                    <td class="text-end">
-                                        {{ gasto.importePrevisto|number_format(2, ',', '.') }} €
-                                    </td>
-
-                                    <td class="text-end">
-                                        {% if gasto.importeReal is not null %}
-                                            {{ gasto.importeReal|number_format(2, ',', '.') }} €
-                                        {% else %}
-                                            <span class="text-muted">—</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="btn-group btn-group-sm">
-
-                                            {# Editar 
                                             <button type="button"
-                                                    class="btn btn-outline-primary"
-                                                    data-url="{{ path('app_proyecto_gasto_edit', {id: gasto.id}) }}">
+                                                    class="btn btn-outline-primary btnEditarGasto"
+                                                    data-url="{{ path('app_proyecto_gasto_edit', {id: gasto.id}) }}"
+                                                    title="Editar gasto">
                                                 <i class="bi bi-pencil"></i>
-                                            </button>#}
+                                            </button>                                  
 
-                                            {% if gasto.estado == 'previsto' %}
 
-                                                <form method="post"
-                                                    action="{{ path('app_proyecto_gasto_confirmar', {id: gasto.id}) }}">
-                                                    <button class="btn btn-outline-info"
-                                                            title="Confirmar">
-                                                        <i class="bi bi-check-circle"></i>
-                                                    </button>
-                                                </form>
 
-                                                <form method="post"
-                                                    action="{{ path('app_proyecto_gasto_delete', {id: gasto.id}) }}"
-                                                    onsubmit="return confirm('¿Eliminar gasto?');">
-                                                    <button class="btn btn-outline-danger">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
+                                            <form method="post"
+                                                action="{{ path('app_proyecto_gasto_confirmar', {id: gasto.id}) }}">
+                                                <button class="btn btn-outline-info"
+                                                        title="Confirmar">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                            </form>
 
-                                            {% elseif gasto.estado == 'confirmado' %}
+                                            <form method="post"
+                                                action="{{ path('app_proyecto_gasto_delete', {id: gasto.id}) }}"
+                                                onsubmit="return confirm('¿Eliminar gasto?');">
+                                                <button class="btn btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
 
-                                                <form method="post"
-                                                    action="{{ path('app_proyecto_gasto_pagado', {id: gasto.id}) }}">
-                                                    <button class="btn btn-outline-success"
-                                                            title="Marcar pagado">
-                                                        <i class="bi bi-cash"></i>
-                                                    </button>
-                                                </form>
+                                        {% elseif gasto.estado == 'confirmado' and gasto.origen == 'factura_proveedor' %}
+                                            <form method="post"
+                                                action="{{ path('app_proyecto_gasto_cancelar', {id: gasto.id}) }}">
+                                                <button class="btn btn-outline-dark"
+                                                        title="Cancelar">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            </form>
+                                        {% elseif gasto.estado == 'confirmado' and gasto.origen != 'factura_proveedor' %}
 
-                                                <form method="post"
-                                                    action="{{ path('app_proyecto_gasto_cancelar', {id: gasto.id}) }}">
-                                                    <button class="btn btn-outline-dark"
-                                                            title="Cancelar">
-                                                        <i class="bi bi-x-circle"></i>
-                                                    </button>
-                                                </form>
+                                            <form method="post"
+                                                action="{{ path('app_proyecto_gasto_pagado', {id: gasto.id}) }}">                    
+                                                <button type="button"
+                                                        class="btn btn-outline-success btnMarcarGastoPagado"
+                                                        data-url="{{ path('app_proyecto_gasto_pagado', {id: gasto.id}) }}"
+                                                        data-concepto="{{ gasto.concepto|e('html_attr') }}"
+                                                        data-importe="{{ gasto.importeReal ?? gasto.importePrevisto }}"
+                                                        title="Marcar pagado">
+                                                    <i class="bi bi-cash"></i>
+                                                </button>
+                                            </form> 
 
-                                            {% elseif gasto.estado == 'pagado' %}
+                                            <form method="post"
+                                                action="{{ path('app_proyecto_gasto_cancelar', {id: gasto.id}) }}">
+                                                <button class="btn btn-outline-dark"
+                                                        title="Cancelar">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            </form>
 
-                                                {% if gasto.bancoMovimiento %}
-                                                    <a href="{{ path('admin_banco_movimiento_show', {id: gasto.bancoMovimiento.id}) }}"
-                                                    class="btn btn-outline-secondary"
-                                                    title="Ver movimiento">
-                                                        <i class="bi bi-bank"></i>
-                                                    </a>
-                                                {% endif %}
+                                        {% elseif gasto.estado == 'pagado' %}
 
-                                            {% elseif gasto.estado == 'cancelado' %}
-
-                                                <form method="post"
-                                                    action="{{ path('app_proyecto_gasto_reactivar', {id: gasto.id}) }}">
-                                                    <button class="btn btn-outline-warning">
-                                                        <i class="bi bi-arrow-clockwise"></i>
-                                                    </button>
-                                                </form>
-
+                                            {% if gasto.bancoMovimiento %}
+                                                <a href="{{ path('admin_banco_movimiento_show', {id: gasto.bancoMovimiento.id}) }}"
+                                                class="btn btn-outline-secondary"
+                                                title="Ver movimiento">
+                                                    <i class="bi bi-bank"></i>
+                                                </a>
                                             {% endif %}
 
-                                        </div>
-                                    </td>                                    
-                                </tr>
+                                        {% elseif gasto.estado == 'cancelado' %}
+
+                                            <form method="post"
+                                                action="{{ path('app_proyecto_gasto_reactivar', {id: gasto.id}) }}">
+                                                <button class="btn btn-outline-warning">
+                                                    <i class="bi bi-arrow-clockwise"></i>
+                                                </button>
+                                            </form>
+
+                                        {% endif %}
+
+                                    </div>
+                                </td>                                    
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -567,61 +593,256 @@
     </div>
 </div>
 
+{# MODAL GASTO PAGADO #}
+
+<div class="modal fade" id="modalGastoPagado" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Marcar gasto como pagado</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+                    <div class="text-muted small">Gasto</div>
+                    <div class="fw-semibold" id="gastoPagadoConcepto"></div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="text-muted small">Importe</div>
+                    <div class="fw-semibold" id="gastoPagadoImporte"></div>
+                </div>
+
+                <div class="alert alert-light border">
+                    ¿Cómo se ha realizado el pago?
+                </div>
+
+                <div class="d-grid gap-2">
+
+                    <button type="button"
+                            class="btn btn-outline-success"
+                            id="btnGastoPagoEfectivo">
+                        <i class="bi bi-cash me-1"></i>
+                        Efectivo
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-outline-primary"
+                            id="btnGastoPagoBanco">
+                        <i class="bi bi-bank me-1"></i>
+                        Banco / tarjeta / transferencia / Bizum
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const botonesNuevoGasto = document.querySelectorAll('#btnNuevoGasto, #btnNuevoGastoSecundario');
+
+    const botonesNuevoGasto = document.querySelectorAll(
+        '#btnNuevoGasto, #btnNuevoGastoSecundario'
+    );
+
     const modalElement = document.getElementById('modalProyectoGasto');
     const modalBody = document.getElementById('modalProyectoGastoBody');
+    const modalTitle = document.getElementById('modalProyectoGastoLabel');
 
-    if (!botonesNuevoGasto.length || !modalElement || !modalBody) {
+    if (!modalElement || !modalBody) {
         return;
     }
 
+    /*
+     * ============================================================
+     * FUNCIÓN COMÚN PARA ABRIR EL MODAL
+     * ============================================================
+     */
+    async function abrirModalGasto(url, titulo) {
+
+        modalTitle.textContent = titulo;
+
+        modalBody.innerHTML = `
+            <div class="text-muted">
+                Cargando formulario...
+            </div>
+        `;
+
+        let modalInstance = bootstrap.Modal.getInstance(modalElement);
+
+        if (!modalInstance) {
+            modalInstance = new bootstrap.Modal(modalElement);
+        }
+
+        modalInstance.show();
+
+        try {
+
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const html = await response.text();
+
+            if (!response.ok) {
+                modalBody.innerHTML = `
+                    <div class="alert alert-danger mb-0">
+                        No se pudo cargar el formulario.
+                    </div>
+                `;
+                return;
+            }
+
+            modalBody.innerHTML = html;
+
+            /*
+            * Solo bind si realmente Symfony nos ha devuelto
+            * el formulario.
+            */
+            if (modalBody.querySelector('#formProyectoGasto')) {
+                bindProyectoGastoForm(url);
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            modalBody.innerHTML = `
+                <div class="alert alert-danger mb-0">
+                    No se pudo cargar el formulario.
+                </div>
+            `;
+        }
+    }
+
+
+    /*
+     * ============================================================
+     * NUEVO GASTO
+     * ============================================================
+     */
     botonesNuevoGasto.forEach(function (boton) {
-        boton.addEventListener('click', async function () {
+
+        boton.addEventListener('click', function () {
+
             const url = this.dataset.url;
 
-            modalBody.innerHTML = '<div class="text-muted">Cargando formulario...</div>';
-
-            let modalInstance = null;
-            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                modalInstance = bootstrap.Modal.getInstance(modalElement);
-                if (!modalInstance) {
-                    modalInstance = new bootstrap.Modal(modalElement);
-                }
-                modalInstance.show();
-            }
-
-            try {
-                const response = await fetch(url, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                const html = await response.text();
-                modalBody.innerHTML = html;
-
-                bindProyectoGastoForm(url);
-            } catch (error) {
-                modalBody.innerHTML = '<div class="alert alert-danger mb-0">No se pudo cargar el formulario.</div>';
-            }
+            abrirModalGasto(
+                url,
+                'Nuevo gasto del proyecto'
+            );
         });
+
     });
 
-    function bindProyectoGastoForm(url) {
-        const form = document.getElementById('formProyectoGasto');
-        if (!form) {
+
+    /*
+     * ============================================================
+     * EDITAR GASTO
+     * ============================================================
+     *
+     * Delegación de eventos.
+     * Así funciona aunque haya varios gastos.
+     */
+    document.addEventListener('click', function (e) {
+
+        const boton = e.target.closest('.btnEditarGasto');
+
+        if (!boton) {
             return;
         }
 
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
+        e.preventDefault();
 
-            const formData = new FormData(form);
+        const url = boton.dataset.url;
+
+        abrirModalGasto(
+            url,
+            'Editar gasto del proyecto'
+        );
+    });
+
+    /*
+     * ============================================================
+     * MARCAR GASTO COMO PAGADO
+     * ============================================================
+     */
+
+    const modalEl = document.getElementById('modalGastoPagado');
+
+        if (!modalEl) {
+            return;
+        }
+
+        let urlPago = null;
+
+        document.addEventListener('click', function (e) {
+
+            const btn = e.target.closest('.btnMarcarGastoPagado');
+
+            if (!btn) {
+                return;
+            }
+
+            urlPago = btn.dataset.url;
+
+            document.getElementById('gastoPagadoConcepto').textContent =
+                btn.dataset.concepto;
+
+            const importe = parseFloat(btn.dataset.importe || 0);
+
+            document.getElementById('gastoPagadoImporte').textContent =
+                importe.toLocaleString('es-ES', {
+                    style: 'currency',
+                    currency: 'EUR'
+                });
+
+            let modal = bootstrap.Modal.getInstance(modalEl);
+
+            if (!modal) {
+                modal = new bootstrap.Modal(modalEl);
+            }
+
+            modal.show();
+        });
+
+
+        document.getElementById('btnGastoPagoEfectivo')
+            .addEventListener('click', async function () {
+
+                await marcarPagado('efectivo');
+            });
+
+
+        document.getElementById('btnGastoPagoBanco')
+            .addEventListener('click', async function () {
+
+                await marcarPagado('banco');
+            });
+
+
+        async function marcarPagado(origen) {
+
+            if (!urlPago) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('origen', origen);
 
             try {
-                const response = await fetch(url, {
+
+                const response = await fetch(urlPago, {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -629,26 +850,133 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
 
-                const contentType = response.headers.get('content-type') || '';
+                const texto = await response.text();
+
+                console.log('STATUS:', response.status);
+                console.log('RESPUESTA:', texto);
+
+                let data;
+
+                try {
+                    data = JSON.parse(texto);
+                } catch (e) {
+                    console.error('La respuesta NO es JSON');
+                    console.error(texto);
+
+                    alert('El servidor no ha devuelto JSON. Mira la consola.');
+                    return;
+                }
+
+                console.log('JSON:', data);
+
+                if (data.success) {
+                    window.location.reload();
+                    return;
+                }
+
+                alert(data.message || 'No se pudo actualizar el gasto.');
+
+            } catch (error) {
+
+                console.error('ERROR FETCH:', error);
+
+                alert('No se pudo actualizar el gasto.');
+            }
+        }
+
+
+    /*
+     * ============================================================
+     * SUBMIT FORMULARIO
+     * ============================================================
+     */
+    function bindProyectoGastoForm(url) {
+
+        const form = modalBody.querySelector('#formProyectoGasto');
+
+        if (!form) {
+            console.error('No se encontró #formProyectoGasto');
+            return;
+        }
+
+        console.log('Formulario enlazado correctamente');
+
+        form.addEventListener('submit', async function (e) {
+
+            e.preventDefault();
+
+            console.log('SUBMIT #formProyectoGasto');
+
+            const botonSubmit = form.querySelector('button[type="submit"]');
+
+            if (botonSubmit) {
+                botonSubmit.disabled = true;
+            }
+
+            try {
+
+                const action = form.getAttribute('action') || url;
+                const method = form.getAttribute('method') || 'POST';
+
+                console.log('GUARDAR URL:', action);
+                console.log('GUARDAR METHOD:', method);
+
+                const response = await fetch(action, {
+                    method: method.toUpperCase(),
+                    body: new FormData(form),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const contentType =
+                    response.headers.get('content-type') || '';
+
+                console.log('GUARDAR STATUS:', response.status);
+                console.log('GUARDAR CONTENT-TYPE:', contentType);
 
                 if (contentType.includes('application/json')) {
+
                     const data = await response.json();
 
                     if (data.success) {
                         window.location.reload();
                         return;
                     }
+
+                    alert(
+                        data.message || 'No se pudo guardar el gasto.'
+                    );
+
+                    return;
                 }
 
                 const html = await response.text();
+
                 modalBody.innerHTML = html;
-                bindProyectoGastoForm(url);
+
+                const nuevoFormulario =
+                    modalBody.querySelector('#formProyectoGasto');
+
+                if (nuevoFormulario) {
+                    bindProyectoGastoForm(url);
+                }
 
             } catch (error) {
-                modalBody.innerHTML = '<div class="alert alert-danger mb-0">Error al guardar el gasto.</div>';
+
+                console.error('Error guardando gasto:', error);
+
+                alert('No se pudo guardar el gasto.');
+
+            } finally {
+
+                if (botonSubmit) {
+                    botonSubmit.disabled = false;
+                }
             }
         });
     }
+
 });
 </script>
 {% endblock %}

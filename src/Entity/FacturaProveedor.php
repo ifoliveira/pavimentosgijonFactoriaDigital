@@ -135,9 +135,22 @@ class FacturaProveedor
     )]
     private Collection $lineas;
 
+
+    /**
+     * @var Collection<int, Forecast>
+     */
+    #[ORM\OneToMany(
+        mappedBy: 'facturaProveedor',
+        targetEntity: Forecast::class
+    )]
+
+    private Collection $forecasts;
+
+
     public function __construct()
     {
         $this->lineas = new ArrayCollection();
+        $this->forecasts = new ArrayCollection();
         $this->fechaCreacion = new \DateTime();
     }
 
@@ -351,4 +364,34 @@ class FacturaProveedor
         $this->totalRecargoEquivalencia = $totalRecargoEquivalencia;
         return $this;
     }
+
+    /**
+     * @return Collection<int, Forecast>
+     */
+    public function getForecasts(): Collection
+    {
+        return $this->forecasts;
+    }
+
+    public function addForecast(Forecast $forecast): static
+    {
+        if (!$this->forecasts->contains($forecast)) {
+            $this->forecasts->add($forecast);
+            $forecast->setFacturaProveedor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeForecast(Forecast $forecast): static
+    {
+        if ($this->forecasts->removeElement($forecast)) {
+            if ($forecast->getFacturaProveedor() === $this) {
+                $forecast->setFacturaProveedor(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

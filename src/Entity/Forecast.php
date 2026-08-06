@@ -3,6 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\ForecastRepository;
+use App\Entity\Tiposmovimiento;    
+use App\Entity\Banco;
+use App\Entity\FacturaProveedor;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ForecastRepository::class)]
@@ -40,6 +43,10 @@ class Forecast
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $timestamp = null;
+
+    #[ORM\ManyToOne(targetEntity: FacturaProveedor::class, inversedBy: 'forecasts')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?FacturaProveedor $facturaProveedor = null;
 
     public function __construct()
     {
@@ -149,6 +156,17 @@ class Forecast
     public function setTimestamp(?\DateTimeInterface $timestamp): self
     {
         $this->timestamp = $timestamp;
+        return $this;
+    }
+
+    public function getFacturaProveedor(): ?FacturaProveedor
+    {
+        return $this->facturaProveedor;
+    }
+
+    public function setFacturaProveedor(?FacturaProveedor $facturaProveedor): self
+    {
+        $this->facturaProveedor = $facturaProveedor;
         return $this;
     }
 }
