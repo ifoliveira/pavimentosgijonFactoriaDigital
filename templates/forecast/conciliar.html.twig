@@ -33,13 +33,31 @@
         <div class="col-md-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <div class="text-muted small">
-                        Forecast pendientes
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+                            <div class="text-muted small">
+                                Forecast pendientes
+                            </div>
+
+                            <div class="fs-3 fw-bold">
+                                {{ totalForecastPendientes ?? '—' }}
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <div class="text-muted small">
+                                Cobros pendientes
+                            </div>
+
+                            <div class="fs-3 fw-bold">
+                                {{ totalCobrosPendientes ?? '—' }}
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div class="fs-3 fw-bold">
-                        {{ totalForecastPendientes ?? '—' }}
-                    </div>
                 </div>
             </div>
         </div>
@@ -52,11 +70,11 @@
                     </div>
 
                     <div class="fw-semibold mt-2">
-                        Banco → Forecast
+                        Conciliación bancaria
                     </div>
 
                     <div class="small text-muted">
-                        Selecciona un movimiento y busca su previsión.
+                        Pagos → Forecast · Ingresos → Cobros
                     </div>
                 </div>
             </div>
@@ -184,12 +202,13 @@
                     <div class="d-flex justify-content-between align-items-center">
 
                         <div>
-                            <h4 class="mb-1">
+                            <h4 class="mb-1" id="tituloCandidatos">
                                 Coincidencias
                             </h4>
 
-                            <div class="small text-muted">
-                                Forecast candidatos para el movimiento seleccionado
+                            <div class="small text-muted"
+                                id="subtituloCandidatos">
+                                Selecciona un movimiento bancario
                             </div>
                         </div>
 
@@ -219,7 +238,7 @@
                         <h5>Selecciona un movimiento bancario</h5>
 
                         <div class="small">
-                            Buscaremos automáticamente los Forecast más probables.
+                            Los pagos buscarán Forecast y los ingresos buscarán cobros.
                         </div>
 
                     </div>
@@ -392,12 +411,13 @@
 
                 <div class="border rounded p-3">
 
-                    <div class="text-muted small">
-                        Forecast
+                    <div class="text-muted small"
+                        id="modalTipoCandidato">
+                        Candidato
                     </div>
 
-                    <div id="modalForecast"
-                         class="fw-semibold">
+                    <div id="modalCandidato"
+                        class="fw-semibold">
                     </div>
 
                 </div>
@@ -435,7 +455,8 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     let bancoSeleccionado = null;
-    let forecastSeleccionado = null;
+    let candidatoSeleccionado = null;
+    let tipoConciliacion = null;
 
     const movimientosBanco =
         document.querySelectorAll('.movimiento-banco');
@@ -481,7 +502,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 concepto: this.dataset.concepto
             };
 
-            forecastSeleccionado = null;
+            candidatoSeleccionado = null;
+
+            tipoConciliacion =
+                bancoSeleccionado.importe < 0
+                    ? 'forecast'
+                    : 'cobro';
+
+            actualizarTipoConciliacion();
 
             mostrarBancoSeleccionado();
 
@@ -489,6 +517,31 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
     });
+
+
+    function actualizarTipoConciliacion() {
+
+        const titulo =
+            document.getElementById('tituloCandidatos');
+
+        const subtitulo =
+            document.getElementById('subtituloCandidatos');
+
+        if (tipoConciliacion === 'forecast') {
+
+            titulo.textContent = 'Forecast candidatos';
+
+            subtitulo.textContent =
+                'Previsiones de pago que pueden corresponder con este movimiento.';
+
+        } else {
+
+            titulo.textContent = 'Cobros candidatos';
+
+            subtitulo.textContent =
+                'Cobros de proyectos que pueden corresponder con este ingreso.';
+        }
+    }
 
 
     /*
@@ -538,36 +591,69 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     async function cargarCandidatos() {
 
+        if (!bancoSeleccionado) {
+            return;
+        }
+
+        candidatoSeleccionado = null;
+
         contenedorCandidatos.innerHTML = '';
 
         sinCandidatos.style.display = 'none';
         cargandoCandidatos.style.display = 'block';
-
         badgeCandidatos.style.display = 'none';
 
         try {
 
-            /*
-             * Endpoint que desarrollaremos ahora:
-             *
-             * /forecast/conciliacion/candidatos/{banco}
-             */
-            const response = await fetch(
-                `/admin/forecast/conciliacion/candidatos/${bancoSeleccionado.id}`,
-                {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+            let url;
+
+            if (tipoConciliacion === 'forecast') {
+
+                url =
+                    `/admin/forecast/conciliacion/candidatos/${bancoSeleccionado.id}`;
+
+            } else {
+
+                url =
+                    `/admin/forecast/conciliacion/cobros/candidatos/${bancoSeleccionado.id}`;
+            }
+
+            console.log('TIPO:', tipoConciliacion);
+            console.log('BANCO:', bancoSeleccionado);
+            console.log('URL CANDIDATOS:', url);
+
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
-            );
+            });
+
+            const contentType =
+                response.headers.get('content-type') || '';
+
+            if (!contentType.includes('application/json')) {
+
+                const texto = await response.text();
+
+                console.error(
+                    'Respuesta no JSON:',
+                    response.status,
+                    texto
+                );
+
+                throw new Error(
+                    'El servidor no devolvió una respuesta JSON.'
+                );
+            }
 
             const data = await response.json();
 
             cargandoCandidatos.style.display = 'none';
 
-            if (!data.success) {
+            if (!response.ok || !data.success) {
                 throw new Error(
-                    data.message || 'No se pudieron obtener candidatos.'
+                    data.message ||
+                    'No se pudieron obtener candidatos.'
                 );
             }
 
@@ -576,7 +662,8 @@ document.addEventListener('DOMContentLoaded', function () {
             badgeCandidatos.textContent =
                 candidatos.length;
 
-            badgeCandidatos.style.display = 'inline-block';
+            badgeCandidatos.style.display =
+                'inline-block';
 
             if (candidatos.length === 0) {
                 sinCandidatos.style.display = 'block';
@@ -589,13 +676,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                'Error cargando candidatos:',
+                error
+            );
 
             cargandoCandidatos.style.display = 'none';
 
             contenedorCandidatos.innerHTML = `
                 <div class="alert alert-danger">
-                    No se pudieron cargar las coincidencias.
+                    ${escaparHtml(error.message)}
                 </div>
             `;
         }
@@ -612,7 +702,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const wrapper = document.createElement('div');
 
         wrapper.className =
-            'border rounded p-3 mb-3 candidato-forecast';
+            'border rounded p-3 mb-3 candidato-conciliacion';
 
         let badge = '';
 
@@ -660,12 +750,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="small text-muted">
 
                         Previsto:
+                        ${tipoConciliacion === 'forecast' ? 'Previsto' : 'Cobro'}:
                         ${formatearFecha(candidato.fecha)}
 
                         ·
 
                         Diferencia:
                         ${candidato.diferenciaDias} días
+                        .
+
+                        ${tipoConciliacion === 'cobro' && candidato.metodo
+                            ? `
+                                <span class="badge bg-light text-dark ms-2">
+                                    ${escaparHtml(candidato.metodo)}
+                                </span>
+                            `
+                            : ''
+                        }                        
 
                     </div>
 
@@ -690,7 +791,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
 
                     <button type="button"
-                            class="btn btn-sm btn-outline-success mt-2 btnSeleccionarForecast">
+                            class="btn btn-sm btn-outline-success mt-2 btnSeleccionarCandidato"
                         Conciliar
                     </button>
 
@@ -700,10 +801,10 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
 
         wrapper.querySelector(
-            '.btnSeleccionarForecast'
+            '.btnSeleccionarCandidato'
         ).addEventListener('click', function () {
 
-            forecastSeleccionado = candidato;
+            candidatoSeleccionado = candidato;
 
             abrirConfirmacion();
         });
@@ -719,31 +820,40 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function abrirConfirmacion() {
 
-        document.getElementById('modalBanco').textContent =
-            bancoSeleccionado.concepto +
-            ' · ' +
-            formatearImporte(bancoSeleccionado.importe);
+    document.getElementById('modalBanco').textContent =
+        bancoSeleccionado.concepto +
+        ' · ' +
+        formatearImporte(bancoSeleccionado.importe);
 
-        document.getElementById('modalForecast').textContent =
-            forecastSeleccionado.concepto +
-            ' · ' +
-            formatearImporte(
-                parseFloat(forecastSeleccionado.importe)
-            );
+    document.getElementById(
+        'modalTipoCandidato'
+    ).textContent =
+        tipoConciliacion === 'forecast'
+            ? 'Forecast'
+            : 'Cobro de proyecto';
 
-        const modalEl =
-            document.getElementById(
-                'modalConfirmarConciliacion'
-            );
+    document.getElementById(
+        'modalCandidato'
+    ).textContent =
+        candidatoSeleccionado.concepto +
+        ' · ' +
+        formatearImporte(
+            parseFloat(candidatoSeleccionado.importe)
+        );
 
-        let modal =
-            bootstrap.Modal.getInstance(modalEl);
+    const modalEl =
+        document.getElementById(
+            'modalConfirmarConciliacion'
+        );
 
-        if (!modal) {
-            modal = new bootstrap.Modal(modalEl);
-        }
+    let modal =
+        bootstrap.Modal.getInstance(modalEl);
 
-        modal.show();
+    if (!modal) {
+        modal = new bootstrap.Modal(modalEl);
+    }
+
+    modal.show();
     }
 
 
@@ -756,7 +866,7 @@ document.addEventListener('DOMContentLoaded', function () {
         'btnConfirmarConciliacion'
     ).addEventListener('click', async function () {
 
-        if (!bancoSeleccionado || !forecastSeleccionado) {
+        if (!bancoSeleccionado || !candidatoSeleccionado) {
             return;
         }
 
@@ -765,14 +875,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
 
+            let url;
+
+            if (tipoConciliacion === 'forecast') {
+
+                url =
+                    `/admin/forecast/${candidatoSeleccionado.id}/conciliar`;
+
+            } else {
+
+                url =
+                    `/admin/forecast/conciliacion/cobro/${candidatoSeleccionado.id}`;
+            }
+
             const formData = new FormData();
+
             formData.append(
                 'banco',
                 bancoSeleccionado.id
             );
 
+            console.log('TIPO CONCILIACION:', tipoConciliacion);
+            console.log('URL CONCILIAR:', url);
+            console.log('BANCO:', bancoSeleccionado.id);
+            console.log('CANDIDATO:', candidatoSeleccionado.id);
+
             const response = await fetch(
-                `/admin/forecast/${forecastSeleccionado.id}/conciliar`,
+                url,
                 {
                     method: 'POST',
                     body: formData,
@@ -794,10 +923,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                'Error conciliando:',
+                error
+            );
 
             alert(
-                error.message || 'No se pudo realizar la conciliación.'
+                error.message ||
+                'No se pudo realizar la conciliación.'
             );
 
         } finally {

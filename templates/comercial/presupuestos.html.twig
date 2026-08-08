@@ -242,7 +242,7 @@
                                             {% if presupuesto.estadoComercial == 'entregado' %}
 
                                                 <form method="post"
-                                                    action="{{ path('admin_comercial_presupuesto_estado', {id: presupuesto.id}) }}">
+                                                    action="{{ path('app_documento_aceptar', {id: presupuesto.id}) }}">
 
                                                     <input type="hidden" name="estado" value="aceptado">
 

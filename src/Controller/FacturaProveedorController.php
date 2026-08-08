@@ -362,6 +362,8 @@ class FacturaProveedorController extends AbstractController
 
         if ($request->isMethod('POST')) {
 
+
+
             $asignacionService->procesar($factura, $request->request->all('lineas'));
 
             $this->em->flush();

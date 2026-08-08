@@ -60,6 +60,11 @@ class ProyectoCobro
     // -------------------------------------------------------------------------
     // IDENTIFICACIÓN
     // -------------------------------------------------------------------------
+    public const METODO_EFECTIVO = 'efectivo';
+    public const METODO_TARJETA = 'tarjeta';
+    public const METODO_TRANSFERENCIA = 'transferencia';
+    public const METODO_BIZUM = 'bizum';
+    public const METODO_FINANCIACION = 'financiacion';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -137,6 +142,15 @@ class ProyectoCobro
     #[ORM\ManyToOne(targetEntity: Banco::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Banco $banco = null;
+
+    /**
+     * Movimiento de efectivo asociado al cobro.
+     *
+     * Solo se utiliza cuando el método de pago es efectivo.
+     */
+    #[ORM\ManyToOne(targetEntity: Efectivo::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Efectivo $efectivo = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $notas = null;
@@ -267,6 +281,18 @@ class ProyectoCobro
     public function setBanco(?Banco $banco): static
     {
         $this->banco = $banco;
+
+        return $this;
+    }
+
+    public function getEfectivo(): ?Efectivo
+    {
+        return $this->efectivo;
+    }
+
+    public function setEfectivo(?Efectivo $efectivo): static
+    {
+        $this->efectivo = $efectivo;
 
         return $this;
     }

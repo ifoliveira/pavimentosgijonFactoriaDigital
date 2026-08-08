@@ -2,29 +2,37 @@
 
 namespace App\Controller;
 
-use App\Entity\Forecast;
-use App\Entity\FacturaProveedor;
 use App\Entity\Banco;
-use App\Form\ForecastType;
+use App\Entity\FacturaProveedor;
 use App\Entity\FacturaProveedorLineaAsignacion;
+use App\Entity\Forecast;
+use App\Entity\Productos;
+use App\Entity\ProyectoCobro;
 use App\Entity\ProyectoGasto;
+
+use App\Form\ForecastType;
+
 use App\Repository\BancoRepository;
 use App\Repository\DetallecestaRepository;
 use App\Repository\ForecastRepository;
+use App\Repository\ProyectoCobroRepository;
 use App\Repository\ProyectoRepository;
+use App\Repository\TipoproductoRepository;
+use App\Repository\TiposmovimientoRepository;
+
+use App\Service\FacturaPdfToJsonService;
+use App\Service\FacturaProveedor\FacturaProveedorService;
+use App\Service\Forecast\ForecastConciliacionService;
+use App\Service\Proyecto\ProyectoCobroService;
+
+use Doctrine\ORM\EntityManagerInterface;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Doctrine\ORM\EntityManagerInterface;
-use App\Service\FacturaPdfToJsonService;
-use App\Repository\TiposmovimientoRepository;
-use App\Repository\TipoproductoRepository;
-use App\Entity\Productos;
-use App\Service\FacturaProveedor\FacturaProveedorService;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use App\Service\Forecast\ForecastConciliacionService;
+use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/admin/forecast')]
 class ForecastController extends AbstractController
@@ -333,6 +341,92 @@ class ForecastController extends AbstractController
             'success' => true,
             'resultados' => $resultados,
         ]);
+    }
+
+    #[Route(
+        '/conciliacion/cobros/candidatos/{id}',
+        name: 'forecast_conciliacion_cobros_candidatos',
+        methods: ['GET']
+    )]
+    public function candidatosCobros(
+        Banco $banco,
+        ProyectoCobroRepository $proyectoCobroRepository
+    ): JsonResponse {
+
+        if ((float) $banco->getImporteBn() <= 0) {
+            return $this->json([
+                'success' => false,
+                'message' => 'El movimiento bancario no es un ingreso.',
+                'candidatos' => [],
+            ], 400);
+        }
+
+        $candidatos = $proyectoCobroRepository
+            ->findCandidatosParaBanco($banco, 10);
+
+        return $this->json([
+            'success' => true,
+
+            'banco' => [
+                'id' => $banco->getId(),
+                'fecha' => $banco->getFechaBn()?->format('Y-m-d'),
+                'concepto' => $banco->getConceptoBn(),
+                'importe' => (float) $banco->getImporteBn(),
+            ],
+
+            'candidatos' => $candidatos,
+        ]);
+    }    
+
+    #[Route(
+        '/conciliacion/cobro/{id}',
+        name: 'forecast_conciliacion_cobro',
+        methods: ['POST']
+    )]
+    public function conciliarCobro(
+        ProyectoCobro $cobro,
+        Request $request,
+        BancoRepository $bancoRepository,
+        ProyectoCobroService $proyectoCobroService
+    ): JsonResponse {
+
+        $bancoId = $request->request->getInt('banco');
+
+        if (!$bancoId) {
+            return $this->json([
+                'success' => false,
+                'message' => 'No se ha indicado el movimiento bancario.',
+            ], 400);
+        }
+
+        $banco = $bancoRepository->find($bancoId);
+
+        if (!$banco) {
+            return $this->json([
+                'success' => false,
+                'message' => 'No se ha encontrado el movimiento bancario.',
+            ], 404);
+        }
+
+        try {
+
+            $proyectoCobroService->conciliarCobro(
+                $cobro,
+                $banco
+            );
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Cobro conciliado correctamente.',
+            ]);
+
+        } catch (\LogicException $e) {
+
+            return $this->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
     }
 
     private function toFloat(mixed $value): float

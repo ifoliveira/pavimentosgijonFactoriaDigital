@@ -189,7 +189,7 @@ class DashboardProyectoService
 
     private function getCosteProyecto(Proyecto $proyecto): float
     {
-        return $this->proyectoGastoRepository->sumarImportePorProyecto($proyecto);
+        return $this->proyectoGastoRepository->sumarCosteActualPorProyecto($proyecto);
     }    
 
 }

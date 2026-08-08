@@ -10,6 +10,7 @@ use App\Entity\ProyectoGasto;
 use App\Entity\StockMovimiento;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\ProyectoRepository;
+use App\Repository\ProyectoGastoRepository;
 use App\Service\ProyectoGasto\ProyectoGastoService;
 
 
@@ -19,6 +20,7 @@ class FacturaProveedorAsignacionService
     public function __construct(
     private readonly EntityManagerInterface $em,
     private readonly ProyectoRepository $proyectoRepository,
+    private readonly ProyectoGastoRepository $proyectoGastoRepository,
     private readonly ProyectoGastoService $proyectoGastoService
     ) {
     }
@@ -43,11 +45,18 @@ class FacturaProveedorAsignacionService
 
             $datos = $lineasPost[$lineaId];
 
+    
             $tipoDestino = $datos['tipo_destino'] ?? null;
             $proyectoId = $datos['proyecto_id'] ?? null;
             $cantidadAsignada = $this->toFloat(
                 $datos['cantidad_asignada'] ?? 0
             );
+            $gastoExistenteId = $datos['gasto_existente_id'] ?? null;   
+
+            if (!$tipoDestino && $proyectoId) {
+                $tipoDestino = 'obra';
+            }
+        
 
             if (!$tipoDestino || $cantidadAsignada <= 0) {
                 continue;
@@ -140,6 +149,47 @@ class FacturaProveedorAsignacionService
                         continue 2;
                     }
 
+                    /*
+                    * ============================================================
+                    * GASTO PREVISTO EXISTENTE
+                    * ============================================================
+                    */
+
+                    $gastoExistente = null;
+
+                    if ($gastoExistenteId) {
+
+                        $gastoExistente = $this->proyectoGastoRepository->find(
+                            $gastoExistenteId
+                        );
+
+                        /*
+                        * Seguridad:
+                        * el gasto seleccionado debe pertenecer al mismo proyecto.
+                        */
+                        if (
+                            !$gastoExistente
+                            || $gastoExistente->getProyecto()?->getId()
+                                !== $proyecto->getId()
+                        ) {
+                            throw new \LogicException(
+                                'El gasto previsto seleccionado no pertenece al proyecto.'
+                            );
+                        }
+
+                        /*
+                        * Y además debería seguir siendo PREVISTO.
+                        */
+                        if (
+                            $gastoExistente->getEstado()
+                            !== ProyectoGasto::ESTADO_PREVISTO
+                        ) {
+                            throw new \LogicException(
+                                'El gasto seleccionado ya no está pendiente de confirmar.'
+                            );
+                        }
+                    }
+
                     $this->asignarAObra(
                         factura: $factura,
                         linea: $linea,
@@ -147,7 +197,8 @@ class FacturaProveedorAsignacionService
                         proyecto: $proyecto,
                         cantidadAsignada: $cantidadAsignada,
                         cantidadLinea: $cantidadLinea,
-                        importeAsignado: $importeAsignado
+                        importeAsignado: $importeAsignado,
+                        gastoExistente: $gastoExistente
                     );
 
                     break;
@@ -230,64 +281,32 @@ class FacturaProveedorAsignacionService
         float $importeAsignado,
         ?ProyectoGasto $gastoExistente = null
     ): void {
-        if ($gastoExistente) {
 
-            // Vinculamos la asignación al gasto ya previsto
-            $asignacion->setProyecto($proyecto);
-            $asignacion->setProyectoGasto($gastoExistente);
 
-            // Confirmamos el gasto con el importe real de la factura
-            $gastoExistente->setEstado('confirmado');
-            $gastoExistente->setImportePrevisto(
-                number_format($importeAsignado, 2, '.', '')
-            );
+        if ($gastoExistente !== null) {
 
-            $gastoExistente->setFechaPrevista(
-                $factura->getFechaFactura() ?: new \DateTime()
-            );
-
-            $gastoExistente->setProveedor(
-                $factura->getProveedorNombre()
-            );
-
-            // Actualizamos el forecast ya existente
-            $forecast = $gastoExistente->getForecast();
-
-            if ($forecast) {
-                $forecast->setImporteFr($importeAsignado * -1);
-
-                $forecast->setFechaFr(
-                    $factura->getFechaFactura() ?: new \DateTime()
+            $gasto = $this->proyectoGastoService
+                ->confirmarDesdeFacturaProveedor(
+                    gasto: $gastoExistente,
+                    factura: $factura,
+                    linea: $linea,
+                    importeAsignado: $importeAsignado,
+                    cantidadAsignada: $cantidadAsignada,
+                    cantidadLinea: $cantidadLinea
                 );
-            }
 
-            $gastoExistente->setNotas(
-                trim(
-                    ($gastoExistente->getNotas() ? $gastoExistente->getNotas() . "\n" : '') .
-                    'Confirmado desde factura proveedor ' .
-                    ($factura->getNumeroFactura() ?: 'sin número') .
-                    ' · Línea: ' .
-                    ($linea->getDescripcion() ?: '-') .
-                    ' · Cantidad asignada: ' .
-                    $cantidadAsignada .
-                    ' de ' .
-                    $cantidadLinea
-                )
-            );
+        } else {
 
-            return;
+            $gasto = $this->proyectoGastoService
+                ->crearDesdeFacturaProveedor(
+                    proyecto: $proyecto,
+                    factura: $factura,
+                    linea: $linea,
+                    importeAsignado: $importeAsignado,
+                    cantidadAsignada: $cantidadAsignada,
+                    cantidadLinea: $cantidadLinea
+                );
         }
-
-        // Si no se ha seleccionado gasto existente,
-        // creamos uno nuevo como hasta ahora
-        $gasto = $this->proyectoGastoService->crearDesdeFacturaProveedor(
-            proyecto: $proyecto,
-            factura: $factura,
-            linea: $linea,
-            importeAsignado: $importeAsignado,
-            cantidadAsignada: $cantidadAsignada,
-            cantidadLinea: $cantidadLinea
-        );
 
         $asignacion->setProyecto($proyecto);
         $asignacion->setProyectoGasto($gasto);

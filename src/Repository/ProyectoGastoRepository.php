@@ -14,6 +14,18 @@ class ProyectoGastoRepository extends ServiceEntityRepository
         parent::__construct($registry, ProyectoGasto::class);
     }
 
+    public function sumarCosteActualPorProyecto(Proyecto $proyecto): float
+    {
+        return (float) $this->createQueryBuilder('g')
+            ->select('COALESCE(SUM(COALESCE(g.importeReal, g.importePrevisto)), 0)')
+            ->andWhere('g.proyecto = :proyecto')
+            ->andWhere('g.estado != :cancelado')
+            ->setParameter('proyecto', $proyecto)
+            ->setParameter('cancelado', ProyectoGasto::ESTADO_CANCELADO)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+        
     public function sumarImportePorProyecto(Proyecto $proyecto): float
     {
         $total = $this->createQueryBuilder('g')

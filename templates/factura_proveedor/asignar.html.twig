@@ -35,6 +35,7 @@
                                 <th class="text-end">Cant. a asignar</th>
                                 <th>Destino</th>
                                 <th>Proyecto</th>
+                                <th>Gasto previsto</th>
                             </tr>
                         </thead>
 
@@ -89,7 +90,7 @@
 
                                     <td style="width:170px;">
                                         <select name="lineas[{{ linea.id }}][tipo_destino]"
-                                                class="form-select form-select-sm">
+                                                class="form-select form-select-sm tipo-destino-select">
                                             <option value="">Seleccionar</option>
                                             <option value="obra">Obra</option>
                                             <option value="general">Gasto general</option>
@@ -100,24 +101,42 @@
 
                                     <td style="min-width:260px;">
                                         <select name="lineas[{{ linea.id }}][proyecto_id]"
-                                                class="form-select form-select-sm">
+                                                class="form-select form-select-sm proyecto-select"
+                                                data-linea-id="{{ linea.id }}">
                                             <option value="">Sin proyecto</option>
 
                                             {% for proyecto in proyectos %}
                                                 <option value="{{ proyecto.id }}">
                                                     {{ proyecto.nombre }}
                                                     {% if proyecto.cliente %}
-                                                        - {{ proyecto.cliente.nombreCl }} {{ proyecto.cliente.apellidosCl }}
+                                                        - {{ proyecto.cliente.nombreCl }}
+                                                        {{ proyecto.cliente.apellidosCl }}
                                                     {% endif %}
                                                 </option>
                                             {% endfor %}
                                         </select>
                                     </td>
+
+                                    <td style="min-width:300px;">
+                                        <select name="lineas[{{ linea.id }}][gasto_existente_id]"
+                                                class="form-select form-select-sm gasto-existente-select"
+                                                disabled>
+
+                                            <option value="">
+                                                Crear gasto nuevo
+                                            </option>
+
+                                        </select>
+
+                                        <div class="form-text gasto-existente-ayuda">
+                                            Selecciona primero una obra
+                                        </div>
+                                    </td>                                    
                                 </tr>
 
                                 {% if linea.asignaciones|length > 0 %}
                                     <tr class="table-light">
-                                        <td colspan="8" class="small text-muted">
+                                        <td colspan="9" class="small text-muted">
                                             <strong>Asignaciones ya realizadas:</strong>
                                             {% for asignacion in linea.asignaciones %}
                                                 <span class="badge bg-secondary me-1">
@@ -137,7 +156,7 @@
                             {% endif %}
                         {% else %}
                             <tr>
-                                <td colspan="8" class="p-4 text-muted">
+                                <td colspan="9" class="p-4 text-muted">
                                     No hay líneas pendientes de asignar.
                                 </td>
                             </tr>
@@ -156,4 +175,185 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block jscustom %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const selectsProyecto =
+        document.querySelectorAll('.proyecto-select');
+
+    selectsProyecto.forEach(function (selectProyecto) {
+
+        selectProyecto.addEventListener('change', async function () {
+
+            const fila = this.closest('tr');
+
+            if (!fila) {
+                return;
+            }
+
+
+            const selectDestino =
+                fila.querySelector('.tipo-destino-select');
+
+            const selectGasto =
+                fila.querySelector('.gasto-existente-select');
+
+            const ayuda =
+                fila.querySelector('.gasto-existente-ayuda');
+
+            const proyectoId = this.value;
+
+            /*
+            * Si seleccionamos un proyecto,
+            * el destino necesariamente es OBRA.
+            */
+            if (proyectoId) {
+                selectDestino.value = 'obra';
+            }
+
+
+            /*
+             * Reiniciar selector.
+             */
+            selectGasto.innerHTML = `
+                <option value="">
+                    Crear gasto nuevo
+                </option>
+            `;
+
+            if (!proyectoId) {
+
+                selectGasto.disabled = true;
+
+                ayuda.textContent =
+                    'Selecciona primero una obra';
+
+                return;
+            }
+
+            selectGasto.disabled = true;
+
+            ayuda.textContent =
+                'Buscando gastos previstos...';
+
+            try {
+
+                const url =
+                    `/admin/proyecto/${proyectoId}/gastos-previstos`;
+
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(
+                        data.message ||
+                        'No se pudieron cargar los gastos previstos.'
+                    );
+                }
+
+                const gastos = data.gastos || [];
+
+                /*
+                 * Siempre permitimos crear uno nuevo.
+                 */
+                selectGasto.innerHTML = `
+                    <option value="">
+                        Crear gasto nuevo
+                    </option>
+                `;
+
+                gastos.forEach(function (gasto) {
+
+                    const option =
+                        document.createElement('option');
+
+                    option.value = gasto.id;
+
+                    let texto =
+                        gasto.concepto
+                        + ' · '
+                        + formatearImporte(gasto.importe);
+
+                    if (gasto.fecha) {
+                        texto +=
+                            ' · '
+                            + formatearFecha(gasto.fecha);
+                    }
+
+                    if (gasto.proveedor) {
+                        texto +=
+                            ' · '
+                            + gasto.proveedor;
+                    }
+
+                    option.textContent = texto;
+
+                    selectGasto.appendChild(option);
+                });
+
+                selectGasto.disabled = false;
+
+                if (gastos.length === 0) {
+
+                    ayuda.textContent =
+                        'Este proyecto no tiene gastos previstos. Se creará uno nuevo.';
+
+                } else {
+
+                    ayuda.textContent =
+                        gastos.length
+                        + ' gasto(s) previsto(s) disponible(s)';
+                }
+
+            } catch (error) {
+
+                console.error(
+                    'Error cargando gastos previstos:',
+                    error
+                );
+
+                selectGasto.disabled = false;
+
+                ayuda.textContent =
+                    'No se pudieron cargar los gastos previstos.';
+            }
+        });
+    });
+
+
+    function formatearImporte(valor) {
+
+        return Number(valor).toLocaleString(
+            'es-ES',
+            {
+                style: 'currency',
+                currency: 'EUR'
+            }
+        );
+    }
+
+
+    function formatearFecha(fecha) {
+
+        const partes = fecha.split('-');
+
+        if (partes.length !== 3) {
+            return fecha;
+        }
+
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+});
+</script>
+
 {% endblock %}

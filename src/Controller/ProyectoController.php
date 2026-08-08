@@ -80,7 +80,7 @@ class ProyectoController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/proyecto/gasto/{id}/editar',name: 'app_proyecto_gasto_edit',methods: ['GET', 'POST'] )]
+    #[Route('/gasto/{id}/editar',name: 'app_proyecto_gasto_edit',methods: ['GET', 'POST'] )]
     public function edit(
         ProyectoGasto $gasto,
         Request $request,
@@ -292,7 +292,7 @@ class ProyectoController extends AbstractController
             }
 
             $presupuesto = $documentoRepository->findPresupuestoInicialDeProyecto($proyecto);
-            $coste = $proyectoGastoRepository->sumarImportePorProyecto($proyecto);
+            $coste = $proyectoGastoRepository->sumarCosteActualPorProyecto($proyecto);
             $margen = (float) $proyecto->getTotalFacturado() - $coste;
 
             $cerrados[] = [
@@ -308,5 +308,47 @@ class ProyectoController extends AbstractController
             'cerrados' => $cerrados,
         ]);
     }
+
+    #[Route(
+        '/{id}/gastos-previstos',
+        name: 'app_proyecto_gastos_previstos',
+        methods: ['GET']
+    )]
+    public function gastosPrevistos(
+        Proyecto $proyecto,
+        ProyectoGastoRepository $proyectoGastoRepository
+    ): JsonResponse {
+
+        $gastos = $proyectoGastoRepository->findBy(
+            [
+                'proyecto' => $proyecto,
+                'estado' => ProyectoGasto::ESTADO_PREVISTO,
+            ],
+            [
+                'fechaPrevista' => 'ASC',
+            ]
+        );
+
+        return $this->json([
+            'success' => true,
+
+            'gastos' => array_map(
+                static function (ProyectoGasto $gasto): array {
+
+                    return [
+                        'id' => $gasto->getId(),
+                        'concepto' => $gasto->getConcepto(),
+                        'importe' => (float) $gasto->getImportePrevisto(),
+                        'fecha' =>
+                            $gasto->getFechaPrevista()
+                                ?->format('Y-m-d'),
+                        'proveedor' => $gasto->getProveedor(),
+                    ];
+
+                },
+                $gastos
+            ),
+        ]);
+    }    
 
 }

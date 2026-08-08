@@ -464,4 +464,138 @@ class ProyectoGastoService
 
         return $gasto;
     }
+
+    public function confirmarDesdeFacturaProveedor(
+        ProyectoGasto $gasto,
+        FacturaProveedor $factura,
+        FacturaProveedorLinea $linea,
+        float $importeAsignado,
+        float $cantidadAsignada,
+        float $cantidadLinea
+    ): ProyectoGasto {
+
+        if ($gasto->getEstado() !== ProyectoGasto::ESTADO_PREVISTO) {
+            throw new \LogicException(
+                'Solo se puede asociar una factura a un gasto previsto.'
+            );
+        }
+
+        if (!$gasto->esManual()) {
+            throw new \LogicException(
+                'Este gasto no es una previsión manual.'
+            );
+        }
+
+        /*
+        * ============================================================
+        * IMPORTES REALES
+        * ============================================================
+        */
+
+        $proporcion = $cantidadLinea > 0
+            ? $cantidadAsignada / $cantidadLinea
+            : 1;
+
+        $baseReal =
+            (float) ($linea->getBase() ?? 0)
+            * $proporcion;
+
+        $ivaReal =
+            (float) ($linea->getIva() ?? 0)
+            * $proporcion;
+
+        $recargoReal =
+            (float) ($linea->getImporteRecargoEquivalencia() ?? 0)
+            * $proporcion;
+
+        $gasto->setBaseReal(
+            number_format($baseReal, 2, '.', '')
+        );
+
+        $gasto->setTipoIvaReal(
+            $linea->getPorcentajeIva() !== null
+                ? number_format(
+                    (float) $linea->getPorcentajeIva(),
+                    2,
+                    '.',
+                    ''
+                )
+                : null
+        );
+
+        $gasto->setIvaReal(
+            number_format($ivaReal, 2, '.', '')
+        );
+
+        $gasto->setRecargoReal(
+            number_format($recargoReal, 2, '.', '')
+        );
+
+        $gasto->setImporteReal(
+            number_format($importeAsignado, 2, '.', '')
+        );
+
+        /*
+        * ============================================================
+        * DATOS REALES DEL PROVEEDOR
+        * ============================================================
+        */
+
+        $gasto->setProveedor(
+            $factura->getProveedorNombre()
+        );
+
+        $gasto->setOrigen($gasto::ORIGEN_FACTURA_PROVEEDOR);  
+
+        /*
+        * ============================================================
+        * ESTADO
+        * ============================================================
+        */
+
+        $gasto->setEstado(
+            ProyectoGasto::ESTADO_CONFIRMADO
+        );
+
+        $gasto->marcarActualizado();
+
+        /*
+        * ============================================================
+        * RESOLVER FORECAST MANUAL
+        * ============================================================
+        *
+        * Este gasto nació manualmente y pudo crear su propio Forecast.
+        *
+        * Ahora que existe una FacturaProveedor real, la tesorería
+        * futura pasa a estar representada por los Forecast/vencimientos
+        * de la propia factura.
+        *
+        * Por tanto:
+        *
+        * - eliminamos el Forecast manual para no duplicar tesorería
+        * - dejamos ProyectoGasto.forecast = null
+        * - NO asociamos el gasto a uno de los Forecast de la factura
+        */
+
+        $forecastManual = $gasto->getForecast();
+
+        if ($forecastManual !== null) {
+
+            /*
+            * Primero rompemos la relación para evitar problemas
+            * de FK / UnitOfWork.
+            */
+            $gasto->setForecast(null);
+            
+
+            /*
+            * El Forecast manual deja de tener sentido:
+            * la factura ya tiene sus propios Forecast.
+            */
+            $this->em->remove($forecastManual);
+            $gasto->setGeneraForecast(false);
+        }
+        return $gasto;
+    }
+
 }
