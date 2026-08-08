@@ -1,0 +1,169 @@
+{# templates/proyecto_gasto/_modal_pendientes.html.twig #}
+
+{% if gastos is empty %}
+
+    <div class="alert alert-success mb-0">
+        <i class="bi bi-check-circle me-1"></i>
+        No hay gastos asociados pendientes.
+    </div>
+
+{% else %}
+
+    <div class="mb-3">
+        <div class="fw-semibold">
+            {{ proyecto.nombre }}
+        </div>
+
+        <div class="text-muted small">
+            {{ proyecto.cliente.nombreCl }}
+            {% if proyecto.cliente.apellidosCl %}
+                {{ proyecto.cliente.apellidosCl }}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="table table-sm align-middle mb-0">
+
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th>Proveedor</th>
+                    <th>Estado</th>
+                    <th class="text-end">Importe</th>
+                    <th class="text-end">Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for gasto in gastos %}
+
+                    {% set importe =
+                        gasto.importeReal is not null
+                            ? gasto.importeReal
+                            : gasto.importePrevisto
+                    %}
+
+                    <tr>
+
+                        <td>
+                            <div class="fw-semibold">
+                                {{ gasto.concepto }}
+                            </div>
+
+                            {% if gasto.fechaPrevista %}
+                                <div class="text-muted small">
+                                    {{ gasto.fechaPrevista|date('d/m/Y') }}
+                                </div>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ gasto.proveedor ?: '—' }}
+                        </td>
+
+                        <td>
+
+                            {% if gasto.estado == 'previsto' %}
+
+                                <span class="badge bg-secondary">
+                                    Previsto
+                                </span>
+
+                            {% elseif gasto.estado == 'confirmado' %}
+
+                                <span class="badge bg-success">
+                                    Confirmado
+                                </span>
+
+                                {% if gasto.origen == 'factura_proveedor' %}
+                                    <div class="text-muted small mt-1">
+                                        Factura proveedor
+                                    </div>
+                                {% endif %}
+
+                            {% elseif gasto.estado == 'pagado' %}
+
+                                <span class="badge bg-success">
+                                    Pagado
+                                </span>
+
+                            {% elseif gasto.estado == 'cancelado' %}
+
+                                <span class="badge bg-dark">
+                                    Cancelado
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-light text-dark">
+                                    {{ gasto.estado }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td class="text-end fw-semibold">
+                            {{ importe|format_currency('EUR', locale='es') }}
+                        </td>
+
+                        <td class="text-end">
+
+                            {# SOLO estos gastos se pagan desde aquí #}
+                            {% if gasto.estado == 'confirmado'
+                                and gasto.origen != 'factura_proveedor'
+                            %}
+
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-success btnMarcarGastoPagado"
+                                    data-url="{{ path(
+                                        'app_proyecto_gasto_pagado',
+                                        {id: gasto.id}
+                                    ) }}"
+                                    data-concepto="{{ gasto.concepto|e('html_attr') }}"
+                                    data-importe="{{ importe }}"
+                                >
+                                    <i class="bi bi-cash me-1"></i>
+                                    Pagar
+                                </button>
+
+                            {% elseif gasto.estado == 'previsto' %}
+
+                                <span class="text-muted small">
+                                    Aún previsto
+                                </span>
+
+                            {% elseif gasto.estado == 'confirmado'
+                                and gasto.origen == 'factura_proveedor'
+                            %}
+
+                                <span class="text-muted small">
+                                    Gestionado por factura
+                                </span>
+
+                            {% elseif gasto.estado == 'pagado' %}
+
+                                <span class="text-success small">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Pagado
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+{% endif %}

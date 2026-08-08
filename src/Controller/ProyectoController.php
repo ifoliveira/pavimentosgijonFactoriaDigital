@@ -163,6 +163,67 @@ class ProyectoController extends AbstractController
         ]);
     }    
 
+    #[Route('/{id}/gastos-pendientes', name: 'app_proyecto_gastos_pendientes',methods: ['GET'])]
+    public function gastosPendientes(
+        Proyecto $proyecto
+    ): Response {
+        return $this->render(
+            'proyecto_gasto/_modal_pendientes.html.twig',
+            [
+                'proyecto' => $proyecto,
+                'gastos' => $proyecto->getGastos(),
+            ]
+        );
+    }
+
+    #[Route('/{id}/justificantes',
+        name: 'app_proyecto_justificantes',
+        methods: ['GET']
+    )]
+    public function justificantes(
+        Proyecto $proyecto
+    ): Response {
+        return $this->render(
+            'proyecto_gasto/_modal_justificantes.html.twig',
+            [
+                'proyecto' => $proyecto,
+                'cobros' => $proyecto->getCobros(),
+            ]
+        );
+    }    
+
+    #[Route(
+        '/{id}/presupuesto-resumen',
+        name: 'app_proyecto_presupuesto_resumen',
+        methods: ['GET']
+    )]
+    public function presupuestoResumen(
+        Proyecto $proyecto,
+        DocumentoRepository $documentoRepository
+    ): Response {
+
+        $presupuesto = $documentoRepository
+            ->findPresupuestoInicialDeProyecto($proyecto);
+
+        if (!$presupuesto) {
+            return $this->render(
+                'proyecto/_modal_presupuesto.html.twig',
+                [
+                    'proyecto' => $proyecto,
+                    'presupuesto' => null,
+                ]
+            );
+        }
+
+        return $this->render(
+            'proyecto/_modal_presupuesto.html.twig',
+            [
+                'proyecto' => $proyecto,
+                'presupuesto' => $presupuesto,
+            ]
+        );
+    }
+
     #[Route('/{id<\d+>}/crear-presupuesto-inicial', name: 'app_proyecto_crear_presupuesto_inicial', methods: ['POST'])]
         public function crearPresupuestoInicial(
             Proyecto $proyecto,

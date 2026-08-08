@@ -17,6 +17,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Detallecesta;
 use App\Service\CestasService;
+use App\Repository\ProyectoRepository;
+use App\Service\Dashboard\DashboardProyectoService;
 
 #[Route('/admin')]
 class AdminProController extends AbstractController
@@ -35,13 +37,15 @@ class AdminProController extends AbstractController
     }
 
 
-    
+
+
     #[Route('/', name: 'admin_pro')]
-    public function index(PresupuestosRepository $presupuestosRepository): Response
-    {
+    public function index(
+        DashboardProyectoService $dashboardProyectoService
+    ): Response {
         return $this->render('admin_pro/dashboard.html.twig', [
-            'presupuestos'      => $presupuestosRepository->findByEstadoPe(9),
-            'presupuestospdte'  => $presupuestosRepository->findByEconomicPresuDebehaberAndEstado(),
+            'proyectosDashboard' =>
+                $dashboardProyectoService->getProyectosOperativos(),
         ]);
     }
 

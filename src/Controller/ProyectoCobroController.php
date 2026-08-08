@@ -37,6 +37,13 @@ class ProyectoCobroController extends AbstractController
         );
 
         $this->addFlash('success', 'Cobro registrado correctamente.');
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'success' => true,
+                'message' => 'Cobro registrado correctamente.',
+            ]);
+        }
+
 
         return $this->redirectToRoute('app_proyecto_show', [
             'id' => $proyecto->getId(),

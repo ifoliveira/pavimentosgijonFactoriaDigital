@@ -1,238 +1,1053 @@
 {% extends 'base.html.twig' %}
 
-{# ----------------------------------------------------------------
-   CSS específico de esta página
----------------------------------------------------------------- #}
-{% block stylesheets %}
-    <link href="{{ asset('assets/libs/jquery-steps/jquery.steps.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/libs/jquery-steps/steps.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/libs/magnific-popup/dist/magnific-popup.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/libs/summernote/dist/summernote-bs4.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/extra-libs/prism/prism.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/libs/select2/dist/css/select2.min.css') }}" rel="stylesheet">
-{% endblock %}
+{% block title %}Obras en curso{% endblock %}
+{% block cabecera %}Obras en curso{% endblock %}
 
-{% block title %}Resumen económico{% endblock %}
-{% block cabecera %}Resumen económico{% endblock %}
-{% block breadcrumb %}<li class="breadcrumb-item active">Resumen económico</li>{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item active">Obras en curso</li>
+{% endblock %}
 
 {% block body %}
+
     <div class="row">
-        {% for presupuesto in presupuestos %}
-            <div class="col-md-4 col-lg-4 col-xl-4">
-                <div class="card text-center alert-dismissible fade show alert p-0 card-hover" role="alert">
-                    <div class="card-body">
-                        {# AVISO: no anidar <a> dentro de <a> — separados #}
-                        <a href="{{ path('presupuestos_show', {'id': presupuesto.id}) }}" class="font-medium link">
-                            {{ presupuesto.clientePe.direccionCl }} ({{ presupuesto.manoobraPe }})
-                        </a>
-                        <h5 class="card-title">
-                            {{ presupuesto.clientePe.nombreCl }} - {{ presupuesto.clientePe.telefono1Cl }}
-                        </h5>
-                        {# AVISO: <td> fuera de tabla — reemplazado por span #}
-                        <h5 class="card-text">
-                            Pendiente:
-                            <span class="float-right">
-                                {{ (presupuesto.importetotPe + presupuesto.importemanoobra - presupuesto.ticket.TotalPagos - presupuesto.impmanoobraPagado) | format_currency('EUR', locale='es') }}
-                            </span>
-                        </h5>
-                        <p class="card-text">
-                            Total:
-                            <span class="float-right">
-                                {{ (presupuesto.importetotPe + presupuesto.importemanoobra) | format_currency('EUR', locale='es') }}
-                            </span>
-                        </p>
-                        <p class="card-text">
-                            Total Pagado:
-                            <span class="float-right">
-                                {{ (presupuesto.ticket.TotalPagos + presupuesto.impmanoobraPagado) | format_currency('EUR', locale='es') }}
-                            </span>
-                        </p>
-                    </div>
 
-                    <div class="card-body pt-0">
-                        {% for economicpresu in presupuesto.economicpresus %}
-                            {% if economicpresu.estadoEco == 1 and economicpresu.debehaberEco == 'D' %}
-                                <b>{{ economicpresu.conceptoEco }} - Importe: {{ economicpresu.importeEco | format_currency('EUR', locale='es') }}</b><br>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
+        {% for item in proyectosDashboard %}
 
-                    <div class="d-flex justify-content-between px-3 pb-3">
-                        <a href="#"
-                           class="btn btn-light-warning text-secondary font-weight-medium d-block w-100 mx-1 btn-pagar-obrero"
-                           data-pagos='{{ presupuesto.economicPagosPdtes | map(p => {id: p.id, concepto: p.conceptoEco, monto: p.importeEco}) | json_encode }}'
-                           data-presupuesto="{{ presupuesto.id }}">
-                            <i class="ti ti-money"></i> Pagos
-                        </a>
-                        <a href="#"
-                           class="btn btn-light-primary text-secondary font-weight-medium d-block w-100 mx-1 btn-cobros"
-                           data-presupuesto="{{ presupuesto.id }}">
-                            Cobros
-                        </a>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-{% endblock %}
+            {% set proyecto = item.proyecto %}
 
-{% block leftpart %}
-    <div class="left-part bg-light dashboard-right-part fixed-left-part">
-        <a class="ri-menu-fill ri-close-fill btn btn-success show-left-part d-block d-md-none" href="javascript:void(0)"></a>
-        <div class="scrollable position-relative" style="height: calc(100vh - 50px)">
-            {% for presupuesto in presupuestospdte %}
-                <div class="alert alert-danger" role="alert">
-                    <h4 class="alert-heading">Presupuesto con pagos pendientes!</h4>
-                    <p>
-                        El presupuesto
-                        <a href="{{ path('presupuestos_show', {'id': presupuesto.id}) }}" class="font-medium link">
-                            {{ presupuesto.clientePe.direccionCl }} ({{ presupuesto.manoobraPe }})
-                        </a>
-                        tiene pagos pendientes de obreros.
-                    </p>
-                    <hr>
-                    {% for economicpresu in presupuesto.economicpresus %}
-                        {% if economicpresu.estadoEco == 1 and economicpresu.debehaberEco == 'D' %}
-                            <b>{{ economicpresu.conceptoEco }} - {{ economicpresu.importeEco | format_currency('EUR', locale='es') }}</b><br>
+            <div class="col-md-6 col-xl-4 mb-4">
+
+                <div class="card h-100 shadow-sm border-0">
+
+                    {# =====================================================
+                       CABECERA
+                       ===================================================== #}
+                    <div class="card-body pb-2">
+
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+
+                            <div>
+                                <span class="badge bg-light-primary text-primary">
+                                    EN CURSO
+                                </span>
+                            </div>
+
+                            <small class="text-muted">
+                                #{{ proyecto.id }}
+                            </small>
+
+                        </div>
+
+
+                        {# =====================================================
+                           CLIENTE
+                           ===================================================== #}
+
+                        <h4 class="card-title mb-1">
+                            {{ item.clienteNombre }}
+                        </h4>
+
+                        <div class="text-muted mb-1">
+                            <i class="ti ti-map-pin me-1"></i>
+                            {{ item.direccion }}
+                        </div>
+
+                        {% if item.clienteTelefono %}
+                            <div class="mb-3">
+
+                                <a
+                                    href="tel:{{ item.clienteTelefono }}"
+                                    class="text-decoration-none"
+                                >
+                                    <i class="ti ti-phone me-1"></i>
+                                    {{ item.clienteTelefono }}
+                                </a>
+
+                            </div>
                         {% endif %}
-                    {% endfor %}
-                    <p class="mb-0">Por favor, revise y gestione los pagos pendientes.</p>
+
+
+                        {# =====================================================
+                           PENDIENTE DE COBRO
+                           ===================================================== #}
+
+                        <div class="mt-4">
+
+                            <small class="text-uppercase text-muted fw-semibold">
+                                Pendiente de cobro
+                            </small>
+
+                            <div class="d-flex align-items-center justify-content-between mt-1">
+
+                                <h2 class="mb-0">
+
+                                    {% if item.pendiente > 0 %}
+
+                                        {{ item.pendiente
+                                            | format_currency(
+                                                'EUR',
+                                                locale='es'
+                                            )
+                                        }}
+
+                                    {% else %}
+
+                                        <span class="text-success">
+                                            Cobrado
+                                        </span>
+
+                                    {% endif %}
+
+                                </h2>
+
+                            </div>
+
+                        </div>
+
+
+                        {# =====================================================
+                           TOTAL / COBRADO
+                           ===================================================== #}
+
+                        <div class="d-flex justify-content-between mt-3 pt-3 border-top">
+
+                            <div>
+                                <small class="text-muted d-block">
+                                    Total obra
+                                </small>
+
+                                <strong>
+                                    {{ item.total
+                                        | format_currency(
+                                            'EUR',
+                                            locale='es'
+                                        )
+                                    }}
+                                </strong>
+                            </div>
+
+                            <div class="text-end">
+                                <small class="text-muted d-block">
+                                    Cobrado
+                                </small>
+
+                                <strong>
+                                    {{ item.cobrado
+                                        | format_currency(
+                                            'EUR',
+                                            locale='es'
+                                        )
+                                    }}
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {# =====================================================
+                       GASTOS PENDIENTES
+                       ===================================================== #}
+
+                    <div class="px-4 py-3">
+
+                        {% if item.gastosPendientesCantidad > 0 %}
+
+                            <button
+                                type="button"
+                                class="btn w-100 bg-light-warning border-0 text-start btnGastosPendientes"
+                                data-url="{{ path(
+                                    'app_proyecto_gastos_pendientes',
+                                    {id: proyecto.id}
+                                ) }}"
+                            >
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <span>
+                                        <i class="ti ti-alert-circle me-1"></i>
+
+                                        {{ item.gastosPendientesCantidad }}
+
+                                        {% if item.gastosPendientesCantidad == 1 %}
+                                            gasto pendiente
+                                        {% else %}
+                                            gastos pendientes
+                                        {% endif %}
+                                    </span>
+
+                                    <strong>
+                                        {{ item.gastosPendientesImporte
+                                            | format_currency('EUR', locale='es')
+                                        }}
+                                    </strong>
+
+                                </div>
+
+                            </button>
+
+
+
+                        {% else %}
+
+                            <div class="d-flex align-items-center bg-light-success rounded p-2 text-success">
+
+                                <i class="ti ti-circle-check me-1"></i>
+                                Sin pagos pendientes
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+              
+                    <div class="px-4 py-3">
+                    {% if proyecto.cobros|length > 0 %}
+                    
+                        <button
+                            type="button"
+                            class="btn btn-link btn-sm p-0 text-decoration-none btnJustificantes"
+                            data-url="{{ path(
+                                'app_proyecto_justificantes',
+                                {id: proyecto.id}
+                            ) }}"
+                        >
+                            <i class="ti ti-printer me-1"></i>
+                            Justificantes
+                        </button>
+
+                        {% if item.presupuesto %}
+
+                            <button
+                                type="button"
+                                class="btn btn-link btn-sm p-0 text-decoration-none btnPresupuesto"
+                                data-url="{{ path(
+                                    'app_proyecto_presupuesto_resumen',
+                                    {id: proyecto.id}
+                                ) }}"
+                            >
+                                <i class="ti ti-file-text me-1"></i>
+                                Presupuesto
+                            </button>
+
+                        {% endif %}                        
+                    </div>
+
+                    {% endif %}      
+
+                    {# =====================================================
+                       ACCIONES
+                       ===================================================== #}
+
+                    <div class="card-body pt-0 mt-auto">
+
+                        <div class="row g-2">
+
+                            <div class="col-6">
+
+                                <button
+                                    type="button"
+                                    class="btn btn-light-primary w-100 btnNuevoCobro"
+                                    data-url="{{ path('proyecto_cobro_nuevo', {id: proyecto.id}) }}"
+                                    data-proyecto="{{ proyecto.id }}"
+                                    data-cliente="{{ item.clienteNombre|e('html_attr') }}"
+                                    data-pendiente="{{ item.pendiente }}"
+                                >
+                                    <i class="ti ti-receipt me-1"></i>
+                                    Añadir cobro
+                                </button>
+
+                            </div>
+
+
+                            <div class="col-6">
+
+                                <button
+                                    type="button"
+                                    class="btn btn-light-warning w-100 btnNuevoGasto"
+                                    data-url="{{ path('app_proyecto_gasto_new', {id: proyecto.id}) }}"
+                                >
+                                    <i class="ti ti-receipt me-1"></i>
+                                    Añadir gasto
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="mt-3 text-center">
+
+                            <a
+                                href="{{ path(
+                                    'app_proyecto_show',
+                                    {
+                                        id: proyecto.id
+                                    }
+                                ) }}"
+                                class="
+                                    text-muted
+                                    text-decoration-none
+                                    small
+                                "
+                            >
+                                Ver proyecto
+                                <i class="ti ti-chevron-right"></i>
+                            </a>
+
+                        </div>
+
+                    </div>
+
                 </div>
-            {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="col-12">
+
+                <div class="card">
+                    <div class="card-body text-center py-5">
+
+                        <i
+                            class="ti ti-folder-off"
+                            style="font-size: 40px"
+                        ></i>
+
+                        <h4 class="mt-3">
+                            No hay obras en curso
+                        </h4>
+
+                        <p class="text-muted mb-0">
+                            Actualmente no existen proyectos activos.
+                        </p>
+
+                    </div>
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+    {# =============================================================
+    MODAL GASTOS PENDIENTES
+    ============================================================= #}
+    <div class="modal fade"
+        id="modalGastosPendientes"
+        tabindex="-1"
+        aria-labelledby="modalGastosPendientesLabel"
+        aria-hidden="true">
+
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title" id="modalGastosPendientesLabel">
+                        Gastos del proyecto
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Cerrar">
+                    </button>
+
+                </div>
+
+                <div class="modal-body" id="modalGastosPendientesBody">
+
+                    <div class="text-muted">
+                        Cargando...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+{# =============================================================
+    MODAL PRESUPUESTO
+    ============================================================= #}
+    <div class="modal fade"
+        id="modalPresupuesto"
+        tabindex="-1"
+        aria-hidden="true">
+
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Presupuesto inicial
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body"
+                    id="modalPresupuestoBody">
+
+                    <div class="text-muted">
+                        Cargando presupuesto...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {# =============================================================
+       MODALES
+         Los rellenaremos posteriormente mediante AJAX
+       ============================================================= #}
+    <div class="modal fade"
+        id="modalJustificantes"
+        tabindex="-1"
+        aria-hidden="true">
+
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Justificantes de cobro
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body"
+                    id="modalJustificantesBody">
+
+                    <div class="text-muted">
+                        Cargando...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {# =============================================================
+       MODALES
+       Los rellenaremos posteriormente mediante AJAX
+       ============================================================= #}
+
+    <div class="modal fade"
+        id="modalProyectoGasto"
+        tabindex="-1"
+        aria-labelledby="modalProyectoGastoLabel"
+        aria-hidden="true">
+
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalProyectoGastoLabel">
+                        Nuevo gasto del proyecto
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Cerrar">
+                    </button>
+                </div>
+
+                <div class="modal-body" id="modalProyectoGastoBody">
+                    <div class="text-muted">
+                        Cargando formulario...
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
+
+    <div
+        class="modal fade"
+        id="modalCobro"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Recibir cobro
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+                <div class="modal-body" id="modalCobroBody">
+
+                    <div class="text-center py-4">
+                        Cargando...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div
+        class="modal fade"
+        id="modalGastos"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Gastos del proyecto
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+                <div class="modal-body" id="modalGastosBody">
+
+                    <div class="text-center py-4">
+                        Cargando...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="modal fade"
+        id="modalNuevoCobroProyecto"
+        tabindex="-1"
+        aria-hidden="true">
+
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <form method="post"
+                    id="formNuevoCobroProyecto">
+
+                    <div class="modal-header">
+
+                        <div>
+                            <h5 class="modal-title">
+                                Registrar cobro
+                            </h5>
+
+                            <div class="text-muted small"
+                                id="nuevoCobroCliente">
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                        </button>
+
+                    </div>
+
+                    <div class="modal-body row g-3">
+
+                        <div class="col-6">
+
+                            <label class="form-label">
+                                Fecha
+                            </label>
+
+                            <input
+                                type="date"
+                                name="fecha"
+                                class="form-control form-control-sm"
+                                value="{{ 'now'|date('Y-m-d') }}"
+                                required
+                            >
+
+                        </div>
+
+                        <div class="col-6">
+
+                            <label class="form-label">
+                                Método
+                            </label>
+
+                            <select
+                                name="metodo"
+                                class="form-select form-select-sm"
+                                required
+                            >
+                                <option value="efectivo">Efectivo</option>
+                                <option value="tarjeta">Tarjeta</option>
+                                <option value="transferencia">Transferencia</option>
+                                <option value="bizum">Bizum</option>
+                                <option value="financiacion">Financiación</option>
+                            </select>
+
+                        </div>
+
+                        <div class="col-6">
+
+                            <label class="form-label">
+                                Importe bruto
+                            </label>
+
+                            <div class="input-group input-group-sm">
+
+                                <input
+                                    type="number"
+                                    name="importeBruto"
+                                    id="nuevoCobroImporte"
+                                    class="form-control"
+                                    step="0.01"
+                                    min="0.01"
+                                    required
+                                >
+
+                                <span class="input-group-text">
+                                    €
+                                </span>
+
+                            </div>
+
+                            <div class="form-text"
+                                id="nuevoCobroPendiente">
+                            </div>
+
+                        </div>
+
+                        <div class="col-6">
+
+                            <label class="form-label">
+                                % Recargo
+                            </label>
+
+                            <div class="input-group input-group-sm">
+
+                                <input
+                                    type="number"
+                                    name="porcentajeRecargo"
+                                    class="form-control"
+                                    step="0.01"
+                                    min="0"
+                                    value="0"
+                                >
+
+                                <span class="input-group-text">
+                                    %
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <input type="hidden"
+                            name="importeRecargo"
+                            value="0">
+
+                        <input type="hidden"
+                            name="importeNeto"
+                            value="0">
+
+
+                        <div class="col-12">
+
+                            <label class="form-label">
+                                Referencia
+                            </label>
+
+                            <input
+                                type="text"
+                                name="referencia"
+                                class="form-control form-control-sm"
+                                placeholder="Transferencia, VISA *1234..."
+                            >
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label class="form-label">
+                                Notas
+                            </label>
+
+                            <textarea
+                                name="notas"
+                                class="form-control form-control-sm"
+                                rows="2">
+                            </textarea>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-secondary"
+                            data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn btn-sm btn-primary">
+                            Guardar cobro
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>    
+
+    {# =============================================================
+    MODAL MARCAR GASTO COMO PAGADO
+    ============================================================= #}
+    <div class="modal fade" id="modalGastoPagado" tabindex="-1">
+
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Marcar gasto como pagado
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <div class="text-muted small">
+                            Gasto
+                        </div>
+
+                        <div
+                            class="fw-semibold"
+                            id="gastoPagadoConcepto">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="text-muted small">
+                            Importe
+                        </div>
+
+                        <div
+                            class="fw-semibold"
+                            id="gastoPagadoImporte">
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border">
+                        ¿Cómo se ha realizado el pago?
+                    </div>
+
+                    <div class="d-grid gap-2">
+
+                        <button
+                            type="button"
+                            class="btn btn-outline-success"
+                            id="btnGastoPagoEfectivo">
+
+                            <i class="bi bi-cash me-1"></i>
+                            Efectivo
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-outline-primary"
+                            id="btnGastoPagoBanco">
+
+                            <i class="bi bi-bank me-1"></i>
+                            Banco / tarjeta / transferencia / Bizum
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>    
+
 {% endblock %}
 
-{# ----------------------------------------------------------------
-   JS específico de esta página
----------------------------------------------------------------- #}
+
 {% block jscustom %}
-    <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
-    <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>
-    <script src="{{ asset('dist/js/pages/datatable/custom-datatable.js') }}"></script>
-    <script src="{{ asset('dist/js/pages/datatable/datatable-api.init.js') }}"></script>
+
+    {{ parent() }}
 
     <script>
-        $(document).ready(function () {
 
-            // --- Pagos a obreros ---
-            document.querySelectorAll('.btn-pagar-obrero').forEach(btn => {
-                btn.addEventListener('click', function (e) {
-                    e.preventDefault();
+        document.addEventListener('DOMContentLoaded', function () {
 
-                    const pagos = JSON.parse(this.dataset.pagos);
-                    const presupuestoId = this.dataset.presupuesto;
+            /*
+             * =========================================================
+             * COBRO
+             * =========================================================
+             */
+            document
+                .querySelectorAll('.btn-cobro')
+                .forEach(function (boton) {
 
-                    let html = '<ul class="list-group">';
-                    pagos.forEach(p => {
-                        html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                                    ${p.concepto}
-                                    <button class="btn btn-sm btn-primary pagar-btn"
-                                            data-id="${p.id}"
-                                            data-monto="${p.monto}">
-                                        Pagar ${p.monto}€
-                                    </button>
-                                 </li>`;
-                    });
-                    html += '</ul>';
+                    boton.addEventListener(
+                        'click',
+                        function () {
 
-                    Swal.fire({
-                        title: 'Pagos Pendientes',
-                        html: html,
-                        showConfirmButton: false,
-                        didOpen: () => {
-                            Swal.getHtmlContainer().querySelectorAll('.pagar-btn').forEach(btn => {
-                                btn.addEventListener('click', function () {
-                                    const pagoId = this.dataset.id;
-                                    const monto  = this.dataset.monto;
+                            const proyectoId =
+                                this.dataset.proyecto;
 
-                                    Swal.fire({
-                                        title: 'IMPORTE',
-                                        html: `<h4>Importe a abonar</h4>
-                                               <input type="number" value="${monto}" step="0.01"
-                                                      class="swal2-input" id="importe-input"
-                                                      style="text-align:center">`,
-                                        showDenyButton:   true,
-                                        showCancelButton: true,
-                                        confirmButtonText: 'Tarjeta',
-                                        denyButtonText:    'Efectivo',
-                                        cancelButtonText:  'Cancelar',
-                                        reverseButtons:    true
-                                    }).then(result => {
-                                        const importeFinal = Swal.getHtmlContainer()
-                                                                  .querySelector('#importe-input').value;
-                                        if (result.isConfirmed) {
-                                            pagar_economic(pagoId, importeFinal, 'Tarjeta');
-                                        } else if (result.isDenied) {
-                                            pagar_economic(pagoId, importeFinal, 'Efectivo');
-                                        }
-                                    });
-                                });
-                            });
+                            const pendiente =
+                                this.dataset.pendiente;
+
+                            console.log(
+                                'Cobro proyecto:',
+                                proyectoId,
+                                'Pendiente:',
+                                pendiente
+                            );
+
+                            const modalElement =
+                                document.getElementById(
+                                    'modalCobro'
+                                );
+
+                            const modal =
+                                bootstrap.Modal
+                                    .getOrCreateInstance(
+                                        modalElement
+                                    );
+
+                            document.getElementById(
+                                'modalCobroBody'
+                            ).innerHTML = `
+                                <div class="text-center py-4">
+                                    Formulario de cobro
+                                    del proyecto
+                                    <strong>
+                                        #${proyectoId}
+                                    </strong>
+                                </div>
+                            `;
+
+                            modal.show();
+
+                        }
+                    );
+
+                });
+
+
+            /*
+             * =========================================================
+             * GASTOS
+             * =========================================================
+             */
+            document
+                .querySelectorAll('.btn-gastos')
+                .forEach(function (boton) {
+
+                    boton.addEventListener(
+                        'click',
+                        function () {
+
+                            const proyectoId =
+                                this.dataset.proyecto;
+
+                            console.log(
+                                'Gastos proyecto:',
+                                proyectoId
+                            );
+
+                            const modalElement =
+                                document.getElementById(
+                                    'modalGastos'
+                                );
+
+                            const modal =
+                                bootstrap.Modal
+                                    .getOrCreateInstance(
+                                        modalElement
+                                    );
+
+                            document.getElementById(
+                                'modalGastosBody'
+                            ).innerHTML = `
+                                <div class="text-center py-4">
+                                    Gastos del proyecto
+                                    <strong>
+                                        #${proyectoId}
+                                    </strong>
+                                </div>
+                            `;
+
+                            modal.show();
+
+                        }
+                    );
+
+                });
+
+        });
+
+    </script>
+    <script src="{{ asset('assets/js/proyecto/proyecto-gasto.js') }}"></script>
+    <script src="{{ asset('assets/js/proyecto/proyecto-cobro.js') }}"></script>
+    <script src="{{ asset('assets/js/proyecto/proyecto-presupuesto.js') }}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const modalElement =
+                document.getElementById('modalGastosPendientes');
+
+            const modalBody =
+                document.getElementById('modalGastosPendientesBody');
+
+            if (!modalElement || !modalBody) {
+                return;
+            }
+
+            document.addEventListener('click', async function (e) {
+
+                const boton = e.target.closest('.btnGastosPendientes');
+
+                if (!boton) {
+                    return;
+                }
+
+                e.preventDefault();
+
+                const url = boton.dataset.url;
+
+                if (!url) {
+                    return;
+                }
+
+                modalBody.innerHTML = `
+                    <div class="text-muted py-3">
+                        Cargando gastos...
+                    </div>
+                `;
+
+                let modal =
+                    bootstrap.Modal.getInstance(modalElement);
+
+                if (!modal) {
+                    modal = new bootstrap.Modal(modalElement);
+                }
+
+                modal.show();
+
+                try {
+
+                    const response = await fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
                         }
                     });
-                });
+
+                    const html = await response.text();
+
+                    if (!response.ok) {
+
+                        modalBody.innerHTML = `
+                            <div class="alert alert-danger mb-0">
+                                No se pudieron cargar los gastos.
+                            </div>
+                        `;
+
+                        return;
+                    }
+
+                    modalBody.innerHTML = html;
+
+                } catch (error) {
+
+                    console.error(
+                        'Error cargando gastos pendientes:',
+                        error
+                    );
+
+                    modalBody.innerHTML = `
+                        <div class="alert alert-danger mb-0">
+                            No se pudieron cargar los gastos.
+                        </div>
+                    `;
+                }
+
             });
-
-            // --- Cobros ---
-            document.querySelectorAll('.btn-cobros').forEach(btn => {
-                btn.addEventListener('click', function (e) {
-                    e.preventDefault();
-
-                    const presupuestoId = this.dataset.presupuesto;
-
-                    Swal.fire({
-                        title: 'Recibir Pago',
-                        html: `<input type="number" class="swal2-input" id="importe-recibido"
-                                      placeholder="Importe a recibir" step="0.01">`,
-                        showDenyButton:   true,
-                        showCancelButton: true,
-                        confirmButtonText: 'Tarjeta',
-                        denyButtonText:    'Efectivo',
-                        cancelButtonText:  'Cancelar',
-                        reverseButtons:    true
-                    }).then(result => {
-                        const importe     = Swal.getHtmlContainer().querySelector('#importe-recibido').value;
-                        const metodoPago  = result.isConfirmed ? 'Tarjeta'
-                                          : result.isDenied    ? 'Efectivo'
-                                          : null;
-
-                        if (!metodoPago) return;
-
-                        fetch('/admin/presupuestos/pago/recibir/' + presupuestoId, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            },
-                            body: JSON.stringify({ importe, metodo: metodoPago })
-                        })
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire('Éxito', data.message, 'success').then(() => location.reload());
-                            } else {
-                                Swal.fire('Error', data.message, 'error');
-                            }
-                        })
-                        .catch(() => Swal.fire('Error', 'Fallo de red o servidor', 'error'));
-                    });
-                });
-            });
-
-            // --- Función AJAX pago obrero ---
-            function pagar_economic(id, importe, modo) {
-                $.ajax({
-                    url:      '/admin/economicpresu/pagar/ajax',
-                    type:     'GET',
-                    data:     { importe, id, modo },
-                    dataType: 'json',
-                    success:  () => location.reload(),
-                    error:    (xhr, status) => alert(status)
-                });
-            }
 
         });
     </script>
+
+    
 {% endblock %}

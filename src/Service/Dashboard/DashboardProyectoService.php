@@ -192,4 +192,122 @@ class DashboardProyectoService
         return $this->proyectoGastoRepository->sumarCosteActualPorProyecto($proyecto);
     }    
 
+    public function getProyectosOperativos(): array
+    {
+        $proyectos = $this->proyectoRepository
+            ->findUltimosProyectosDashboard(100);
+
+        $resultado = [];
+
+        foreach ($proyectos as $proyecto) {
+
+            $presupuesto = $this->documentoRepository
+                ->findPresupuestoInicialDeProyecto($proyecto);
+
+            $factura = $this->documentoRepository
+                ->findFacturaDeProyecto($proyecto);
+
+            $situacion = $this->calcularSituacionProyecto(
+                $proyecto,
+                $presupuesto,
+                $factura
+            );
+
+            /*
+            * Solo queremos obras reales:
+            * aceptadas, facturadas o en proceso.
+            */
+            if (!in_array($situacion, [
+                'aceptado_sin_factura',
+                'facturado_pendiente',
+                'en_proceso',
+            ], true)) {
+                continue;
+            }
+
+            $cliente = $proyecto->getCliente();
+
+            /*
+            * IMPORTE DE LA OPERACIÓN
+            *
+            * Si existe factura usamos el total facturado.
+            * Si todavía no existe, usamos el presupuestado.
+            */
+            $totalFacturado = (float) $proyecto->getTotalFacturado();
+            $totalPresupuestado = (float) $proyecto->getTotalPresupuestado();
+            $totalCobrado = (float) $proyecto->getTotalCobrado();
+
+            $total = $totalFacturado > 0
+                ? $totalFacturado
+                : $totalPresupuestado;
+
+            $pendiente = max(
+                $total - $totalCobrado,
+                0
+            );
+
+            /*
+            * GASTOS
+            */
+            $gastosPendientesCantidad = 0;
+            $gastosPendientesImporte = 0.0;
+
+            foreach ($proyecto->getGastos() as $gasto) {
+
+                $estaPagadoOCancelado = in_array(
+                    $gasto->getEstado(),
+                    ['pagado', 'cancelado'],
+                    true
+                );
+
+                $confirmadoDesdeFacturaProveedor =
+                    $gasto->getEstado() === 'confirmado'
+                    && $gasto->getOrigen() === 'factura_proveedor';
+
+                if ($estaPagadoOCancelado || $confirmadoDesdeFacturaProveedor) {
+                    continue;
+                }
+
+                $gastosPendientesCantidad++;
+
+                if ($gasto->getImporteReal() !== null) {
+                    $gastosPendientesImporte +=
+                        (float) $gasto->getImporteReal();
+                } else {
+                    $gastosPendientesImporte +=
+                        (float) $gasto->getImportePrevisto();
+                }
+                
+            }
+
+            $resultado[] = [
+                'proyecto' => $proyecto,
+                'presupuesto' => $presupuesto,
+                'factura' => $factura,
+                'situacion' => $situacion,
+
+                'clienteNombre' =>
+                    $cliente?->getNombreCl() ?? 'Sin cliente',
+
+                'clienteTelefono' =>
+                    $cliente?->getTelefono1Cl(),
+
+                'direccion' =>
+                    $cliente?->getDireccionCl() ?? '',
+
+                'total' => $total,
+                'cobrado' => $totalCobrado,
+                'pendiente' => $pendiente,
+
+                'gastosPendientesCantidad' =>
+                    $gastosPendientesCantidad,
+
+                'gastosPendientesImporte' =>
+                    $gastosPendientesImporte,
+            ];
+        }
+
+        return $resultado;
+    }    
+
 }

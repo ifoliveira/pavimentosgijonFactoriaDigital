@@ -1,0 +1,126 @@
+{% if not presupuesto %}
+
+    <div class="alert alert-warning mb-0">
+        Este proyecto no tiene presupuesto inicial.
+    </div>
+
+{% else %}
+
+    <div class="mb-3">
+
+        <div class="fw-semibold">
+            {{ proyecto.nombre }}
+        </div>
+
+        <div class="text-muted small">
+
+            {{ proyecto.cliente.nombreCl }}
+
+            {% if proyecto.cliente.apellidosCl %}
+                {{ proyecto.cliente.apellidosCl }}
+            {% endif %}
+
+            {% if presupuesto.numero %}
+                · {{ presupuesto.numero }}
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    {% if presupuesto.lineas is empty %}
+
+        <div class="alert alert-light border mb-0">
+            El presupuesto no contiene líneas.
+        </div>
+
+    {% else %}
+
+        <div class="table-responsive">
+
+            <table class="table table-sm align-middle">
+
+                <thead>
+                    <tr>
+                        <th>Descripción</th>
+                        <th class="text-end">Cantidad</th>
+                        <th class="text-end">Precio</th>
+                        <th class="text-end">Importe</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for linea in presupuesto.lineas %}
+
+                        <tr>
+
+                            <td>
+                                {{ linea.descripcion }}
+                            </td>
+
+                            <td class="text-end">
+                                {{ linea.cantidad }}
+                            </td>
+
+                            <td class="text-end">
+                                {{ linea.precioUnitario
+                                    | format_currency('EUR', locale='es')
+                                }}
+                            </td>
+
+                            <td class="text-end fw-semibold">
+                                {{ linea.subtotal
+                                    | format_currency('EUR', locale='es')
+                                }}
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+                <tfoot>
+
+                    <tr class="border-top">
+
+                        <td colspan="3"
+                            class="text-end fw-semibold">
+                            Total
+                        </td>
+
+                        <td class="text-end fw-bold">
+                            {{ presupuesto.total
+                                | format_currency('EUR', locale='es')
+                            }}
+                        </td>
+
+                    </tr>
+
+                </tfoot>
+
+            </table>
+
+        </div>
+
+
+        <div class="text-end mt-3">
+
+            <a
+                href="{{ path(
+                    'app_documento_show',
+                    {id: presupuesto.id}
+                ) }}"
+                class="btn btn-sm btn-outline-secondary"
+                target="_blank"
+            >
+                Ver presupuesto completo
+            </a>
+
+        </div>
+
+    {% endif %}
+
+{% endif %}
