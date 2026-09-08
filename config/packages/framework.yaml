@@ -15,3 +15,11 @@ framework:
     #fragments: true
     php_errors:
         log: true
+
+    http_client:
+        scoped_clients:
+            budget_flow.client:
+                base_uri: '%env(BUDGETFLOW_API_URL)%'
+                timeout: 10
+                headers:
+                    Accept: 'application/json'  

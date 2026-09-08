@@ -35,8 +35,9 @@ class DocumentoLineaService
         ?int $productoId,
         int $lineaId,
         string $tipo,
-        string $destinoFacturacion = DocumentoLinea::DESTINO_PENDIENTE,
-        string $origenLinea = 'manual'
+        string $destinoFacturacion = DocumentoLinea::DESTINO_FACTURA_OBRA,
+        string $origenLinea = 'manual',
+        float $tipoIva = 21.0
     ): DocumentoLinea {
 
         $descripcionFormateada = $this->descripcionPresupuestoFormatter->formatear($descripcion);
@@ -84,7 +85,9 @@ class DocumentoLineaService
             $linea->setPrecioUnitario('0.00');
             $linea->setCosteUnitario('0.00');
             $linea->setDescuento('0.00');
-            $linea->setTipoIva('21.00');
+            $linea->setTipoIva(
+                    number_format($tipoIva, 2, '.', '')
+                    );
             $linea->setSubtotal('0.00');
             $linea->setTotalIva('0.00');
             $linea->setTotalCoste('0.00');
@@ -108,7 +111,9 @@ class DocumentoLineaService
 
         $linea->setCantidad(number_format($cantidad, 3, '.', ''));
         $linea->setDescuento(number_format($descuento, 2, '.', ''));
-        $linea->setTipoIva('21.00');
+        $linea->setTipoIva(
+                    number_format($tipoIva, 2, '.', '')
+                    );
 
         /*
         * REGLA NUEVA:

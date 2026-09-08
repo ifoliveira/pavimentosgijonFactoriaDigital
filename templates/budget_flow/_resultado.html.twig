@@ -1,0 +1,105 @@
+{% if resultado %}
+
+    <div class="card mt-4">
+
+        <div class="card-header">
+            <h3 class="card-title mb-0">
+                Resultado
+            </h3>
+        </div>
+
+        <div class="card-body">
+
+            {# AVISOS #}
+            {% if resultado.avisos is defined and resultado.avisos|length > 0 %}
+
+                {% for aviso in resultado.avisos %}
+                    <div class="alert alert-warning">
+                        {{ aviso.mensaje ?? aviso }}
+                    </div>
+                {% endfor %}
+
+            {% endif %}
+
+
+            {# LÍNEAS GENERADAS #}
+            {% if resultado.lineas is defined and resultado.lineas|length > 0 %}
+
+                <div class="table-responsive">
+
+                    <table class="table table-striped align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Descripción</th>
+                                <th class="text-end">Cantidad</th>
+                                <th>Unidad</th>
+                                <th class="text-end">Precio unitario</th>
+                                <th class="text-end">IVA</th>
+                                <th class="text-end">Base</th>
+                                <th class="text-end">IVA €</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for linea in resultado.lineas %}
+
+                                <tr>
+
+                                    <td>
+                                        {{ linea.descripcion }}
+                                    </td>
+
+                                    <td class="text-end">
+                                        {{ linea.cantidad|number_format(2, ',', '.') }}
+                                    </td>
+
+                                    <td>
+                                        {{ linea.unidad }}
+                                    </td>
+
+                                    <td class="text-end">
+                                        {{ linea.precioUnitarioSinIva|number_format(2, ',', '.') }} €
+                                    </td>
+
+                                    <td class="text-end">
+                                        {{ linea.tipoIva|number_format(2, ',', '.') }} %
+                                    </td>
+
+                                    <td class="text-end">
+                                        {{ linea.importeBase|number_format(2, ',', '.') }} €
+                                    </td>
+
+                                    <td class="text-end">
+                                        {{ linea.importeIva|number_format(2, ',', '.') }} €
+                                    </td>
+
+                                    <td class="text-end fw-bold">
+                                        {{ linea.importeTotal|number_format(2, ',', '.') }} €
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="alert alert-info mb-0">
+                    El configurador no ha generado ninguna línea.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+{% endif %}

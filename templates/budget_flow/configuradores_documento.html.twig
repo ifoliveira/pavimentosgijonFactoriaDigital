@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Añadir con BudgetFlow
+{% endblock %}
+
+{% block body %}
+
+{% set listaConfiguradores = configuradores.configuradores ?? configuradores %}
+
+<div class="container py-4">
+
+    <div class="mb-3">
+        <a
+            href="{{ path('app_documento_show', {id: documento.id}) }}"
+            class="btn btn-sm btn-outline-secondary"
+        >
+            Volver al presupuesto
+        </a>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+        <div>
+            <h1 class="h3 mb-1">Añadir con BudgetFlow</h1>
+            <div class="text-muted small">
+                Selecciona un configurador disponible.
+            </div>
+        </div>
+    </div>
+
+    {% if listaConfiguradores|length > 0 %}
+        <div class="list-group">
+            {% for configurador in listaConfiguradores %}
+                {% set codigo = configurador.codigo ?? null %}
+
+                {% if codigo %}
+                    <a
+                        href="{{ path('app_documento_budget_flow_configurador', {
+                            id: documento.id,
+                            codigo: codigo
+                        }) }}"
+                        class="list-group-item list-group-item-action"
+                    >
+                        <div class="fw-semibold">
+                            {{ configurador.nombre ?? codigo }}
+                        </div>
+
+                        {% if configurador.descripcion is defined and configurador.descripcion %}
+                            <div class="text-muted small mt-1">
+                                {{ configurador.descripcion }}
+                            </div>
+                        {% endif %}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info mb-0">
+            BudgetFlow no ha devuelto configuradores disponibles.
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

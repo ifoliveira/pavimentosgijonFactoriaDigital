@@ -27,6 +27,7 @@ use Dompdf\Options;
 use App\Repository\TipoManoObraRepository;
 use App\Repository\TextoManoObraRepository;
 use App\Repository\StockReservaRepository;
+use App\Service\BudgetFlow\BudgetFlowConfiguratorService;
 
 
 /**
@@ -231,6 +232,108 @@ class DocumentoController extends AbstractController
         }
 
         $this->addFlash('success', 'Línea guardada correctamente');
+
+        return $this->redirectToRoute('app_documento_show', [
+            'id' => $documento->getId(),
+        ]);
+    }
+
+    #[Route('/{id}/budget-flow/configuradores', name: 'app_documento_budget_flow_configuradores', methods: ['GET'])]
+    public function budgetFlowConfiguradores(
+        Documento $documento,
+        BudgetFlowConfiguratorService $budgetFlowConfiguratorService
+    ): Response {
+        return $this->render('budget_flow/configuradores_documento.html.twig', [
+            'documento' => $documento,
+            'configuradores' => $budgetFlowConfiguratorService->listarConfiguradores(),
+        ]);
+    }
+
+    #[Route('/{id}/budget-flow/configurador/{codigo}', name: 'app_documento_budget_flow_configurador', methods: ['GET', 'POST'])]
+    public function budgetFlowConfigurador(
+        Request $request,
+        Documento $documento,
+        string $codigo,
+        BudgetFlowConfiguratorService $budgetFlowConfiguratorService
+    ): Response {
+        $configurador = $budgetFlowConfiguratorService->obtenerConfiguradorParaFormulario($codigo);
+
+        $valores = [];
+        $validacion = null;
+        $resultado = null;
+
+        if ($request->isMethod('POST')) {
+            $valores = $request->request->all('valores');
+            $valores = $budgetFlowConfiguratorService->normalizarValores($configurador, $valores);
+            $validacion = $budgetFlowConfiguratorService->validar($configurador, $valores);
+
+            if ($validacion['valido'] ?? false) {
+                $resultado = $budgetFlowConfiguratorService->generar($configurador, $valores);
+            }
+        }
+
+        return $this->render('budget_flow/configurador.html.twig', [
+            'configurador' => $configurador,
+            'valores' => $valores,
+            'validacion' => $validacion,
+            'resultado' => $resultado,
+            'documento' => $documento,
+        ]);
+    }
+
+    #[Route('/{id}/budget-flow/configurador/{codigo}/anadir-lineas', name: 'app_documento_budget_flow_anadir_lineas', methods: ['POST'])]
+    public function anadirLineasBudgetFlow(
+        Request $request,
+        Documento $documento,
+        string $codigo,
+        DocumentoLineaService $lineaService
+    ): Response {
+        if (!$this->isCsrfTokenValid('budget-flow-anadir-lineas-' . $documento->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF no válido');
+        }
+
+        $lineas = json_decode((string) $request->request->get('lineas', '[]'), true);
+
+        if (!is_array($lineas) || count($lineas) === 0) {
+            $this->addFlash('warning', 'El configurador no ha generado líneas para añadir.');
+
+            return $this->redirectToRoute('app_documento_budget_flow_configurador', [
+                'id' => $documento->getId(),
+                'codigo' => $codigo,
+            ]);
+        }
+
+        foreach ($lineas as $linea) {
+            if (!is_array($linea)) {
+                continue;
+            }
+
+            $descripcion = trim((string) ($linea['descripcion'] ?? ''));
+
+            if ($descripcion === '') {
+                continue;
+            }
+
+            $cantidad = (float) ($linea['cantidad'] ?? 1);
+            $tipoIva = (float) ($linea['tipoIva'] ?? $linea['tipo_iva'] ?? 21.0);
+            $precioSinIva = (float) ($linea['precioUnitarioSinIva'] ?? $linea['precio_unitario_sin_iva'] ?? 0);
+            $precioConIva = $precioSinIva * (1 + ($tipoIva / 100));
+
+            $lineaService->crearLinea(
+                documento: $documento,
+                descripcion: $descripcion,
+                cantidad: $cantidad,
+                precio: $precioConIva,
+                descuento: 0.0,
+                productoId: null,
+                lineaId: 0,
+                tipo: 'producto',
+                origenLinea: 'budgetflow',
+                tipoIva: $tipoIva
+            );
+        }
+
+        $this->addFlash('success', 'Líneas de BudgetFlow añadidas al presupuesto.');
 
         return $this->redirectToRoute('app_documento_show', [
             'id' => $documento->getId(),

@@ -1,0 +1,124 @@
+{% set grupo = grupo ?? null %}
+
+{% set nombreCampo = grupo
+    ? 'valores[' ~ grupo ~ '][' ~ campo.codigo ~ ']'
+    : 'valores[' ~ campo.codigo ~ ']'
+%}
+
+{% set valoresGrupo = grupo
+    ? (valores[grupo] ?? {})
+    : valores
+%}
+
+{% set valorActual = valoresGrupo[campo.codigo] ?? campo.valorDefecto ?? null %}
+
+<div class="mb-3">
+
+    <label for="{{ campo.codigo }}" class="form-label">
+        {{ campo.etiqueta ?? campo.codigo }}
+
+        {% if campo.obligatorio ?? false %}
+            <span class="text-danger">*</span>
+        {% endif %}
+    </label>
+
+    {# ENTERO #}
+    {% if campo.tipo == 'entero' %}
+
+        <input
+            type="number"
+            class="form-control"
+            id="{{ campo.codigo }}"
+            name="{{ nombreCampo }}"
+            value="{{ valorActual ?? ''}}"
+            {% if campo.obligatorio ?? false %}required{% endif %}
+        >
+
+
+    {# DECIMAL #}
+    {% elseif campo.tipo == 'decimal' %}
+
+        <input
+            type="number"
+            step="any"
+            class="form-control"
+            id="{{ campo.codigo }}"
+            name="{{ nombreCampo }}"
+            value="{{ valorActual ?? ''}}"
+            {% if campo.obligatorio ?? false %}required{% endif %}
+        >
+
+
+    {# BOOLEANO #}
+    {% elseif campo.tipo == 'booleano' %}
+
+
+        <div class="form-check">
+
+            <input
+                type="hidden"
+                name="{{ nombreCampo }}"
+                value="0"
+            >
+
+            <input
+                type="checkbox"
+                class="form-check-input"
+                id="{{ campo.codigo }}"
+                name="{{ nombreCampo }}"
+                value="1"
+                {% if valorActual %}checked{% endif %}
+            >
+
+        </div>
+
+
+    {# SELECCIÓN #}
+    {% elseif campo.tipo == 'seleccion' %}
+
+
+        <select
+            class="form-select"
+            id="{{ campo.codigo }}"
+            name="{{ nombreCampo }}"
+            {% if campo.obligatorio ?? false %}required{% endif %}
+        >
+
+            <option value="">Selecciona una opción</option>
+
+            {% for opcion in campo.opciones ?? [] %}
+                <option
+                    value="{{ opcion.codigo }}"
+                    {% if valorActual == opcion.codigo %}selected{% endif %}
+                >
+                    {{ opcion.etiqueta }}
+                </option>
+            {% endfor %}
+
+        </select>
+
+
+    {# TEXTO Y CUALQUIER TIPO NO RECONOCIDO #}
+    {% else %}
+
+        <input
+            type="text"
+            class="form-control"
+            id="{{ campo.codigo }}"
+            name="{{ nombreCampo }}"
+            value="{{ valorActual ?? ''}}"
+            {% if campo.obligatorio ?? false %}required{% endif %}
+        >
+
+    {% endif %}
+
+
+    {% if campo.ayuda ?? false %}
+        <div class="form-text">
+            {{ campo.ayuda }}
+        </div>
+    {% endif %}
+
+
+
+</div>

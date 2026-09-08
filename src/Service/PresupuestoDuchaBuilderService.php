@@ -1,309 +1,219 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
-use App\Entity\CatalogoProducto;
 use App\Entity\Documento;
 use App\Entity\DocumentoConfiguracion;
+use App\Service\BudgetFlow\BudgetFlowConfiguratorService;
 use App\Service\Documento\DocumentoLineaService;
 
-class PresupuestoDuchaBuilderService
+final class PresupuestoDuchaBuilderService
 {
     public function __construct(
-        private CatalogoProductoSelectorService $selector,
-        private DocumentoLineaService $documentoLineaService,
-    ) {}
+        private readonly BudgetFlowConfiguratorService $budgetFlowConfiguratorService,
+        private readonly DocumentoLineaService $documentoLineaService,
+    ) {
+    }
 
-    public function generar(Documento $documento, DocumentoConfiguracion $configuracion): void
-    {
+    public function generar(
+        Documento $documento,
+        DocumentoConfiguracion $configuracion
+    ): void {
         $datos = $configuracion->getDatos();
-        $parametros = $configuracion->getConfigurador()?->getParametros() ?? [];
 
-        // 1. Borrar líneas anteriores usando el servicio central
+        $configurador = $this->budgetFlowConfiguratorService
+            ->obtenerConfiguradorParaFormulario('conjunto_ducha');
+
+        $valores = $this->mapearValoresBudgetFlow($datos);
+
+        $valores = $this->budgetFlowConfiguratorService
+            ->normalizarValores(
+                $configurador,
+                $valores
+            );
+
+        $validacion = $this->budgetFlowConfiguratorService
+            ->validar(
+                $configurador,
+                $valores
+            );
+
+        if (!($validacion['valido'] ?? false)) {
+            throw new \RuntimeException(
+                'La configuración de BudgetFlow no es válida: '
+                . json_encode(
+                    $validacion['errores'] ?? [],
+                    JSON_UNESCAPED_UNICODE
+                )
+            );
+        }
+
+        $resultado = $this->budgetFlowConfiguratorService
+            ->generar(
+                $configurador,
+                $valores
+            );
+
+        $lineas = $resultado['lineas'] ?? [];
+
+        if (!$lineas) {
+            throw new \RuntimeException(
+                'BudgetFlow no ha generado ninguna línea para la configuración.'
+            );
+        }
+
+        /*
+        * Solo borramos las líneas antiguas después
+        * de haber obtenido correctamente las nuevas.
+        */
         $this->documentoLineaService->eliminarLineasDocumentoPorOrigenes(
             documento: $documento,
-            origenes: ['configurador', 'configurador_estimado'],
-            flush: false
+            origenes: [
+                'configurador',
+                'configurador_estimado',
+            ],
+            flush: false,
         );
 
-        // 2. Datos principales
-        $largo = (float) ($datos['largo_plato'] ?? 0);
-        $ancho = (float) ($datos['ancho_plato'] ?? 0);
-        $alicatado = $datos['alicatado'] ?? 'minimo';
-        $tipoMampara = $datos['tipo_mampara'] ?? null;
-        $griferia = $datos['griferia'] ?? 'mantener';
-        $entreparedes = $datos['entreparedes'] ?? false;
-        $tiene_azulejo_cliente = $datos['tiene_azulejo_cliente'] ?? false;
-
-        // 3. Mano de obra base
-        $manoObraBase = $parametros['mano_obra_base'] ?? [
-            'descripcion' => 'Mano de obra cambio de bañera por plato de ducha',
-            'precio' => 700,
-            'coste' => 600,
-        ];        
-        $this->crearLineaEstimado(
-            documento: $documento,
-            tipoLinea: 'mano_obra',
-            descripcion:  $manoObraBase['descripcion'],
-            cantidad: 1,
-            precioConIva: (float) $manoObraBase['precio_venta_con_iva'] ?? (float) $manoObraBase['precio'],
-            costeUnitario: (float) $manoObraBase['coste_sin_iva']);
-
-        // 4. Alicatado
-        $reglaAlicatado = $parametros['alicatado'][$alicatado] ?? null;
-
-        if ($reglaAlicatado) {
-            $this->crearLineaEstimado(
+        foreach ($lineas as $linea) {
+            $this->crearLineaBudgetFlow(
                 documento: $documento,
-                tipoLinea: 'mano_obra',
-                descripcion: $reglaAlicatado['descripcion'],
-                cantidad: 1,
-                precioConIva: (float) $reglaAlicatado['precio_venta_con_iva'] ?? (float) $reglaAlicatado['precio'],
-                costeUnitario: (float) $reglaAlicatado['coste_sin_iva'] 
+                linea: $linea,
             );
         }
 
-        if (!$tiene_azulejo_cliente) {
-
-            $this->crearLineaEstimado(
-                    documento: $documento,
-                    tipoLinea: 'producto',
-                    descripcion: 'Revestimiento cerámico de primera calidad',
-                    cantidad: 4,
-                    precioConIva: 34,
-                    costeUnitario: 25
-                );
-        }
-
-
-        // 5. Plato de ducha desde catálogo
-        if ($largo > 0 && $ancho > 0) {
-            $plato = $this->selector->buscarProductoRecomendado(
-                configuradorCodigo: 'ducha',
-                uso: 'plato',
-                tipo: 'resina',
-                largo: $largo,
-                ancho: $ancho
+        $this->documentoLineaService
+            ->recalcularDocumentoCompleto(
+                $documento,
+                flush: true,
             );
-                       
-            if ($plato) {
-                $this->crearLineaCatalogo(
-                    documento: $documento,
-                    producto: $plato,
-                    tipoLinea: 'producto',
-                    cantidad: 1
-                );
-            } else {
-                $descripcionPlato = sprintf(
-                    'Plato de ducha %.0f x %.0f cm — modelo pendiente de confirmar',
-                    $largo,
-                    $ancho
-                );
-
-                $precioPlato = $this->calcularPrecioPlatoFallback($largo, $ancho);
-
-                $this->crearLineaEstimado(
-                    documento: $documento,
-                    tipoLinea: 'producto',
-                    descripcion: $descripcionPlato,
-                    cantidad: 1,
-                    precioConIva: $precioPlato,
-                    costeUnitario: $precioPlato * 0.65
-                );
-            }
-        }
-
-        // 6. Mampara desde catálogo
-        if ($tipoMampara && $tipoMampara !== 'sin_mampara') {
-
-            $seleccionMampara = $this->selector->buscarMamparaRecomendada(
-                tipoMampara: $tipoMampara,
-                anchoFrontal: $largo > 0 ? $largo : null,
-                anchoLateral: $ancho > 0 ? $ancho : null
-            );
-
-            if ($seleccionMampara) {
-                if ($seleccionMampara['frontal'] ?? null) {
-                    $this->crearLineaCatalogo(
-                        documento: $documento,
-                        producto: $seleccionMampara['frontal'],
-                        tipoLinea: 'producto',
-                        cantidad: 1
-                    );
-                }
-
-                if ($seleccionMampara['lateral'] ?? null) {
-                    $this->crearLineaCatalogo(
-                        documento: $documento,
-                        producto: $seleccionMampara['lateral'],
-                        tipoLinea: 'producto',
-                        cantidad: 1
-                    );
-                }
-            } else {
-                [$descripcionMampara, $precioMampara] = $this->calcularMamparaFallback($tipoMampara);
-
-                $this->crearLineaEstimado(
-                    documento: $documento,
-                    tipoLinea: 'producto',
-                    descripcion: $descripcionMampara . ' — modelo pendiente de confirmar',
-                    cantidad: 1,
-                    precioConIva: $precioMampara,
-                    costeUnitario: $precioMampara * 0.65
-                );
-            }
-
-
-
-            $colocacionMampara = $parametros['colocacion_mampara'] ?? [
-                'descripcion' => 'Colocación de mampara',
-                'precio' => 85,
-                'coste' => 60,
-            ];
-
-            $this->crearLineaEstimado(
-                documento: $documento,
-                tipoLinea: 'mano_obra',
-                descripcion: $colocacionMampara['descripcion'],
-                cantidad: 1,
-                precioConIva: (float) $colocacionMampara['precio_venta_con_iva'] ?? (float) $colocacionMampara['precio'],
-                costeUnitario: (float) $colocacionMampara['coste_sin_iva'] 
-            );
-        }
-
-        // 7. Grifería desde catálogo
-        if ($griferia === 'barra_estandar') {
-            $productoGriferia = $this->selector->buscarProductoRecomendado(
-                configuradorCodigo: 'ducha',
-                uso: 'griferia',
-                tipo: 'barra_estandar'
-            );
-
-            if ($productoGriferia) {
-                $this->crearLineaCatalogo(
-                    documento: $documento,
-                    producto: $productoGriferia,
-                    tipoLinea: 'producto',
-                    cantidad: 1
-                );
-            } else {
-                $this->crearLineaEstimado(
-                    documento: $documento,
-                    tipoLinea: 'producto',
-                    descripcion: 'Barra de ducha y grifería estándar — modelo pendiente de confirmar',
-                    cantidad: 1,
-                    precioConIva: 180,
-                    costeUnitario: 115
-                );
-            }
-
-
-        }
-
-        // 8. Material auxiliar
-        $materialAuxiliar = $this->selector->buscarProductoRecomendado(
-            configuradorCodigo: 'ducha',
-            uso: 'auxiliar',
-            tipo: 'material_ducha'
-        );
-
-        if ($materialAuxiliar) {
-            $this->crearLineaCatalogo(
-                documento: $documento,
-                producto: $materialAuxiliar,
-                tipoLinea: 'producto',
-                cantidad: 1
-            );
-        } else {
-            $this->crearLineaEstimado(
-                documento: $documento,
-                tipoLinea: 'producto',
-                descripcion: 'Material auxiliar, agarres, cemento cola, rejuntado y remates',
-                cantidad: 1,
-                precioConIva: 120,
-                costeUnitario: 75
-            );
-        }
-     //   die;
-        // 9. Un solo recalculo final y un solo flush
-        $this->documentoLineaService->recalcularDocumentoCompleto($documento, flush: true);
     }
 
-    private function crearLineaCatalogo(
+    private function crearLineaBudgetFlow(
         Documento $documento,
-        CatalogoProducto $producto,
-        string $tipoLinea,
-        float $cantidad = 1
+        array $linea
     ): void {
-        $descripcion = $producto->getNombre();
+        $cantidad = (float) ($linea['cantidad'] ?? 1);
 
-        if ($producto->getMedidaTexto()) {
-            $descripcion .= ' - ' . $producto->getMedidaTexto();
-        }
-        
-      
-        $this->documentoLineaService->crearLineaDesdeConfigurador(
-            documento: $documento,
-            descripcion: $descripcion,
-            cantidad: $cantidad,
-            precioConIva: (float) $producto->getPrecioVenta(),
-            costeUnitario: (float) $producto->getPrecioCoste(),
-            tipoLinea: $tipoLinea,
-            catalogoProducto: $producto,
-            origenLinea: 'configurador',
-            tipoIva: (float) $producto->getTipoIva(),
-            flush: false
+        $precioSinIva = (float) (
+            $linea['precioUnitarioSinIva'] ?? 0
         );
-    }
 
-    private function crearLineaEstimado(
-        Documento $documento,
-        string $tipoLinea,
-        string $descripcion,
-        float $cantidad,
-        float $precioConIva,
-        float $costeUnitario,
-        float $tipoIva = 21.00,
-        float $ivaCoste = 0.00,
-        bool $tieneRecargoEquivalencia = false,
-        float $porcentajeRecargoEquivalencia = 0.00
-    ): void {
+        $tipoIva = (float) (
+            $linea['tipoIva'] ?? 21
+        );
+
+        $precioConIva = round(
+            $precioSinIva * (1 + ($tipoIva / 100)),
+            2
+        );
+
         $this->documentoLineaService->crearLineaDesdeConfigurador(
             documento: $documento,
-            descripcion: $descripcion,
+            descripcion: (string) ($linea['descripcion'] ?? ''),
             cantidad: $cantidad,
             precioConIva: $precioConIva,
-            costeUnitario: $costeUnitario,
-            tipoLinea: $tipoLinea,
+            costeUnitario: 0,
+            tipoLinea: $this->resolverTipoLinea($linea),
             catalogoProducto: null,
-            origenLinea: 'configurador_estimado',
+            origenLinea: 'configurador',
             tipoIva: $tipoIva,
             flush: false,
-            ivaCoste: $ivaCoste,
-            tieneRecargoEquivalencia: $tieneRecargoEquivalencia,
-            porcentajeRecargoEquivalencia: $porcentajeRecargoEquivalencia
         );
     }
-    private function calcularPrecioPlatoFallback(float $largo, float $ancho): float
+
+    private function resolverTipoLinea(array $linea): string
     {
-        if ($largo <= 140) {
-            return 450;
+        $descripcion = mb_strtolower(
+            (string) ($linea['descripcion'] ?? '')
+        );
+
+        if (
+            str_contains($descripcion, 'instalación')
+            || str_contains($descripcion, 'bañera por plato')
+        ) {
+            return 'mano_obra';
         }
 
-        if ($largo <= 170) {
-            return 520;
-        }
-
-        return 600;
+        return 'producto';
     }
 
-    private function calcularMamparaFallback(string $tipoMampara): array
+    private function mapearValoresBudgetFlow(array $datos): array
     {
-        return match ($tipoMampara) {
-            'frontal_fijo_corredera' => ['Mampara frontal fijo + corredera', 800],
-            'angular' => ['Mampara angular', 900],
-            'angular_doble' => ['Mampara angular doble corredera / plegable', 1200],
-            default => ['Mampara de ducha', 800],
+        $largo = (float) ($datos['largo_plato'] ?? 0);
+        $ancho = (float) ($datos['ancho_plato'] ?? 0);
+
+        $valores = [
+            'selector_plato_ducha' => [
+                'ancho' => $ancho,
+                'largo' => $largo,
+            ],
+
+            'selector_mano_obra' => [
+                'tipo_trabajo' => $this->mapearManoObra(
+                    $datos['alicatado'] ?? 'minimo'
+                ),
+            ],
+        ];
+
+        $tipoMampara = $datos['tipo_mampara'] ?? null;
+
+        if ($tipoMampara && $tipoMampara !== 'sin_mampara') {
+            $valores['selector_mampara'] = $this->mapearMampara(
+                datos: $datos,
+                largo: $largo,
+                ancho: $ancho,
+            );
+        }
+
+        $griferia = $datos['griferia'] ?? 'mantener';
+
+        if ($griferia !== 'mantener') {
+            $valores['griferia'] = $this->mapearGriferia($griferia);
+        }
+
+        return $valores;
+    }
+
+    private function mapearMampara(
+        array $datos,
+        float $largo,
+        float $ancho
+    ): array {
+        return [
+            'tipo_instalacion' => 'frente',
+            'ancho_frente' => $largo,
+            'tipo_apertura' => 'corredera',
+        ];
+    }
+
+
+    private function mapearManoObra(string $alicatado): string
+    {
+        return match ($alicatado) {
+            'minimo' => 'banera_plato_cenefa',
+            'hasta_1m' => 'banera_plato_cenefa',
+            'hasta_el_techo' => 'banera_plato_zona_ducha',
+
+            default => 'banera_plato_cenefa',
         };
     }
+        
+    private function mapearGriferia(string $griferia): array
+    {
+        return match ($griferia) {
+            'barra_estandar' => [
+                'uso' => 'ducha',
+                'tipo' => 'barra_monomando',
+            ],
+
+            default => [
+                'uso' => 'ducha',
+                'tipo' => 'monomando',
+            ],
+        };
+    }
+
 }

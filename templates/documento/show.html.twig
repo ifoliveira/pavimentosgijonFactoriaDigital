@@ -420,6 +420,14 @@
 
                     <div class="d-flex gap-2 mt-2 mt-md-0">
                         {% if acciones.puedeAnadirLinea %}                    
+                        <a
+                            class="btn btn-sm btn-outline-primary"
+                            href="{{ path('app_documento_budget_flow_configuradores', {
+                                id: documento.id
+                            }) }}"
+                        >
+                            Añadir con BudgetFlow
+                        </a>
                         <button class="btn btn-sm btn-primary"
                                 data-bs-toggle="offcanvas"
                                 data-bs-target="#offcanvasLinea">

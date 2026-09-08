@@ -1,0 +1,152 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ configurador.nombre ?? 'Configurador' }}
+{% endblock %}
+
+{% block body %}
+
+<div class="container py-4">
+
+    {% if documento is defined and documento %}
+        <div class="mb-3">
+            <a
+                href="{{ path('app_documento_show', {id: documento.id}) }}"
+                class="btn btn-sm btn-outline-secondary"
+            >
+                Volver al presupuesto
+            </a>
+        </div>
+    {% endif %}
+
+    <h1>
+        {{ configurador.nombre ?? configurador.codigo }}
+    </h1>
+
+    {% if configurador.descripcion is defined and configurador.descripcion %}
+        <p class="text-muted">
+            {{ configurador.descripcion }}
+        </p>
+
+    {% endif %}
+
+    <form method="post">
+
+        {% if configurador.tipo == 'compuesto' %}
+
+            {% for componente in configurador.componentes %}
+
+                {% set configuradorComponente = componente.configurador %}
+
+                <div class="card mb-4">
+
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            {{ configuradorComponente.nombre }}
+                        </h4>
+                    </div>
+
+                    <div class="card-body">
+
+                        {% if configuradorComponente.descripcion ?? false %}
+                            <p class="text-muted">
+                                {{ configuradorComponente.descripcion }}
+                            </p>
+                        {% endif %}
+
+                        {% for campo in configuradorComponente.campos %}
+
+                        {% include 'budget_flow/_campo.html.twig' with {
+                            campo: campo,
+                            valores: valores,
+                            grupo: componente.codigo
+                        } %}
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            {% for campo in configurador.campos %}
+
+                {% include 'budget_flow/_campo.html.twig' with {
+                    campo: campo,
+                    valores: valores,
+                    grupo: null
+                } %}
+
+            {% endfor %}
+
+        {% endif %}
+
+        <button
+            type="submit"
+            class="btn btn-primary"
+        >
+            Generar
+        </button>
+
+    </form>
+
+    {% if validacion and not (validacion.valido ?? false) %}
+
+        <div class="alert alert-danger mt-4">
+
+            <strong>No se ha podido validar el configurador.</strong>
+
+            <pre class="mb-0 mt-2">{{ dump(validacion) }}</pre>
+
+        </div>
+
+    {% endif %}
+
+
+    {% if resultado %}
+
+        <hr class="my-4">
+
+        <h2>Resultado</h2>
+
+        {% include 'budget_flow/_resultado.html.twig' with {
+            resultado: resultado
+        } %}
+
+        {% if documento is defined and documento and resultado.lineas is defined and resultado.lineas|length > 0 %}
+            <form
+                method="post"
+                action="{{ path('app_documento_budget_flow_anadir_lineas', {
+                    id: documento.id,
+                    codigo: configurador.codigo
+                }) }}"
+                class="mt-3"
+            >
+                <input
+                    type="hidden"
+                    name="_token"
+                    value="{{ csrf_token('budget-flow-anadir-lineas-' ~ documento.id) }}"
+                >
+                <input
+                    type="hidden"
+                    name="lineas"
+                    value="{{ resultado.lineas|json_encode|e('html_attr') }}"
+                >
+
+                <button
+                    type="submit"
+                    class="btn btn-success"
+                >
+                    Añadir al presupuesto
+                </button>
+            </form>
+        {% endif %}
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
