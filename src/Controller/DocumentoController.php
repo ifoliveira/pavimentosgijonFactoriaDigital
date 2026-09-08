@@ -80,7 +80,7 @@ class DocumentoController extends AbstractController
             'clientes' =>  $clientesRepository->findBy([], ['nombreCl' => 'ASC']),
             'proyectos' => $editarCabecera ? $proyectoRepository->findBy([], ['nombre' => 'ASC']) : [],
             'tiposManoObra' => $tipoManoObraRepository->findAll(),
-            'textosManoObra' => $this->agruparTextos($textoManoObraRepository->findAll()),
+            'textosManoObra' => $this->agruparTextos($textoManoObraRepository->findByActivos()),
             'seleccionadosManoObra' => $seleccionadosManoObra,
             'textosManuales' => $textosManuales,
             'productosBuscador' => $productos,

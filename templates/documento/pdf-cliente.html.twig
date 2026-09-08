@@ -195,25 +195,6 @@
             color: #374151;
         }
 
-        /* DOS COLUMNAS */
-        .two-cols {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .two-cols td {
-            vertical-align: top;
-        }
-
-        .col-left {
-            width: 58%;
-            padding-right: 8px;
-        }
-
-        .col-right {
-            width: 42%;
-            padding-left: 8px;
-        }
 
         /* BLOQUE TEXTO */
         .bloque-texto {
@@ -452,85 +433,111 @@
         </div>
     </div>
 
-    {# DOS COLUMNAS: PROYECTO + INCLUIDO #}
-    <table class="two-cols">
-        <tr>
-            <td class="col-left">
-                <div class="section">
-                    <div class="section-title">Qué vamos a realizar</div>
-                    <div class="section-rule"></div>
-                    <div class="bloque-texto">
+    {# TRABAJOS A REALIZAR #}
 
-                        {# ─── DETECTAR SI HAY MANO DE OBRA REAL ─── #}
+    <div class="section">
+        <div class="section-title">Qué vamos a realizar</div>
 
-                        {% set hayManoObra = false %}
-                        {% for mo in documento.manoObra %}
-                            {% if mo.lineasRender|length > 0 %}
-                                {% set hayManoObra = true %}
-                            {% endif %}
-                        {% endfor %}
+        <div class="bloque-texto">
 
+            {% set hayManoObra = false %}
 
-                        {% if hayManoObra %}
+            {% for mo in documento.manoObra %}
+                {% if mo.lineasRender|length > 0 %}
+                    {% set hayManoObra = true %}
+                {% endif %}
+            {% endfor %}
 
-                            {% for mo in documento.manoObra %}
-                                {% set lineas = mo.lineasRender %}
+            {% if hayManoObra %}
 
-                                {% if lineas|length > 0 %}
+                {% for mo in documento.manoObra %}
 
-                                    <div class="subbloque">
-                                        <div class="subbloque-titulo">
-                                            {{ mo.categoriaMo.tipoTm }}
-                                        </div>
+                    {% set lineas = mo.lineasRender %}
 
-                                        <div class="subbloque-texto">
-                                            {% for linea in lineas %}
-                                                {{ linea }}<br>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
+                    {% if lineas|length > 0 %}
 
-                                {% endif %}
-                            {% endfor %}
+                        <div class="subbloque">
 
-                        {% else %}
+                            <div class="subbloque-titulo">
+                                {{ mo.categoriaMo.tipoTm }}
+                            </div>
 
                             <div class="subbloque-texto">
-                                {{ documento.notas ?: 'Trabajos según visita, medición y necesidades acordadas con el cliente.' }}
+                                {% for linea in lineas %}
+                                    {{ linea }}<br>
+                                {% endfor %}
                             </div>
 
-                        {% endif %}
-
-                    </div>
-                </div>
-            </td>
-            <td class="col-right">
-                <div class="section">
-                    <div class="section-title">Incluido en este presupuesto</div>
-                    <div class="section-rule"></div>
-                    <div class="incluye-box">
-                        {% for linea in documento.lineas %}
-                            {% if linea.tipoLinea != 'comentario' and linea.tipoLinea != 'servicio' and linea.tipoLinea != 'mano_obra' %}
-                                <div class="incluye-item">• {{ linea.descripcion }}</div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-
-                {% if documento.notas %}
-                    <div class="section">
-                        <div class="section-title">Observaciones</div>
-                        <div class="section-rule"></div>
-                        <div class="condiciones-box">
-                            <div class="condiciones-texto">
-                                {{ documento.notas|nl2br }}
-                            </div>
                         </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="subbloque-texto">
+                    {{ documento.notas ?: 'Trabajos según visita, medición y necesidades acordadas con el cliente.' }}
+                </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+
+    {# ELEMENTOS INCLUIDOS #}
+
+    <div class="section">
+
+        <div class="section-title">
+            Incluido en este presupuesto
+        </div>
+
+        <div class="incluye-box">
+
+            {% for linea in documento.lineas %}
+
+                {% if
+                    linea.tipoLinea != 'comentario'
+                    and linea.tipoLinea != 'servicio'
+                    and linea.tipoLinea != 'mano_obra'
+                %}
+
+                    <div class="incluye-item">
+                        • {{ linea.descripcion }}
                     </div>
+
                 {% endif %}
-            </td>
-        </tr>
-    </table>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    {# OBSERVACIONES #}
+
+    {% if documento.notas %}
+
+        <div class="section">
+
+            <div class="section-title">
+                Observaciones
+            </div>
+
+            <div class="condiciones-box">
+
+                <div class="condiciones-texto">
+                    {{ documento.notas|nl2br }}
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endif %}
 
     {# PRECIO FINAL #}
     <div class="precio-final-wrap">

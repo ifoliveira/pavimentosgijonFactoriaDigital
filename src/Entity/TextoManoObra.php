@@ -23,6 +23,9 @@ class TextoManoObra
     #[ORM\Column(type: 'string', length: 50)]
     private ?string $resumenXo = null;
 
+    #[ORM\Column]
+    private ?bool $activo = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -64,5 +67,17 @@ class TextoManoObra
     public function __toString(): string
     {
         return $this->resumenXo ?? '';
+    }
+
+    public function isActivo(): ?bool
+    {
+        return $this->activo;
+    }
+
+    public function setActivo(bool $activo): static
+    {
+        $this->activo = $activo;
+
+        return $this;
     }
 }

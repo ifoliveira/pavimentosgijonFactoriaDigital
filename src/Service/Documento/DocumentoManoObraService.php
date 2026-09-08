@@ -90,18 +90,63 @@ class DocumentoManoObraService
     private const PRESETS = [
 
         'ducha' => [
-            1 => [24,25,5,6],          // albañilería
-            2 => [14,16],        // fontanería
-            8 => [23],            // otros
+            1 => [
+                26, // Demolición y retirada
+                27, // Preparación de paredes
+                28, // Alicatado
+                30, // Colocación de plato de ducha
+                41, // Gestión de residuos de obra
+                42, // Medios para retirada de escombros
+            ],
+
+            2 => [
+                34, // Conexión de plato de ducha
+                35, // Instalación de grifería de ducha
+            ],
+
+            8 => [
+                40, // Instalación de mampara
+                43, // Protección de zonas de paso
+                44, // Protección de zonas comunes
+                45, // Acarreo de materiales
+                47, // Limpieza de obra
+            ],
         ],
 
         'bano' => [
-            1 => [3,4,5],            
-            2 => [7,8,13,14,15],     
-            5 => [17,18],            
-            4 => [20],               
-            3 => [21],               
-            8 => [23],               
+            1 => [
+                26, // Demolición y retirada
+                27, // Preparación de paredes
+                28, // Alicatado
+                29, // Pavimentado
+                41, // Gestión de residuos de obra
+                42, // Medios para retirada de escombros
+            ],
+
+            2 => [
+                31, // Instalación de lavabo
+                32, // Instalación de inodoro
+                33, // Instalación de bidé
+                34, // Conexión de plato de ducha
+                35, // Instalación de grifería de ducha
+            ],
+
+            5 => [
+                38, // Punto eléctrico para espejo
+                39, // Instalación de iluminación
+            ],
+
+            3 => [
+                36, // Pintura de techo
+            ],
+
+            8 => [
+                40, // Instalación de mampara
+                43, // Protección de zonas de paso
+                44, // Protección de zonas comunes
+                45, // Acarreo de materiales
+                47, // Limpieza de obra
+            ],
         ],
     ];
 

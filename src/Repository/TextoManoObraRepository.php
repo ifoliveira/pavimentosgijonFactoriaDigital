@@ -19,22 +19,21 @@ class TextoManoObraRepository extends ServiceEntityRepository
         parent::__construct($registry, TextoManoObra::class);
     }
 
-    // /**
-    //  * @return TextoManoObra[] Returns an array of TextoManoObra objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+      * @return TextoManoObra[] Returns an array of TextoManoObra objects
+    */
+    
+    public function findByActivos()
     {
         return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
+            ->andWhere('t.activo = :val')
+            ->setParameter('val', true)
             ->orderBy('t.id', 'ASC')
-            ->setMaxResults(10)
             ->getQuery()
             ->getResult()
         ;
     }
-    */
+    
 
     /*
     public function findOneBySomeField($value): ?TextoManoObra
