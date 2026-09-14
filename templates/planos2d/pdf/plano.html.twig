@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            margin: 14mm 14mm 12mm;
+        }
+
+        body {
+            margin: 0;
+            color: #1f2937;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10px;
+        }
+
+        .pdf-page {
+            display: block;
+        }
+
+        .pdf-header {
+            display: table;
+            width: 100%;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #d1d5db;
+        }
+
+        .pdf-brand,
+        .pdf-title {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+        }
+
+        .pdf-brand {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .4px;
+        }
+
+        .pdf-title {
+            text-align: right;
+        }
+
+        .pdf-title h1 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+
+        .pdf-title p {
+            margin: 3px 0 0;
+            color: #4b5563;
+            font-size: 10px;
+        }
+
+        .pdf-meta {
+            margin-top: 8px;
+            color: #374151;
+            font-size: 9px;
+        }
+
+        .pdf-meta span {
+            display: inline-block;
+            margin-right: 14px;
+            margin-bottom: 3px;
+        }
+
+        .pdf-plan {
+            margin-top: 9px;
+            text-align: center;
+        }
+
+        .pdf-plan-title {
+            margin: 0 0 8px;
+            color: #374151;
+            font-size: 11px;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .pdf-plan img {
+            display: block;
+            width: {{ layoutPlano.anchoMm }}mm;
+            height: {{ layoutPlano.altoMm }}mm;
+            margin: 0 auto;
+        }
+
+        .pdf-plan-secondary img {
+            width: {{ layoutPlanoDistancias ? layoutPlanoDistancias.anchoMm : layoutPlano.anchoMm }}mm;
+            height: {{ layoutPlanoDistancias ? layoutPlanoDistancias.altoMm : layoutPlano.altoMm }}mm;
+        }
+
+        .pdf-note {
+            margin-top: 9px;
+            padding-top: 6px;
+            border-top: 1px solid #d1d5db;
+            color: #4b5563;
+            font-size: 8.5px;
+            line-height: 1.35;
+        }
+
+        .pdf-footer {
+            display: table;
+            width: 100%;
+            margin-top: 5px;
+            color: #6b7280;
+            font-size: 8px;
+        }
+
+        .pdf-footer span {
+            display: table-cell;
+            width: 50%;
+        }
+
+        .pdf-footer span:last-child {
+            text-align: right;
+        }
+
+        .pdf-page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+    {% set totalPaginas = 1 + (svgDimensionesDataUri ? 1 : 0) + (svgDistanciasDataUri ? 1 : 0) %}
+    <div class="pdf-page">
+        <header class="pdf-header">
+            <div class="pdf-brand">PAVIMENTOS GIJÓN</div>
+            <div class="pdf-title">
+                <h1>{{ datos.titulo }}</h1>
+                {% if datos.subtitulo %}
+                    <p>{{ datos.subtitulo }}</p>
+                {% endif %}
+            </div>
+        </header>
+
+        {% set meta = [] %}
+        {% if datos.cliente %}{% set meta = meta|merge(['Cliente: ' ~ datos.cliente]) %}{% endif %}
+        {% if datos.direccion %}{% set meta = meta|merge(['Dirección: ' ~ datos.direccion]) %}{% endif %}
+        {% if datos.referencia %}{% set meta = meta|merge(['Referencia: ' ~ datos.referencia]) %}{% endif %}
+        {% if meta|length > 0 %}
+            <section class="pdf-meta">
+                {% for item in meta %}
+                    <span>{{ item }}</span>
+                {% endfor %}
+            </section>
+        {% endif %}
+
+        <main class="pdf-plan">
+            <h2 class="pdf-plan-title">PLANO DE DISTRIBUCIÓN</h2>
+            <img src="{{ svgDataUri }}" alt="Plano de distribución">
+        </main>
+
+        <section class="pdf-note">
+            <div>Cotas en centímetros.</div>
+            {% if datos.planoParcial %}
+                <div>Plano parcial. Los tramos discontinuos representan zonas no objeto de medición.</div>
+            {% endif %}
+            <div>Todas las cotas se expresan en centímetros.</div>
+            <div>Plano orientativo sujeto a comprobación de medidas en obra.</div>
+        </section>
+
+        <footer class="pdf-footer">
+            <span>Fecha de generación: {{ datos.fechaGeneracion|date('d/m/Y') }}</span>
+            <span>Página 1 de {{ totalPaginas }}</span>
+        </footer>
+    </div>
+
+    {% if svgDimensionesDataUri %}
+        <div class="pdf-page pdf-page-break">
+            <header class="pdf-header">
+                <div class="pdf-brand">PAVIMENTOS GIJÓN</div>
+                <div class="pdf-title">
+                    <h1>{{ datos.titulo }}</h1>
+                    <p>Dimensiones de elementos</p>
+                </div>
+            </header>
+
+            <main class="pdf-plan pdf-plan-secondary">
+                <h2 class="pdf-plan-title">DIMENSIONES DE ELEMENTOS</h2>
+                <img src="{{ svgDimensionesDataUri }}" alt="Plano con dimensiones de elementos">
+            </main>
+
+            <section class="pdf-note">
+                <div>Cotas en centímetros.</div>
+                {% if datos.planoParcial %}
+                    <div>Plano parcial. Los tramos discontinuos representan zonas no objeto de medición.</div>
+                {% endif %}
+                <div>Las dimensiones de piezas proceden de ancho y fondo del modelo.</div>
+                <div>Plano orientativo sujeto a comprobación de medidas en obra.</div>
+            </section>
+
+            <footer class="pdf-footer">
+                <span>Fecha de generación: {{ datos.fechaGeneracion|date('d/m/Y') }}</span>
+                <span>Página 2 de {{ totalPaginas }}</span>
+            </footer>
+        </div>
+    {% endif %}
+
+    {% if svgDistanciasDataUri %}
+        <div class="pdf-page pdf-page-break">
+            <header class="pdf-header">
+                <div class="pdf-brand">PAVIMENTOS GIJÓN</div>
+                <div class="pdf-title">
+                    <h1>{{ datos.titulo }}</h1>
+                    <p>Distancias entre elementos</p>
+                </div>
+            </header>
+
+            <main class="pdf-plan pdf-plan-secondary">
+                <h2 class="pdf-plan-title">COTAS DE REPLANTEO</h2>
+                <img src="{{ svgDistanciasDataUri }}" alt="Plano con cotas de replanteo">
+            </main>
+
+            <section class="pdf-note">
+                <div>Cotas en centímetros.</div>
+                {% if datos.planoParcial %}
+                    <div>Plano parcial. Los tramos discontinuos representan zonas no objeto de medición.</div>
+                {% endif %}
+                <div>Las distancias entre elementos son cotas derivadas del plano, no datos guardados.</div>
+                <div>Plano orientativo sujeto a comprobación de medidas en obra.</div>
+            </section>
+
+            <footer class="pdf-footer">
+                <span>Fecha de generación: {{ datos.fechaGeneracion|date('d/m/Y') }}</span>
+                <span>Página {{ svgDimensionesDataUri ? 3 : 2 }} de {{ totalPaginas }}</span>
+            </footer>
+        </div>
+    {% endif %}
+</body>
+</html>

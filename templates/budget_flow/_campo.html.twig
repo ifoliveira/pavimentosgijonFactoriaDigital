@@ -11,14 +11,24 @@
 %}
 
 {% set valorActual = valoresGrupo[campo.codigo] ?? campo.valorDefecto ?? null %}
+{% set campoId = grupo ? grupo ~ '_' ~ campo.codigo : campo.codigo %}
+{% set opciones = campo.opciones ?? [] %}
+{% set usarOpcionesCompactas = campo.tipo == 'seleccion' and opciones|length >= 2 and opciones|length <= 4 %}
 
-<div class="mb-3">
+<div class="budget-flow-field budget-flow-field--{{ campo.tipo == 'seleccion' and usarOpcionesCompactas ? 'selection-buttons' : campo.tipo }}">
 
-    <label for="{{ campo.codigo }}" class="form-label">
+    <label
+        {% if campo.tipo == 'booleano' or usarOpcionesCompactas %}
+            id="{{ campoId }}_label"
+        {% else %}
+            for="{{ campoId }}"
+        {% endif %}
+        class="budget-flow-field-label"
+    >
         {{ campo.etiqueta ?? campo.codigo }}
 
         {% if campo.obligatorio ?? false %}
-            <span class="text-danger">*</span>
+            <span class="text-danger budget-flow-required" aria-label="Obligatorio">*</span>
         {% endif %}
     </label>
 
@@ -27,8 +37,8 @@
 
         <input
             type="number"
-            class="form-control"
-            id="{{ campo.codigo }}"
+            class="form-control budget-flow-control"
+            id="{{ campoId }}"
             name="{{ nombreCampo }}"
             value="{{ valorActual ?? ''}}"
             {% if campo.obligatorio ?? false %}required{% endif %}
@@ -41,8 +51,8 @@
         <input
             type="number"
             step="any"
-            class="form-control"
-            id="{{ campo.codigo }}"
+            class="form-control budget-flow-control"
+            id="{{ campoId }}"
             name="{{ nombreCampo }}"
             value="{{ valorActual ?? ''}}"
             {% if campo.obligatorio ?? false %}required{% endif %}
@@ -53,49 +63,110 @@
     {% elseif campo.tipo == 'booleano' %}
 
 
-        <div class="form-check">
+        <div class="budget-flow-choice-group" role="radiogroup" aria-labelledby="{{ campoId }}_label">
+            {% set booleanActual = valorActual in [true, 1, '1', 'true'] %}
 
-            <input
-                type="hidden"
-                name="{{ nombreCampo }}"
-                value="0"
-            >
+            <span class="budget-flow-choice">
+                <input
+                    type="radio"
+                    class="budget-flow-choice-input"
+                    id="{{ campoId }}_no"
+                    name="{{ nombreCampo }}"
+                    value="0"
+                    {% if not booleanActual %}checked{% endif %}
+                >
+                <label class="budget-flow-choice-label" for="{{ campoId }}_no">
+                    No
+                </label>
+            </span>
 
-            <input
-                type="checkbox"
-                class="form-check-input"
-                id="{{ campo.codigo }}"
-                name="{{ nombreCampo }}"
-                value="1"
-                {% if valorActual %}checked{% endif %}
-            >
-
+            <span class="budget-flow-choice">
+                <input
+                    type="radio"
+                    class="budget-flow-choice-input"
+                    id="{{ campoId }}_si"
+                    name="{{ nombreCampo }}"
+                    value="1"
+                    {% if booleanActual %}checked{% endif %}
+                >
+                <label class="budget-flow-choice-label" for="{{ campoId }}_si">
+                    Sí
+                </label>
+            </span>
         </div>
 
 
     {# SELECCIÓN #}
     {% elseif campo.tipo == 'seleccion' %}
 
+        {% if usarOpcionesCompactas %}
 
-        <select
-            class="form-select"
-            id="{{ campo.codigo }}"
-            name="{{ nombreCampo }}"
-            {% if campo.obligatorio ?? false %}required{% endif %}
-        >
+            <div class="budget-flow-choice-group" role="radiogroup" aria-labelledby="{{ campoId }}_label">
+                {% if not (campo.obligatorio ?? false) %}
+                    <span class="budget-flow-choice">
+                        <input
+                            type="radio"
+                            class="budget-flow-choice-input"
+                            id="{{ campoId }}_none"
+                            name="{{ nombreCampo }}"
+                            value=""
+                            {% if valorActual is same as(null) or valorActual == '' %}checked{% endif %}
+                        >
+                        <label class="budget-flow-choice-label" for="{{ campoId }}_none">
+                            Sin preferencia
+                        </label>
+                    </span>
+                {% endif %}
 
-            <option value="">Selecciona una opción</option>
+                {% for opcion in opciones %}
+                    {% set opcionValor = opcion.codigo ?? opcion.value ?? opcion.valor ?? '' %}
+                    {% set opcionEtiqueta = opcion.etiqueta ?? opcion.label ?? opcion.nombre ?? opcionValor %}
 
-            {% for opcion in campo.opciones ?? [] %}
-                <option
-                    value="{{ opcion.codigo }}"
-                    {% if valorActual == opcion.codigo %}selected{% endif %}
-                >
-                    {{ opcion.etiqueta }}
+                    <span class="budget-flow-choice">
+                        <input
+                            type="radio"
+                            class="budget-flow-choice-input"
+                            id="{{ campoId }}_{{ loop.index }}"
+                            name="{{ nombreCampo }}"
+                            value="{{ opcionValor }}"
+                            {% if campo.obligatorio ?? false %}required{% endif %}
+                            {% if valorActual == opcionValor %}checked{% endif %}
+                        >
+                        <label class="budget-flow-choice-label" for="{{ campoId }}_{{ loop.index }}">
+                            {{ opcionEtiqueta }}
+                        </label>
+                    </span>
+                {% endfor %}
+            </div>
+
+        {% else %}
+
+            <select
+                class="form-select budget-flow-control"
+                id="{{ campoId }}"
+                name="{{ nombreCampo }}"
+                {% if campo.obligatorio ?? false %}required{% endif %}
+            >
+
+                <option value="">
+                    {{ (campo.obligatorio ?? false) ? 'Selecciona una opción' : 'Sin preferencia' }}
                 </option>
-            {% endfor %}
 
-        </select>
+                {% for opcion in opciones %}
+                    {% set opcionValor = opcion.codigo ?? opcion.value ?? opcion.valor ?? '' %}
+                    {% set opcionEtiqueta = opcion.etiqueta ?? opcion.label ?? opcion.nombre ?? opcionValor %}
+
+                    <option
+                        value="{{ opcionValor }}"
+                        {% if valorActual == opcionValor %}selected{% endif %}
+                    >
+                        {{ opcionEtiqueta }}
+                    </option>
+                {% endfor %}
+
+            </select>
+
+        {% endif %}
 
 
     {# TEXTO Y CUALQUIER TIPO NO RECONOCIDO #}
@@ -103,8 +174,8 @@
 
         <input
             type="text"
-            class="form-control"
-            id="{{ campo.codigo }}"
+            class="form-control budget-flow-control"
+            id="{{ campoId }}"
             name="{{ nombreCampo }}"
             value="{{ valorActual ?? ''}}"
             {% if campo.obligatorio ?? false %}required{% endif %}
@@ -114,7 +185,7 @@
 
 
     {% if campo.ayuda ?? false %}
-        <div class="form-text">
+        <div class="budget-flow-help">
             {{ campo.ayuda }}
         </div>
     {% endif %}

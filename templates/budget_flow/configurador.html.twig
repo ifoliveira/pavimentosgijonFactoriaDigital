@@ -4,9 +4,166 @@
     {{ configurador.nombre ?? 'Configurador' }}
 {% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .budget-flow-configurator {
+            max-width: 1180px;
+        }
+
+        .budget-flow-header {
+            margin-bottom: 1.25rem;
+        }
+
+        .budget-flow-title {
+            font-size: 1.65rem;
+            margin-bottom: .35rem;
+        }
+
+        .budget-flow-form-card {
+            border: 0;
+            box-shadow: 0 .35rem 1.2rem rgba(15, 23, 42, .08);
+        }
+
+        .budget-flow-section-title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .budget-flow-fields-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+            gap: 1rem 1.15rem;
+            align-items: start;
+        }
+
+        .budget-flow-field {
+            margin: 0;
+            min-width: 0;
+        }
+
+        .budget-flow-field--boolean,
+        .budget-flow-field--selection-buttons {
+            align-self: end;
+        }
+
+        .budget-flow-field-label {
+            display: flex;
+            gap: .25rem;
+            align-items: baseline;
+            margin-bottom: .35rem;
+            font-size: .86rem;
+            font-weight: 700;
+            color: #243447;
+        }
+
+        .budget-flow-required {
+            font-size: .85em;
+            line-height: 1;
+        }
+
+        .budget-flow-control {
+            min-height: 38px;
+            border-radius: .45rem;
+            font-size: .92rem;
+        }
+
+        .budget-flow-help {
+            margin-top: .3rem;
+            font-size: .78rem;
+            color: #6c757d;
+        }
+
+        .budget-flow-choice-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .35rem;
+        }
+
+        .budget-flow-choice {
+            position: relative;
+        }
+
+        .budget-flow-choice-input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .budget-flow-choice-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: .42rem .75rem;
+            border: 1px solid #d8dee6;
+            border-radius: .45rem;
+            background: #fff;
+            color: #344054;
+            font-size: .88rem;
+            font-weight: 600;
+            line-height: 1.15;
+            cursor: pointer;
+            transition: border-color .15s ease, background-color .15s ease, color .15s ease, box-shadow .15s ease;
+        }
+
+        .budget-flow-choice-input:checked + .budget-flow-choice-label {
+            border-color: #2962ff;
+            background: #edf3ff;
+            color: #1740a3;
+            box-shadow: inset 0 0 0 1px #2962ff;
+        }
+
+        .budget-flow-choice-input:focus-visible + .budget-flow-choice-label {
+            outline: 2px solid rgba(41, 98, 255, .28);
+            outline-offset: 2px;
+        }
+
+        .budget-flow-actions {
+            position: sticky;
+            bottom: 0;
+            z-index: 2;
+            margin-top: 1.5rem;
+            padding: .85rem 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0), #fff 28%);
+        }
+
+        @media (min-width: 992px) {
+            .budget-flow-fields-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .budget-flow-field--text {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .budget-flow-configurator {
+                padding-left: .75rem;
+                padding-right: .75rem;
+            }
+
+            .budget-flow-title {
+                font-size: 1.35rem;
+            }
+
+            .budget-flow-fields-grid {
+                grid-template-columns: 1fr;
+                gap: .85rem;
+            }
+
+            .budget-flow-choice-label,
+            .budget-flow-control {
+                min-height: 44px;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
 
-<div class="container py-4">
+<div class="container py-4 budget-flow-configurator">
 
     {% if documento is defined and documento %}
         <div class="mb-3">
@@ -19,16 +176,17 @@
         </div>
     {% endif %}
 
-    <h1>
-        {{ configurador.nombre ?? configurador.codigo }}
-    </h1>
+    <div class="budget-flow-header">
+        <h1 class="budget-flow-title">
+            {{ configurador.nombre ?? configurador.codigo }}
+        </h1>
 
-    {% if configurador.descripcion is defined and configurador.descripcion %}
-        <p class="text-muted">
-            {{ configurador.descripcion }}
-        </p>
-
-    {% endif %}
+        {% if configurador.descripcion is defined and configurador.descripcion %}
+            <p class="text-muted mb-0">
+                {{ configurador.descripcion }}
+            </p>
+        {% endif %}
+    </div>
 
     <form method="post">
 
@@ -38,12 +196,12 @@
 
                 {% set configuradorComponente = componente.configurador %}
 
-                <div class="card mb-4">
+                <div class="card budget-flow-form-card mb-4">
 
-                    <div class="card-header">
-                        <h4 class="mb-0">
+                    <div class="card-header bg-white">
+                        <h2 class="budget-flow-section-title mb-0">
                             {{ configuradorComponente.nombre }}
-                        </h4>
+                        </h2>
                     </div>
 
                     <div class="card-body">
@@ -54,15 +212,17 @@
                             </p>
                         {% endif %}
 
-                        {% for campo in configuradorComponente.campos %}
+                        <div class="budget-flow-fields-grid">
+                            {% for campo in configuradorComponente.campos %}
 
-                        {% include 'budget_flow/_campo.html.twig' with {
-                            campo: campo,
-                            valores: valores,
-                            grupo: componente.codigo
-                        } %}
+                            {% include 'budget_flow/_campo.html.twig' with {
+                                campo: campo,
+                                valores: valores,
+                                grupo: componente.codigo
+                            } %}
 
-                        {% endfor %}
+                            {% endfor %}
+                        </div>
 
                     </div>
 
@@ -72,24 +232,32 @@
 
         {% else %}
 
-            {% for campo in configurador.campos %}
+            <div class="card budget-flow-form-card">
+                <div class="card-body">
+                    <div class="budget-flow-fields-grid">
+                        {% for campo in configurador.campos %}
 
-                {% include 'budget_flow/_campo.html.twig' with {
-                    campo: campo,
-                    valores: valores,
-                    grupo: null
-                } %}
+                            {% include 'budget_flow/_campo.html.twig' with {
+                                campo: campo,
+                                valores: valores,
+                                grupo: null
+                            } %}
 
-            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
 
         {% endif %}
 
-        <button
-            type="submit"
-            class="btn btn-primary"
-        >
-            Generar
-        </button>
+        <div class="budget-flow-actions d-flex justify-content-end">
+            <button
+                type="submit"
+                class="btn btn-primary px-4"
+            >
+                Generar
+            </button>
+        </div>
 
     </form>
 

@@ -210,6 +210,7 @@ class DocumentoController extends AbstractController
         $lineaService->crearLinea(
             documento: $documento,
             descripcion: trim($request->request->get('descripcion', '')),
+            coste: $request->request->has('coste') ? (float) $request->request->get('coste') : null,
             cantidad: (float) $request->request->get('cantidad', 1),
             precio: (float) $request->request->get('precioConIva', 0),
             descuento: (float) $request->request->get('descuento', 0),
@@ -317,11 +318,13 @@ class DocumentoController extends AbstractController
             $cantidad = (float) ($linea['cantidad'] ?? 1);
             $tipoIva = (float) ($linea['tipoIva'] ?? $linea['tipo_iva'] ?? 21.0);
             $precioSinIva = (float) ($linea['precioUnitarioSinIva'] ?? $linea['precio_unitario_sin_iva'] ?? 0);
+            $costeUnitarioSinIva = (float) ($linea['costeUnitarioSinIva'] ?? $linea['coste_unitario_sin_iva'] ?? 0);
             $precioConIva = $precioSinIva * (1 + ($tipoIva / 100));
 
             $lineaService->crearLinea(
                 documento: $documento,
                 descripcion: $descripcion,
+                coste: $costeUnitarioSinIva,
                 cantidad: $cantidad,
                 precio: $precioConIva,
                 descuento: 0.0,

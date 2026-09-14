@@ -34,6 +34,7 @@
                                 <th>Descripción</th>
                                 <th class="text-end">Cantidad</th>
                                 <th>Unidad</th>
+                                <th class="text-end">Coste unitario</th>
                                 <th class="text-end">Precio unitario</th>
                                 <th class="text-end">IVA</th>
                                 <th class="text-end">Base</th>
@@ -59,7 +60,13 @@
                                     <td>
                                         {{ linea.unidad }}
                                     </td>
-
+                                    <td class="text-end">
+                                        {% if linea.costeUnitarioSinIva %} 
+                                            {{ linea.costeUnitarioSinIva|number_format(2, ',', '.') }} €
+                                        {% else %}
+                                            Coste desconocido
+                                        {% endif %}
+                                    </td>
                                     <td class="text-end">
                                         {{ linea.precioUnitarioSinIva|number_format(2, ',', '.') }} €
                                     </td>

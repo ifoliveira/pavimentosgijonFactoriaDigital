@@ -36,6 +36,7 @@ final class BudgetFlowConfiguratorService
         array $configurador,
         array $valores
     ): array {
+
         return $this->budgetFlowClient->generar(
             $configurador['codigo'],
             $this->construirEntrada($configurador, $valores)

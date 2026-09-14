@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Editor Planos 2D</title>
+    <link rel="stylesheet" href="{{ path('planos2d_asset', { path: 'css/editor.css' }) }}">
+</head>
+<body>
+    <main class="planos2d-app" data-planos2d-editor>
+        <header class="planos2d-topbar" aria-label="Herramientas del editor">
+            <div class="planos2d-brand">
+                <strong>Planos 2D</strong>
+                <span>Editor de planta</span>
+                <em data-dirty-indicator hidden>Plano modificado</em>
+            </div>
+
+            <nav class="planos2d-toolbar" aria-label="Herramientas de dibujo">
+                <div class="planos2d-tool-group">
+                    <button type="button" class="planos2d-tool-trigger" data-toolbar-group aria-expanded="false">Plano</button>
+                    <div class="planos2d-tool-band">
+                        <button type="button" data-undo-plan disabled>↶ Deshacer</button>
+                        <button type="button" data-redo-plan disabled>↷ Rehacer</button>
+                        <button type="button" data-clear-plan>Nuevo</button>
+                        <button type="button" data-import-json>Importar</button>
+                        <button type="button" data-export-json>Exportar</button>
+                        <button type="button" data-check-close>Comprobar cierre</button>
+                        <input type="file" accept="application/json,.json" data-json-file hidden>
+                    </div>
+                </div>
+
+                <div class="planos2d-tool-group">
+                    <button type="button" class="planos2d-tool-trigger" data-toolbar-group aria-expanded="false">Muros</button>
+                    <div class="planos2d-tool-band">
+                        <form class="planos2d-inline-form" data-wall-form>
+                            <label>
+                                <span>Longitud</span>
+                                <input type="number" min="1" step="1" inputmode="numeric" value="100" data-wall-length>
+                            </label>
+                            <div class="planos2d-directions" role="group" aria-label="Direccion del muro">
+                                <button type="button" class="planos2d-direction is-active" data-direction="arriba" aria-pressed="true" title="Arriba">↑</button>
+                                <button type="button" class="planos2d-direction" data-direction="derecha" aria-pressed="false" title="Derecha">→</button>
+                                <button type="button" class="planos2d-direction" data-direction="abajo" aria-pressed="false" title="Abajo">↓</button>
+                                <button type="button" class="planos2d-direction" data-direction="izquierda" aria-pressed="false" title="Izquierda">←</button>
+                            </div>
+                            <label class="planos2d-check">
+                                <input type="checkbox" data-wall-auxiliary>
+                                <span>Auxiliar</span>
+                            </label>
+                            <button type="submit" class="planos2d-primary">Añadir muro</button>
+                        </form>
+                        <button type="button" data-remove-last>Eliminar último</button>
+                    </div>
+                </div>
+
+                <div class="planos2d-tool-group">
+                    <button type="button" class="planos2d-tool-trigger" data-toolbar-group aria-expanded="false">Huecos</button>
+                    <div class="planos2d-tool-band">
+                        <form class="planos2d-inline-form" data-door-form>
+                            <strong>Puerta</strong>
+                            <label>
+                                <span>Muro</span>
+                                <select data-door-wall></select>
+                            </label>
+                            <label>
+                                <span>Inicio</span>
+                                <input type="number" min="0" step="1" inputmode="numeric" value="10" data-door-distance>
+                            </label>
+                            <label>
+                                <span>Ancho</span>
+                                <input type="number" min="1" step="1" inputmode="numeric" value="72" data-door-width>
+                            </label>
+                            <label>
+                                <span>Sentido</span>
+                                <select data-door-swing>
+                                    <option value="izquierda">Izquierda</option>
+                                    <option value="derecha">Derecha</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Apertura</span>
+                                <select data-door-side>
+                                    <option value="interior">Interior</option>
+                                    <option value="exterior">Exterior</option>
+                                </select>
+                            </label>
+                            <button type="submit" class="planos2d-primary">Añadir puerta</button>
+                        </form>
+
+                        <form class="planos2d-inline-form" data-window-form>
+                            <strong>Ventana</strong>
+                            <label>
+                                <span>Muro</span>
+                                <select data-window-wall></select>
+                            </label>
+                            <label>
+                                <span>Inicio</span>
+                                <input type="number" min="0" step="1" inputmode="numeric" value="10" data-window-distance>
+                            </label>
+                            <label>
+                                <span>Ancho</span>
+                                <input type="number" min="1" step="1" inputmode="numeric" value="80" data-window-width>
+                            </label>
+                            <button type="submit" class="planos2d-primary">Añadir ventana</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="planos2d-tool-group">
+                    <button type="button" class="planos2d-tool-trigger" data-toolbar-group aria-expanded="false">Elementos</button>
+                    <div class="planos2d-tool-band">
+                        <button type="button" data-add-shower>Plato</button>
+                        <button type="button" data-add-toilet>WC</button>
+                        <button type="button" data-add-bidet>Bidé</button>
+                        <button type="button" data-add-shower-bar>Barra ducha</button>
+                        <button type="button" data-add-hygienic-faucet>Grifo higiénico</button>
+                        <button type="button" data-add-towel-radiator>Radiador toallero</button>
+                        <button type="button" data-add-vanity>Mueble</button>
+                        <button type="button" data-add-bathtub>Bañera</button>
+                    </div>
+                </div>
+
+                <div class="planos2d-tool-group">
+                    <button type="button" class="planos2d-tool-trigger" data-toolbar-group aria-expanded="false">Cotas</button>
+                    <div class="planos2d-tool-band">
+                        <button type="button" data-toggle-element-distances aria-pressed="false">Distancias entre elementos</button>
+                    </div>
+                </div>
+
+                <div class="planos2d-tool-group">
+                    <button type="button" class="planos2d-tool-trigger" data-toolbar-group aria-expanded="false">PDF</button>
+                    <div class="planos2d-tool-band">
+                        <button type="button" data-generate-pdf>Generar PDF</button>
+                        <button type="button" data-print-plan>Imprimir</button>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <aside class="planos2d-panel" aria-label="Propiedades del plano">
+            <p class="planos2d-status" data-status role="status" aria-live="polite">Añade el primer muro para empezar.</p>
+            <section class="planos2d-recovery" data-recovery-panel hidden>
+                <p>Hay un plano de trabajo anterior.</p>
+                <div>
+                    <button type="button" class="planos2d-primary" data-recover-plan>Recuperar</button>
+                    <button type="button" data-discard-recovery>Descartar</button>
+                </div>
+            </section>
+
+            <section class="planos2d-empty-selection" data-empty-panel>
+                <h2>Propiedades</h2>
+                <p>Selecciona un elemento para editar sus propiedades.</p>
+                <dl class="planos2d-summary">
+                    <div><dt>Muros</dt><dd data-summary-walls>0</dd></div>
+                    <div><dt>Huecos</dt><dd data-summary-openings>0</dd></div>
+                    <div><dt>Piezas</dt><dd data-summary-interiors>0</dd></div>
+                </dl>
+                <section class="planos2d-compact-list" aria-label="Muros">
+                    <h3>Muros</h3>
+                    <ol data-wall-list></ol>
+                </section>
+                <section class="planos2d-compact-list" aria-label="Puertas y ventanas">
+                    <h3>Huecos</h3>
+                    <ol data-element-list></ol>
+                </section>
+            </section>
+
+            <section class="planos2d-selection" data-wall-selection-panel hidden>
+                <div class="planos2d-selection-heading">
+                    <h2>Muro seleccionado</h2>
+                </div>
+                <dl>
+                    <div><dt>Muro</dt><dd data-selected-wall-name></dd></div>
+                    <div><dt>Dirección</dt><dd data-selected-wall-direction-label></dd></div>
+                    <div><dt>Tipo</dt><dd data-selected-wall-kind></dd></div>
+                </dl>
+                <label class="planos2d-field">
+                    <span>Longitud</span>
+                    <span class="planos2d-input-group">
+                        <input type="number" min="1" step="1" inputmode="numeric" data-selected-wall-length>
+                        <span>cm</span>
+                    </span>
+                </label>
+                <label class="planos2d-field">
+                    <span>Dirección</span>
+                    <select data-selected-wall-direction>
+                        <option value="arriba">Arriba</option>
+                        <option value="derecha">Derecha</option>
+                        <option value="abajo">Abajo</option>
+                        <option value="izquierda">Izquierda</option>
+                    </select>
+                </label>
+                <label class="planos2d-check">
+                    <input type="checkbox" data-selected-wall-auxiliary>
+                    <span>Muro auxiliar / medida no tomada</span>
+                </label>
+            </section>
+
+            <section class="planos2d-selection" data-opening-selection-panel hidden>
+                <div class="planos2d-selection-heading">
+                    <h2>Hueco seleccionado</h2>
+                    <div class="planos2d-quick-actions" aria-label="Acciones del hueco seleccionado">
+                        <button type="button" data-delete-opening-selected title="Eliminar">Eliminar</button>
+                    </div>
+                </div>
+                <dl>
+                    <div><dt>Tipo</dt><dd data-selected-opening-type></dd></div>
+                    <div><dt>Muro</dt><dd data-selected-opening-wall-label></dd></div>
+                </dl>
+                <label class="planos2d-field">
+                    <span>Muro de referencia</span>
+                    <select data-selected-opening-wall></select>
+                </label>
+                <label class="planos2d-field">
+                    <span>Distancia desde inicio</span>
+                    <span class="planos2d-input-group">
+                        <input type="number" min="0" step="1" inputmode="numeric" data-selected-opening-distance>
+                        <span>cm</span>
+                    </span>
+                </label>
+                <label class="planos2d-field">
+                    <span>Ancho</span>
+                    <span class="planos2d-input-group">
+                        <input type="number" min="1" step="1" inputmode="numeric" data-selected-opening-width>
+                        <span>cm</span>
+                    </span>
+                </label>
+                <div data-selected-opening-door-fields>
+                    <label class="planos2d-field">
+                        <span>Sentido</span>
+                        <select data-selected-opening-swing>
+                            <option value="izquierda">Izquierda</option>
+                            <option value="derecha">Derecha</option>
+                        </select>
+                    </label>
+                    <label class="planos2d-field">
+                        <span>Apertura</span>
+                        <select data-selected-opening-side>
+                            <option value="interior">Interior</option>
+                            <option value="exterior">Exterior</option>
+                        </select>
+                    </label>
+                </div>
+            </section>
+
+            <section class="planos2d-selection" data-selection-panel hidden>
+                <div class="planos2d-selection-heading">
+                    <h2>Elemento seleccionado</h2>
+                    <div class="planos2d-quick-actions" aria-label="Acciones del elemento seleccionado">
+                        <button type="button" data-rotate-selected-90 title="Girar 90°">Girar 90°</button>
+                        <button type="button" data-duplicate-selected title="Duplicar">Duplicar</button>
+                        <button type="button" data-stick-selected title="Pegar a pared">Pegar</button>
+                        <button type="button" data-delete-selected title="Eliminar">Eliminar</button>
+                    </div>
+                </div>
+                <dl>
+                    <div><dt>Tipo</dt><dd data-selected-type></dd></div>
+                    <div><dt>X</dt><dd data-selected-x></dd></div>
+                    <div><dt>Y</dt><dd data-selected-y></dd></div>
+                    <div><dt>Rotación</dt><dd data-selected-rotation></dd></div>
+                </dl>
+                <label class="planos2d-field">
+                    <span>Ancho</span>
+                    <span class="planos2d-input-group">
+                        <input type="number" min="1" step="1" inputmode="numeric" data-selected-width>
+                        <span>cm</span>
+                    </span>
+                </label>
+                <label class="planos2d-field">
+                    <span>Fondo</span>
+                    <span class="planos2d-input-group">
+                        <input type="number" min="1" step="1" inputmode="numeric" data-selected-depth>
+                        <span>cm</span>
+                    </span>
+                </label>
+                <div class="planos2d-rotation" role="group" aria-label="Rotación">
+                    <button type="button" data-rotate="0">0°</button>
+                    <button type="button" data-rotate="90">90°</button>
+                    <button type="button" data-rotate="180">180°</button>
+                    <button type="button" data-rotate="270">270°</button>
+                </div>
+                <section class="planos2d-precision">
+                    <h3>Distancias</h3>
+                    <label class="planos2d-check">
+                        <input type="checkbox" data-snap-enabled>
+                        <span>Ajuste automático</span>
+                    </label>
+                    <label class="planos2d-field">
+                        <span>Pared vertical</span>
+                        <select data-vertical-reference></select>
+                    </label>
+                    <label class="planos2d-field">
+                        <span>Distancia</span>
+                        <span class="planos2d-input-group">
+                            <input type="text" inputmode="decimal" data-vertical-distance>
+                            <span>cm</span>
+                        </span>
+                    </label>
+                    <button type="button" data-stick-vertical>Pegar a pared vertical</button>
+                    <label class="planos2d-field">
+                        <span>Pared horizontal</span>
+                        <select data-horizontal-reference></select>
+                    </label>
+                    <label class="planos2d-field">
+                        <span>Distancia</span>
+                        <span class="planos2d-input-group">
+                            <input type="text" inputmode="decimal" data-horizontal-distance>
+                            <span>cm</span>
+                        </span>
+                    </label>
+                    <button type="button" data-stick-horizontal>Pegar a pared horizontal</button>
+                    <button type="button" class="planos2d-primary" data-apply-position>Aplicar</button>
+                </section>
+            </section>
+        </aside>
+
+        <section class="planos2d-canvas" aria-label="Vista del plano">
+            <header class="planos2d-print-header">
+                <h2>PLANO 2D</h2>
+                <p data-print-date></p>
+                <p>Medidas en centímetros. Escala ajustada a página.</p>
+            </header>
+            <svg data-plan-svg role="img" aria-label="Plano de planta generado con muros consecutivos"></svg>
+        </section>
+    </main>
+
+    <script type="module" src="{{ path('planos2d_asset', { path: 'js/editor.js' }) }}"></script>
+</body>
+</html>

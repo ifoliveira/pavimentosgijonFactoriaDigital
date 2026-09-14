@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fixture arcos de puertas</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #172033;
+            background: #f5f7fb;
+        }
+
+        h1 {
+            margin: 0 0 18px;
+            font-size: 22px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
+
+        .case {
+            background: #fff;
+            border: 1px solid #d7dde8;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .case h2 {
+            margin: 0 0 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        svg {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1;
+            background: #fff;
+        }
+
+        .wall {
+            stroke: #1d293f;
+            stroke-width: 3;
+            stroke-linecap: round;
+        }
+
+        .leaf {
+            stroke: #1d293f;
+            stroke-width: 2;
+            stroke-linecap: square;
+        }
+
+        .arc {
+            fill: none;
+            stroke: #176b87;
+            stroke-width: 1.5;
+        }
+
+        .side {
+            fill: none;
+            stroke: #b7c0ce;
+            stroke-width: 1;
+            stroke-dasharray: 4 4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fixture visual: arcos de puertas</h1>
+    <div class="grid" data-fixture></div>
+
+    <script type="module">
+        import { describirArcoPuerta } from '../js/render-svg.js';
+
+        const SVG_NS = 'http://www.w3.org/2000/svg';
+        const direcciones = {
+            derecha: { x: 1, y: 0 },
+            abajo: { x: 0, y: -1 },
+            izquierda: { x: -1, y: 0 },
+            arriba: { x: 0, y: 1 },
+        };
+        const casos = [];
+
+        Object.entries(direcciones).forEach(([direccion, tangente]) => {
+            ['interior', 'exterior'].forEach((ladoApertura) => {
+                ['izquierda', 'derecha'].forEach((sentidoApertura) => {
+                    casos.push({ direccion, tangente, ladoApertura, sentidoApertura });
+                });
+            });
+        });
+
+        const contenedor = document.querySelector('[data-fixture]');
+        casos.forEach((caso) => contenedor.appendChild(crearCaso(caso)));
+
+        function crearCaso(caso) {
+            const ancho = 54;
+            const origen = { x: 70, y: 70 };
+            const inicioHueco = origen;
+            const finHueco = {
+                x: origen.x + caso.tangente.x * ancho,
+                y: origen.y + caso.tangente.y * ancho,
+            };
+            const exterior = { x: caso.tangente.y, y: -caso.tangente.x };
+            const lado = caso.ladoApertura === 'exterior' ? exterior : { x: -exterior.x, y: -exterior.y };
+            const abreDerecha = caso.sentidoApertura === 'derecha';
+            const bisagra = abreDerecha ? inicioHueco : finHueco;
+            const extremoMuro = abreDerecha ? finHueco : inicioHueco;
+            const extremoHoja = {
+                x: bisagra.x + lado.x * ancho,
+                y: bisagra.y + lado.y * ancho,
+            };
+            const hoja = { bisagra, extremoMuro, extremoHoja, radio: ancho };
+            const tarjeta = document.createElement('section');
+            tarjeta.className = 'case';
+            tarjeta.innerHTML = `<h2>${caso.direccion} - bisagra ${caso.sentidoApertura} - ${caso.ladoApertura}</h2>`;
+            const svg = crearSvg('svg', { viewBox: '-20 -140 190 190' });
+
+            svg.appendChild(crearSvg('line', {
+                class: 'side',
+                x1: inicioHueco.x,
+                y1: toSvgY(inicioHueco.y),
+                x2: inicioHueco.x + lado.x * ancho,
+                y2: toSvgY(inicioHueco.y + lado.y * ancho),
+            }));
+            svg.appendChild(crearSvg('line', {
+                class: 'wall',
+                x1: inicioHueco.x - caso.tangente.x * 28,
+                y1: toSvgY(inicioHueco.y - caso.tangente.y * 28),
+                x2: inicioHueco.x,
+                y2: toSvgY(inicioHueco.y),
+            }));
+            svg.appendChild(crearSvg('line', {
+                class: 'wall',
+                x1: finHueco.x,
+                y1: toSvgY(finHueco.y),
+                x2: finHueco.x + caso.tangente.x * 28,
+                y2: toSvgY(finHueco.y + caso.tangente.y * 28),
+            }));
+            svg.appendChild(crearSvg('line', {
+                class: 'leaf',
+                x1: hoja.bisagra.x,
+                y1: toSvgY(hoja.bisagra.y),
+                x2: hoja.extremoHoja.x,
+                y2: toSvgY(hoja.extremoHoja.y),
+            }));
+            svg.appendChild(crearSvg('path', {
+                class: 'arc',
+                d: describirArcoPuerta(hoja),
+            }));
+
+            tarjeta.appendChild(svg);
+            return tarjeta;
+        }
+
+        function crearSvg(tag, atributos) {
+            const elemento = document.createElementNS(SVG_NS, tag);
+            Object.entries(atributos).forEach(([nombre, valor]) => elemento.setAttribute(nombre, valor));
+            return elemento;
+        }
+
+        function toSvgY(y) {
+            return -y;
+        }
+    </script>
+</body>
+</html>

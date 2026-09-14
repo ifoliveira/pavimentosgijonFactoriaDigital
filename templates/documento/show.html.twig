@@ -481,11 +481,9 @@
                                         <td class="text-end">{{ linea.cantidad|number_format(0, ',', '.') }}</td>
                                         <td>{{ linea.unidad }}</td>
                                         {% if linea.precioCosteUnitario > 0 %}
-
-                                                <td>{{ ((linea.precioUnitario - linea.precioCosteUnitario) * linea.cantidad)|number_format(2, ',', '.') }} €</td>
-
+                                            <td class="text-end">{{ linea.precioCosteUnitario|number_format(2, ',', '.') }} €</td>
                                         {% else %}
-                                            <td>[No disponible]</td>
+                                            <td class="text-end">[No disponible]</td>
                                         {% endif %}
 
                                         <td class="text-end">
@@ -515,7 +513,8 @@
                                                                 {{ linea.descuento }},
                                                                 {{ linea.producto ? linea.producto.id : 'null' }},
                                                                 '{{ linea.producto ? linea.producto.descripcionPd|e('js') : '' }}',
-                                                                '{{ linea.destinoFacturacion }}'
+                                                                '{{ linea.destinoFacturacion }}',
+                                                                {{ linea.precioCosteUnitario|default(linea.costeUnitario)|default(0) }}
                                                             )">
                                                         Editar
                                                     </button>
@@ -826,6 +825,7 @@
     <input type="hidden" name="tipoLinea" id="hidden-tipo-linea" value="producto">
     <input type="hidden" name="lineaId" id="hidden-linea-id" value="">
     <input type="hidden" name="origenLinea" id="hidden-origen-linea" value="manual">
+    <input type="hidden" name="coste" id="hidden-coste" value="">
 
     {# ── PRODUCTO: FASE 1 BUSCADOR ───────────────────────── #}
     <div id="fase-busqueda-producto">
@@ -1308,8 +1308,9 @@
         }) + ' €';
     }
 
-    function abrirEdicion(id, tipo, descripcion, cantidad, precio, descuento, productoId, productoNombre, destinoFacturacion) {
+    function abrirEdicion(id, tipo, descripcion, cantidad, precio, descuento, productoId, productoNombre, destinoFacturacion, coste) {
         document.getElementById('hidden-linea-id').value = id;
+        document.getElementById('hidden-coste').value = coste || 0;
         document.getElementById('offcanvas-title').textContent = 'Editar línea';
         document.getElementById('offcanvas-subtitle').textContent = 'Modifica los datos de la línea';
         document.querySelector('#form-linea [type="submit"]').textContent = 'Guardar cambios';
@@ -1723,6 +1724,7 @@
         document.getElementById('hidden-producto-id').value = '';
         document.getElementById('hidden-tipo-linea').value = 'producto';
         document.getElementById('hidden-origen-linea').value = 'manual';
+        document.getElementById('hidden-coste').value = '';
         document.getElementById('f-destino-facturacion').value = 'ticket_tienda';
 
         document.getElementById('producto-search').value = '';
@@ -1794,6 +1796,7 @@
         document.getElementById('hidden-producto-id').value = '';
         document.getElementById('hidden-tipo-linea').value = 'producto';
         document.getElementById('hidden-origen-linea').value = 'manual';
+        document.getElementById('hidden-coste').value = '';
 
         document.getElementById('f-destino-facturacion').value = 'ticket_tienda';
 

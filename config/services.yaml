@@ -89,6 +89,12 @@ services:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
+    App\Planos2D\Controller\:
+        resource: '../src/Planos2D/Controller/'
+        tags: ['controller.service_arguments']
+        bind:
+            $projectDir: '%kernel.project_dir%'
+
 
     App\Service\FacturaPdfToJsonService:
         arguments:

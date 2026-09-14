@@ -1,0 +1,3 @@
+planos2d_controllers:
+    resource: ../../src/Planos2D/Controller/
+    type: annotation

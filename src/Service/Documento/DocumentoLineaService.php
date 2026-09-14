@@ -29,6 +29,7 @@ class DocumentoLineaService
     public function crearLinea(
         Documento $documento,
         string $descripcion,
+        ?float $coste,
         float $cantidad,
         float $precio,
         float $descuento,
@@ -129,11 +130,13 @@ class DocumentoLineaService
                 $linea->setOrigenLinea('producto');
                 $linea->setCatalogoProducto(null);
 
-                if (method_exists($producto, 'getPrecioPd')) {
-                    $linea->setPrecioCosteUnitario(number_format((float) $producto->getPrecioPd(), 2, '.', ''));
-                } else {
-                    $linea->setPrecioCosteUnitario('0.00');
-                }
+                $costeUnitario = method_exists($producto, 'getPrecioPd')
+                    ? (float) $producto->getPrecioPd()
+                    : 0.0;
+
+                $linea->setCosteUnitario(number_format($costeUnitario, 2, '.', ''));
+                $linea->setCosteUnitarioBase(number_format($costeUnitario, 2, '.', ''));
+                $linea->setPrecioCosteUnitario(number_format($costeUnitario, 2, '.', ''));
             } else {
                 // Si por lo que sea llega un id inválido, no bloqueamos la creación.
                 $linea->setProducto(null);
@@ -152,9 +155,12 @@ class DocumentoLineaService
             // respetamos el origen que venga del formulario.
             $linea->setOrigenLinea($origenLinea ?: 'manual');
 
-            // De momento, si no hay producto/stock asociado, coste 0.
-            // Más adelante, si viene de stock, aquí se podrá coger el coste de StockReserva.
-            $linea->setCosteUnitario('0.00');
+            $costeUnitario = $coste !== null
+                ? (float) $coste
+                : (float) ($linea->getPrecioCosteUnitario() ?? $linea->getCosteUnitario());
+            $linea->setCosteUnitario(number_format($costeUnitario, 2, '.', ''));
+            $linea->setCosteUnitarioBase(number_format($costeUnitario, 2, '.', ''));
+            $linea->setPrecioCosteUnitario(number_format($costeUnitario, 2, '.', ''));
         }
 
         /*

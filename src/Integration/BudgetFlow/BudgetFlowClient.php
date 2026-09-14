@@ -52,6 +52,7 @@ final class BudgetFlowClient
 
     public function generar(string $codigo, array $datos): array
     {
+
         $response = $this->budgetFlowClient->request(
             'POST',
             sprintf(
