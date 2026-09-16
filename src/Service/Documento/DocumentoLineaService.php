@@ -121,8 +121,10 @@ class DocumentoLineaService
     ): DocumentoLinea {
 
         $descripcionFormateada = $this->descripcionPresupuestoFormatter->formatear($descripcion);
+        $esEdicion = $lineaId > 0;
+        $productoAnteriorId = null;
 
-        if ($lineaId) {
+        if ($esEdicion) {
             // editar línea existente
             $linea = $this->lineaRepository->find($lineaId);
 
@@ -140,6 +142,7 @@ class DocumentoLineaService
                 $documento->addLinea($linea);
             }
 
+            $productoAnteriorId = $linea->getProducto()?->getId();
             $linea->setDescripcion(trim($descripcion));
             $linea->setTipoLinea($tipo);
 
@@ -209,19 +212,26 @@ class DocumentoLineaService
                 $linea->setOrigenLinea('producto');
                 $linea->setCatalogoProducto(null);
 
-                $costeUnitario = method_exists($producto, 'getPrecioPd')
-                    ? (float) $producto->getPrecioPd()
-                    : 0.0;
+                if (!$esEdicion || $productoAnteriorId !== $producto->getId()) {
+                    $costeUnitario = method_exists($producto, 'getPrecioPd')
+                        ? (float) $producto->getPrecioPd()
+                        : 0.0;
 
-                $linea->setCosteUnitario(number_format($costeUnitario, 2, '.', ''));
-                $linea->setCosteUnitarioBase(number_format($costeUnitario, 2, '.', ''));
-                $linea->setPrecioCosteUnitario(number_format($costeUnitario, 2, '.', ''));
+                    $linea->setCosteUnitario(number_format($costeUnitario, 2, '.', ''));
+                    $linea->setCosteUnitarioBase(number_format($costeUnitario, 2, '.', ''));
+                    $linea->setPrecioCosteUnitario(number_format($costeUnitario, 2, '.', ''));
+                }
             } else {
                 // Si por lo que sea llega un id inválido, no bloqueamos la creación.
                 $linea->setProducto(null);
                 $linea->setCatalogoProducto(null);
                 $linea->setOrigenLinea($origenLinea ?: 'manual');
-                $linea->setCosteUnitario('0.00');
+
+                if (!$esEdicion) {
+                    $linea->setCosteUnitario('0.00');
+                    $linea->setCosteUnitarioBase('0.00');
+                    $linea->setPrecioCosteUnitario('0.00');
+                }
             }
 
           
@@ -234,12 +244,12 @@ class DocumentoLineaService
             // respetamos el origen que venga del formulario.
             $linea->setOrigenLinea($origenLinea ?: 'manual');
 
-            $costeUnitario = $coste !== null
-                ? (float) $coste
-                : (float) ($linea->getPrecioCosteUnitario() ?? $linea->getCosteUnitario());
-            $linea->setCosteUnitario(number_format($costeUnitario, 2, '.', ''));
-            $linea->setCosteUnitarioBase(number_format($costeUnitario, 2, '.', ''));
-            $linea->setPrecioCosteUnitario(number_format($costeUnitario, 2, '.', ''));
+            if (!$esEdicion) {
+                $costeUnitario = $coste !== null ? (float) $coste : 0.0;
+                $linea->setCosteUnitario(number_format($costeUnitario, 2, '.', ''));
+                $linea->setCosteUnitarioBase(number_format($costeUnitario, 2, '.', ''));
+                $linea->setPrecioCosteUnitario(number_format($costeUnitario, 2, '.', ''));
+            }
         }
 
         /*
@@ -327,7 +337,6 @@ class DocumentoLineaService
         $cantidad = (float) $linea->getCantidad();
         $descuento = (float) $linea->getDescuento();
         $tipoIva = (float) $linea->getTipoIva();
-        $costeUnitario = (float) $linea->getCosteUnitario();
 
         if ($tipoIva < 0) {
             $tipoIva = 0;
@@ -365,38 +374,48 @@ class DocumentoLineaService
         */
         $totalIva = round($totalConIva - $subtotal, 2);
 
-        /*
-        * 5. Coste
-        */
-        $totalCoste = round($cantidad * $costeUnitario, 2);
-
         $linea->setPrecioUnitario(number_format($precioSinIva, 4, '.', ''));
         $linea->setSubtotal(number_format($subtotal, 2, '.', ''));
         $linea->setTotalIva(number_format($totalIva, 2, '.', ''));
-        $linea->setTotalCoste(number_format($totalCoste, 2, '.', ''));
+        $this->documentoCalculatorService->recalcularCosteLinea($linea);
     }
 
     public function recalcularTotalesDocumento(Documento $documento): void
         {
             $baseImponible = 0.0;
             $totalIva = 0.0;
-            $totalCoste = 0.0;
 
             foreach ($documento->getLineas() as $linea) {
                 $baseImponible += (float) $linea->getSubtotal();
                 $totalIva += (float) $linea->getTotalIva();
-                if ( (float) $linea->getPrecioCosteUnitario() <> 0) {
-                    $totalCoste += (float) $linea->getPrecioCosteUnitario() * (float) $linea->getCantidad();
-                } else {
-                    $totalCoste += (float) $linea->getSubtotal();
-                }
             }
 
             $documento->setBaseImponible(number_format($baseImponible, 2, '.', ''));
             $documento->setTotalIva(number_format($totalIva, 2, '.', ''));
             $documento->setTotal(number_format($baseImponible + $totalIva, 2, '.', ''));
-            $documento->setTotalCoste(number_format($totalCoste, 2, '.', ''));
+            $this->documentoCalculatorService->recalcularCostesDocumento($documento);
         }  
+
+    public function actualizarCosteEstimado(DocumentoLinea $linea, float $costeUnitario): void
+    {
+        if (!is_finite($costeUnitario) || $costeUnitario < 0) {
+            throw new \InvalidArgumentException('El coste estimado debe ser un número mayor o igual que cero.');
+        }
+
+        $documento = $linea->getDocumento();
+
+        if (!$documento) {
+            throw new \RuntimeException('La línea no tiene documento asociado.');
+        }
+
+        $costeNormalizado = number_format(round($costeUnitario, 2), 2, '.', '');
+
+        $linea->setCosteUnitario($costeNormalizado);
+        $linea->setCosteUnitarioBase($costeNormalizado);
+
+        $this->documentoCalculatorService->recalcularCostesDocumento($documento);
+        $this->em->flush();
+    }
 
     public function eliminarLinea(DocumentoLinea $linea): void
     {

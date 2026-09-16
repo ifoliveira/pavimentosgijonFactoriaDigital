@@ -11,20 +11,18 @@ class DocumentoCalculatorService
     {
         $baseImponible = '0.00';
         $totalIva = '0.00';
-        $totalCoste = '0.00';
 
         foreach ($documento->getLineas() as $linea) {
             $this->recalcularLinea($linea);
 
             $baseImponible = bcadd($baseImponible, $linea->getSubtotal(), 2);
             $totalIva = bcadd($totalIva, $linea->getTotalIva(), 2);
-            $totalCoste = bcadd($totalCoste, $linea->getTotalCoste(), 2);
         }
 
         $documento->setBaseImponible($baseImponible);
         $documento->setTotalIva($totalIva);
         $documento->setTotal(bcadd($baseImponible, $totalIva, 2));
-        $documento->setTotalCoste($totalCoste);
+        $this->actualizarTotalCosteDocumento($documento);
     }
 
     public function analizarMaterialesFactura(Documento $documento): array
@@ -90,7 +88,6 @@ class DocumentoCalculatorService
     {
         $cantidad = $this->normalizarDecimal($linea->getCantidad(), 3);
         $precioUnitario = $this->normalizarDecimal($linea->getPrecioUnitario(), 2);
-        $costeUnitario = $this->normalizarDecimal($linea->getCosteUnitario(), 2);
         $descuento = $this->normalizarDecimal($linea->getDescuento(), 2);
         $tipoIva = $this->normalizarDecimal($linea->getTipoIva(), 2);
 
@@ -106,12 +103,38 @@ class DocumentoCalculatorService
         // iva
         $totalIva = bcmul($subtotal, bcdiv($tipoIva, '100', 6), 4);
 
-        // coste
-        $totalCoste = bcmul($cantidad, $costeUnitario, 4);
-
         $linea->setSubtotal($this->redondear($subtotal, 2));
         $linea->setTotalIva($this->redondear($totalIva, 2));
+        $this->recalcularCosteLinea($linea);
+    }
+
+    public function recalcularCostesDocumento(Documento $documento): void
+    {
+        foreach ($documento->getLineas() as $linea) {
+            $this->recalcularCosteLinea($linea);
+        }
+
+        $this->actualizarTotalCosteDocumento($documento);
+    }
+
+    public function recalcularCosteLinea(DocumentoLinea $linea): void
+    {
+        $cantidad = $this->normalizarDecimal($linea->getCantidad(), 3);
+        $costeUnitario = $this->normalizarDecimal($linea->getCosteUnitario(), 2);
+        $totalCoste = bcmul($cantidad, $costeUnitario, 4);
+
         $linea->setTotalCoste($this->redondear($totalCoste, 2));
+    }
+
+    private function actualizarTotalCosteDocumento(Documento $documento): void
+    {
+        $totalCoste = '0.00';
+
+        foreach ($documento->getLineas() as $linea) {
+            $totalCoste = bcadd($totalCoste, $linea->getTotalCoste(), 2);
+        }
+
+        $documento->setTotalCoste($totalCoste);
     }
 
     private function normalizarDecimal(string|int|float|null $valor, int $scale = 2): string

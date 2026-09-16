@@ -209,6 +209,10 @@ class DocumentoController extends AbstractController
         $productoId = $request->request->get('productoId') ?: null;
         $tipoLinea = $request->request->get('tipoLinea', 'producto');
         $origenLinea = $request->request->get('origenLinea', 'manual');
+        $modoLinea = $request->request->get('modoLinea', 'crear');
+        $lineaId = $modoLinea === 'editar'
+            ? (int) ($request->request->get('lineaId') ?: 0)
+            : 0;
 
         if ($productoId) {
             $origenLinea = 'producto';
@@ -248,12 +252,14 @@ class DocumentoController extends AbstractController
         $lineaService->crearLinea(
             documento: $documento,
             descripcion: trim($request->request->get('descripcion', '')),
-            coste: $request->request->has('coste') ? (float) $request->request->get('coste') : null,
+            coste: $lineaId === 0 && $request->request->has('coste')
+                ? (float) $request->request->get('coste')
+                : null,
             cantidad: (float) $request->request->get('cantidad', 1),
             precio: (float) $request->request->get('precioConIva', 0),
             descuento: (float) $request->request->get('descuento', 0),
             productoId: $productoId,
-            lineaId: (int) ($request->request->get('lineaId') ?: 0),
+            lineaId: $lineaId,
             tipo: $tipoLinea,
             destinoFacturacion: $destinoFacturacion,
             origenLinea: $origenLinea,
@@ -269,6 +275,59 @@ class DocumentoController extends AbstractController
         }
 
         $this->addFlash('success', 'Línea guardada correctamente');
+
+        return $this->redirectToRoute('app_documento_show', [
+            'id' => $documento->getId(),
+        ]);
+    }
+
+    #[Route('/linea/{id}/coste', name: 'app_documento_linea_actualizar_coste', methods: ['POST'])]
+    public function actualizarCosteLinea(
+        Request $request,
+        DocumentoLinea $linea,
+        DocumentoLineaService $lineaService,
+        DocumentoAccionesService $documentoAccionesService
+    ): Response {
+        $documento = $linea->getDocumento();
+
+        if (!$documento) {
+            throw $this->createNotFoundException('La línea no tiene documento asociado.');
+        }
+
+        if (!$this->isCsrfTokenValid(
+            'documento-linea-coste-' . $linea->getId(),
+            $request->request->get('_token')
+        )) {
+            throw $this->createAccessDeniedException('Token CSRF no válido.');
+        }
+
+        $acciones = $documentoAccionesService->getAccionesDisponibles($documento);
+
+        if ($documento->getTipoDocumento() !== 'presupuesto' || !$acciones['puedeEditarLineas']) {
+            throw $this->createAccessDeniedException('El coste de esta línea no se puede modificar.');
+        }
+
+        if (!in_array($linea->getTipoLinea(), ['producto', 'servicio', 'mano_obra'], true)) {
+            throw $this->createAccessDeniedException('Este tipo de línea no admite coste estimado editable.');
+        }
+
+        $costeRecibido = trim((string) $request->request->get('costeUnitario', ''));
+        $costeNormalizado = str_replace(',', '.', $costeRecibido);
+
+        if (!preg_match('/^\d{1,8}(?:\.\d{1,2})?$/', $costeNormalizado)) {
+            $this->addFlash('error', 'Introduce un coste válido, mayor o igual que cero y con un máximo de dos decimales.');
+
+            return $this->redirectToRoute('app_documento_show', [
+                'id' => $documento->getId(),
+            ]);
+        }
+
+        try {
+            $lineaService->actualizarCosteEstimado($linea, (float) $costeNormalizado);
+            $this->addFlash('success', 'Coste estimado actualizado correctamente.');
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
 
         return $this->redirectToRoute('app_documento_show', [
             'id' => $documento->getId(),

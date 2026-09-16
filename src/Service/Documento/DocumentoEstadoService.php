@@ -244,23 +244,20 @@ class DocumentoEstadoService
         $baseImponible = 0.0;
         $totalIva = 0.0;
         $total = 0.0;
-        $totalCoste = 0.0;
 
         foreach ($documento->getLineas() as $linea) {
             $subtotal = (float) $linea->getSubtotal();
             $iva = (float) $linea->getTotalIva();
-            $coste = (float) $linea->getTotalCoste();
 
             $baseImponible += $subtotal;
             $totalIva += $iva;
             $total += $subtotal + $iva;
-            $totalCoste += $coste;
         }
 
         $documento->setBaseImponible(number_format($baseImponible, 2, '.', ''));
         $documento->setTotalIva(number_format($totalIva, 2, '.', ''));
         $documento->setTotal(number_format($total, 2, '.', ''));
-        $documento->setTotalCoste(number_format($totalCoste, 2, '.', ''));
+        $this->documentoCalculatorService->recalcularCostesDocumento($documento);
     }
 
     private function copiarManoObra(Documento $presupuestoOrigen, Documento $factura): void

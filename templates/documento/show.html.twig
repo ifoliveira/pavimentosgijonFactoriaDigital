@@ -563,7 +563,8 @@
                         </a>
                         <button class="btn btn-sm btn-primary"
                                 data-bs-toggle="offcanvas"
-                                data-bs-target="#offcanvasLinea">
+                                data-bs-target="#offcanvasLinea"
+                                onclick="abrirNuevaLinea()">
                             Añadir línea
                         </button>
                         {% endif %}
@@ -580,7 +581,7 @@
                                     <th>Descripción</th>
                                     <th class="text-end" style="width: 90px;">Cant.</th>
                                     <th style="width: 80px;">Unidad</th>
-                                    <th class="text-end" style="width: 110px;">Coste</th>
+                                    <th class="text-end" style="width: 130px;">Coste estimado</th>
                                     <th class="text-end" style="width: 110px;">Precio</th>
                                     <th class="text-end" style="width: 90px;">Dto.</th>
                                     <th class="text-end" style="width: 90px;">IVA</th>
@@ -613,11 +614,12 @@
                                         </td>
                                         <td class="text-end">{{ linea.cantidad|number_format(0, ',', '.') }}</td>
                                         <td>{{ linea.unidad }}</td>
-                                        {% if linea.precioCosteUnitario > 0 %}
-                                            <td class="text-end">{{ linea.precioCosteUnitario|number_format(2, ',', '.') }} €</td>
-                                        {% else %}
-                                            <td class="text-end">[No disponible]</td>
-                                        {% endif %}
+                                        <td class="text-end">
+                                            <div>{{ linea.costeUnitario|number_format(2, ',', '.') }} €</div>
+                                            <div class="small text-muted">
+                                                Total: {{ linea.totalCoste|number_format(2, ',', '.') }} €
+                                            </div>
+                                        </td>
 
                                         <td class="text-end">
                                             {{ linea.precioUnitario|number_format(2, ',', '.') }} €
@@ -647,7 +649,9 @@
                                                                 {{ linea.producto ? linea.producto.id : 'null' }},
                                                                 '{{ linea.producto ? linea.producto.descripcionPd|e('js') : '' }}',
                                                                 '{{ linea.destinoFacturacion }}',
-                                                                {{ linea.precioCosteUnitario|default(linea.costeUnitario)|default(0) }}
+                                                                {{ linea.costeUnitario|default(0) }},
+                                                                '{{ path('app_documento_linea_actualizar_coste', {id: linea.id})|e('js') }}',
+                                                                '{{ csrf_token('documento-linea-coste-' ~ linea.id)|e('js') }}'
                                                             )">
                                                         Editar
                                                     </button>
@@ -957,8 +961,8 @@
     <input type="hidden" name="productoId" id="hidden-producto-id">
     <input type="hidden" name="tipoLinea" id="hidden-tipo-linea" value="producto">
     <input type="hidden" name="lineaId" id="hidden-linea-id" value="">
+    <input type="hidden" name="modoLinea" id="hidden-modo-linea" value="crear">
     <input type="hidden" name="origenLinea" id="hidden-origen-linea" value="manual">
-    <input type="hidden" name="coste" id="hidden-coste" value="">
     <input type="hidden" name="tipoIvaFacturaActual" id="hidden-tipo-iva-factura-actual" value="{{ ivaFacturaEstado.valor ?? 21 }}">
 
     {# ── PRODUCTO: FASE 1 BUSCADOR ───────────────────────── #}
@@ -1247,6 +1251,46 @@
       </div>
     </div>
 
+    <div id="bloque-coste-estimado" class="d-none border-top px-4 py-3 bg-light-subtle">
+      <div class="small fw-semibold mb-2">Coste estimado</div>
+      <div class="row g-2 align-items-end">
+        <div class="col-7">
+          <label for="f-coste-estimado" class="form-label-upper">
+            Coste estimado unitario s/IVA
+          </label>
+          <div class="input-group input-group-sm">
+            <input type="number"
+                   name="costeUnitario"
+                   id="f-coste-estimado"
+                   class="form-control text-end"
+                   min="0"
+                   max="99999999.99"
+                   step="0.01"
+                   required
+                   form="form-coste-linea">
+            <span class="input-group-text">€</span>
+          </div>
+        </div>
+        <div class="col-5">
+          <label for="f-coste-total-estimado" class="form-label-upper">
+            Coste estimado línea
+          </label>
+          <input type="text"
+                 id="f-coste-total-estimado"
+                 class="form-control form-control-sm text-end bg-white"
+                 value="0,00 €"
+                 readonly>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end mt-3">
+        <button type="submit"
+                class="btn btn-sm btn-outline-primary"
+                form="form-coste-linea">
+          Guardar coste
+        </button>
+      </div>
+    </div>
+
     <div class="offcanvas-footer border-top px-4 py-3 d-flex justify-content-end gap-2">
       <button type="button"
               class="btn btn-sm btn-modal-cancel"
@@ -1254,10 +1298,14 @@
         Cancelar
       </button>
       <button type="submit"
+              id="btn-guardar-linea"
               class="btn btn-sm btn-modal-save">
         Añadir línea
       </button>
     </div>
+  </form>
+  <form method="post" id="form-coste-linea" class="d-none">
+    <input type="hidden" name="_token" id="token-coste-linea" value="">
   </form>
 </div>
 
@@ -1501,12 +1549,12 @@
         }) + ' €';
     }
 
-    function abrirEdicion(id, tipo, descripcion, cantidad, precio, descuento, productoId, productoNombre, destinoFacturacion, coste) {
+    function abrirEdicion(id, tipo, descripcion, cantidad, precio, descuento, productoId, productoNombre, destinoFacturacion, coste, urlCoste, tokenCoste) {
+        document.getElementById('hidden-modo-linea').value = 'editar';
         document.getElementById('hidden-linea-id').value = id;
-        document.getElementById('hidden-coste').value = coste || 0;
         document.getElementById('offcanvas-title').textContent = 'Editar línea';
         document.getElementById('offcanvas-subtitle').textContent = 'Modifica los datos de la línea';
-        document.querySelector('#form-linea [type="submit"]').textContent = 'Guardar cambios';
+        document.getElementById('btn-guardar-linea').textContent = 'Guardar cambios';
         document.getElementById('f-destino-facturacion').value = destinoFacturacion || 'pendiente';
 
         cambiarTipoLinea(tipo);
@@ -1539,6 +1587,38 @@
         if (tipo === 'comentario') {
             document.getElementById('f-descripcion-comentario').value = descripcion;
         }
+
+        prepararEdicionCoste(tipo, cantidad, coste, urlCoste, tokenCoste);
+    }
+
+    function prepararEdicionCoste(tipo, cantidad, coste, urlCoste, tokenCoste) {
+        const bloque = document.getElementById('bloque-coste-estimado');
+        const permiteCoste = ['producto', 'servicio', 'mano_obra'].includes(tipo);
+
+        bloque.classList.toggle('d-none', !permiteCoste);
+
+        if (!permiteCoste) {
+            return;
+        }
+
+        const inputCoste = document.getElementById('f-coste-estimado');
+        inputCoste.value = Number.parseFloat(coste || 0).toFixed(2);
+        inputCoste.dataset.cantidad = cantidad || 0;
+
+        document.getElementById('form-coste-linea').action = urlCoste;
+        document.getElementById('token-coste-linea').value = tokenCoste;
+
+        actualizarCosteTotalEstimado();
+    }
+
+    function actualizarCosteTotalEstimado() {
+        const inputCoste = document.getElementById('f-coste-estimado');
+        const costeUnitario = Number.parseFloat(inputCoste.value) || 0;
+        const cantidad = Number.parseFloat(inputCoste.dataset.cantidad) || 0;
+
+        document.getElementById('f-coste-total-estimado').value = formatoEuro(
+            costeUnitario * cantidad
+        );
     }
 
     function activarBotonTipo(tipo) {
@@ -1918,12 +1998,19 @@
     function resetOffcanvasLinea() {
         document.getElementById('form-linea').reset();
 
+        document.getElementById('hidden-modo-linea').value = 'crear';
         document.getElementById('hidden-linea-id').value = '';
         document.getElementById('hidden-producto-id').value = '';
         document.getElementById('hidden-tipo-linea').value = 'producto';
         document.getElementById('hidden-origen-linea').value = 'manual';
-        document.getElementById('hidden-coste').value = '';
         document.getElementById('f-destino-facturacion').value = 'ticket_tienda';
+
+        document.getElementById('bloque-coste-estimado').classList.add('d-none');
+        document.getElementById('f-coste-estimado').value = '';
+        document.getElementById('f-coste-estimado').dataset.cantidad = '0';
+        document.getElementById('f-coste-total-estimado').value = '0,00 €';
+        document.getElementById('form-coste-linea').removeAttribute('action');
+        document.getElementById('token-coste-linea').value = '';
 
         document.getElementById('producto-search').value = '';
         document.getElementById('producto-seleccionado-nombre').textContent = '';
@@ -1947,7 +2034,14 @@
         document.getElementById('resultados-busqueda').innerHTML =
             '<div class="text-center text-muted py-4 small">Empieza a escribir para buscar productos</div>';
 
+        document.getElementById('offcanvas-title').textContent = 'Añadir línea';
+        document.getElementById('btn-guardar-linea').textContent = 'Añadir línea';
+
         cambiarTipoLinea('producto');
+    }
+
+    function abrirNuevaLinea() {
+        resetOffcanvasLinea();
     }
 
     function cambiarCategoria(id) {
@@ -1990,11 +2084,11 @@
     function prepararSiguienteLinea() {
         document.getElementById('form-linea').reset();
 
+        document.getElementById('hidden-modo-linea').value = 'crear';
         document.getElementById('hidden-linea-id').value = '';
         document.getElementById('hidden-producto-id').value = '';
         document.getElementById('hidden-tipo-linea').value = 'producto';
         document.getElementById('hidden-origen-linea').value = 'manual';
-        document.getElementById('hidden-coste').value = '';
 
         document.getElementById('f-destino-facturacion').value = 'ticket_tienda';
 
@@ -2128,7 +2222,7 @@
                 e.preventDefault();
 
                 const form = this;
-                const botonGuardar = form.querySelector('[type="submit"]');
+                const botonGuardar = document.getElementById('btn-guardar-linea');
 
                 botonGuardar.disabled = true;
                 botonGuardar.textContent = 'Guardando...';
@@ -2153,6 +2247,8 @@
                     }
 
                     hayCambiosEnLineas = true;
+                    document.getElementById('hidden-modo-linea').value = 'crear';
+                    document.getElementById('hidden-linea-id').value = '';
                     window.location.reload();
 
                 } catch (error) {
@@ -2172,6 +2268,9 @@
                     botonGuardar.textContent = 'Añadir línea';
                 }
             });
+
+        document.getElementById('f-coste-estimado')
+            ?.addEventListener('input', actualizarCosteTotalEstimado);
 
         ['f-cantidad', 'f-precio', 'f-descuento'].forEach(id => {
             document.getElementById(id)?.addEventListener('input', calcularSubtotalProducto);
