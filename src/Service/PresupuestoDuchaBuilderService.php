@@ -105,7 +105,10 @@ final class PresupuestoDuchaBuilderService
             $linea['tipoIva'] ?? 21
         );
 
-        $tipoLinea = $this->resolverTipoLinea($linea);
+        $tipoLinea = $this->documentoLineaService->resolverTipoLineaBudgetFlow(
+            $linea['tipo'] ?? null,
+            $this->resolverTipoLineaAnterior($linea)
+        );
 
         if (in_array($tipoLinea, ['servicio', 'mano_obra', 'descuento'], true)) {
             $tipoIva = $this->documentoLineaService
@@ -131,7 +134,7 @@ final class PresupuestoDuchaBuilderService
         );
     }
 
-    private function resolverTipoLinea(array $linea): string
+    private function resolverTipoLineaAnterior(array $linea): string
     {
         $descripcion = mb_strtolower(
             (string) ($linea['descripcion'] ?? '')

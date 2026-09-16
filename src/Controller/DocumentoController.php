@@ -423,6 +423,7 @@ class DocumentoController extends AbstractController
                 $precioSinIva = (float) ($linea['precioUnitarioSinIva'] ?? $linea['precio_unitario_sin_iva'] ?? 0);
                 $costeUnitarioSinIva = (float) ($linea['costeUnitarioSinIva'] ?? $linea['coste_unitario_sin_iva'] ?? 0);
                 $precioConIva = $precioSinIva * (1 + ($tipoIva / 100));
+                $tipoLinea = $lineaService->resolverTipoLineaBudgetFlow($linea['tipo'] ?? null, 'producto');
 
                 $lineaService->crearLinea(
                     documento: $documento,
@@ -433,7 +434,7 @@ class DocumentoController extends AbstractController
                     descuento: 0.0,
                     productoId: null,
                     lineaId: 0,
-                    tipo: 'producto',
+                    tipo: $tipoLinea,
                     destinoFacturacion: $destinoFacturacion,
                     origenLinea: 'budgetflow',
                     tipoIva: $tipoIva

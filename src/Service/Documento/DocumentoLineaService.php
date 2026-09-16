@@ -82,6 +82,19 @@ class DocumentoLineaService
         return (float) $estado['valor'];
     }
 
+    public function resolverTipoLineaBudgetFlow(mixed $tipoBudgetFlow, string $fallback): string
+    {
+        if (!is_string($tipoBudgetFlow)) {
+            return $fallback;
+        }
+
+        return match (mb_strtolower(trim($tipoBudgetFlow))) {
+            'producto' => 'producto',
+            'servicio' => 'servicio',
+            default => $fallback,
+        };
+    }
+
     public function cambiarIvaLineasFactura(Documento $documento, float $tipoIva): void
     {
         if (!in_array((int) $tipoIva, [10, 21], true)) {

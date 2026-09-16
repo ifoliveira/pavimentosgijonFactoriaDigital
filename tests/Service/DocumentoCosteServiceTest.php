@@ -153,10 +153,41 @@ class DocumentoCosteServiceTest extends TestCase
         self::assertSame(1, $resultado['numeroMateriales']);
     }
 
-    private function servicioLinea(): DocumentoLineaService
+    public function testTipoBudgetFlowRespetaProductoYServicio(): void
+    {
+        $servicio = $this->servicioLinea(0);
+
+        self::assertSame('producto', $servicio->resolverTipoLineaBudgetFlow('producto', 'producto'));
+        self::assertSame('servicio', $servicio->resolverTipoLineaBudgetFlow('servicio', 'producto'));
+    }
+
+    public function testTipoBudgetFlowSinTipoConservaFallbackAnterior(): void
+    {
+        $servicio = $this->servicioLinea(0);
+
+        self::assertSame('producto', $servicio->resolverTipoLineaBudgetFlow(null, 'producto'));
+        self::assertSame('mano_obra', $servicio->resolverTipoLineaBudgetFlow(null, 'mano_obra'));
+        self::assertSame('producto', $servicio->resolverTipoLineaBudgetFlow('material', 'producto'));
+    }
+
+    public function testServicioBudgetFlowConCosteCuentaEnBasePeroNoEnMateriales(): void
+    {
+        $documento = new Documento();
+        $linea = $this->linea('servicio', DocumentoLinea::DESTINO_FACTURA_OBRA, 1, 3400, 3700);
+        $documento->addLinea($linea);
+
+        $resultado = (new DocumentoCalculatorService())->analizarMaterialesFactura($documento);
+
+        self::assertSame(3700.0, $resultado['baseFactura']);
+        self::assertSame(0.0, $resultado['costeMateriales']);
+        self::assertSame(0.0, $resultado['ventaMateriales']);
+        self::assertSame(0, $resultado['numeroMateriales']);
+    }
+
+    private function servicioLinea(int $flushes = 1): DocumentoLineaService
     {
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects(self::once())->method('flush');
+        $em->expects(self::exactly($flushes))->method('flush');
 
         return new DocumentoLineaService(
             $em,
