@@ -1,0 +1,358 @@
+{% extends 'layouts/base_public.html.twig' %}
+
+{% block title %}Presupuesto de cambio de bañera por ducha | Nueva versión{% endblock %}
+{% block meta_description %}Calcula un presupuesto de cambio de bañera por plato de ducha con el nuevo configurador BudgetFlow.{% endblock %}
+
+{% block body %}
+<main class="ducha-flow">
+  <section class="ducha-flow__panel">
+    <div class="ducha-flow__header">
+      <p>Presupuesto online</p>
+      <h1>Cambio de bañera por plato de ducha</h1>
+    </div>
+
+    <div id="ducha-chat" class="ducha-chat" aria-live="polite"></div>
+
+    <div id="ducha-options" class="ducha-options" hidden></div>
+
+    <form id="ducha-form" class="ducha-form">
+      <input id="ducha-input" type="text" autocomplete="off" placeholder="Escribe tu respuesta..." />
+      <button type="submit">Enviar</button>
+    </form>
+
+    <div id="ducha-result" class="ducha-result" hidden></div>
+  </section>
+</main>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.ducha-flow {
+  min-height: calc(100vh - 96px);
+  background: #f4f7fb;
+  padding: 42px 16px;
+}
+
+.ducha-flow__panel {
+  width: min(920px, 100%);
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #dbe4ee;
+  border-radius: 8px;
+  box-shadow: 0 18px 55px rgba(20, 32, 48, .08);
+  overflow: hidden;
+}
+
+.ducha-flow__header {
+  padding: 28px;
+  background: #123047;
+  color: #fff;
+}
+
+.ducha-flow__header p {
+  margin: 0 0 8px;
+  color: #b9d7e8;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ducha-flow__header h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.ducha-chat {
+  min-height: 260px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ducha-bubble {
+  max-width: 78%;
+  padding: 13px 15px;
+  border-radius: 8px;
+  line-height: 1.45;
+}
+
+.ducha-bubble--bot {
+  align-self: flex-start;
+  background: #eef5f8;
+  color: #163248;
+}
+
+.ducha-bubble--user {
+  align-self: flex-end;
+  background: #166b8f;
+  color: #fff;
+}
+
+.ducha-options {
+  padding: 0 24px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ducha-options button,
+.ducha-form button {
+  border: 0;
+  background: #166b8f;
+  color: #fff;
+  border-radius: 6px;
+  padding: 11px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ducha-options button {
+  background: #e8f2f6;
+  color: #123047;
+  border: 1px solid #c8dce7;
+}
+
+.ducha-form {
+  border-top: 1px solid #e5edf3;
+  padding: 18px 24px 24px;
+  display: flex;
+  gap: 12px;
+}
+
+.ducha-form input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #cbd7e2;
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 16px;
+}
+
+.ducha-result {
+  border-top: 1px solid #e5edf3;
+  padding: 24px;
+}
+
+.ducha-result table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+}
+
+.ducha-result th,
+.ducha-result td {
+  padding: 10px;
+  border-bottom: 1px solid #e5edf3;
+  text-align: left;
+}
+
+.ducha-result td:last-child,
+.ducha-result th:last-child {
+  text-align: right;
+}
+
+.ducha-total {
+  margin-top: 18px;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .ducha-flow {
+    padding: 18px 10px;
+  }
+
+  .ducha-flow__header,
+  .ducha-chat,
+  .ducha-result {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .ducha-bubble {
+    max-width: 100%;
+  }
+
+  .ducha-form {
+    padding-left: 16px;
+    padding-right: 16px;
+    flex-direction: column;
+  }
+}
+</style>
+<script>
+(() => {
+  let estado = null;
+  const chat = document.getElementById('ducha-chat');
+  const form = document.getElementById('ducha-form');
+  const input = document.getElementById('ducha-input');
+  const options = document.getElementById('ducha-options');
+  const result = document.getElementById('ducha-result');
+
+  function bubble(text, type) {
+    const div = document.createElement('div');
+    div.className = `ducha-bubble ducha-bubble--${type}`;
+    div.textContent = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function setBusy(busy) {
+    input.disabled = busy;
+    form.querySelector('button').disabled = busy;
+  }
+
+  function renderOptions(items) {
+    options.innerHTML = '';
+    if (!items || items.length === 0) {
+      options.hidden = true;
+      return;
+    }
+
+    items.forEach(item => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = item.etiqueta;
+      button.addEventListener('click', () => sendSelection(item));
+      options.appendChild(button);
+    });
+    options.hidden = false;
+  }
+
+  function renderResponse(data) {
+    if (!data.ok) {
+      bubble(data.error || 'No hemos podido continuar ahora mismo.', 'bot');
+      setBusy(false);
+      return;
+    }
+
+    estado = data.estado || estado;
+
+    if (data.incompleto) {
+      bubble(data.pregunta || 'Necesitamos confirmar algunos datos antes de calcular el presupuesto.', 'bot');
+      form.hidden = true;
+      options.hidden = true;
+      setBusy(false);
+      return;
+    }
+
+    if (data.finalizada) {
+      renderResult(data.resultado);
+      form.hidden = true;
+      options.hidden = true;
+      return;
+    }
+
+    bubble(data.pregunta, 'bot');
+    renderOptions(data.opciones || []);
+    setBusy(false);
+    input.focus();
+  }
+
+  function renderResult(resultado) {
+    const lineas = resultado.lineas || [];
+    const rows = lineas.map(linea => `
+      <tr>
+        <td>${escapeHtml(linea.descripcion || '')}</td>
+        <td>${Number(linea.cantidad || 0).toLocaleString('es-ES')}</td>
+        <td>${escapeHtml(linea.unidad || '')}</td>
+        <td>${Number(linea.importeTotal || 0).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
+      </tr>
+    `).join('');
+
+    result.innerHTML = `
+      <h2>Presupuesto generado</h2>
+      <table>
+        <thead>
+          <tr><th>Concepto</th><th>Cantidad</th><th>Unidad</th><th>Importe</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="ducha-total">Total: ${Number(resultado.total || 0).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+    `;
+    result.hidden = false;
+    const mensaje = resultado.contiene_estimaciones
+      ? 'Hemos utilizado medidas orientativas para los datos que no tenías disponibles. Las confirmaremos antes de realizar el pedido.'
+      : 'Listo, ya tengo el presupuesto calculado con BudgetFlow.';
+    bubble(mensaje, 'bot');
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  async function post(url, payload) {
+    setBusy(true);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload || {}),
+    });
+    return response.json();
+  }
+
+  async function sendText(text) {
+    bubble(text, 'user');
+    input.value = '';
+    console.debug('[presupuesto-ducha] answer:before', {
+      respuesta: text,
+      valores: estado && estado.valores,
+      pendientes: estado && estado.campos_pendientes_actuales
+    });
+    const data = await post('/api/presupuesto-ducha/answer', { estado, respuesta: text });
+    console.debug('[presupuesto-ducha] answer:after', {
+      valores: data && data.estado && data.estado.valores,
+      pendientes: data && data.estado && data.estado.campos_pendientes_actuales,
+      pregunta: data && data.pregunta,
+      finalizada: data && data.finalizada
+    });
+    renderResponse(data);
+  }
+
+  async function sendSelection(item) {
+    bubble(item.etiqueta, 'user');
+    const seleccion = {};
+    seleccion[item.campo] = item.valor;
+    console.debug('[presupuesto-ducha] selection:before', {
+      seleccion,
+      valores: estado && estado.valores,
+      pendientes: estado && estado.campos_pendientes_actuales
+    });
+    const data = await post('/api/presupuesto-ducha/answer', { estado, seleccion });
+    console.debug('[presupuesto-ducha] selection:after', {
+      valores: data && data.estado && data.estado.valores,
+      pendientes: data && data.estado && data.estado.campos_pendientes_actuales,
+      pregunta: data && data.pregunta,
+      finalizada: data && data.finalizada
+    });
+    renderResponse(data);
+  }
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const value = input.value.trim();
+    if (!value) return;
+    sendText(value).catch(() => {
+      bubble('Ha ocurrido un error de conexión. Inténtalo de nuevo.', 'bot');
+      setBusy(false);
+    });
+  });
+
+  bubble('Vamos a calcular tu cambio de bañera por plato de ducha.', 'bot');
+  post('/api/presupuesto-ducha/start')
+    .then(renderResponse)
+    .catch(() => {
+      bubble('No podemos iniciar el presupuestador ahora mismo.', 'bot');
+      setBusy(false);
+    });
+})();
+</script>
+{% endblock %}

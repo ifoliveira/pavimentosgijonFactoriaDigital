@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\Documento\DocumentoCrearService;
+use App\Service\Documento\DocumentoCalculatorService;
 use App\Service\Documento\DocumentoVerService;
 use App\Service\Documento\DocumentoEstadoService;
 use App\Service\Documento\DocumentoManoObraService;
@@ -64,7 +65,9 @@ class DocumentoController extends AbstractController
         DocumentoAccionesService $documentoAccionesService,
         TipoManoObraRepository $tipoManoObraRepository,
         TextoManoObraRepository $textoManoObraRepository,
-        ProductosRepository $productosRepository
+        ProductosRepository $productosRepository,
+        DocumentoLineaService $lineaService,
+        DocumentoCalculatorService $documentoCalculatorService
     ): Response {
         $documento = $documentoVerService->obtenerPorId($id);
         $editarCabecera = $request->query->getBoolean('editarCabecera');
@@ -72,10 +75,14 @@ class DocumentoController extends AbstractController
         $seleccionadosManoObra = $this->construirSeleccionadosPorRelacion($documento);
         $textosManuales = $this->construirTextosManual($documento);
         $productos = $productosRepository->findAllParaBuscador();
+        $ivaFacturaEstado = $lineaService->obtenerEstadoIvaFactura($documento);
+        $estimacionMaterialesFactura = $documentoCalculatorService->analizarMaterialesFactura($documento);
 
         return $this->render('documento/show.html.twig', [
             'documento' => $documento,
             'acciones' => $acciones,
+            'ivaFacturaEstado' => $ivaFacturaEstado,
+            'estimacionMaterialesFactura' => $estimacionMaterialesFactura,
             'editarCabecera' => $editarCabecera,
             'clientes' =>  $clientesRepository->findBy([], ['nombreCl' => 'ASC']),
             'proyectos' => $editarCabecera ? $proyectoRepository->findBy([], ['nombre' => 'ASC']) : [],
@@ -207,6 +214,37 @@ class DocumentoController extends AbstractController
             $origenLinea = 'producto';
         }
 
+        $destinoFacturacion = $request->request->get(
+            'destinoFacturacion',
+            DocumentoLinea::DESTINO_PENDIENTE
+        );
+
+        try {
+            $tipoIva = 21.0;
+
+            if ($destinoFacturacion === DocumentoLinea::DESTINO_FACTURA_OBRA) {
+                $ivaFacturaEstado = $lineaService->obtenerEstadoIvaFactura($documento);
+                $tipoIvaSolicitado = (float) $request->request->get('tipoIvaFacturaActual', 21);
+
+                $tipoIva = !$ivaFacturaEstado['tieneLineasFactura'] && in_array((int) $tipoIvaSolicitado, [10, 21], true)
+                    ? $tipoIvaSolicitado
+                    : $lineaService->resolverTipoIvaParaNuevaLineaFactura($documento);
+            }
+        } catch (\RuntimeException $e) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'ok' => false,
+                    'error' => $e->getMessage(),
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $this->addFlash('error', $e->getMessage());
+
+            return $this->redirectToRoute('app_documento_show', [
+                'id' => $documento->getId(),
+            ]);
+        }
+
         $lineaService->crearLinea(
             documento: $documento,
             descripcion: trim($request->request->get('descripcion', '')),
@@ -217,11 +255,9 @@ class DocumentoController extends AbstractController
             productoId: $productoId,
             lineaId: (int) ($request->request->get('lineaId') ?: 0),
             tipo: $tipoLinea,
-            destinoFacturacion: $request->request->get(
-                'destinoFacturacion',
-                DocumentoLinea::DESTINO_PENDIENTE
-            ),
+            destinoFacturacion: $destinoFacturacion,
             origenLinea: $origenLinea,
+            tipoIva: $tipoIva,
         );
 
         // Si viene por AJAX, no recargamos la página
@@ -304,36 +340,53 @@ class DocumentoController extends AbstractController
             ]);
         }
 
-        foreach ($lineas as $linea) {
-            if (!is_array($linea)) {
-                continue;
+        try {
+            foreach ($lineas as $linea) {
+                if (!is_array($linea)) {
+                    continue;
+                }
+
+                $descripcion = trim((string) ($linea['descripcion'] ?? ''));
+
+                if ($descripcion === '') {
+                    continue;
+                }
+
+                $cantidad = (float) ($linea['cantidad'] ?? 1);
+                $destinoFacturacion = (string) (
+                    $linea['destinoFacturacion']
+                    ?? $linea['destino_facturacion']
+                    ?? DocumentoLinea::DESTINO_FACTURA_OBRA
+                );
+                $tipoIva = $destinoFacturacion === DocumentoLinea::DESTINO_FACTURA_OBRA
+                    ? $lineaService->resolverTipoIvaParaNuevaLineaFactura($documento)
+                    : (float) ($linea['tipoIva'] ?? $linea['tipo_iva'] ?? 21.0);
+                $precioSinIva = (float) ($linea['precioUnitarioSinIva'] ?? $linea['precio_unitario_sin_iva'] ?? 0);
+                $costeUnitarioSinIva = (float) ($linea['costeUnitarioSinIva'] ?? $linea['coste_unitario_sin_iva'] ?? 0);
+                $precioConIva = $precioSinIva * (1 + ($tipoIva / 100));
+
+                $lineaService->crearLinea(
+                    documento: $documento,
+                    descripcion: $descripcion,
+                    coste: $costeUnitarioSinIva,
+                    cantidad: $cantidad,
+                    precio: $precioConIva,
+                    descuento: 0.0,
+                    productoId: null,
+                    lineaId: 0,
+                    tipo: 'producto',
+                    destinoFacturacion: $destinoFacturacion,
+                    origenLinea: 'budgetflow',
+                    tipoIva: $tipoIva
+                );
             }
+        } catch (\RuntimeException $e) {
+            $this->addFlash('error', $e->getMessage());
 
-            $descripcion = trim((string) ($linea['descripcion'] ?? ''));
-
-            if ($descripcion === '') {
-                continue;
-            }
-
-            $cantidad = (float) ($linea['cantidad'] ?? 1);
-            $tipoIva = (float) ($linea['tipoIva'] ?? $linea['tipo_iva'] ?? 21.0);
-            $precioSinIva = (float) ($linea['precioUnitarioSinIva'] ?? $linea['precio_unitario_sin_iva'] ?? 0);
-            $costeUnitarioSinIva = (float) ($linea['costeUnitarioSinIva'] ?? $linea['coste_unitario_sin_iva'] ?? 0);
-            $precioConIva = $precioSinIva * (1 + ($tipoIva / 100));
-
-            $lineaService->crearLinea(
-                documento: $documento,
-                descripcion: $descripcion,
-                coste: $costeUnitarioSinIva,
-                cantidad: $cantidad,
-                precio: $precioConIva,
-                descuento: 0.0,
-                productoId: null,
-                lineaId: 0,
-                tipo: 'producto',
-                origenLinea: 'budgetflow',
-                tipoIva: $tipoIva
-            );
+            return $this->redirectToRoute('app_documento_budget_flow_configurador', [
+                'id' => $documento->getId(),
+                'codigo' => $codigo,
+            ]);
         }
 
         $this->addFlash('success', 'Líneas de BudgetFlow añadidas al presupuesto.');
@@ -342,6 +395,34 @@ class DocumentoController extends AbstractController
             'id' => $documento->getId(),
         ]);
     }
+
+    #[Route('/{id}/iva-factura', name: 'app_documento_cambiar_iva_factura', methods: ['POST'])]
+    public function cambiarIvaFactura(
+        Request $request,
+        Documento $documento,
+        DocumentoLineaService $lineaService
+    ): Response {
+        if (!$this->isCsrfTokenValid('documento-iva-factura-' . $documento->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF no válido');
+        }
+
+        if ($documento->getTipoDocumento() !== 'presupuesto') {
+            throw new \RuntimeException('Solo se puede cambiar el IVA de factura en presupuestos.');
+        }
+
+        $tipoIva = (float) $request->request->get('tipoIvaFactura', 21);
+
+        try {
+            $lineaService->cambiarIvaLineasFactura($documento, $tipoIva);
+            $this->addFlash('success', sprintf('IVA de factura cambiado al %d %%.', (int) $tipoIva));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_documento_show', [
+            'id' => $documento->getId(),
+        ]);
+    }    
 
     #[Route('/documento/linea/{id}/eliminar', name: 'app_documento_linea_eliminar', methods: ['POST'])]
     public function eliminarLinea(
@@ -382,15 +463,7 @@ class DocumentoController extends AbstractController
 
         $template = sprintf('documento/pdf-%s.html.twig', $tpl);
 
-        $tipos = [4, 10, 21];
-
-        $porcentaje = ($documento->getTotalIva() / $documento->getBaseImponible()) * 100;
-
-        $iva = array_reduce($tipos, function ($mejor, $actual) use ($porcentaje) {
-            return abs($actual - $porcentaje) < abs($mejor - $porcentaje)
-                ? $actual
-                : $mejor;
-        });
+        $iva = $this->resolverEtiquetaIvaDocumento($documento);
         
         $html = $this->renderView($template, [
             'documento' => $documento,
@@ -511,6 +584,30 @@ class DocumentoController extends AbstractController
         }
 
         return $out;
+    }
+
+    private function resolverEtiquetaIvaDocumento(Documento $documento): string
+    {
+        $tipos = [];
+
+        foreach ($documento->getLineas() as $linea) {
+            if ((float) $linea->getSubtotal() === 0.0 && (float) $linea->getTotalIva() === 0.0) {
+                continue;
+            }
+
+            $tipo = (int) round((float) $linea->getTipoIva());
+            $tipos[$tipo] = $tipo;
+        }
+
+        if (count($tipos) === 0) {
+            return '0 %';
+        }
+
+        if (count($tipos) === 1) {
+            return reset($tipos) . ' %';
+        }
+
+        return 'varios';
     }
 
     #[Route('/documento/{id}/preset/{tipo}', name: 'app_documento_mano_obra_preset')]

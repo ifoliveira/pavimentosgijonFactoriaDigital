@@ -23,8 +23,87 @@ class DocumentoLineaService
         private ProyectoCalculatorService $proyectoService,
         private StockMovimientoRepository $stockMovimientoRepository,
         private StockReservaRepository $stockReservaRepository,
-        private DescripcionPresupuestoFormatter $descripcionPresupuestoFormatter
+        private DescripcionPresupuestoFormatter $descripcionPresupuestoFormatter,
+        private DocumentoCalculatorService $documentoCalculatorService
     ) {}
+
+    public function obtenerEstadoIvaFactura(Documento $documento): array
+    {
+        $tipos = [];
+
+        foreach ($documento->getLineas() as $linea) {
+            if (!$linea->isFacturaObra()) {
+                continue;
+            }
+
+            $tipo = (int) round((float) $linea->getTipoIva());
+            $tipos[$tipo] = $tipo;
+        }
+
+        $tipos = array_values($tipos);
+        sort($tipos);
+
+        if (count($tipos) === 0) {
+            return [
+                'valor' => 21,
+                'mixto' => false,
+                'tieneLineasFactura' => false,
+                'tipos' => [],
+            ];
+        }
+
+        if (count($tipos) === 1 && in_array($tipos[0], [10, 21], true)) {
+            return [
+                'valor' => $tipos[0],
+                'mixto' => false,
+                'tieneLineasFactura' => true,
+                'tipos' => $tipos,
+            ];
+        }
+
+        return [
+            'valor' => null,
+            'mixto' => true,
+            'tieneLineasFactura' => true,
+            'tipos' => $tipos,
+        ];
+    }
+
+    public function resolverTipoIvaParaNuevaLineaFactura(Documento $documento): float
+    {
+        $estado = $this->obtenerEstadoIvaFactura($documento);
+
+        if ($estado['mixto']) {
+            throw new \RuntimeException(
+                'Hay líneas de factura con distintos tipos de IVA. Selecciona primero un IVA de factura común.'
+            );
+        }
+
+        return (float) $estado['valor'];
+    }
+
+    public function cambiarIvaLineasFactura(Documento $documento, float $tipoIva): void
+    {
+        if (!in_array((int) $tipoIva, [10, 21], true)) {
+            throw new \InvalidArgumentException('Tipo de IVA de factura no permitido.');
+        }
+
+        foreach ($documento->getLineas() as $linea) {
+            if (!$linea->isFacturaObra()) {
+                continue;
+            }
+
+            $linea->setTipoIva(number_format($tipoIva, 2, '.', ''));
+        }
+
+        $this->documentoCalculatorService->recalcularDocumento($documento);
+
+        if ($documento->getProyecto()) {
+            $this->proyectoService->recalcularProyecto($documento->getProyecto(), false);
+        }
+
+        $this->em->flush();
+    }
 
     public function crearLinea(
         Documento $documento,

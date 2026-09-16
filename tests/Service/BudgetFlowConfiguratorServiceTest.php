@@ -112,6 +112,63 @@ class BudgetFlowConfiguratorServiceTest extends TestCase
         );
     }
 
+    public function testIncluyeDefaultsEnConfiguradorCompuestoConEstructuraRealWebMampara(): void
+    {
+        $configurador = [
+            'codigo' => 'web_ducha',
+            'tipo' => 'compuesto',
+            'componentes' => [
+                [
+                    'codigo' => 'web_mampara',
+                    'configurador' => $this->configuradorSimple([
+                        [
+                            'codigo' => 'tipo',
+                            'tipo' => 'seleccion',
+                            'obligatorio' => true,
+                        ],
+                        [
+                            'codigo' => 'ancho_frente',
+                            'tipo' => 'decimal',
+                            'obligatorio' => true,
+                        ],
+                        [
+                            'codigo' => 'tipo_apertura',
+                            'tipo' => 'seleccion',
+                            'obligatorio' => false,
+                            'valorDefecto' => 'corredera',
+                        ],
+                        [
+                            'codigo' => 'modelo',
+                            'tipo' => 'texto',
+                            'obligatorio' => true,
+                            'valorDefecto' => 'fresh',
+                            'opciones' => [
+                                ['codigo' => 'fresh', 'etiqueta' => 'Fresh'],
+                            ],
+                        ],
+                    ]),
+                ],
+            ],
+        ];
+
+        self::assertSame(
+            [
+                'web_mampara' => [
+                    'tipo' => 'fijo',
+                    'ancho_frente' => 150.0,
+                    'tipo_apertura' => 'corredera',
+                    'modelo' => 'fresh',
+                ],
+            ],
+            $this->service->normalizarValores($configurador, [
+                'web_mampara' => [
+                    'tipo' => 'fijo',
+                    'ancho_frente' => 150,
+                ],
+            ])
+        );
+    }
+
     private function configuradorSimple(array $campos): array
     {
         return [

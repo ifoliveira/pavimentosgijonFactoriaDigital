@@ -105,6 +105,13 @@ final class PresupuestoDuchaBuilderService
             $linea['tipoIva'] ?? 21
         );
 
+        $tipoLinea = $this->resolverTipoLinea($linea);
+
+        if (in_array($tipoLinea, ['servicio', 'mano_obra', 'descuento'], true)) {
+            $tipoIva = $this->documentoLineaService
+                ->resolverTipoIvaParaNuevaLineaFactura($documento);
+        }
+
         $precioConIva = round(
             $precioSinIva * (1 + ($tipoIva / 100)),
             2
@@ -116,7 +123,7 @@ final class PresupuestoDuchaBuilderService
             cantidad: $cantidad,
             precioConIva: $precioConIva,
             costeUnitario: 0,
-            tipoLinea: $this->resolverTipoLinea($linea),
+            tipoLinea: $tipoLinea,
             catalogoProducto: null,
             origenLinea: 'configurador',
             tipoIva: $tipoIva,

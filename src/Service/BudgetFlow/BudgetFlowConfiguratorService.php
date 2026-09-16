@@ -110,12 +110,20 @@ final class BudgetFlowConfiguratorService
 
             $codigo = $campo['codigo'] ?? null;
 
-            if (!$codigo || !array_key_exists($codigo, $valores)) {
+            if (!$codigo) {
+                continue;
+            }
+
+            $valor = array_key_exists($codigo, $valores)
+                ? $valores[$codigo]
+                : ($campo['valorDefecto'] ?? null);
+
+            if (!array_key_exists($codigo, $valores) && !array_key_exists('valorDefecto', $campo)) {
                 continue;
             }
 
             $valorNormalizado = $this->normalizarValor(
-                $valores[$codigo],
+                $valor,
                 $campo['tipo'] ?? 'texto'
             );
 

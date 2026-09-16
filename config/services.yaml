@@ -8,6 +8,10 @@ parameters:
     presupuestoDir: "%kernel.project_dir%/public_html/Presupuestos"
     ticketsDir: "%kernel.project_dir%/public_html/Tickets"
     openai.api_key: '%env(OPENAI_API_KEY)%'    
+    web_presupuesto.valores_provisionales:
+      web_ducha:
+        selector_plato_ducha.largo: 170
+        selector_plato_ducha.ancho: 70
     presupuesto:
       mano_obra:
         albañil:
@@ -108,6 +112,16 @@ services:
         arguments:
             $botToken: '%env(TELEGRAM_BOT_TOKEN)%'
             $chatId:   '%env(TELEGRAM_CHAT_ID)%'
+
+    App\Service\WebPresupuesto\WebDuchaBudgetFlowProviderInterface:
+        alias: App\Service\WebPresupuesto\BudgetFlowWebDuchaProvider
+
+    App\Service\WebPresupuesto\WebPresupuestoAiClientInterface:
+        alias: App\Service\WebPresupuesto\OpenAiWebPresupuestoClient
+
+    App\Service\WebPresupuesto\WebDuchaConversationService:
+        arguments:
+            $valoresProvisionales: '%web_presupuesto.valores_provisionales%'
 
     
     #App\EventListener\ExceptionListener:

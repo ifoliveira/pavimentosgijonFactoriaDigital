@@ -27,6 +27,65 @@ class DocumentoCalculatorService
         $documento->setTotalCoste($totalCoste);
     }
 
+    public function analizarMaterialesFactura(Documento $documento): array
+    {
+        $baseFactura = 0.0;
+        $costeMateriales = 0.0;
+        $ventaMateriales = 0.0;
+        $numeroMateriales = 0;
+        $numeroMaterialesConCoste = 0;
+        $numeroMaterialesSinCoste = 0;
+        $ventaMaterialesSinCoste = 0.0;
+
+        foreach ($documento->getLineas() as $linea) {
+            if (!$linea->isFacturaObra()) {
+                continue;
+            }
+
+            $subtotal = (float) $linea->getSubtotal();
+            $baseFactura += $subtotal;
+
+            if ($linea->getTipoLinea() !== 'producto') {
+                continue;
+            }
+
+            $numeroMateriales++;
+            $ventaMateriales += $subtotal;
+
+            $costeUnitario = (float) $linea->getCosteUnitario();
+
+            if ($costeUnitario <= 0.0) {
+                $numeroMaterialesSinCoste++;
+                $ventaMaterialesSinCoste += $subtotal;
+                continue;
+            }
+
+            $numeroMaterialesConCoste++;
+            $costeMateriales += (float) $linea->getCantidad() * $costeUnitario;
+        }
+
+        $porcentajeMaterialesCoste = $baseFactura > 0.0
+            ? ($costeMateriales / $baseFactura) * 100
+            : 0.0;
+        $porcentajeMaterialesVenta = $baseFactura > 0.0
+            ? ($ventaMateriales / $baseFactura) * 100
+            : 0.0;
+
+        return [
+            'baseFactura' => round($baseFactura, 2),
+            'costeMateriales' => round($costeMateriales, 2),
+            'ventaMateriales' => round($ventaMateriales, 2),
+            'porcentajeMaterialesCoste' => round($porcentajeMaterialesCoste, 2),
+            'porcentajeMaterialesVenta' => round($porcentajeMaterialesVenta, 2),
+            'numeroMateriales' => $numeroMateriales,
+            'numeroMaterialesConCoste' => $numeroMaterialesConCoste,
+            'numeroMaterialesSinCoste' => $numeroMaterialesSinCoste,
+            'ventaMaterialesSinCoste' => round($ventaMaterialesSinCoste, 2),
+            'costeCompleto' => $numeroMaterialesSinCoste === 0,
+            'estimacionParcial' => $numeroMaterialesSinCoste > 0,
+        ];
+    }
+
     public function recalcularLinea(DocumentoLinea $linea): void
     {
         $cantidad = $this->normalizarDecimal($linea->getCantidad(), 3);

@@ -197,6 +197,139 @@
                     </div>
 
                 </div>
+                {% if documento.tipoDocumento == 'presupuesto' and acciones.puedeEditarLineas %}
+                    <hr class="my-3">
+                    <form
+                        method="post"
+                        action="{{ path('app_documento_cambiar_iva_factura', {id: documento.id}) }}"
+                        id="form-iva-factura"
+                        class="d-flex flex-wrap align-items-center justify-content-end gap-2"
+                    >
+                        <input
+                            type="hidden"
+                            name="_token"
+                            value="{{ csrf_token('documento-iva-factura-' ~ documento.id) }}"
+                        >
+                        <label for="selector-iva-factura" class="small text-muted mb-0">
+                            IVA factura
+                        </label>
+                        <select
+                            name="tipoIvaFactura"
+                            id="selector-iva-factura"
+                            class="form-select form-select-sm"
+                            style="width: 110px;"
+                        >
+                            {% if ivaFacturaEstado.mixto %}
+                                <option value="" selected disabled>Mixto</option>
+                            {% endif %}
+                            <option value="21" {{ not ivaFacturaEstado.mixto and ivaFacturaEstado.valor == 21 ? 'selected' : '' }}>
+                                21 %
+                            </option>
+                            <option value="10" {{ not ivaFacturaEstado.mixto and ivaFacturaEstado.valor == 10 ? 'selected' : '' }}>
+                                10 %
+                            </option>
+                        </select>
+                        {% if ivaFacturaEstado.mixto %}
+                            <span class="small text-warning">
+                                Hay líneas factura con IVA {{ ivaFacturaEstado.tipos|join(' %, ') }} %. Elige un IVA para unificarlas.
+                            </span>
+                        {% endif %}
+                    </form>
+                    {% set materiales = estimacionMaterialesFactura %}
+                    {% set porcentajeCoste = materiales.porcentajeMaterialesCoste %}
+                    {% if materiales.baseFactura > 0 %}
+                        {% if porcentajeCoste < 35 %}
+                            {% set estadoMaterialesClase = 'text-success' %}
+                            {% set estadoMaterialesTexto = 'OK. Estimación claramente por debajo del 40 %.' %}
+                        {% elseif porcentajeCoste <= 40 %}
+                            {% set estadoMaterialesClase = 'text-warning' %}
+                            {% set estadoMaterialesTexto = 'Revisar. Próximo al límite del 40 %.' %}
+                        {% else %}
+                            {% set estadoMaterialesClase = 'text-warning' %}
+                            {% set estadoMaterialesTexto = 'Revisar. La estimación supera el límite del 40 %.' %}
+                        {% endif %}
+                        <div class="mt-3 border rounded bg-light-subtle p-3">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                                <div>
+                                    <div class="small fw-semibold">
+                                        Estimación límite materiales IVA 10 %
+                                    </div>
+                                    <div class="small text-muted">
+                                        Cálculo orientativo sobre líneas destinadas a factura.
+                                    </div>
+                                </div>
+                                <div class="small {{ estadoMaterialesClase }}">
+                                    {{ estadoMaterialesTexto }}
+                                </div>
+                            </div>
+
+                            <div class="row g-3 small">
+                                <div class="col-md-4">
+                                    <div class="text-muted">Base factura</div>
+                                    <div class="fw-semibold">
+                                        {{ materiales.baseFactura|number_format(2, ',', '.') }} €
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted">
+                                        Según coste estimado
+                                    </div>
+                                    <div>
+                                        Materiales:
+                                        <span class="fw-semibold">
+                                            {{ materiales.costeMateriales|number_format(2, ',', '.') }} €
+                                        </span>
+                                    </div>
+                                    <div>
+                                        {{ materiales.costeMateriales|number_format(2, ',', '.') }} € /
+                                        {{ materiales.baseFactura|number_format(2, ',', '.') }} € =
+                                        <span class="fw-semibold">
+                                            {{ materiales.porcentajeMaterialesCoste|number_format(2, ',', '.') }} %
+                                        </span>
+                                    </div>
+                                    {% if materiales.estimacionParcial %}
+                                        <div class="text-warning mt-1">
+                                            Estimación parcial: faltan costes de {{ materiales.numeroMaterialesSinCoste }} líneas.
+                                        </div>
+                                        <div class="text-muted">
+                                            Venta de materiales sin coste:
+                                            {{ materiales.ventaMaterialesSinCoste|number_format(2, ',', '.') }} €
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted">
+                                        Según precio de venta
+                                    </div>
+                                    <div>
+                                        Materiales:
+                                        <span class="fw-semibold">
+                                            {{ materiales.ventaMateriales|number_format(2, ',', '.') }} €
+                                        </span>
+                                    </div>
+                                    <div>
+                                        {{ materiales.ventaMateriales|number_format(2, ',', '.') }} € /
+                                        {{ materiales.baseFactura|number_format(2, ',', '.') }} € =
+                                        <span class="fw-semibold">
+                                            {{ materiales.porcentajeMaterialesVenta|number_format(2, ',', '.') }} %
+                                        </span>
+                                    </div>
+                                    <div class="text-muted mt-1">
+                                        Dato informativo/comparativo.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="small text-muted mt-2">
+                                Costes aproximados. Revisar especialmente si el resultado está próximo al 40 %.
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="mt-2 small text-muted text-end">
+                            Estimación límite materiales IVA 10 %: sin base de factura para calcular.
+                        </div>
+                    {% endif %}
+                {% endif %}
                 {# FILA 3: NOTAS #}
                 {% if documento.notas %}
                     <hr class="my-3">
@@ -826,6 +959,7 @@
     <input type="hidden" name="lineaId" id="hidden-linea-id" value="">
     <input type="hidden" name="origenLinea" id="hidden-origen-linea" value="manual">
     <input type="hidden" name="coste" id="hidden-coste" value="">
+    <input type="hidden" name="tipoIvaFacturaActual" id="hidden-tipo-iva-factura-actual" value="{{ ivaFacturaEstado.valor ?? 21 }}">
 
     {# ── PRODUCTO: FASE 1 BUSCADOR ───────────────────────── #}
     <div id="fase-busqueda-producto">
@@ -940,7 +1074,7 @@
             <input type="text"
                 id="f-tipo-iva-producto"
                 class="form-control form-control-custom text-end bg-light"
-                value="21 %"
+                value="{{ ivaFacturaEstado.mixto ? 'Mixto' : '21 %' }}"
                 readonly>
         </div>
     
@@ -966,7 +1100,7 @@
 
             <select name="destinoFacturacion"
                     id="f-destino-facturacion"
-                    class="form-select"
+                    class="form-select">
                 <option value="pendiente">Pendiente de clasificar</option>
                 <option value="factura_obra">Factura obra</option>
                 <option value="ticket_tienda">Ticket tienda</option>
@@ -1069,7 +1203,7 @@
             <input type="text"
                 id="f-tipo-iva-servicio"
                 class="form-control form-control-custom text-end bg-light"
-                value="21 %"
+                value="{{ ivaFacturaEstado.mixto ? 'Mixto' : ivaFacturaEstado.valor ~ ' %' }}"
                 readonly>
         </div>
         </div>
@@ -1291,15 +1425,74 @@
         });
     {% endfor %}
 
+    {% for message in app.flashes('error') %}
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: '{{ message|e('js') }}',
+            showConfirmButton: false,
+            timer: 3500,
+            timerProgressBar: true
+        });
+    {% endfor %}
+
     {% if app.request.query.get('error') %}
         var modal = new bootstrap.Modal(document.getElementById('modalCabecera'));
         modal.show();
     {% endif %}
 
     let searchTimer = null;
-    const IVA = 21;
+    const IVA_TICKET = 21;
+    const IVA_FACTURA_ACTUAL = {{ ivaFacturaEstado.mixto ? 'null' : ivaFacturaEstado.valor|default(21) }};
+    const TIENE_LINEAS_FACTURA = {{ ivaFacturaEstado.tieneLineasFactura ? 'true' : 'false' }};
     const PRODUCTOS = {{ productosBuscador|json_encode|raw }};
     let hayCambiosEnLineas = false;
+
+    function getIvaFacturaActual() {
+        const selector = document.getElementById('selector-iva-factura');
+
+        if (selector && selector.value) {
+            return parseFloat(selector.value);
+        }
+
+        return IVA_FACTURA_ACTUAL;
+    }
+
+    function getIvaLineaActual() {
+        const destino = document.getElementById('f-destino-facturacion')?.value;
+
+        if (destino === 'factura_obra') {
+            return getIvaFacturaActual();
+        }
+
+        return IVA_TICKET;
+    }
+
+    function actualizarEtiquetaIvaLinea() {
+        const iva = getIvaLineaActual();
+        const etiqueta = iva === null ? 'Mixto' : `${iva} %`;
+
+        document.getElementById('f-tipo-iva-producto')?.setAttribute('value', etiqueta);
+        document.getElementById('f-tipo-iva-servicio')?.setAttribute('value', etiqueta);
+
+        const producto = document.getElementById('f-tipo-iva-producto');
+        const servicio = document.getElementById('f-tipo-iva-servicio');
+
+        if (producto) {
+            producto.value = etiqueta;
+        }
+
+        if (servicio) {
+            servicio.value = etiqueta;
+        }
+
+        const hiddenIvaFactura = document.getElementById('hidden-tipo-iva-factura-actual');
+
+        if (hiddenIvaFactura && iva !== null) {
+            hiddenIvaFactura.value = iva;
+        }
+    }
 
     function formatoEuro(valor) {
         return valor.toLocaleString('es-ES', {
@@ -1428,6 +1621,8 @@
             }
         }        
 
+        actualizarEtiquetaIvaLinea();
+
         activarBotonTipo(tipo);
         ocultarTodasLasFases();
         limpiarNamesInactivos();
@@ -1524,7 +1719,8 @@
         activarFaseFormularioProducto();
 
         const precioConIva = parseFloat(pvp || 0);
-        const precioSinIva = precioConIva / (1 + IVA / 100);
+        const tipoIva = getIvaLineaActual() ?? IVA_TICKET;
+        const precioSinIva = precioConIva / (1 + tipoIva / 100);
 
         document.getElementById('f-descripcion').value = nombre;
         document.getElementById('f-precio').value = precioSinIva.toFixed(2);
@@ -1552,6 +1748,7 @@
         const cant = parseFloat(document.getElementById('f-cantidad').value) || 0;
         const precioConIva = parseFloat(document.getElementById('f-precio-iva').value) || 0;
         const dto = parseFloat(document.getElementById('f-descuento').value) || 0;
+        const tipoIva = getIvaLineaActual() ?? IVA_TICKET;
 
         // Aplicar descuento sobre precio con IVA
         const precioConIvaDto = precioConIva * (1 - dto / 100);
@@ -1560,11 +1757,11 @@
         const total = cant * precioConIvaDto;
 
         // Calcular base sin IVA desde el total
-        const base = total / (1 + IVA / 100);
+        const base = total / (1 + tipoIva / 100);
         const iva = total - base;
 
         // Actualizar precio sin IVA (unitario)
-        const precioSinIvaUnit = precioConIva / (1 + IVA / 100);
+        const precioSinIvaUnit = precioConIva / (1 + tipoIva / 100);
         document.getElementById('f-precio').value = precioConIva
             ? precioSinIvaUnit.toFixed(2)
             : '';
@@ -1582,14 +1779,15 @@
         const cant = parseFloat(document.getElementById('f-cantidad-servicio').value) || 0;
         const precioConIva = parseFloat(document.getElementById('f-precio-iva-servicio').value) || 0;
         const dto = parseFloat(document.getElementById('f-descuento-servicio').value) || 0;
+        const tipoIva = getIvaLineaActual() ?? IVA_TICKET;
 
         const totalBrutoConIva = cant * precioConIva;
         const total = totalBrutoConIva * (1 - dto / 100);
 
-        const base = total / (1 + IVA / 100);
+        const base = total / (1 + tipoIva / 100);
         const iva = total - base;
 
-        const precioSinIvaUnitario = precioConIva / (1 + IVA / 100);
+        const precioSinIvaUnitario = precioConIva / (1 + tipoIva / 100);
 
         document.getElementById('f-precio-servicio').value = precioConIva
             ? precioSinIvaUnitario.toFixed(2)
@@ -1954,8 +2152,8 @@
                         throw new Error(data.error ?? 'No se pudo guardar la línea');
                     }
 
-                    prepararSiguienteLinea();
                     hayCambiosEnLineas = true;
+                    window.location.reload();
 
                 } catch (error) {
                     console.error('Error guardando línea:', error);
@@ -1984,6 +2182,51 @@
 
         ['f-cantidad-servicio', 'f-descuento-servicio', 'f-precio-iva-servicio'].forEach(id => {
             document.getElementById(id)?.addEventListener('input', calcularSubtotalServicio);
+        });
+
+        document.getElementById('f-destino-facturacion')?.addEventListener('change', function () {
+            actualizarEtiquetaIvaLinea();
+            calcularSubtotalProducto();
+            calcularSubtotalServicio();
+        });
+
+        document.getElementById('selector-iva-factura')?.addEventListener('change', async function () {
+            const tipoIva = this.value;
+
+            if (!tipoIva) {
+                return;
+            }
+
+            actualizarEtiquetaIvaLinea();
+
+            if (!TIENE_LINEAS_FACTURA) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: `Las nuevas líneas de factura usarán IVA ${tipoIva} %.`,
+                    showConfirmButton: false,
+                    timer: 2500
+                });
+
+                return;
+            }
+
+            const resultado = await Swal.fire({
+                icon: 'warning',
+                title: `Aplicar IVA ${tipoIva} %`,
+                text: `Se cambiará al ${tipoIva} % el IVA de todas las líneas destinadas a factura y se recalculará el presupuesto.`,
+                showCancelButton: true,
+                confirmButtonText: 'Aplicar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (resultado.isConfirmed) {
+                document.getElementById('form-iva-factura')?.submit();
+                return;
+            }
+
+            window.location.reload();
         });
 
 
