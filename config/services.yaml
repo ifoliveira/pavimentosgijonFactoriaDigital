@@ -12,6 +12,70 @@ parameters:
       web_ducha:
         selector_plato_ducha.largo: 170
         selector_plato_ducha.ancho: 70
+    web_presupuesto.version_privacidad: '2026-09-19'
+    web_presupuesto.visualizacion_dedupe_seconds: 1800
+    web_presupuesto.valores_derivados:
+      web_ducha:
+        web_mampara.ancho_frente:
+          origen: selector_plato_ducha.largo
+          condicion:
+            campo: web_mampara.tipo
+            valor: frente
+        web_revestimientos.metros_azulejo:
+          -
+            expresion: "((selector_plato_ducha.largo + selector_plato_ducha.ancho + selector_plato_ducha.ancho) / 100) * 0.60"
+            condiciones:
+              - { campo: web_revestimientos.azulejo, valor: true }
+              - { campo: web_mano_obra_ducha.tipo_trabajo, valor: plato_por_plato }
+              - { campo: web_mampara.tipo, valor: frente }
+          -
+            expresion: "((selector_plato_ducha.largo + selector_plato_ducha.ancho + selector_plato_ducha.ancho) / 100) * 0.60"
+            condiciones:
+              - { campo: web_revestimientos.azulejo, valor: true }
+              - { campo: web_mano_obra_ducha.tipo_trabajo, valor: plato_por_plato }
+              - { campo: web_mampara.tipo, valor: frente_con_lateral_fijo }
+          -
+            expresion: "((selector_plato_ducha.largo + selector_plato_ducha.ancho) / 100) * 0.60"
+            condiciones:
+              - { campo: web_revestimientos.azulejo, valor: true }
+              - { campo: web_mano_obra_ducha.tipo_trabajo, valor: plato_por_plato }
+              - { campo: web_mampara.tipo, valor: fijo }
+          -
+            expresion: "((selector_plato_ducha.largo + selector_plato_ducha.ancho + selector_plato_ducha.ancho) / 100) * 1.00"
+            condiciones:
+              - { campo: web_revestimientos.azulejo, valor: true }
+              - { campo: web_mano_obra_ducha.tipo_trabajo, valor: banera_plato_cenefa }
+              - { campo: web_mampara.tipo, valor: frente }
+          -
+            expresion: "((selector_plato_ducha.largo + selector_plato_ducha.ancho + selector_plato_ducha.ancho) / 100) * 1.00"
+            condiciones:
+              - { campo: web_revestimientos.azulejo, valor: true }
+              - { campo: web_mano_obra_ducha.tipo_trabajo, valor: banera_plato_cenefa }
+              - { campo: web_mampara.tipo, valor: frente_con_lateral_fijo }
+          -
+            expresion: "((selector_plato_ducha.largo + selector_plato_ducha.ancho) / 100) * 1.00"
+            condiciones:
+              - { campo: web_revestimientos.azulejo, valor: true }
+              - { campo: web_mano_obra_ducha.tipo_trabajo, valor: banera_plato_cenefa }
+              - { campo: web_mampara.tipo, valor: fijo }
+          -
+            expresion: "((selector_plato_ducha.largo + selector_plato_ducha.ancho + selector_plato_ducha.ancho) / 100) * 2.40"
+            condiciones:
+              - { campo: web_revestimientos.azulejo, valor: true }
+              - { campo: web_mano_obra_ducha.tipo_trabajo, valor: banera_plato_zona_ducha }
+              - { campo: web_mampara.tipo, valor: frente }
+          -
+            expresion: "((selector_plato_ducha.largo + selector_plato_ducha.ancho + selector_plato_ducha.ancho) / 100) * 2.40"
+            condiciones:
+              - { campo: web_revestimientos.azulejo, valor: true }
+              - { campo: web_mano_obra_ducha.tipo_trabajo, valor: banera_plato_zona_ducha }
+              - { campo: web_mampara.tipo, valor: frente_con_lateral_fijo }
+          -
+            expresion: "((selector_plato_ducha.largo + selector_plato_ducha.ancho) / 100) * 2.40"
+            condiciones:
+              - { campo: web_revestimientos.azulejo, valor: true }
+              - { campo: web_mano_obra_ducha.tipo_trabajo, valor: banera_plato_zona_ducha }
+              - { campo: web_mampara.tipo, valor: fijo }
     presupuesto:
       mano_obra:
         albañil:
@@ -122,6 +186,15 @@ services:
     App\Service\WebPresupuesto\WebDuchaConversationService:
         arguments:
             $valoresProvisionales: '%web_presupuesto.valores_provisionales%'
+            $valoresDerivados: '%web_presupuesto.valores_derivados%'
+
+    App\Service\WebPresupuesto\PresupuestoWebService:
+        arguments:
+            $versionPrivacidad: '%web_presupuesto.version_privacidad%'
+
+    App\Service\WebPresupuesto\PresupuestoWebAccesoService:
+        arguments:
+            $dedupeSeconds: '%web_presupuesto.visualizacion_dedupe_seconds%'
 
     
     #App\EventListener\ExceptionListener:

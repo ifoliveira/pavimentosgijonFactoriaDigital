@@ -99,6 +99,272 @@ final class WebDuchaConversationServiceTest extends TestCase
         ];
     }
 
+    public function testValorDerivadoCopiaValorCuandoCondicionSeCumple(): void
+    {
+        $provider = new FakeWebDuchaBudgetFlowProvider($this->configConPlatoYMamparaReal());
+        $service = $this->service($provider, null, [], $this->valoresDerivadosMamparaDesdePlato());
+        $start = $service->iniciar();
+        $medidas = $service->responder($start['estado'], '160 x 80');
+
+        self::assertSame(['web_mampara.tipo'], $medidas['estado']['campos_pendientes_actuales']);
+
+        $response = $service->responder($medidas['estado'], null, [
+            'web_mampara.tipo' => 'frente',
+        ]);
+
+        self::assertTrue($response['finalizada']);
+        self::assertSame(160, $response['estado']['valores']['web_mampara']['ancho_frente']);
+        self::assertSame('selector_plato_ducha.largo', $response['estado']['valores_deducidos']['web_mampara']['ancho_frente']['origen']);
+        self::assertSame(160, $response['estado']['valores_deducidos']['web_mampara']['ancho_frente']['valor']);
+        self::assertSame(160, $provider->generacionesRecibidas[0]['web_mampara']['ancho_frente']);
+        self::assertFalse($response['contiene_estimaciones']);
+        self::assertSame([], $response['valores_estimados']);
+    }
+
+    public function testValorDerivadoNoCopiaSiCondicionNoSeCumple(): void
+    {
+        $service = $this->service(
+            new FakeWebDuchaBudgetFlowProvider($this->configConPlatoYMamparaReal()),
+            null,
+            [],
+            $this->valoresDerivadosMamparaDesdePlato()
+        );
+        $start = $service->iniciar();
+        $medidas = $service->responder($start['estado'], '160 x 80');
+
+        $response = $service->responder($medidas['estado'], null, [
+            'web_mampara.tipo' => 'fijo',
+        ]);
+
+        self::assertFalse($response['finalizada']);
+        self::assertSame(['web_mampara.ancho_frente'], $response['estado']['campos_pendientes_actuales']);
+        self::assertArrayNotHasKey('ancho_frente', $response['estado']['valores']['web_mampara']);
+    }
+
+    public function testValorDerivadoConOrigenInexistenteNoRompeYNoCopia(): void
+    {
+        $service = $this->service(
+            new FakeWebDuchaBudgetFlowProvider($this->configConPlatoYMamparaReal()),
+            null,
+            [],
+            [
+                'web_ducha' => [
+                    'web_mampara.ancho_frente' => [
+                        'origen' => 'selector_plato_ducha.alto',
+                        'condicion' => [
+                            'campo' => 'web_mampara.tipo',
+                            'valor' => 'frente',
+                        ],
+                    ],
+                ],
+            ]
+        );
+        $start = $service->iniciar();
+        $medidas = $service->responder($start['estado'], '160 x 80');
+
+        $response = $service->responder($medidas['estado'], null, [
+            'web_mampara.tipo' => 'frente',
+        ]);
+
+        self::assertFalse($response['finalizada']);
+        self::assertSame(['web_mampara.ancho_frente'], $response['estado']['campos_pendientes_actuales']);
+    }
+
+    public function testValorDerivadoNoSobrescribeDestinoYaInformado(): void
+    {
+        $service = $this->service(
+            new FakeWebDuchaBudgetFlowProvider($this->configConPlatoYMamparaReal()),
+            null,
+            [],
+            $this->valoresDerivadosMamparaDesdePlato()
+        );
+        $start = $service->iniciar();
+        $medidas = $service->responder($start['estado'], '160 x 80');
+        $estado = $medidas['estado'];
+        $estado['valores']['web_mampara']['ancho_frente'] = 158.0;
+
+        $response = $service->responder($estado, null, [
+            'web_mampara.tipo' => 'frente',
+        ]);
+
+        self::assertTrue($response['finalizada']);
+        self::assertSame(158.0, $response['estado']['valores']['web_mampara']['ancho_frente']);
+        self::assertArrayNotHasKey('web_mampara', $response['estado']['valores_deducidos']);
+    }
+
+    public function testValorDerivadoNoActivaComponenteNoPresente(): void
+    {
+        $service = $this->service(
+            new FakeWebDuchaBudgetFlowProvider($this->configBase()),
+            null,
+            [],
+            $this->valoresDerivadosMamparaDesdePlato()
+        );
+        $start = $service->iniciar();
+
+        $response = $service->responder($start['estado'], '160 x 80');
+
+        self::assertTrue($response['finalizada']);
+        self::assertArrayNotHasKey('web_mampara', $response['estado']['valores']);
+        self::assertSame([], $response['estado']['valores_deducidos']);
+    }
+
+    public function testValorDerivadoConExpresionAritmeticaYCondicionesAnd(): void
+    {
+        $provider = new FakeWebDuchaBudgetFlowProvider($this->configConPlatoMamparaManoObraYRevestimientos());
+        $service = $this->service($provider, null, [], $this->valoresDerivadosMetrosAzulejo());
+        $estado = [
+            'configurador_codigo' => 'web_ducha',
+            'configurador' => $this->configConPlatoMamparaManoObraYRevestimientos(),
+            'campos' => (new WebDuchaCampoExtractor())->extraerCampos($this->configConPlatoMamparaManoObraYRevestimientos()),
+            'valores' => [
+                'selector_plato_ducha' => ['largo' => 160, 'ancho' => 80],
+                'web_mampara' => ['tipo' => 'frente', 'ancho_frente' => 160],
+                'web_mano_obra_ducha' => ['tipo_trabajo' => 'banera_plato_zona_ducha'],
+                'web_revestimientos' => ['azulejo' => true],
+            ],
+        ];
+
+        $response = $service->responder($estado, 'continuar');
+
+        self::assertTrue($response['finalizada']);
+        self::assertSame(8, $response['estado']['valores']['web_revestimientos']['metros_azulejo']);
+        self::assertSame(8, $provider->generacionesRecibidas[0]['web_revestimientos']['metros_azulejo']);
+        self::assertSame('((selector_plato_ducha.largo + selector_plato_ducha.ancho + selector_plato_ducha.ancho) / 100) * 2.40', $response['estado']['valores_deducidos']['web_revestimientos']['metros_azulejo']['expresion']);
+        self::assertFalse($response['contiene_estimaciones']);
+    }
+
+    public function testValorDerivadoDecimalSeNormalizaAlTipoDestinoAntesDeValidar(): void
+    {
+        $provider = new FakeWebDuchaBudgetFlowProvider($this->configConPlatoMamparaManoObraYRevestimientos());
+        $service = $this->service($provider, null, [], [
+            'web_ducha' => [
+                'web_revestimientos.metros_azulejo' => [
+                    [
+                        'expresion' => '((selector_plato_ducha.largo + selector_plato_ducha.ancho + selector_plato_ducha.ancho) / 100) * 0.60',
+                        'condiciones' => [
+                            ['campo' => 'web_revestimientos.azulejo', 'valor' => true],
+                            ['campo' => 'web_mano_obra_ducha.tipo_trabajo', 'valor' => 'plato_por_plato'],
+                            ['campo' => 'web_mampara.tipo', 'valor' => 'frente'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $estado = [
+            'configurador_codigo' => 'web_ducha',
+            'configurador' => $this->configConPlatoMamparaManoObraYRevestimientos(),
+            'campos' => (new WebDuchaCampoExtractor())->extraerCampos($this->configConPlatoMamparaManoObraYRevestimientos()),
+            'valores' => [
+                'selector_plato_ducha' => ['largo' => 180, 'ancho' => 80],
+                'web_mampara' => ['tipo' => 'frente', 'ancho_frente' => 180],
+                'web_mano_obra_ducha' => ['tipo_trabajo' => 'plato_por_plato'],
+                'web_revestimientos' => ['azulejo' => true],
+            ],
+        ];
+
+        $response = $service->responder($estado, 'continuar');
+
+        self::assertTrue($response['finalizada']);
+        self::assertSame(2, $response['estado']['valores']['web_revestimientos']['metros_azulejo']);
+        self::assertSame(2, $provider->generacionesRecibidas[0]['web_revestimientos']['metros_azulejo']);
+    }
+
+    public function testValorDerivadoConExpresionNoAplicaSiCondicionNoSeCumple(): void
+    {
+        $service = $this->service(
+            new FakeWebDuchaBudgetFlowProvider($this->configConPlatoMamparaManoObraYRevestimientos()),
+            null,
+            [],
+            $this->valoresDerivadosMetrosAzulejo()
+        );
+        $estado = [
+            'configurador_codigo' => 'web_ducha',
+            'configurador' => $this->configConPlatoMamparaManoObraYRevestimientos(),
+            'campos' => (new WebDuchaCampoExtractor())->extraerCampos($this->configConPlatoMamparaManoObraYRevestimientos()),
+            'valores' => [
+                'selector_plato_ducha' => ['largo' => 160, 'ancho' => 80],
+                'web_mampara' => ['tipo' => 'frente', 'ancho_frente' => 160],
+                'web_mano_obra_ducha' => ['tipo_trabajo' => 'banera_plato_zona_ducha'],
+                'web_revestimientos' => ['azulejo' => false],
+            ],
+        ];
+
+        $response = $service->responder($estado, 'continuar');
+
+        self::assertFalse($response['finalizada']);
+        self::assertSame(['web_revestimientos.metros_azulejo'], $response['estado']['campos_pendientes_actuales']);
+        self::assertArrayNotHasKey('metros_azulejo', $response['estado']['valores']['web_revestimientos']);
+    }
+
+    public function testValorDerivadoConExpresionEsperaADatosTodaviaNoDisponibles(): void
+    {
+        $service = $this->service(
+            new FakeWebDuchaBudgetFlowProvider($this->configConPlatoMamparaManoObraYRevestimientos()),
+            null,
+            [],
+            $this->valoresDerivadosMetrosAzulejo()
+        );
+        $estado = [
+            'configurador_codigo' => 'web_ducha',
+            'configurador' => $this->configConPlatoMamparaManoObraYRevestimientos(),
+            'campos' => (new WebDuchaCampoExtractor())->extraerCampos($this->configConPlatoMamparaManoObraYRevestimientos()),
+            'valores' => [
+                'selector_plato_ducha' => ['largo' => 160, 'ancho' => 80],
+                'web_mampara' => ['tipo' => 'frente', 'ancho_frente' => 160],
+                'web_revestimientos' => ['azulejo' => true],
+            ],
+        ];
+
+        $response = $service->responder($estado, 'continuar');
+
+        self::assertFalse($response['finalizada']);
+        self::assertSame(['web_mano_obra_ducha.tipo_trabajo'], $response['estado']['campos_pendientes_actuales']);
+        self::assertArrayNotHasKey('metros_azulejo', $response['estado']['valores']['web_revestimientos']);
+    }
+
+    public function testValorDerivadoUsaPrimeraReglaAplicableParaUnDestino(): void
+    {
+        $provider = new FakeWebDuchaBudgetFlowProvider($this->configConPlatoMamparaManoObraYRevestimientos());
+        $service = $this->service($provider, null, [], [
+            'web_ducha' => [
+                'web_revestimientos.metros_azulejo' => [
+                    [
+                        'expresion' => 'selector_plato_ducha.largo / 10',
+                        'condiciones' => [
+                            ['campo' => 'web_revestimientos.azulejo', 'valor' => true],
+                            ['campo' => 'web_mampara.tipo', 'valor' => 'fijo'],
+                        ],
+                    ],
+                    [
+                        'expresion' => 'selector_plato_ducha.largo / 100',
+                        'condiciones' => [
+                            ['campo' => 'web_revestimientos.azulejo', 'valor' => true],
+                            ['campo' => 'web_mampara.tipo', 'valor' => 'frente'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $estado = [
+            'configurador_codigo' => 'web_ducha',
+            'configurador' => $this->configConPlatoMamparaManoObraYRevestimientos(),
+            'campos' => (new WebDuchaCampoExtractor())->extraerCampos($this->configConPlatoMamparaManoObraYRevestimientos()),
+            'valores' => [
+                'selector_plato_ducha' => ['largo' => 160, 'ancho' => 80],
+                'web_mampara' => ['tipo' => 'frente', 'ancho_frente' => 160],
+                'web_mano_obra_ducha' => ['tipo_trabajo' => 'plato_por_plato'],
+                'web_revestimientos' => ['azulejo' => true],
+            ],
+        ];
+
+        $response = $service->responder($estado, 'continuar');
+
+        self::assertTrue($response['finalizada']);
+        self::assertSame(2, $response['estado']['valores']['web_revestimientos']['metros_azulejo']);
+        self::assertSame(1, $response['estado']['valores_deducidos']['web_revestimientos']['metros_azulejo']['regla']);
+    }
+
     public function testRespuestaAmbiguaRequiereAclaracion(): void
     {
         $service = $this->service();
@@ -557,7 +823,8 @@ final class WebDuchaConversationServiceTest extends TestCase
     private function service(
         ?FakeWebDuchaBudgetFlowProvider $provider = null,
         ?FakeWebPresupuestoAiClient $ai = null,
-        array $valoresProvisionales = []
+        array $valoresProvisionales = [],
+        array $valoresDerivados = []
     ): WebDuchaConversationService {
         return new WebDuchaConversationService(
             $provider ?? new FakeWebDuchaBudgetFlowProvider($this->configBase()),
@@ -565,6 +832,7 @@ final class WebDuchaConversationServiceTest extends TestCase
             new WebDuchaCampoExtractor(),
             new NullLogger(),
             $valoresProvisionales,
+            $valoresDerivados,
         );
     }
 
@@ -749,12 +1017,141 @@ final class WebDuchaConversationServiceTest extends TestCase
         ];
     }
 
+    private function configConPlatoYMamparaReal(): array
+    {
+        $config = $this->configBase();
+        $config['componentes'][] = [
+            'codigo' => 'web_mampara',
+            'orden' => 2,
+            'obligatorio' => true,
+            'configurador' => [
+                'codigo' => 'web_mampara',
+                'tipo' => 'simple',
+                'campos' => [
+                    [
+                        'codigo' => 'tipo',
+                        'etiqueta' => 'Tipo',
+                        'tipo' => 'seleccion',
+                        'obligatorio' => true,
+                        'orden' => 1,
+                        'opciones' => [
+                            ['codigo' => 'frente', 'etiqueta' => 'La mampara esta entre dos paredes'],
+                            ['codigo' => 'frente_con_lateral_fijo', 'etiqueta' => 'Mampara que tiene un frente y un lateral'],
+                            ['codigo' => 'fijo', 'etiqueta' => 'Cristal fijo'],
+                        ],
+                    ],
+                    [
+                        'codigo' => 'ancho_frente',
+                        'etiqueta' => 'Ancho del frente',
+                        'tipo' => 'entero',
+                        'obligatorio' => true,
+                        'orden' => 2,
+                        'ayuda' => 'Medida real del hueco del frente en centimetros.',
+                        'opciones' => [],
+                    ],
+                ],
+            ],
+        ];
+
+        return $config;
+    }
+
+    private function configConPlatoMamparaManoObraYRevestimientos(): array
+    {
+        $config = $this->configConPlatoYMamparaReal();
+        $config['componentes'][] = [
+            'codigo' => 'web_mano_obra_ducha',
+            'orden' => 3,
+            'obligatorio' => true,
+            'configurador' => [
+                'codigo' => 'web_mano_obra_ducha',
+                'tipo' => 'simple',
+                'campos' => [
+                    [
+                        'codigo' => 'tipo_trabajo',
+                        'etiqueta' => 'Tipo de trabajo',
+                        'tipo' => 'seleccion',
+                        'obligatorio' => true,
+                        'orden' => 1,
+                        'opciones' => [
+                            ['codigo' => 'plato_por_plato', 'etiqueta' => 'Plato por plato'],
+                            ['codigo' => 'banera_plato_cenefa', 'etiqueta' => 'Plato por banera hasta cenefa'],
+                            ['codigo' => 'banera_plato_zona_ducha', 'etiqueta' => 'Plato por banera hasta techo'],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $config['componentes'][] = [
+            'codigo' => 'web_revestimientos',
+            'orden' => 4,
+            'obligatorio' => true,
+            'configurador' => [
+                'codigo' => 'web_revestimientos',
+                'tipo' => 'simple',
+                'campos' => [
+                    [
+                        'codigo' => 'azulejo',
+                        'etiqueta' => 'Azulejo necesarios',
+                        'tipo' => 'booleano',
+                        'obligatorio' => true,
+                        'orden' => 1,
+                        'opciones' => [],
+                    ],
+                    [
+                        'codigo' => 'metros_azulejo',
+                        'etiqueta' => 'Metros de azulejo necesarios',
+                        'tipo' => 'entero',
+                        'obligatorio' => true,
+                        'orden' => 2,
+                        'opciones' => [],
+                    ],
+                ],
+            ],
+        ];
+
+        return $config;
+    }
+
     private function valoresProvisionalesBase(): array
     {
         return [
             'web_ducha' => [
                 'selector_plato_ducha.largo' => 170,
                 'selector_plato_ducha.ancho' => 70,
+            ],
+        ];
+    }
+
+    private function valoresDerivadosMamparaDesdePlato(): array
+    {
+        return [
+            'web_ducha' => [
+                'web_mampara.ancho_frente' => [
+                    'origen' => 'selector_plato_ducha.largo',
+                    'condicion' => [
+                        'campo' => 'web_mampara.tipo',
+                        'valor' => 'frente',
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    private function valoresDerivadosMetrosAzulejo(): array
+    {
+        return [
+            'web_ducha' => [
+                'web_revestimientos.metros_azulejo' => [
+                    [
+                        'expresion' => '((selector_plato_ducha.largo + selector_plato_ducha.ancho + selector_plato_ducha.ancho) / 100) * 2.40',
+                        'condiciones' => [
+                            ['campo' => 'web_revestimientos.azulejo', 'valor' => true],
+                            ['campo' => 'web_mano_obra_ducha.tipo_trabajo', 'valor' => 'banera_plato_zona_ducha'],
+                            ['campo' => 'web_mampara.tipo', 'valor' => 'frente'],
+                        ],
+                    ],
+                ],
             ],
         ];
     }

@@ -17,6 +17,7 @@ final class WebDuchaConversationService
     private const ESTADO_CONVERSACION_INCOMPLETA_APLAZADOS = 'INCOMPLETO_POR_DATOS_APLAZADOS';
     private const SELECCION_CLIENTE_NO_PUEDE_DECIDIR = '__cliente_no_puede_decidir__';
     private const LIMITE_INTENTOS_SIN_PROGRESO = 2;
+    private const EXPRESION_DATO_NO_DISPONIBLE = '__DATO_NO_DISPONIBLE__';
 
     public function __construct(
         private readonly WebDuchaBudgetFlowProviderInterface $budgetFlowProvider,
@@ -24,6 +25,7 @@ final class WebDuchaConversationService
         private readonly WebDuchaCampoExtractor $campoExtractor,
         private readonly LoggerInterface $logger,
         private readonly array $valoresProvisionales = [],
+        private readonly array $valoresDerivados = [],
     ) {
     }
 
@@ -129,6 +131,7 @@ final class WebDuchaConversationService
 
     private function continuar(array $estado): array
     {
+        $estado = $this->aplicarValoresDerivados($estado);
         $validacion = $this->validar($estado);
         $estado = $this->sincronizarEstadosCamposResueltos($estado);
         $pendientesConfiguracion = $this->camposPendientesParaConversacion($estado);
@@ -224,6 +227,7 @@ final class WebDuchaConversationService
             ];
         }
 
+        $resultadoNormalizado = $this->normalizarResultado($resultado);
         $estado['finalizada'] = true;
         $estado['validacion'] = $validacion;
 
@@ -231,7 +235,8 @@ final class WebDuchaConversationService
             'ok' => true,
             'finalizada' => true,
             'estado' => $estado,
-            'resultado' => $this->normalizarResultado($resultado),
+            'resultado' => $resultadoNormalizado,
+            'snapshot_presupuesto' => $this->construirSnapshotPresupuesto($estado, $resultadoNormalizado, $estado['valores']),
             'contiene_estimaciones' => false,
             'valores_estimados' => [],
         ];
@@ -265,6 +270,7 @@ final class WebDuchaConversationService
             'finalizada' => true,
             'estado' => $estado,
             'resultado' => $resultadoNormalizado,
+            'snapshot_presupuesto' => $this->construirSnapshotPresupuesto($estado, $resultadoNormalizado, $valoresCalculo),
             'contiene_estimaciones' => true,
             'valores_estimados' => $valoresEstimados,
             'mensaje' => 'Hemos utilizado medidas orientativas para los datos que no tenías disponibles. Las confirmaremos antes de realizar el pedido.',
@@ -288,6 +294,7 @@ final class WebDuchaConversationService
             'campos_aplazados' => [],
             'estado_campos' => [],
             'valores_estimados' => [],
+            'valores_deducidos' => [],
             'estado_conversacion' => 'EN_CURSO',
         ];
     }
@@ -303,10 +310,473 @@ final class WebDuchaConversationService
         $estado['campos_aplazados'] = is_array($estado['campos_aplazados'] ?? null) ? array_values(array_unique(array_map('strval', $estado['campos_aplazados']))) : [];
         $estado['estado_campos'] = is_array($estado['estado_campos'] ?? null) ? $estado['estado_campos'] : [];
         $estado['valores_estimados'] = is_array($estado['valores_estimados'] ?? null) ? $estado['valores_estimados'] : [];
+        $estado['valores_deducidos'] = is_array($estado['valores_deducidos'] ?? null) ? $estado['valores_deducidos'] : [];
         $estado['estado_conversacion'] = is_string($estado['estado_conversacion'] ?? null) ? $estado['estado_conversacion'] : 'EN_CURSO';
         $estado['ultima_situacion'] = is_string($estado['ultima_situacion'] ?? null) ? $estado['ultima_situacion'] : null;
 
         return $estado;
+    }
+
+    private function aplicarValoresDerivados(array $estado): array
+    {
+        $configuradorCodigo = $estado['configurador_codigo'] ?? ($estado['configurador']['codigo'] ?? null);
+
+        if (!is_string($configuradorCodigo)) {
+            return $estado;
+        }
+
+        $reglas = $this->valoresDerivados[$configuradorCodigo] ?? [];
+
+        if (!is_array($reglas) || $reglas === []) {
+            return $estado;
+        }
+
+        $camposDisponibles = array_flip(array_map(
+            static fn(array $campo): string => (string) ($campo['id'] ?? ''),
+            array_filter($estado['campos'], static fn(mixed $campo): bool => is_array($campo) && isset($campo['id']))
+        ));
+
+        foreach ($reglas as $destinoId => $reglasDestino) {
+            if (!is_string($destinoId) || !is_array($reglasDestino)) {
+                $this->registrarValorDerivadoIgnorado($configuradorCodigo, (string) $destinoId, 'configuracion_incompleta');
+                continue;
+            }
+
+            $destino = $this->partesIdCampo($destinoId);
+
+            if ($destino === null || !isset($camposDisponibles[$destinoId])) {
+                $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'campo_destino_no_disponible');
+                continue;
+            }
+
+            if (array_key_exists($destino['campo'], $estado['valores'][$destino['componente']] ?? [])) {
+                continue;
+            }
+
+            foreach ($this->normalizarReglasValorDerivado($reglasDestino) as $indiceRegla => $regla) {
+                if (!is_array($regla)) {
+                    $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'configuracion_incompleta', [
+                        'indice_regla' => $indiceRegla,
+                    ]);
+                    continue;
+                }
+
+                if (array_key_exists($destino['campo'], $estado['valores'][$destino['componente']] ?? [])) {
+                    break;
+                }
+
+                if (!$this->condicionesValorDerivadoCumplidas($estado, $configuradorCodigo, $destinoId, $regla, $camposDisponibles)) {
+                    continue;
+                }
+
+                $valorDerivado = $this->resolverValorDerivado($estado, $configuradorCodigo, $destinoId, $regla, $camposDisponibles);
+
+                if ($valorDerivado['disponible'] !== true) {
+                    continue;
+                }
+
+                $campoDestino = $this->buscarCampo($estado['campos'], $destinoId);
+                $valor = $campoDestino !== null
+                    ? $this->normalizarValor($campoDestino, $valorDerivado['valor'])
+                    : $valorDerivado['valor'];
+
+                $estado['valores'][$destino['componente']][$destino['campo']] = $valor;
+                $estado['valores_deducidos'][$destino['componente']][$destino['campo']] = [
+                    'origen' => $valorDerivado['origen'],
+                    'expresion' => $valorDerivado['expresion'],
+                    'valor' => $valor,
+                    'regla' => $indiceRegla,
+                ];
+            }
+        }
+
+        return $estado;
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private function normalizarReglasValorDerivado(array $reglasDestino): array
+    {
+        if (array_key_exists('origen', $reglasDestino) || array_key_exists('expresion', $reglasDestino)) {
+            return [$reglasDestino];
+        }
+
+        return array_values($reglasDestino);
+    }
+
+    /**
+     * @return array{disponible: bool, valor?: mixed, origen?: ?string, expresion?: ?string}
+     */
+    private function resolverValorDerivado(array $estado, string $configuradorCodigo, string $destinoId, array $regla, array $camposDisponibles): array
+    {
+        if (array_key_exists('origen', $regla)) {
+            $origenId = $regla['origen'] ?? null;
+
+            if (!is_string($origenId) || !isset($camposDisponibles[$origenId])) {
+                $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'campo_origen_o_destino_no_disponible', [
+                    'origen' => $origenId,
+                ]);
+                return ['disponible' => false];
+            }
+
+            $origen = $this->partesIdCampo($origenId);
+
+            if ($origen === null) {
+                $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'id_invalido', [
+                    'origen' => $origenId,
+                ]);
+                return ['disponible' => false];
+            }
+
+            if (!array_key_exists($origen['campo'], $estado['valores'][$origen['componente']] ?? [])) {
+                return ['disponible' => false];
+            }
+
+            return [
+                'disponible' => true,
+                'valor' => $estado['valores'][$origen['componente']][$origen['campo']],
+                'origen' => $origenId,
+                'expresion' => null,
+            ];
+        }
+
+        $expresion = $regla['expresion'] ?? null;
+
+        if (!is_string($expresion) || trim($expresion) === '') {
+            $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'regla_sin_origen_ni_expresion');
+
+            return ['disponible' => false];
+        }
+
+        $valor = $this->evaluarExpresionValorDerivado($estado, $configuradorCodigo, $destinoId, $expresion, $camposDisponibles);
+
+        if ($valor === self::EXPRESION_DATO_NO_DISPONIBLE) {
+            return ['disponible' => false];
+        }
+
+        return [
+            'disponible' => true,
+            'valor' => $valor,
+            'origen' => null,
+            'expresion' => $expresion,
+        ];
+    }
+
+    private function condicionesValorDerivadoCumplidas(array $estado, string $configuradorCodigo, string $destinoId, array $regla, array $camposDisponibles): bool
+    {
+        if (array_key_exists('condiciones', $regla)) {
+            $condiciones = $regla['condiciones'];
+
+            if (!is_array($condiciones)) {
+                $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'condiciones_invalidas');
+
+                return false;
+            }
+
+            foreach ($condiciones as $condicion) {
+                if (!$this->condicionValorDerivadoCumplida($estado, $configuradorCodigo, $destinoId, $condicion, $camposDisponibles)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return $this->condicionValorDerivadoCumplida($estado, $configuradorCodigo, $destinoId, $regla['condicion'] ?? null, $camposDisponibles);
+    }
+
+    private function condicionValorDerivadoCumplida(array $estado, string $configuradorCodigo, string $destinoId, mixed $condicion, array $camposDisponibles): bool
+    {
+        if ($condicion === null || $condicion === []) {
+            return true;
+        }
+
+        if (!is_array($condicion)) {
+            $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'condicion_invalida');
+
+            return false;
+        }
+
+        $campoCondicionId = $condicion['campo'] ?? null;
+
+        if (!is_string($campoCondicionId) || !array_key_exists('valor', $condicion) || !isset($camposDisponibles[$campoCondicionId])) {
+            $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'campo_condicion_no_disponible', [
+                'condicion' => $condicion,
+            ]);
+
+            return false;
+        }
+
+        $campoCondicion = $this->partesIdCampo($campoCondicionId);
+
+        if ($campoCondicion === null || !array_key_exists($campoCondicion['campo'], $estado['valores'][$campoCondicion['componente']] ?? [])) {
+            return false;
+        }
+
+        $valorActual = $estado['valores'][$campoCondicion['componente']][$campoCondicion['campo']];
+        $valorEsperado = $condicion['valor'];
+
+        if ($valorActual === $valorEsperado) {
+            return true;
+        }
+
+        return is_scalar($valorActual)
+            && is_scalar($valorEsperado)
+            && (string) $valorActual === (string) $valorEsperado;
+    }
+
+    private function evaluarExpresionValorDerivado(array $estado, string $configuradorCodigo, string $destinoId, string $expresion, array $camposDisponibles): float|string
+    {
+        $tokens = $this->tokenizarExpresionValorDerivado($expresion);
+
+        if ($tokens === null) {
+            $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'expresion_invalida', [
+                'expresion' => $expresion,
+            ]);
+
+            return self::EXPRESION_DATO_NO_DISPONIBLE;
+        }
+
+        $rpn = $this->convertirExpresionARpn($tokens);
+
+        if ($rpn === null) {
+            $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'expresion_invalida', [
+                'expresion' => $expresion,
+            ]);
+
+            return self::EXPRESION_DATO_NO_DISPONIBLE;
+        }
+
+        return $this->evaluarRpnValorDerivado($estado, $configuradorCodigo, $destinoId, $expresion, $rpn, $camposDisponibles);
+    }
+
+    /**
+     * @return array<int, array{tipo: string, valor: string}>|null
+     */
+    private function tokenizarExpresionValorDerivado(string $expresion): ?array
+    {
+        $tokens = [];
+        $longitud = strlen($expresion);
+        $posicion = 0;
+
+        while ($posicion < $longitud) {
+            $caracter = $expresion[$posicion];
+
+            if (ctype_space($caracter)) {
+                $posicion++;
+                continue;
+            }
+
+            if (preg_match('/\G\d+(?:\.\d+)?/A', $expresion, $match, 0, $posicion) === 1) {
+                $tokens[] = ['tipo' => 'numero', 'valor' => $match[0]];
+                $posicion += strlen($match[0]);
+                continue;
+            }
+
+            if (preg_match('/\G[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*/A', $expresion, $match, 0, $posicion) === 1) {
+                $tokens[] = ['tipo' => 'campo', 'valor' => $match[0]];
+                $posicion += strlen($match[0]);
+                continue;
+            }
+
+            if (str_contains('+-*/()', $caracter)) {
+                $tokens[] = ['tipo' => $caracter === '(' || $caracter === ')' ? 'parentesis' : 'operador', 'valor' => $caracter];
+                $posicion++;
+                continue;
+            }
+
+            return null;
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @param array<int, array{tipo: string, valor: string}> $tokens
+     *
+     * @return array<int, array{tipo: string, valor: string}>|null
+     */
+    private function convertirExpresionARpn(array $tokens): ?array
+    {
+        $salida = [];
+        $operadores = [];
+        $precedencia = ['+' => 1, '-' => 1, '*' => 2, '/' => 2];
+
+        foreach ($tokens as $token) {
+            if ($token['tipo'] === 'numero' || $token['tipo'] === 'campo') {
+                $salida[] = $token;
+                continue;
+            }
+
+            if ($token['tipo'] === 'operador') {
+                while ($operadores !== []) {
+                    $ultimo = end($operadores);
+
+                    if (($ultimo['tipo'] ?? null) !== 'operador') {
+                        break;
+                    }
+
+                    if (($precedencia[$ultimo['valor']] ?? 0) < ($precedencia[$token['valor']] ?? 0)) {
+                        break;
+                    }
+
+                    $salida[] = array_pop($operadores);
+                }
+
+                $operadores[] = $token;
+                continue;
+            }
+
+            if ($token['valor'] === '(') {
+                $operadores[] = $token;
+                continue;
+            }
+
+            if ($token['valor'] === ')') {
+                $encontradoInicio = false;
+
+                while ($operadores !== []) {
+                    $operador = array_pop($operadores);
+
+                    if (($operador['valor'] ?? null) === '(') {
+                        $encontradoInicio = true;
+                        break;
+                    }
+
+                    $salida[] = $operador;
+                }
+
+                if (!$encontradoInicio) {
+                    return null;
+                }
+            }
+        }
+
+        while ($operadores !== []) {
+            $operador = array_pop($operadores);
+
+            if (($operador['valor'] ?? null) === '(') {
+                return null;
+            }
+
+            $salida[] = $operador;
+        }
+
+        return $salida;
+    }
+
+    /**
+     * @param array<int, array{tipo: string, valor: string}> $rpn
+     */
+    private function evaluarRpnValorDerivado(array $estado, string $configuradorCodigo, string $destinoId, string $expresion, array $rpn, array $camposDisponibles): float|string
+    {
+        $pila = [];
+
+        foreach ($rpn as $token) {
+            if ($token['tipo'] === 'numero') {
+                $pila[] = (float) $token['valor'];
+                continue;
+            }
+
+            if ($token['tipo'] === 'campo') {
+                $valor = $this->valorCampoParaExpresion($estado, $token['valor'], $camposDisponibles);
+
+                if ($valor === self::EXPRESION_DATO_NO_DISPONIBLE) {
+                    return self::EXPRESION_DATO_NO_DISPONIBLE;
+                }
+
+                if (!is_numeric($valor)) {
+                    $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'valor_no_numerico_en_expresion', [
+                        'expresion' => $expresion,
+                        'campo' => $token['valor'],
+                    ]);
+
+                    return self::EXPRESION_DATO_NO_DISPONIBLE;
+                }
+
+                $pila[] = (float) $valor;
+                continue;
+            }
+
+            if (count($pila) < 2) {
+                $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'expresion_invalida', [
+                    'expresion' => $expresion,
+                ]);
+
+                return self::EXPRESION_DATO_NO_DISPONIBLE;
+            }
+
+            $derecha = array_pop($pila);
+            $izquierda = array_pop($pila);
+
+            $pila[] = match ($token['valor']) {
+                '+' => $izquierda + $derecha,
+                '-' => $izquierda - $derecha,
+                '*' => $izquierda * $derecha,
+                '/' => $derecha == 0.0 ? null : $izquierda / $derecha,
+                default => null,
+            };
+
+            if (end($pila) === null) {
+                $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'expresion_invalida', [
+                    'expresion' => $expresion,
+                ]);
+
+                return self::EXPRESION_DATO_NO_DISPONIBLE;
+            }
+        }
+
+        if (count($pila) !== 1) {
+            $this->registrarValorDerivadoIgnorado($configuradorCodigo, $destinoId, 'expresion_invalida', [
+                'expresion' => $expresion,
+            ]);
+
+            return self::EXPRESION_DATO_NO_DISPONIBLE;
+        }
+
+        return round((float) $pila[0], 2);
+    }
+
+    private function valorCampoParaExpresion(array $estado, string $id, array $camposDisponibles): mixed
+    {
+        if (!isset($camposDisponibles[$id])) {
+            return self::EXPRESION_DATO_NO_DISPONIBLE;
+        }
+
+        $campo = $this->partesIdCampo($id);
+
+        if ($campo === null || !array_key_exists($campo['campo'], $estado['valores'][$campo['componente']] ?? [])) {
+            return self::EXPRESION_DATO_NO_DISPONIBLE;
+        }
+
+        return $estado['valores'][$campo['componente']][$campo['campo']];
+    }
+
+    /**
+     * @return array{componente: string, campo: string}|null
+     */
+    private function partesIdCampo(string $id): ?array
+    {
+        $partes = explode('.', $id, 2);
+
+        if (count($partes) !== 2 || $partes[0] === '' || $partes[1] === '') {
+            return null;
+        }
+
+        return [
+            'componente' => $partes[0],
+            'campo' => $partes[1],
+        ];
+    }
+
+    private function registrarValorDerivadoIgnorado(string $configuradorCodigo, string $destinoId, string $motivo, array $contexto = []): void
+    {
+        $this->logger->warning('web_presupuesto_ducha.valor_derivado_ignorado', $contexto + [
+            'configurador' => $configuradorCodigo,
+            'destino' => $destinoId,
+            'motivo' => $motivo,
+        ]);
     }
 
     private function validar(array $estado): array
@@ -1348,6 +1818,23 @@ final class WebDuchaConversationService
             'lineas' => $lineas,
             'avisos' => $resultado['avisos'] ?? [],
             'total' => round($total, 2),
+        ];
+    }
+
+    private function construirSnapshotPresupuesto(array $estado, array $resultadoNormalizado, array $valoresCalculo): array
+    {
+        return [
+            'tipoPresupuesto' => 'ducha',
+            'total' => $resultadoNormalizado['total'] ?? null,
+            'jsonSolicitudBudgetFlow' => [
+                'configurador' => $estado['configurador_codigo'] ?? ($estado['configurador']['codigo'] ?? 'web_ducha'),
+                'valores' => $valoresCalculo,
+                'valores_introducidos' => $estado['valores'] ?? [],
+                'valores_estimados' => $estado['valores_estimados'] ?? [],
+                'valores_deducidos' => $estado['valores_deducidos'] ?? [],
+                'campos_aplazados' => $estado['campos_aplazados'] ?? [],
+            ],
+            'jsonPresupuesto' => $resultadoNormalizado,
         ];
     }
 }

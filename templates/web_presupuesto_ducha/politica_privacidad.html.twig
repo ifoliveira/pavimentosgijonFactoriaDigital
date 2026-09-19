@@ -1,0 +1,136 @@
+{% extends 'layouts/base_public.html.twig' %}
+
+{% block title %}Política de privacidad{% endblock %}
+
+{% block body %}
+<div class="privacy-page">
+  <h1>Política de privacidad</h1>
+
+  <h2>Responsable del tratamiento</h2>
+  <p>Los datos facilitados a través del presupuestador web serán tratados por <strong>Alejandra Lucia Gancedo Muñoz, en nombre de Pavimentos Gijón</strong>, con domicilio en <strong>Avenida Schultz 28 Bajo, 33208 Gijón</strong> y correo electrónico de contacto <strong>buzon@pavimentosgijon.es</strong>.</p>
+
+  <h2>Qué datos recogemos</h2>
+  <p>A través del presupuestador solicitamos únicamente tu dirección de correo electrónico.</p>
+  <p>También podremos registrar información relacionada con el presupuesto generado y con su consulta, como las fechas en las que se accede al mismo.</p>
+
+  <h2>Para qué utilizamos tu correo electrónico</h2>
+  <p>Utilizamos tu dirección de correo electrónico exclusivamente para:</p>
+  <ul>
+    <li>enviarte el presupuesto que has solicitado;</li>
+    <li>permitirte acceder posteriormente a ese presupuesto;</li>
+    <li>gestionar y realizar el seguimiento de esa solicitud;</li>
+    <li>contactar contigo en relación con ese presupuesto.</li>
+  </ul>
+  <p>No utilizaremos tu dirección de correo electrónico para enviarte newsletters, publicidad general ni comunicaciones ajenas al presupuesto solicitado.</p>
+  <p>Si en cualquier momento nos indicas que no deseas continuar recibiendo comunicaciones relacionadas con el presupuesto, dejaremos de realizar su seguimiento.</p>
+
+  <h2>Base jurídica</h2>
+  <p>El tratamiento de tus datos se realiza para atender la solicitud de presupuesto que tú mismo has realizado y gestionar las actuaciones necesarias relacionadas con dicha solicitud.</p>
+
+  <h2>Durante cuánto tiempo conservamos los datos</h2>
+  <p>Conservaremos los datos durante el tiempo necesario para gestionar y realizar el seguimiento del presupuesto solicitado.</p>
+  <p>Una vez finalizada dicha finalidad, podremos conservar únicamente la información que resulte necesaria durante los plazos exigidos por las obligaciones legales aplicables.</p>
+
+  <h2>A quién comunicamos los datos</h2>
+  <p>No vendemos ni utilizamos tus datos para que otras empresas te envíen publicidad.</p>
+  <p>Los datos podrán ser tratados por proveedores tecnológicos que nos prestan servicios necesarios para el funcionamiento de la web, alojamiento, correo electrónico o sistemas informáticos, actuando por nuestra cuenta.</p>
+  <p>También podrán comunicarse cuando exista una obligación legal.</p>
+
+  <h2>Tus derechos</h2>
+  <p>Puedes solicitar el acceso, rectificación o supresión de tus datos, así como ejercer los demás derechos reconocidos por la normativa de protección de datos.</p>
+  <p>También puedes solicitar en cualquier momento que dejemos de realizar el seguimiento de tu presupuesto.</p>
+  <p>Para ello puedes escribir a:</p>
+  <p><strong>buzon@pavimentosgijon.es</strong></p>
+  <p>Si consideras que el tratamiento de tus datos no es adecuado, puedes presentar una reclamación ante la Agencia Española de Protección de Datos.</p>
+
+  <h2>Seguridad</h2>
+  <p>Adoptamos medidas razonables para proteger los datos personales frente a accesos no autorizados, pérdida, alteración o uso indebido.</p>
+
+  <h2>Actualizaciones</h2>
+  <p>Esta política podrá actualizarse cuando cambie la forma en la que tratamos los datos o resulte necesario adaptar la información facilitada.</p>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.home-header {
+  position: relative;
+  background: #fff;
+  padding: 12px 0;
+  box-shadow: 0 8px 24px rgba(18, 48, 71, .08);
+}
+
+.home-header .header-inner {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home-header div.site-logo {
+  display: flex;
+  align-items: center;
+  width: auto;
+  height: auto;
+  margin: 0;
+  line-height: 0;
+}
+
+.home-header img.site-logo {
+  display: block;
+  width: auto;
+  height: 64px;
+  max-width: 220px;
+  object-fit: contain;
+  filter: none;
+  margin: 0;
+}
+
+.privacy-page {
+  width: min(860px, calc(100% - 32px));
+  margin: 48px auto;
+  color: #1f2933;
+}
+
+.privacy-page h1 {
+  margin: 0 0 28px;
+  color: #123047;
+  font-size: 34px;
+  line-height: 1.2;
+}
+
+.privacy-page h2 {
+  margin: 30px 0 10px;
+  color: #123047;
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+.privacy-page p,
+.privacy-page li {
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+@media (max-width: 640px) {
+  .home-header {
+    padding: 10px 0;
+  }
+
+  .home-header img.site-logo {
+    height: 56px;
+    max-width: 190px;
+  }
+
+  .privacy-page {
+    width: min(100% - 24px, 860px);
+    margin: 30px auto;
+  }
+
+  .privacy-page h1 {
+    font-size: 28px;
+  }
+}
+</style>
+{% endblock %}

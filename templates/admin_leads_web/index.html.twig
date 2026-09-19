@@ -1,0 +1,153 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Leads web{% endblock %}
+{% block cabecera %}Leads web{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item active">Leads web</li>
+{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .lead-web-card { border: 0; box-shadow: 0 8px 22px rgba(30, 41, 59, .06); }
+    .lead-web-kpi { border: 0; background: #fff; box-shadow: 0 8px 20px rgba(30, 41, 59, .05); }
+    .lead-web-status { letter-spacing: .03em; text-transform: uppercase; }
+    .lead-web-filter a { margin: 0 6px 8px 0; }
+    .lead-web-meta { color: #6c757d; font-size: .86rem; }
+    .lead-web-action { background: #f5f8fb; border-radius: 8px; padding: 12px; }
+  </style>
+{% endblock %}
+
+{% block body %}
+  {% set resumen = dashboard.resumen %}
+
+  <div class="row">
+    <div class="col-md-6 col-xl mb-3">
+      <div class="card lead-web-kpi"><div class="card-body">
+        <small class="text-muted text-uppercase">Leads activos</small>
+        <h3 class="mb-0">{{ resumen.activos }}</h3>
+      </div></div>
+    </div>
+    <div class="col-md-6 col-xl mb-3">
+      <div class="card lead-web-kpi"><div class="card-body">
+        <small class="text-muted text-uppercase">Requieren intervención</small>
+        <h3 class="mb-0 text-warning">{{ resumen.requierenIntervencion }}</h3>
+      </div></div>
+    </div>
+    <div class="col-md-6 col-xl mb-3">
+      <div class="card lead-web-kpi"><div class="card-body">
+        <small class="text-muted text-uppercase">Visitas solicitadas</small>
+        <h3 class="mb-0 text-danger">{{ resumen.visitasSolicitadas }}</h3>
+      </div></div>
+    </div>
+    <div class="col-md-6 col-xl mb-3">
+      <div class="card lead-web-kpi"><div class="card-body">
+        <small class="text-muted text-uppercase">Contactos solicitados</small>
+        <h3 class="mb-0 text-info">{{ resumen.contactosSolicitados }}</h3>
+      </div></div>
+    </div>
+    <div class="col-md-6 col-xl mb-3">
+      <div class="card lead-web-kpi"><div class="card-body">
+        <small class="text-muted text-uppercase">Seguimiento automático</small>
+        <h3 class="mb-0 text-primary">{{ resumen.seguimientoAutomatico }}</h3>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card lead-web-card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label text-muted">Buscar por email</label>
+          <input type="search" name="q" value="{{ dashboard.busqueda }}" class="form-control" placeholder="cliente@email.com">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-muted">Orden</label>
+          <select name="orden" class="form-control">
+            <option value="actividad" {{ dashboard.orden == 'actividad' ? 'selected' }}>Actividad reciente</option>
+            <option value="creacion" {{ dashboard.orden == 'creacion' ? 'selected' }}>Fecha creación</option>
+            <option value="importe" {{ dashboard.orden == 'importe' ? 'selected' }}>Importe</option>
+            <option value="ultima_visualizacion" {{ dashboard.orden == 'ultima_visualizacion' ? 'selected' }}>Última visualización</option>
+          </select>
+        </div>
+        <input type="hidden" name="filtro" value="{{ dashboard.filtro }}">
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+        <div class="col-md-2">
+          <a href="{{ path('admin_leads_web_index') }}" class="btn btn-light w-100">Limpiar</a>
+        </div>
+      </form>
+
+      <div class="lead-web-filter mt-4">
+        {% for key, label in dashboard.filtros %}
+          <a class="btn btn-sm {{ dashboard.filtro == key ? 'btn-info' : 'btn-outline-info' }}" href="{{ path('admin_leads_web_index', {filtro: key, q: dashboard.busqueda, orden: dashboard.orden}) }}">
+            {{ label }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    {% for item in dashboard.items %}
+      {% set decision = item.decision %}
+      {% set presupuesto = item.presupuesto %}
+      <div class="col-lg-6 col-xl-4 mb-4">
+        <div class="card lead-web-card h-100">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <span class="badge {{ decision.requiereIntervencion ? 'bg-light-warning text-warning' : 'bg-light-primary text-primary' }} lead-web-status">
+                {{ decision.estadoLabel }}
+              </span>
+              <small class="text-muted">#{{ presupuesto.id }}</small>
+            </div>
+
+            <h4 class="mb-1">{{ item.email }}</h4>
+            <div class="lead-web-meta mb-3">{{ item.tipoLabel }}</div>
+
+            <div class="d-flex justify-content-between border-top border-bottom py-3 mb-3">
+              <div>
+                <small class="text-muted d-block">Importe</small>
+                <strong>{{ item.importe }}</strong>
+              </div>
+              <div class="text-end">
+                <small class="text-muted d-block">Visualizaciones</small>
+                <strong>{{ item.visualizaciones }}</strong>
+              </div>
+            </div>
+
+            <div class="lead-web-meta mb-2">
+              Creado: {{ item.createdAt|date('d/m/Y H:i') }}
+            </div>
+            <div class="lead-web-meta mb-3">
+              Última visualización:
+              {{ item.ultimaVisualizacionAt ? item.ultimaVisualizacionAt|date('d/m/Y H:i') : 'Sin visualizar' }}
+            </div>
+
+            <div class="mb-3">
+              <small class="text-muted d-block">Última interacción</small>
+              <strong>{{ item.ultimaInteraccionLabel }}</strong>
+            </div>
+
+            <div class="lead-web-action mt-auto">
+              <small class="text-muted d-block">Siguiente acción</small>
+              <strong>{{ decision.siguienteAccionLabel ?? 'Sin siguiente acción' }}</strong>
+            </div>
+
+            <a href="{{ path('admin_leads_web_show', {id: presupuesto.id}) }}" class="btn btn-primary mt-3">
+              Ver lead
+            </a>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="col-12">
+        <div class="card lead-web-card"><div class="card-body text-center text-muted">
+          No hay leads web para este filtro.
+        </div></div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

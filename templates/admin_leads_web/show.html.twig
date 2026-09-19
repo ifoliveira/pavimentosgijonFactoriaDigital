@@ -1,0 +1,233 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lead web {{ detalle.email }}{% endblock %}
+{% block cabecera %}Detalle lead web{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{{ path('admin_leads_web_index') }}">Leads web</a></li>
+  <li class="breadcrumb-item active">{{ detalle.email }}</li>
+{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .lead-web-panel { border: 0; box-shadow: 0 8px 22px rgba(30, 41, 59, .06); }
+    .lead-web-label { color: #6c757d; font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .lead-web-value { color: #1f2937; font-weight: 700; }
+    .lead-web-decision { background: #f5f8fb; border-radius: 8px; padding: 18px; }
+    .lead-web-timeline { position: relative; padding-left: 22px; }
+    .lead-web-timeline:before { background: #dbe4ee; bottom: 0; content: ""; left: 6px; position: absolute; top: 4px; width: 2px; }
+    .lead-web-timeline-item { margin-bottom: 18px; position: relative; }
+    .lead-web-timeline-item:before { background: #166b8f; border-radius: 50%; content: ""; height: 12px; left: -21px; position: absolute; top: 4px; width: 12px; }
+    .lead-web-data-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .lead-web-muted-box { background: #f8fafc; border-radius: 8px; padding: 12px; }
+  </style>
+{% endblock %}
+
+{% block body %}
+  {% set presupuesto = detalle.presupuesto %}
+  {% set decision = detalle.decision %}
+  {% set interaccion = detalle.ultimaInteraccion %}
+
+  <div class="card lead-web-panel mb-4">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+        <div>
+          <div class="lead-web-label">Email</div>
+          <h3 class="mb-1">{{ detalle.email }}</h3>
+          <div class="text-muted">{{ detalle.tipoLabel }}</div>
+        </div>
+        <div class="text-md-end">
+          <div class="lead-web-label">Importe actual</div>
+          <h2 class="mb-0">{{ detalle.importe }}</h2>
+        </div>
+      </div>
+
+      <div class="row mt-4">
+        <div class="col-md-3 mb-3">
+          <div class="lead-web-label">Creación</div>
+          <div class="lead-web-value">{{ presupuesto.createdAt|date('d/m/Y H:i') }}</div>
+        </div>
+        <div class="col-md-3 mb-3">
+          <div class="lead-web-label">Estado ERP</div>
+          <div class="lead-web-value">{{ decision.estadoLabel }}</div>
+        </div>
+        <div class="col-md-3 mb-3">
+          <div class="lead-web-label">Siguiente acción</div>
+          <div class="lead-web-value">{{ decision.siguienteAccionLabel ?? 'Sin siguiente acción' }}</div>
+        </div>
+        <div class="col-md-3 mb-3">
+          <div class="lead-web-label">Visualizaciones</div>
+          <div class="lead-web-value">{{ presupuesto.numeroVisualizaciones }}</div>
+        </div>
+      </div>
+
+      <a href="{{ urlCliente }}" target="_blank" rel="noopener" class="btn btn-outline-primary">
+        Ver presupuesto como cliente
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <div class="card lead-web-panel h-100">
+        <div class="card-body">
+          <h4 class="mb-3">Qué nos ha dicho el cliente</h4>
+          {% if interaccion %}
+            <div class="lead-web-label mb-2">{{ detalle.ultimaInteraccionLabel }}</div>
+            <div class="lead-web-data-grid">
+              {% for key, value in interaccion.datos ?? [] %}
+                {% if value is not iterable and value is not empty %}
+                  <div class="lead-web-muted-box">
+                    <div class="lead-web-label">
+                      {% if key == 'telefono' %}Teléfono
+                      {% elseif key == 'direccion' %}Dirección
+                      {% elseif key == 'franja' %}Preferencia
+                      {% elseif key == 'mensaje' %}Mensaje
+                      {% elseif key == 'observaciones' %}Observaciones
+                      {% elseif key == 'componente' %}Quiere cambiar
+                      {% else %}{{ key|replace({'_': ' '})|title }}{% endif %}
+                    </div>
+                    <div class="lead-web-value">
+                      {% if value == 'manana' %}Mañana
+                      {% elseif value == 'tarde' %}Tarde
+                      {% elseif value == 'indiferente' %}Me da igual
+                      {% elseif value == 'plato' %}Plato de ducha
+                      {% elseif value == 'mampara' %}Mampara
+                      {% elseif value == 'griferia' %}Grifería
+                      {% else %}{{ value }}{% endif %}
+                    </div>
+                  </div>
+                {% endif %}
+              {% else %}
+                <p class="text-muted mb-0">No hay datos estructurados en la última interacción.</p>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">El cliente todavía no ha realizado ninguna interacción.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <div class="card lead-web-panel h-100">
+        <div class="card-body">
+          <h4 class="mb-3">Decisión del ERP</h4>
+          <div class="lead-web-decision">
+            <div class="lead-web-label">Estado</div>
+            <h4>{{ decision.estadoLabel }}</h4>
+
+            <div class="lead-web-label mt-3">Seguimiento automático</div>
+            <div class="lead-web-value">
+              {{ presupuesto.lead.seguimientoActivo ? 'ACTIVO' : 'DETENIDO' }}
+            </div>
+
+            <div class="lead-web-label mt-3">Siguiente paso</div>
+            <div class="lead-web-value">{{ decision.siguienteAccionLabel ?? 'Sin siguiente acción' }}</div>
+
+            <div class="lead-web-label mt-3">Por qué</div>
+            <p class="mb-0">{{ decision.motivo }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <div class="card lead-web-panel h-100">
+        <div class="card-body">
+          <h4 class="mb-3">Historial</h4>
+          <div class="lead-web-timeline">
+            {% for item in timeline %}
+              <div class="lead-web-timeline-item">
+                <div class="lead-web-label">{{ item.fecha|date('d/m H:i') }}</div>
+                <div class="lead-web-value">{{ item.titulo }}</div>
+                {% if item.descripcion %}
+                  <div class="text-muted">{{ item.descripcion }}</div>
+                {% endif %}
+                {% for dato in item.datos %}
+                  <div class="small mt-1"><strong>{{ dato.label }}:</strong> {{ dato.valor }}</div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted mb-0">No hay actividad registrada.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <div class="card lead-web-panel h-100">
+        <div class="card-body">
+          <h4 class="mb-3">Qué ha configurado</h4>
+          {% for bloque in configuracion %}
+            <div class="mb-3">
+              <h5>{{ bloque.titulo }}</h5>
+              <div class="lead-web-data-grid">
+                {% for campo in bloque.campos %}
+                  <div class="lead-web-muted-box">
+                    <div class="lead-web-label">{{ campo.label }}</div>
+                    <div class="lead-web-value">{{ campo.valor }}</div>
+                    {% if campo.nota %}
+                      <small class="text-warning">{{ campo.nota }}</small>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">No hay configuración registrada.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card lead-web-panel mb-4">
+    <div class="card-body">
+      <h4 class="mb-3">Presupuesto calculado</h4>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Concepto</th>
+              <th>Cantidad</th>
+              <th>Unidad</th>
+              <th>Precio sin IVA</th>
+              <th>IVA</th>
+              <th class="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for linea in presupuestoCalculado.lineas %}
+              <tr>
+                <td>{{ linea.descripcion }}</td>
+                <td>{{ linea.cantidad }}</td>
+                <td>{{ linea.unidad }}</td>
+                <td>{{ linea.precioUnitarioSinIva ?? '-' }}</td>
+                <td>{{ linea.tipoIva }}</td>
+                <td class="text-end"><strong>{{ linea.importeTotal ?? '-' }}</strong></td>
+              </tr>
+            {% else %}
+              <tr><td colspan="6" class="text-muted text-center">No hay líneas calculadas.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="text-end h4">Total: {{ presupuestoCalculado.total ?? detalle.importe }}</div>
+
+      {% if presupuestoCalculado.avisos %}
+        <div class="mt-4">
+          <h5>Avisos</h5>
+          {% for aviso in presupuestoCalculado.avisos %}
+            <div class="alert alert-warning py-2 mb-2">{{ aviso }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

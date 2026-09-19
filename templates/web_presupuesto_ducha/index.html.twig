@@ -4,7 +4,7 @@
 {% block meta_description %}Calcula un presupuesto de cambio de bañera por plato de ducha con el nuevo configurador BudgetFlow.{% endblock %}
 
 {% block body %}
-<main class="ducha-flow">
+<div class="ducha-flow">
   <section class="ducha-flow__panel">
     <div class="ducha-flow__header">
       <p>Presupuesto online</p>
@@ -21,13 +21,69 @@
     </form>
 
     <div id="ducha-result" class="ducha-result" hidden></div>
+
+    <form id="ducha-lead-form" class="ducha-lead-form" hidden>
+      <h2>Tu presupuesto está listo</h2>
+      <p>Déjanos tu correo electrónico y te enviaremos un enlace para que puedas consultarlo cuando quieras.</p>
+      <p>También podremos escribirte durante los próximos días únicamente para hacer seguimiento de este presupuesto. En cualquier momento podrás indicarnos que no deseas recibir más mensajes y cerraremos el seguimiento.</p>
+
+      <label for="ducha-lead-email">Correo electrónico</label>
+      <input id="ducha-lead-email" name="email" type="email" autocomplete="email" required />
+
+      <label class="ducha-privacy">
+        <input id="ducha-lead-privacy" name="privacidad" type="checkbox" required />
+        <span>He leído la <a href="{{ path('politica_privacidad') }}" target="_blank" rel="noopener">Política de privacidad</a> y la información sobre el tratamiento de mis datos.</span>
+      </label>
+
+      <div id="ducha-lead-error" class="ducha-lead-error" role="alert" hidden></div>
+      <button type="submit">Enviarme mi presupuesto</button>
+    </form>
+
+    <div id="ducha-lead-success" class="ducha-lead-success" hidden>
+      <h2>Presupuesto enviado</h2>
+      <p>Hemos registrado tu solicitud correctamente.</p>
+      <p>Te hemos enviado el enlace a tu correo electrónico.</p>
+    </div>
   </section>
-</main>
+</div>
 {% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
 <style>
+.home-header {
+  position: relative;
+  background: #fff;
+  padding: 12px 0;
+  box-shadow: 0 8px 24px rgba(18, 48, 71, .08);
+}
+
+.home-header .header-inner {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home-header div.site-logo {
+  display: flex;
+  align-items: center;
+  width: auto;
+  height: auto;
+  margin: 0;
+  line-height: 0;
+}
+
+.home-header img.site-logo {
+  display: block;
+  width: auto;
+  height: 64px;
+  max-width: 220px;
+  object-fit: contain;
+  filter: none;
+  margin: 0;
+}
+
 .ducha-flow {
   min-height: calc(100vh - 96px);
   background: #f4f7fb;
@@ -136,6 +192,82 @@
   padding: 24px;
 }
 
+.ducha-lead-form,
+.ducha-lead-success {
+  border-top: 1px solid #e5edf3;
+  padding: 24px;
+}
+
+.ducha-lead-form h2,
+.ducha-lead-success h2,
+.ducha-result h2 {
+  margin: 0 0 14px;
+  color: #123047;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.ducha-lead-form p,
+.ducha-lead-success p {
+  margin: 0 0 13px;
+  color: #344b5d;
+  line-height: 1.55;
+}
+
+.ducha-lead-form label:not(.ducha-privacy) {
+  display: block;
+  margin: 18px 0 7px;
+  color: #123047;
+  font-weight: 700;
+}
+
+.ducha-lead-form input[type="email"] {
+  width: 100%;
+  border: 1px solid #cbd7e2;
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 16px;
+}
+
+.ducha-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 16px 0;
+  color: #263f52;
+  line-height: 1.45;
+}
+
+.ducha-privacy input {
+  margin-top: 4px;
+}
+
+.ducha-privacy a {
+  color: #166b8f;
+  font-weight: 700;
+}
+
+.ducha-lead-form button {
+  border: 0;
+  background: #166b8f;
+  color: #fff;
+  border-radius: 6px;
+  padding: 12px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ducha-lead-form button:disabled {
+  cursor: wait;
+  opacity: .72;
+}
+
+.ducha-lead-error {
+  margin: 0 0 14px;
+  color: #9d1d1d;
+  font-weight: 700;
+}
+
 .ducha-result table {
   width: 100%;
   border-collapse: collapse;
@@ -162,13 +294,24 @@
 }
 
 @media (max-width: 640px) {
+  .home-header {
+    padding: 10px 0;
+  }
+
+  .home-header img.site-logo {
+    height: 56px;
+    max-width: 190px;
+  }
+
   .ducha-flow {
     padding: 18px 10px;
   }
 
   .ducha-flow__header,
   .ducha-chat,
-  .ducha-result {
+  .ducha-result,
+  .ducha-lead-form,
+  .ducha-lead-success {
     padding-left: 16px;
     padding-right: 16px;
   }
@@ -187,11 +330,18 @@
 <script>
 (() => {
   let estado = null;
+  let snapshotId = null;
+  let leadSubmitting = false;
   const chat = document.getElementById('ducha-chat');
   const form = document.getElementById('ducha-form');
   const input = document.getElementById('ducha-input');
   const options = document.getElementById('ducha-options');
   const result = document.getElementById('ducha-result');
+  const leadForm = document.getElementById('ducha-lead-form');
+  const leadEmail = document.getElementById('ducha-lead-email');
+  const leadPrivacy = document.getElementById('ducha-lead-privacy');
+  const leadError = document.getElementById('ducha-lead-error');
+  const leadSuccess = document.getElementById('ducha-lead-success');
 
   function bubble(text, type) {
     const div = document.createElement('div');
@@ -241,9 +391,13 @@
     }
 
     if (data.finalizada) {
-      renderResult(data.resultado);
+      snapshotId = data.snapshotId || null;
+      result.hidden = true;
+      result.innerHTML = '';
       form.hidden = true;
       options.hidden = true;
+      leadForm.hidden = false;
+      leadEmail.focus();
       return;
     }
 
@@ -299,6 +453,19 @@
     return response.json();
   }
 
+  async function postLead(payload) {
+    const response = await fetch('/api/presupuesto-ducha/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload || {}),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || 'No hemos podido registrar tu solicitud.');
+    }
+    return data;
+  }
+
   async function sendText(text) {
     bubble(text, 'user');
     input.value = '';
@@ -343,6 +510,47 @@
     sendText(value).catch(() => {
       bubble('Ha ocurrido un error de conexión. Inténtalo de nuevo.', 'bot');
       setBusy(false);
+    });
+  });
+
+  leadForm.addEventListener('submit', event => {
+    event.preventDefault();
+
+    if (leadSubmitting) return;
+
+    leadError.hidden = true;
+    leadError.textContent = '';
+
+    if (!leadEmail.value.trim() || !leadEmail.checkValidity()) {
+      leadError.textContent = 'Introduce una dirección de correo electrónico válida.';
+      leadError.hidden = false;
+      return;
+    }
+
+    if (!leadPrivacy.checked) {
+      leadError.textContent = 'Debes confirmar que has leído la información sobre protección de datos.';
+      leadError.hidden = false;
+      return;
+    }
+
+    leadSubmitting = true;
+    leadForm.querySelector('button').disabled = true;
+    leadForm.querySelector('button').textContent = 'Preparando...';
+
+    postLead({
+      email: leadEmail.value.trim(),
+      privacidad: leadPrivacy.checked,
+      snapshotId,
+    }).then(() => {
+      leadForm.hidden = true;
+      leadSuccess.hidden = false;
+      bubble('Te hemos enviado el presupuesto por email.', 'bot');
+    }).catch(error => {
+      leadError.textContent = error.message || 'No hemos podido registrar tu solicitud.';
+      leadError.hidden = false;
+      leadSubmitting = false;
+      leadForm.querySelector('button').disabled = false;
+      leadForm.querySelector('button').textContent = 'Enviarme mi presupuesto';
     });
   });
 
