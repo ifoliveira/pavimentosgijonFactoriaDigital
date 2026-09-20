@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\PagoService;
+use App\Service\Venta\VentaTicketService;
 // Incluir los espacios de nombres requeridos por Dompdf
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -35,6 +36,7 @@ class CestasController extends AbstractController
         private EntityManagerInterface $em,
         private PagoService $pagoService,
         private CestaUserService $cestaUserService,
+        private VentaTicketService $ventaTicketService,
     ) {}
 
     #[Route('/', name: 'cestas_index', methods: ['GET'])]
@@ -351,52 +353,10 @@ class CestasController extends AbstractController
 
         $tipopago = $request->query->get('tipopago');
         $numticket = $request->query->get('numticket'); 
-        $importetot = $request->query->get('importe'); 
-        $importesnal = $request->query->get('importesnal'); 
-        $pagado = $importesnal;
+        $importetot = (float) $request->query->get('importe'); 
+        $importesnal = (float) $request->query->get('importesnal'); 
 
-     // Cambiamos el estado de la cesta del presupuesto para que sea actual
-
-        // Si el importe abonado (señal) es 0 el ticket no pendiente 
-        if ($cestas->getEstadoCs() == 1) {
-            if ($importesnal == 0) {
-                $cestas->setEstadoCs(2);
-                $cestas->setFechaFinCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
-            } else {
-                $cestas->setEstadoCs(3);
-            }
-
-            $cestas->setImporteTotCs($importetot);
-            $cestas->setTipopagoCs($tipopago);
-            $cestas->setNumticketCs($numticket);
-            $cestas->setFechaCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
-
-
-        } else {
-
-            foreach ($cestas->getPagos() as &$valor) {
-                $pagado = $pagado + $valor->getImportePg();
-            }
-
-            if ($pagado == $cestas->getImporteTotCs()) {
-                $cestas->setEstadoCs(2);
-                $cestas->setFechaFinCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
-            } 
-        }    
-        
-        $cestas->setTimestampCs(new \DateTime());
-        $this->em->persist($cestas);
-
-        // Creamos un pago con lo que llegue en la señal
-
-
-        if ($importesnal == 0) {  
-            $importe = $importetot;
-        } else {
-            $importe = $importesnal;
-        }        
-
-        $this->pagoService->ticketPagoFinal($cestas, $importe, $tipopago, $tiposmovimientoRepository);
+        $this->ventaTicketService->finalizarVentaManual($cestas, $tipopago, $numticket, $importetot, $importesnal);
         
         $this->em->flush();  
 

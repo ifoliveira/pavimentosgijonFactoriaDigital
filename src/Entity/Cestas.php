@@ -57,6 +57,15 @@ class Cestas
     #[ORM\Column(type: 'date', nullable: true)]
     private ?\DateTimeInterface $fechaFinCs = null;
 
+    #[ORM\Column(type: 'string', length: 36, nullable: true, unique: true)]
+    private ?string $tpvUuid = null;
+
+    #[ORM\Column(type: 'string', length: 55, nullable: true)]
+    private ?string $tpvNumeroTicketLocal = null;
+
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $tpvCaja = null;
+
     public function __construct()
     {
         $this->detallecesta = new ArrayCollection();
@@ -194,6 +203,39 @@ class Cestas
     public function setFechaFinCs(?\DateTimeInterface $fechaFinCs): self
     {
         $this->fechaFinCs = $fechaFinCs;
+        return $this;
+    }
+
+    public function getTpvUuid(): ?string
+    {
+        return $this->tpvUuid;
+    }
+
+    public function setTpvUuid(?string $tpvUuid): self
+    {
+        $this->tpvUuid = $tpvUuid;
+        return $this;
+    }
+
+    public function getTpvNumeroTicketLocal(): ?string
+    {
+        return $this->tpvNumeroTicketLocal;
+    }
+
+    public function setTpvNumeroTicketLocal(?string $tpvNumeroTicketLocal): self
+    {
+        $this->tpvNumeroTicketLocal = $tpvNumeroTicketLocal;
+        return $this;
+    }
+
+    public function getTpvCaja(): ?string
+    {
+        return $this->tpvCaja;
+    }
+
+    public function setTpvCaja(?string $tpvCaja): self
+    {
+        $this->tpvCaja = $tpvCaja;
         return $this;
     }
 

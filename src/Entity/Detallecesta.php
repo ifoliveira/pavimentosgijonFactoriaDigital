@@ -51,6 +51,12 @@ class Detallecesta
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $costeAnterior = null;
 
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $tpvPrecioOriginal = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $tpvTipoIva = null;
+
     public function __construct()
     {
         $this->setTimestampDc(new \DateTime());
@@ -196,6 +202,28 @@ class Detallecesta
     public function setCosteAnterior(?float $costeAnterior): self
     {
         $this->costeAnterior = $costeAnterior;
+        return $this;
+    }
+
+    public function getTpvPrecioOriginal(): ?float
+    {
+        return $this->tpvPrecioOriginal;
+    }
+
+    public function setTpvPrecioOriginal(?float $tpvPrecioOriginal): self
+    {
+        $this->tpvPrecioOriginal = $tpvPrecioOriginal;
+        return $this;
+    }
+
+    public function getTpvTipoIva(): ?float
+    {
+        return $this->tpvTipoIva;
+    }
+
+    public function setTpvTipoIva(?float $tpvTipoIva): self
+    {
+        $this->tpvTipoIva = $tpvTipoIva;
         return $this;
     }
 }

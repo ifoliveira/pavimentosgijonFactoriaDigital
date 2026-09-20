@@ -109,6 +109,20 @@ class ProductosRepository extends ServiceEntityRepository
             ->getArrayResult();
     }   
 
+    /**
+     * @return Productos[]
+     */
+    public function findCatalogoTpv(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.tipo_pd_id', 'tp')
+            ->addSelect('tp')
+            ->where('p.obsoleto = false OR p.obsoleto IS NULL')
+            ->orderBy('p.descripcion_Pd', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return Productos[] Returns an array of Productos objects
     //  */
