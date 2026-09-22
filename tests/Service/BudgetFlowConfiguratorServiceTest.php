@@ -169,6 +169,47 @@ class BudgetFlowConfiguratorServiceTest extends TestCase
         );
     }
 
+    public function testConstruyeSolicitudApiParaConfiguradorSimple(): void
+    {
+        $configurador = $this->configuradorSimple([]);
+
+        self::assertSame(
+            [
+                'valores' => [
+                    'griferia' => [
+                        'tipo' => 'monomando',
+                    ],
+                ],
+            ],
+            $this->service->construirSolicitudApi($configurador, [
+                'tipo' => 'monomando',
+            ])
+        );
+    }
+
+    public function testConstruyeSolicitudApiParaConfiguradorCompuesto(): void
+    {
+        $configurador = [
+            'codigo' => 'web_ducha',
+            'tipo' => 'compuesto',
+        ];
+
+        self::assertSame(
+            [
+                'valores' => [
+                    'web_mampara' => [
+                        'tipo' => 'fijo',
+                    ],
+                ],
+            ],
+            $this->service->construirSolicitudApi($configurador, [
+                'web_mampara' => [
+                    'tipo' => 'fijo',
+                ],
+            ])
+        );
+    }
+
     private function configuradorSimple(array $campos): array
     {
         return [

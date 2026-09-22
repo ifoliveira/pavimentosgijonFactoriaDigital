@@ -357,10 +357,15 @@ class DocumentoController extends AbstractController
         $valores = [];
         $validacion = null;
         $resultado = null;
+        $solicitudApiJson = null;
 
         if ($request->isMethod('POST')) {
             $valores = $request->request->all('valores');
             $valores = $budgetFlowConfiguratorService->normalizarValores($configurador, $valores);
+            $solicitudApiJson = json_encode(
+                $budgetFlowConfiguratorService->construirSolicitudApi($configurador, $valores),
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+            );
             $validacion = $budgetFlowConfiguratorService->validar($configurador, $valores);
 
             if ($validacion['valido'] ?? false) {
@@ -374,6 +379,7 @@ class DocumentoController extends AbstractController
             'validacion' => $validacion,
             'resultado' => $resultado,
             'documento' => $documento,
+            'solicitudApiJson' => $solicitudApiJson,
         ]);
     }
 

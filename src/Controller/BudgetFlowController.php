@@ -31,6 +31,7 @@ final class BudgetFlowController extends AbstractController
         $valores = [];
         $validacion = null;
         $resultado = null;
+        $solicitudApiJson = null;
 
         if ($request->isMethod('POST')) {
 
@@ -41,6 +42,11 @@ final class BudgetFlowController extends AbstractController
                     $configurador,
                     $valores
                 );
+
+            $solicitudApiJson = json_encode(
+                $this->budgetFlowConfiguratorService->construirSolicitudApi($configurador, $valores),
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+            );
 
             $validacion = $this->budgetFlowConfiguratorService
                 ->validar(
@@ -63,6 +69,7 @@ final class BudgetFlowController extends AbstractController
             'valores' => $valores,
             'validacion' => $validacion,
             'resultado' => $resultado,
+            'solicitudApiJson' => $solicitudApiJson,
         ]);
     }
 }

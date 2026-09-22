@@ -128,6 +128,14 @@
             background: linear-gradient(180deg, rgba(255, 255, 255, 0), #fff 28%);
         }
 
+        .budget-flow-json {
+            min-height: 260px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: .85rem;
+            line-height: 1.45;
+            white-space: pre;
+        }
+
         @media (min-width: 992px) {
             .budget-flow-fields-grid {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -274,6 +282,34 @@
     {% endif %}
 
 
+    {% if solicitudApiJson is defined and solicitudApiJson %}
+
+        <div class="card budget-flow-form-card mt-4">
+            <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <h2 class="budget-flow-section-title mb-0">
+                    JSON enviado a BudgetFlow
+                </h2>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    data-copy-json-target="budget-flow-api-json"
+                >
+                    Copiar JSON
+                </button>
+            </div>
+            <div class="card-body">
+                <textarea
+                    id="budget-flow-api-json"
+                    class="form-control budget-flow-json"
+                    readonly
+                    spellcheck="false"
+                >{{ solicitudApiJson }}</textarea>
+            </div>
+        </div>
+
+    {% endif %}
+
+
     {% if resultado %}
 
         <hr class="my-4">
@@ -317,4 +353,47 @@
 
 </div>
 
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('click', function (event) {
+            const button = event.target.closest('[data-copy-json-target]');
+
+            if (!button) {
+                return;
+            }
+
+            const target = document.getElementById(button.dataset.copyJsonTarget);
+
+            if (!target) {
+                return;
+            }
+
+            const originalText = button.textContent;
+            target.select();
+            target.setSelectionRange(0, target.value.length);
+
+            const fallbackCopy = function () {
+                document.execCommand('copy');
+            };
+
+            const markCopied = function () {
+                button.textContent = 'Copiado';
+
+                window.setTimeout(function () {
+                    button.textContent = originalText;
+                }, 1800);
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(target.value).then(markCopied, fallbackCopy);
+                return;
+            }
+
+            fallbackCopy();
+            markCopied();
+        });
+    </script>
 {% endblock %}

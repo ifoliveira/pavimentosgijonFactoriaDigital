@@ -27,7 +27,7 @@ final class BudgetFlowConfiguratorService
     ): array {
         return $this->budgetFlowClient->validar(
             $configurador['codigo'],
-            $this->construirEntrada($configurador, $valores)
+            $this->construirSolicitudApi($configurador, $valores)
         );
     }
 
@@ -39,11 +39,11 @@ final class BudgetFlowConfiguratorService
 
         return $this->budgetFlowClient->generar(
             $configurador['codigo'],
-            $this->construirEntrada($configurador, $valores)
+            $this->construirSolicitudApi($configurador, $valores)
         );
     }
 
-    private function construirEntrada(
+    public function construirSolicitudApi(
         array $configurador,
         array $valores
     ): array {
