@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -56,13 +57,13 @@ class PublicController extends AbstractController
 
 
     #[Route('/presupuestoInmediato', name: 'iapresupuesto')]
-    public function index(TrackingService $tracking, Request $request): Response
+    public function index(TrackingService $tracking, Request $request): RedirectResponse
     {
         $tracking->track('click_presupuesto', [
             'referer' => $request->headers->get('referer')
         ]);
 
-        return $this->render('ia/iapresupuesto.html.twig');
+        return $this->redirectToRoute('web_presupuesto_bano', [], 301);
     }    
 
 

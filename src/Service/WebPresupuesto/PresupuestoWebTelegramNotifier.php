@@ -2,6 +2,7 @@
 
 namespace App\Service\WebPresupuesto;
 
+use App\Entity\PresupuestoWeb;
 use App\Entity\PresupuestoWebInteraccion;
 use App\Enum\TipoPresupuestoWebComunicacion;
 use App\Enum\TipoPresupuestoWebInteraccion;
@@ -23,6 +24,46 @@ class PresupuestoWebTelegramNotifier
         }
 
         $this->telegramNotifier->sendMessage($this->mensaje($interaccion));
+    }
+
+    public function notificarGeneracionInicial(PresupuestoWeb $presupuesto): void
+    {
+        $this->telegramNotifier->sendMessage($this->mensajeGeneracionInicial($presupuesto));
+    }
+
+    public function mensajeGeneracionInicial(PresupuestoWeb $presupuesto): string
+    {
+        $lead = $presupuesto->getLead();
+        $lineas = [
+            '🛁 Nuevo presupuesto de baño generado',
+        ];
+
+        $contacto = $this->contactoGeneracionInicial($lead->getEmail());
+
+        if ($contacto !== null) {
+            $lineas[] = '';
+            $lineas[] = sprintf('Contacto: %s', $this->escape($contacto));
+        }
+
+        if ($presupuesto->getId() !== null) {
+            $lineas[] = sprintf('Presupuesto: #%d', $presupuesto->getId());
+        } else {
+            $lineas[] = sprintf('Presupuesto: %s', $this->escape($presupuesto->getToken()));
+        }
+
+        if ($presupuesto->getTotal() !== null) {
+            $lineas[] = sprintf('Importe estimado: %s', $this->escape($this->formatearImporte($presupuesto->getTotal())));
+        }
+
+        $lineas[] = '';
+        $lineas[] = 'Ver en el ERP:';
+        $lineas[] = $this->urlGenerator->generate(
+            'admin_leads_web_show',
+            ['id' => $presupuesto->getId()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        return implode("\n", $lineas);
     }
 
     public function mensaje(PresupuestoWebInteraccion $interaccion): string
@@ -204,10 +245,18 @@ class PresupuestoWebTelegramNotifier
         return number_format((float) $total, 2, ',', '.').' €';
     }
 
+    private function contactoGeneracionInicial(string $email): ?string
+    {
+        $email = trim($email);
+
+        return $email === '' ? null : $email;
+    }
+
     private function tipoPresupuestoLabel(string $tipo): string
     {
         return match ($tipo) {
             'ducha' => 'Cambio bañera → ducha',
+            'bano' => 'Baño completo',
             default => ucfirst(str_replace('_', ' ', $tipo)),
         };
     }

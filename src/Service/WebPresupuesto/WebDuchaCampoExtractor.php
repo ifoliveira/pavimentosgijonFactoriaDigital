@@ -4,6 +4,11 @@ namespace App\Service\WebPresupuesto;
 
 final class WebDuchaCampoExtractor
 {
+    public function __construct(
+        private readonly WebPresupuestoCampoPath $campoPath = new WebPresupuestoCampoPath(),
+    ) {
+    }
+
     /**
      * @return array<int, array<string, mixed>>
      */
@@ -15,21 +20,35 @@ final class WebDuchaCampoExtractor
 
         $campos = [];
 
-        foreach ($configurador['componentes'] ?? [] as $componente) {
+        foreach ($configurador['componentes'] ?? [] as $indiceComponente => $componente) {
             $codigoComponente = $componente['codigo'] ?? null;
-            $configuradorComponente = $componente['configurador'] ?? null;
+            $configuradorComponente = $componente['configurador'] ?? $componente;
+
+            if (!$codigoComponente && is_array($configuradorComponente)) {
+                $codigoComponente = $configuradorComponente['codigo'] ?? null;
+            }
 
             if (!$codigoComponente || !is_array($configuradorComponente)) {
                 continue;
             }
 
-            foreach ($this->camposDeConfigurador($codigoComponente, $configuradorComponente, (int) ($componente['orden'] ?? 0)) as $campo) {
+            foreach ($this->camposDeConfigurador($codigoComponente, $configuradorComponente, (int) ($componente['orden'] ?? 0), $indiceComponente) as $campo) {
                 $campo['componente_obligatorio'] = (bool) ($componente['obligatorio'] ?? false);
                 $campos[] = $campo;
             }
         }
 
-        usort($campos, static fn(array $a, array $b): int => [$a['componente_orden'], $a['orden']] <=> [$b['componente_orden'], $b['orden']]);
+        usort($campos, static fn(array $a, array $b): int => [
+            $a['componente_orden'],
+            $a['componente_indice'],
+            $a['orden'],
+            $a['campo_indice'],
+        ] <=> [
+            $b['componente_orden'],
+            $b['componente_indice'],
+            $b['orden'],
+            $b['campo_indice'],
+        ]);
 
         return $campos;
     }
@@ -37,34 +56,46 @@ final class WebDuchaCampoExtractor
     /**
      * @return array<int, array<string, mixed>>
      */
-    private function camposDeConfigurador(string $codigoComponente, array $configurador, ?int $ordenComponente = null): array
+    private function camposDeConfigurador(string $codigoComponente, array $configurador, ?int $ordenComponente = null, int $indiceComponente = 0): array
     {
         $resultado = [];
 
-        foreach ($configurador['campos'] ?? [] as $campo) {
+        foreach ($configurador['campos'] ?? [] as $indiceCampo => $campo) {
             if (!is_array($campo)) {
                 continue;
             }
 
-            $codigo = $campo['codigo'] ?? null;
+            $path = is_string($campo['path'] ?? null) ? $campo['path'] : null;
+            $partesPath = $path !== null ? $this->campoPath->separar($path) : null;
+            $codigo = $campo['codigo'] ?? ($partesPath['campo'] ?? null);
 
             if (!$codigo) {
                 continue;
             }
 
+            $componente = $partesPath['componente'] ?? $codigoComponente;
+
             $resultado[] = [
-                'id' => $codigoComponente.'.'.$codigo,
-                'componente' => $codigoComponente,
+                'id' => $path ?? $this->campoPath->construir($componente, $codigo),
+                'path' => $path ?? $this->campoPath->construir($componente, $codigo),
+                'componente' => $componente,
                 'codigo' => $codigo,
                 'etiqueta' => $campo['etiqueta'] ?? $codigo,
-                'tipo' => $campo['tipo'] ?? 'texto',
+                'tipo' => $campo['tipo'] ?? ($campo['tipoCampo'] ?? 'texto'),
                 'obligatorio' => (bool) ($campo['obligatorio'] ?? false),
                 'orden' => (int) ($campo['orden'] ?? 0),
+                'campo_indice' => $indiceCampo,
                 'componente_orden' => $ordenComponente ?? (int) ($configurador['orden'] ?? 0),
+                'componente_indice' => $indiceComponente,
                 'ayuda' => $campo['ayuda'] ?? null,
-                'unidad' => $this->detectarUnidad($campo),
+                'unidad' => $campo['unidad'] ?? $this->detectarUnidad($campo),
                 'opciones' => $campo['opciones'] ?? [],
                 'valorDefecto' => $campo['valorDefecto'] ?? null,
+                'valorEjemplo' => $campo['valorEjemplo'] ?? ($campo['ejemplo'] ?? null),
+                'valorMinimo' => $campo['valorMinimo'] ?? null,
+                'valorMaximo' => $campo['valorMaximo'] ?? null,
+                'origenValor' => $campo['origenValor'] ?? null,
+                'grupoEntrada' => $campo['grupoEntrada'] ?? null,
                 'restricciones' => $campo['restricciones'] ?? null,
                 'aplicabilidad' => $campo['aplicabilidad'] ?? null,
             ];

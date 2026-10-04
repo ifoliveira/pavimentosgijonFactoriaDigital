@@ -26,6 +26,17 @@ final class BudgetFlowClient
         );
     }
 
+    public function obtenerDefinicion(string $codigo): array
+    {
+        return $this->request(
+            'GET',
+            sprintf(
+                '/api/v1/configuradores/%s/definicion',
+                urlencode($codigo)
+            )
+        );
+    }
+
     public function listarConfiguradores(): array
     {
         return $this->request(

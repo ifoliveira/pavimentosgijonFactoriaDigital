@@ -38,6 +38,45 @@ final class OpenAiWebPresupuestoClient implements WebPresupuestoAiClientInterfac
         ]));
     }
 
+    public function generarPreguntaConversacional(array $contexto): array
+    {
+        $payload = [
+            'tarea' => 'Redacta una pregunta breve para cliente final usando solo los campos recibidos.',
+            'formato_obligatorio' => [
+                'pregunta' => '',
+            ],
+            'reglas' => [
+                'Devuelve solo JSON valido.',
+                'No elijas campos: el servidor ya ha decidido que campos se preguntan.',
+                'Pregunta exclusivamente por los campos recibidos en contexto.campos.',
+                'Si recibes varios campos en contexto.campos, integralos en una unica pregunta natural y no preguntes solo por uno.',
+                'No preguntes por campos que ya esten informados.',
+                'No inventes campos, valores, opciones ni defaults.',
+                'Usa valorEjemplo como ejemplo, no como valor real.',
+                'Si un campo tiene opciones, usa exclusivamente las opciones recibidas.',
+                'Usa etiqueta, ayuda, unidad, descripcion y opciones para redactar de forma natural.',
+                'La pregunta debe ser corta, clara y facil de responder.',
+                'No hables de JSON ni de campos tecnicos al cliente.',
+            ],
+            'contexto' => $contexto,
+        ];
+
+        $raw = $this->openAIClient->askWithHistory([
+            [
+                'role' => 'system',
+                'content' => 'Eres un asesor de reformas. Devuelve solo JSON valido con la clave pregunta.',
+            ],
+            [
+                'role' => 'user',
+                'content' => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+            ],
+        ]);
+
+        $decoded = json_decode($raw, true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
     public function interpretarRespuesta(array $campos, string $respuesta, array $valoresConocidos): array
     {
         $payload = [
@@ -79,6 +118,50 @@ final class OpenAiWebPresupuestoClient implements WebPresupuestoAiClientInterfac
 
         return is_array($decoded) ? $decoded : [
             'valores_detectados' => [],
+            'situacion' => 'AMBIGUA',
+            'requiere_aclaracion' => true,
+            'aclaracion' => 'No he podido interpretar la respuesta con seguridad.',
+        ];
+    }
+
+    public function interpretarRespuestaConversacional(array $contexto, string $respuesta): array
+    {
+        $payload = [
+            'tarea' => 'Extrae valores estructurados de la respuesta del cliente.',
+            'formato_obligatorio' => [
+                'valores' => new \stdClass(),
+                'situacion' => 'RESUELTO|AMBIGUA|NO_ENTIENDE|NO_SABE_ELEGIR|CLIENTE_NO_PUEDE_DECIDIR',
+                'requiere_aclaracion' => false,
+                'aclaracion' => '',
+            ],
+            'reglas' => [
+                'Devuelve solo JSON valido.',
+                'Solo puedes devolver valores para paths presentes en campos_solicitados.',
+                'No inventes valores.',
+                'Respeta tipos, unidades, opciones y restricciones recibidas.',
+                'Si el cliente dice que no entiende, situacion debe ser NO_ENTIENDE.',
+                'Si el cliente no sabe elegir o pide recomendacion, situacion debe ser NO_SABE_ELEGIR o CLIENTE_NO_PUEDE_DECIDIR.',
+                'Si detectas al menos un valor valido, situacion debe ser RESUELTO.',
+            ],
+            'contexto' => $contexto,
+            'respuesta_cliente' => $respuesta,
+        ];
+
+        $raw = $this->openAIClient->askWithHistory([
+            [
+                'role' => 'system',
+                'content' => 'Eres un normalizador estricto. Devuelve solo JSON valido.',
+            ],
+            [
+                'role' => 'user',
+                'content' => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+            ],
+        ]);
+
+        $decoded = json_decode($raw, true);
+
+        return is_array($decoded) ? $decoded : [
+            'valores' => [],
             'situacion' => 'AMBIGUA',
             'requiere_aclaracion' => true,
             'aclaracion' => 'No he podido interpretar la respuesta con seguridad.',

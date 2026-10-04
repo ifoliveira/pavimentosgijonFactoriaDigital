@@ -1,14 +1,19 @@
 {% extends 'layouts/base_public.html.twig' %}
+{% set page_title = page_title|default('Presupuesto de cambio de bañera por ducha | Nueva versión') %}
+{% set page_meta_description = page_meta_description|default('Calcula un presupuesto de cambio de bañera por plato de ducha con el nuevo configurador BudgetFlow.') %}
+{% set flow_heading = flow_heading|default('Cambio de bañera por plato de ducha') %}
+{% set intro_message = intro_message|default('Vamos a calcular tu cambio de bañera por plato de ducha.') %}
+{% set api_base = api_base|default('/api/presupuesto-ducha') %}
 
-{% block title %}Presupuesto de cambio de bañera por ducha | Nueva versión{% endblock %}
-{% block meta_description %}Calcula un presupuesto de cambio de bañera por plato de ducha con el nuevo configurador BudgetFlow.{% endblock %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ page_meta_description }}{% endblock %}
 
 {% block body %}
 <div class="ducha-flow">
   <section class="ducha-flow__panel">
     <div class="ducha-flow__header">
       <p>Presupuesto online</p>
-      <h1>Cambio de bañera por plato de ducha</h1>
+      <h1>{{ flow_heading }}</h1>
     </div>
 
     <div id="ducha-chat" class="ducha-chat" aria-live="polite"></div>
@@ -19,8 +24,6 @@
       <input id="ducha-input" type="text" autocomplete="off" placeholder="Escribe tu respuesta..." />
       <button type="submit">Enviar</button>
     </form>
-
-    <div id="ducha-result" class="ducha-result" hidden></div>
 
     <form id="ducha-lead-form" class="ducha-lead-form" hidden>
       <h2>Tu presupuesto está listo</h2>
@@ -187,11 +190,6 @@
   font-size: 16px;
 }
 
-.ducha-result {
-  border-top: 1px solid #e5edf3;
-  padding: 24px;
-}
-
 .ducha-lead-form,
 .ducha-lead-success {
   border-top: 1px solid #e5edf3;
@@ -199,8 +197,7 @@
 }
 
 .ducha-lead-form h2,
-.ducha-lead-success h2,
-.ducha-result h2 {
+.ducha-lead-success h2 {
   margin: 0 0 14px;
   color: #123047;
   font-size: 24px;
@@ -268,31 +265,6 @@
   font-weight: 700;
 }
 
-.ducha-result table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 14px;
-}
-
-.ducha-result th,
-.ducha-result td {
-  padding: 10px;
-  border-bottom: 1px solid #e5edf3;
-  text-align: left;
-}
-
-.ducha-result td:last-child,
-.ducha-result th:last-child {
-  text-align: right;
-}
-
-.ducha-total {
-  margin-top: 18px;
-  font-size: 22px;
-  font-weight: 800;
-  text-align: right;
-}
-
 @media (max-width: 640px) {
   .home-header {
     padding: 10px 0;
@@ -309,7 +281,6 @@
 
   .ducha-flow__header,
   .ducha-chat,
-  .ducha-result,
   .ducha-lead-form,
   .ducha-lead-success {
     padding-left: 16px;
@@ -329,6 +300,8 @@
 </style>
 <script>
 (() => {
+  const API_BASE = '{{ api_base }}';
+  const INTRO_MESSAGE = '{{ intro_message }}';
   let estado = null;
   let snapshotId = null;
   let leadSubmitting = false;
@@ -336,7 +309,6 @@
   const form = document.getElementById('ducha-form');
   const input = document.getElementById('ducha-input');
   const options = document.getElementById('ducha-options');
-  const result = document.getElementById('ducha-result');
   const leadForm = document.getElementById('ducha-lead-form');
   const leadEmail = document.getElementById('ducha-lead-email');
   const leadPrivacy = document.getElementById('ducha-lead-privacy');
@@ -392,8 +364,6 @@
 
     if (data.finalizada) {
       snapshotId = data.snapshotId || null;
-      result.hidden = true;
-      result.innerHTML = '';
       form.hidden = true;
       options.hidden = true;
       leadForm.hidden = false;
@@ -407,80 +377,53 @@
     input.focus();
   }
 
-  function renderResult(resultado) {
-    const lineas = resultado.lineas || [];
-    const rows = lineas.map(linea => `
-      <tr>
-        <td>${escapeHtml(linea.descripcion || '')}</td>
-        <td>${Number(linea.cantidad || 0).toLocaleString('es-ES')}</td>
-        <td>${escapeHtml(linea.unidad || '')}</td>
-        <td>${Number(linea.importeTotal || 0).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
-      </tr>
-    `).join('');
-
-    result.innerHTML = `
-      <h2>Presupuesto generado</h2>
-      <table>
-        <thead>
-          <tr><th>Concepto</th><th>Cantidad</th><th>Unidad</th><th>Importe</th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <div class="ducha-total">Total: ${Number(resultado.total || 0).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-    `;
-    result.hidden = false;
-    const mensaje = resultado.contiene_estimaciones
-      ? 'Hemos utilizado medidas orientativas para los datos que no tenías disponibles. Las confirmaremos antes de realizar el pedido.'
-      : 'Listo, ya tengo el presupuesto calculado con BudgetFlow.';
-    bubble(mensaje, 'bot');
-  }
-
-  function escapeHtml(value) {
-    return String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
   async function post(url, payload) {
     setBusy(true);
+    const requestPayload = payload || {};
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload || {}),
+      body: JSON.stringify(requestPayload),
     });
-    return response.json();
+    const data = await parseJsonResponse(response);
+    return data;
   }
 
   async function postLead(payload) {
-    const response = await fetch('/api/presupuesto-ducha/lead', {
+    const url = `${API_BASE}/lead`;
+    const requestPayload = payload || {};
+    const response = await fetch(`${API_BASE}/lead`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload || {}),
+      body: JSON.stringify(requestPayload),
     });
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
     if (!response.ok || !data.ok) {
       throw new Error(data.error || 'No hemos podido registrar tu solicitud.');
     }
     return data;
   }
 
+  async function parseJsonResponse(response) {
+    const contentType = response.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      return response.json();
+    }
+
+    await response.text();
+
+    if (!response.ok) {
+      throw new Error('No hemos podido registrar tu solicitud ahora mismo.');
+    }
+
+    throw new Error('Respuesta inesperada del servidor.');
+  }
+
   async function sendText(text) {
     bubble(text, 'user');
     input.value = '';
-    console.debug('[presupuesto-ducha] answer:before', {
-      respuesta: text,
-      valores: estado && estado.valores,
-      pendientes: estado && estado.campos_pendientes_actuales
-    });
-    const data = await post('/api/presupuesto-ducha/answer', { estado, respuesta: text });
-    console.debug('[presupuesto-ducha] answer:after', {
-      valores: data && data.estado && data.estado.valores,
-      pendientes: data && data.estado && data.estado.campos_pendientes_actuales,
-      pregunta: data && data.pregunta,
-      finalizada: data && data.finalizada
-    });
+    const data = await post(`${API_BASE}/answer`, { estado, respuesta: text });
     renderResponse(data);
   }
 
@@ -488,18 +431,7 @@
     bubble(item.etiqueta, 'user');
     const seleccion = {};
     seleccion[item.campo] = item.valor;
-    console.debug('[presupuesto-ducha] selection:before', {
-      seleccion,
-      valores: estado && estado.valores,
-      pendientes: estado && estado.campos_pendientes_actuales
-    });
-    const data = await post('/api/presupuesto-ducha/answer', { estado, seleccion });
-    console.debug('[presupuesto-ducha] selection:after', {
-      valores: data && data.estado && data.estado.valores,
-      pendientes: data && data.estado && data.estado.campos_pendientes_actuales,
-      pregunta: data && data.pregunta,
-      finalizada: data && data.finalizada
-    });
+    const data = await post(`${API_BASE}/answer`, { estado, seleccion });
     renderResponse(data);
   }
 
@@ -554,8 +486,8 @@
     });
   });
 
-  bubble('Vamos a calcular tu cambio de bañera por plato de ducha.', 'bot');
-  post('/api/presupuesto-ducha/start')
+  bubble(INTRO_MESSAGE, 'bot');
+  post(`${API_BASE}/start`)
     .then(renderResponse)
     .catch(() => {
       bubble('No podemos iniciar el presupuestador ahora mismo.', 'bot');

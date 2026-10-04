@@ -58,9 +58,17 @@ final class AdminLeadsWebController extends AbstractController
             'timeline' => $timeline,
             'configuracion' => $budgetFlowPresenter->configuracion($presupuesto->getJsonSolicitudBudgetFlow()),
             'presupuestoCalculado' => $budgetFlowPresenter->presupuesto($presupuesto->getJsonPresupuesto()),
-            'urlCliente' => $this->generateUrl('web_presupuesto_ducha_ver', [
+            'urlCliente' => $this->generateUrl($this->rutaVisualizacionPresupuesto($presupuesto->getTipoPresupuesto()), [
                 'token' => $presupuesto->getToken(),
             ]),
         ]);
+    }
+
+    private function rutaVisualizacionPresupuesto(string $tipoPresupuesto): string
+    {
+        return match ($tipoPresupuesto) {
+            'bano' => 'web_presupuesto_bano_ver',
+            default => 'web_presupuesto_ducha_ver',
+        };
     }
 }

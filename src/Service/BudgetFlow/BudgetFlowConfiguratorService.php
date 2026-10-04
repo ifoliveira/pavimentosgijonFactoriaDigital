@@ -16,6 +16,11 @@ final class BudgetFlowConfiguratorService
         return $this->budgetFlowClient->obtenerConfigurador($codigo);
     }
 
+    public function obtenerDefinicion(string $codigo): array
+    {
+        return $this->budgetFlowClient->obtenerDefinicion($codigo);
+    }
+
     public function listarConfiguradores(): array
     {
         return $this->budgetFlowClient->listarConfiguradores();
@@ -83,7 +88,7 @@ final class BudgetFlowConfiguratorService
 
             $codigoComponente = $componente['codigo'];
 
-            $configuradorComponente = $componente['configurador'] ?? null;
+            $configuradorComponente = $componente['configurador'] ?? $componente;
 
             if (!$configuradorComponente) {
                 continue;
@@ -114,13 +119,15 @@ final class BudgetFlowConfiguratorService
                 continue;
             }
 
-            $valor = array_key_exists($codigo, $valores)
-                ? $valores[$codigo]
-                : ($campo['valorDefecto'] ?? null);
+            $valorInformado = array_key_exists($codigo, $valores);
 
-            if (!array_key_exists($codigo, $valores) && !array_key_exists('valorDefecto', $campo)) {
+            if (!$valorInformado && !$this->permiteValorDefectoAutomatico($campo)) {
                 continue;
             }
+
+            $valor = $valorInformado
+                ? $valores[$codigo]
+                : ($campo['valorDefecto'] ?? null);
 
             $valorNormalizado = $this->normalizarValor(
                 $valor,
@@ -136,6 +143,19 @@ final class BudgetFlowConfiguratorService
 
         return $resultado;
     }    
+
+    private function permiteValorDefectoAutomatico(array $campo): bool
+    {
+        if (!array_key_exists('valorDefecto', $campo)) {
+            return false;
+        }
+
+        if (!array_key_exists('origenValor', $campo) || $campo['origenValor'] === null) {
+            return true;
+        }
+
+        return in_array($campo['origenValor'], ['fijo', 'interno'], true);
+    }
 
     private function normalizarValor(
         mixed $valor,
@@ -196,6 +216,16 @@ final class BudgetFlowConfiguratorService
         $configurador['componentes'] = $componentes;
 
         return $configurador;
+    }
+
+    public function obtenerDefinicionParaConversacion(string $codigo): array
+    {
+        $definicion = $this->obtenerDefinicion($codigo);
+        $definicion['codigo'] = $definicion['codigo'] ?? $codigo;
+        $definicion['tipo'] = $definicion['tipo'] ?? 'compuesto';
+        $definicion['__fuente_estructura'] = 'definicion';
+
+        return $definicion;
     }
 
 }

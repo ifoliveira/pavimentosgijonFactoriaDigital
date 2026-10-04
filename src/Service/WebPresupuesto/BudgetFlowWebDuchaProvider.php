@@ -5,18 +5,34 @@ namespace App\Service\WebPresupuesto;
 use App\Service\BudgetFlow\BudgetFlowConfiguratorService;
 use Psr\Log\LoggerInterface;
 
-final class BudgetFlowWebDuchaProvider implements WebDuchaBudgetFlowProviderInterface
+class BudgetFlowWebDuchaProvider implements WebDuchaBudgetFlowProviderInterface
 {
     public function __construct(
         private readonly BudgetFlowConfiguratorService $budgetFlowConfiguratorService,
         private readonly LoggerInterface $logger,
+        private readonly string $configuradorCodigo = 'web_ducha',
     ) {
     }
 
     public function obtenerConfigurador(): array
     {
         return $this->budgetFlowConfiguratorService
-            ->obtenerConfiguradorParaFormulario('web_ducha');
+            ->obtenerConfiguradorParaFormulario($this->configuradorCodigo);
+    }
+
+    public function obtenerDefinicion(): ?array
+    {
+        try {
+            return $this->budgetFlowConfiguratorService
+                ->obtenerDefinicionParaConversacion($this->configuradorCodigo);
+        } catch (\Throwable $e) {
+            $this->logger->error('BudgetFlow no disponible al obtener definicion de configurador web.', [
+                'configurador' => $this->configuradorCodigo,
+                'exception' => $e,
+            ]);
+
+            return null;
+        }
     }
 
     public function validar(array $configurador, array $valores): array

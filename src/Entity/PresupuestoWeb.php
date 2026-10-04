@@ -48,6 +48,9 @@ class PresupuestoWeb
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $ultimaVisualizacionAt = null;
 
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $telegramGeneracionInicialEnviadoAt = null;
+
     #[ORM\OneToMany(mappedBy: 'presupuestoWeb', targetEntity: PresupuestoWebComunicacion::class)]
     private Collection $comunicaciones;
 
@@ -129,6 +132,11 @@ class PresupuestoWeb
         return $this->ultimaVisualizacionAt;
     }
 
+    public function getTelegramGeneracionInicialEnviadoAt(): ?\DateTimeImmutable
+    {
+        return $this->telegramGeneracionInicialEnviadoAt;
+    }
+
     public function getComunicaciones(): Collection
     {
         return $this->comunicaciones;
@@ -148,6 +156,13 @@ class PresupuestoWeb
         }
 
         $this->ultimaVisualizacionAt = $fechaAcceso;
+
+        return $this;
+    }
+
+    public function marcarTelegramGeneracionInicialEnviado(\DateTimeImmutable $fechaEnvio): self
+    {
+        $this->telegramGeneracionInicialEnviadoAt = $fechaEnvio;
 
         return $this;
     }

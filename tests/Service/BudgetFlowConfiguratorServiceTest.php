@@ -169,6 +169,144 @@ class BudgetFlowConfiguratorServiceTest extends TestCase
         );
     }
 
+    public function testNormalizaDefaultsSegunOrigenValorEnDefinicion(): void
+    {
+        $configurador = [
+            'codigo' => 'web_baño',
+            'tipo' => 'compuesto',
+            'componentes' => [
+                [
+                    'codigo' => 'web_medidas_bano',
+                    'campos' => [
+                        [
+                            'codigo' => 'alto',
+                            'tipo' => 'entero',
+                            'origenValor' => 'fijo',
+                            'valorDefecto' => 240,
+                        ],
+                        [
+                            'codigo' => 'largo',
+                            'tipo' => 'entero',
+                            'origenValor' => 'usuario',
+                            'valorDefecto' => 200,
+                        ],
+                        [
+                            'codigo' => 'ancho',
+                            'tipo' => 'entero',
+                            'origenValor' => 'usuario',
+                            'valorDefecto' => 250,
+                        ],
+                    ],
+                ],
+                [
+                    'codigo' => 'selector_plato_ducha',
+                    'campos' => [
+                        [
+                            'codigo' => 'color',
+                            'tipo' => 'seleccion',
+                            'origenValor' => 'interno',
+                            'valorDefecto' => 'blanco',
+                        ],
+                    ],
+                ],
+                [
+                    'codigo' => 'web_mampara',
+                    'campos' => [
+                        [
+                            'codigo' => 'ancho_frente',
+                            'tipo' => 'entero',
+                            'origenValor' => 'derivado',
+                            'valorDefecto' => 150,
+                        ],
+                    ],
+                ],
+                [
+                    'codigo' => 'web_revestimientos',
+                    'campos' => [
+                        [
+                            'codigo' => 'metros_suelo',
+                            'tipo' => 'decimal',
+                            'origenValor' => 'derivado',
+                            'valorDefecto' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        self::assertSame(
+            [
+                'web_medidas_bano' => [
+                    'alto' => 240,
+                    'ancho' => 300,
+                ],
+                'selector_plato_ducha' => [
+                    'color' => 'blanco',
+                ],
+                'web_mampara' => [
+                    'ancho_frente' => 120,
+                ],
+                'web_revestimientos' => [],
+            ],
+            $this->service->normalizarValores($configurador, [
+                'web_medidas_bano' => [
+                    'ancho' => 300,
+                ],
+                'web_mampara' => [
+                    'ancho_frente' => 120,
+                ],
+            ])
+        );
+    }
+
+    public function testDerivadoConDefaultNoEntraEnPayloadSiNoTieneValorReal(): void
+    {
+        $configurador = [
+            'codigo' => 'web_baño',
+            'tipo' => 'compuesto',
+            'componentes' => [
+                [
+                    'codigo' => 'web_mampara',
+                    'campos' => [
+                        [
+                            'codigo' => 'ancho_frente',
+                            'tipo' => 'entero',
+                            'origenValor' => 'derivado',
+                            'valorDefecto' => 150,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $valores = $this->service->normalizarValores($configurador, []);
+
+        self::assertSame(
+            [
+                'valores' => [
+                    'web_mampara' => [],
+                ],
+            ],
+            $this->service->construirSolicitudApi($configurador, $valores)
+        );
+    }
+
+    public function testCampoAntiguoSinOrigenValorConservaDefaultHistorico(): void
+    {
+        $configurador = $this->configuradorSimple([
+            [
+                'codigo' => 'modelo',
+                'tipo' => 'texto',
+                'valorDefecto' => 'fresh',
+            ],
+        ]);
+
+        self::assertSame(
+            ['modelo' => 'fresh'],
+            $this->service->normalizarValores($configurador, [])
+        );
+    }
+
     public function testConstruyeSolicitudApiParaConfiguradorSimple(): void
     {
         $configurador = $this->configuradorSimple([]);

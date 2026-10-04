@@ -14,6 +14,9 @@ parameters:
       web_ducha:
         selector_plato_ducha.largo: 170
         selector_plato_ducha.ancho: 70
+    web_presupuesto.conversacion_ia:
+      web_ducha: false
+      web_baño: true
     web_presupuesto.version_privacidad: '2026-09-19'
     web_presupuesto.visualizacion_dedupe_seconds: 1800
     web_presupuesto.valores_derivados:
@@ -78,6 +81,17 @@ parameters:
               - { campo: web_revestimientos.azulejo, valor: true }
               - { campo: web_mano_obra_ducha.tipo_trabajo, valor: banera_plato_zona_ducha }
               - { campo: web_mampara.tipo, valor: fijo }
+      web_baño:
+            web_medidas_bano.altura:
+                valor: 240
+            web_mampara.ancho_frente:
+                origen: selector_plato_ducha.largo
+            web_revestimientos.azulejo:
+                valor: true
+            web_revestimientos.metros_azulejo:
+                expresion: "(((web_medidas_bano.largo + web_medidas_bano.ancho) * 2) / 100) * (web_medidas_bano.alto / 100)"
+            web_revestimientos.metros_suelo:
+                expresion: "(web_medidas_bano.largo / 100) * (web_medidas_bano.ancho / 100)"
     presupuesto:
       mano_obra:
         albañil:
@@ -190,6 +204,13 @@ services:
         arguments:
             $valoresProvisionales: '%web_presupuesto.valores_provisionales%'
             $valoresDerivados: '%web_presupuesto.valores_derivados%'
+            $conversacionIa: '%web_presupuesto.conversacion_ia%'
+
+    App\Service\WebPresupuesto\WebBanoConversationService:
+        arguments:
+            $valoresProvisionales: '%web_presupuesto.valores_provisionales%'
+            $valoresDerivados: '%web_presupuesto.valores_derivados%'
+            $conversacionIa: '%web_presupuesto.conversacion_ia%'
 
     App\Service\WebPresupuesto\PresupuestoWebService:
         arguments:

@@ -71,6 +71,21 @@ final class PresupuestoWebTelegramNotifierTest extends TestCase
         $notifier->notificar($interaccion);
     }
 
+    public function testMensajeGeneracionInicialIncluyeDatosDisponiblesYEnlaceAdmin(): void
+    {
+        $presupuesto = $this->presupuesto(42, '7250.50', 'bano');
+
+        $mensaje = $this->notifier()->mensajeGeneracionInicial($presupuesto);
+
+        self::assertStringContainsString('🛁 Nuevo presupuesto de baño generado', $mensaje);
+        self::assertStringContainsString('Contacto: cliente@example.com', $mensaje);
+        self::assertStringContainsString('Presupuesto: #42', $mensaje);
+        self::assertStringContainsString('Importe estimado: 7.250,50 €', $mensaje);
+        self::assertStringContainsString('Ver en el ERP:', $mensaje);
+        self::assertStringContainsString('https://pavimentos.test/admin/leads-web/42', $mensaje);
+        self::assertStringNotContainsString('DNI', $mensaje);
+    }
+
     private function notifier(): PresupuestoWebTelegramNotifier
     {
         return new PresupuestoWebTelegramNotifier(
@@ -89,10 +104,10 @@ final class PresupuestoWebTelegramNotifierTest extends TestCase
         return $generator;
     }
 
-    private function presupuesto(int $id, string $total): PresupuestoWeb
+    private function presupuesto(int $id, string $total, string $tipo = 'ducha'): PresupuestoWeb
     {
         $lead = new PresupuestoWebLead('cliente@example.com', '2026-09-19');
-        $presupuesto = new PresupuestoWeb($lead, 'ducha', bin2hex(random_bytes(32)), ['configurador' => 'web_ducha'], ['lineas' => []], $total);
+        $presupuesto = new PresupuestoWeb($lead, $tipo, bin2hex(random_bytes(32)), ['configurador' => 'web_ducha'], ['lineas' => []], $total);
         $this->setId($presupuesto, $id);
 
         return $presupuesto;

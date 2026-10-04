@@ -4,7 +4,7 @@ namespace App\Service\WebPresupuesto;
 
 use Psr\Log\LoggerInterface;
 
-final class WebDuchaConversationService
+class WebDuchaConversationService
 {
     private const SITUACION_RESUELTO = 'RESUELTO';
     private const SITUACION_AMBIGUA = 'AMBIGUA';
@@ -26,13 +26,19 @@ final class WebDuchaConversationService
         private readonly LoggerInterface $logger,
         private readonly array $valoresProvisionales = [],
         private readonly array $valoresDerivados = [],
+        private readonly string $configuradorCodigo = 'web_ducha',
+        private readonly string $tipoPresupuesto = 'ducha',
+        private readonly array $conversacionIa = [],
+        private readonly WebPresupuestoCampoPath $campoPath = new WebPresupuestoCampoPath(),
     ) {
     }
 
     public function iniciar(): array
     {
         try {
-            $configurador = $this->budgetFlowProvider->obtenerConfigurador();
+            $configurador = $this->definicionConversacionalActiva()
+                ? ($this->obtenerDefinicionOFallbackConfigurador() ?? $this->budgetFlowProvider->obtenerConfigurador())
+                : $this->budgetFlowProvider->obtenerConfigurador();
         } catch (\Throwable $e) {
             $this->logger->error('BudgetFlow no disponible al iniciar presupuesto web ducha.', ['exception' => $e]);
 
@@ -83,7 +89,11 @@ final class WebDuchaConversationService
                 array_map(fn(string $id): ?array => $this->buscarCampo($estado['campos'], $id), $camposActuales),
                 'is_array'
             ));
-            [$valoresDetectados, $origenInterpretacion, $situacion] = $this->interpretarRespuestaConOrigen($campos, $respuesta, $estado['valores']);
+            if ($this->conversacionIaActiva($estado)) {
+                [$valoresDetectados, $origenInterpretacion, $situacion] = $this->interpretarRespuestaConversacionalConOrigen($estado, $campos, $respuesta);
+            } else {
+                [$valoresDetectados, $origenInterpretacion, $situacion] = $this->interpretarRespuestaConOrigen($campos, $respuesta, $estado['valores']);
+            }
         } else {
             $origenInterpretacion = 'sin_respuesta';
         }
@@ -95,13 +105,39 @@ final class WebDuchaConversationService
             'valores_detectados' => $valoresDetectados,
         ]);
 
+        if ($this->conversacionIaActiva($estado) && $situacion === self::SITUACION_NO_SABE_ELEGIR) {
+            $situacion = self::SITUACION_CLIENTE_NO_PUEDE_DECIDIR;
+        }
+
         $valoresIncorporados = 0;
         $estado = $this->sincronizarEstadosCamposResueltos($estado);
+        $rechazosRango = $this->rechazosPorRango($estado['campos'], $valoresDetectados);
+
+        if ($rechazosRango !== []) {
+            $this->logger->debug('web_presupuesto_ducha.answer.valores_fuera_de_rango', [
+                'trace_id' => $traceId,
+                'rechazos' => $rechazosRango,
+                'campos_pendientes_actuales' => $camposActuales,
+            ]);
+
+            $estado['ultima_validacion_conversacional'] = [
+                'tipo' => 'rango_numerico',
+                'valida' => false,
+                'rechazos' => $rechazosRango,
+            ];
+            $estado['mensaje_prefijo'] = $this->mensajeRechazoRango($rechazosRango, $camposActuales, $estado['campos']);
+            $valoresDetectados = [];
+            $situacion = self::SITUACION_AMBIGUA;
+        }
 
         foreach ($valoresDetectados as $id => $valor) {
             $campo = $this->buscarCampo($estado['campos'], $id);
 
             if (!$campo || !$this->valorPermitido($campo, $valor)) {
+                continue;
+            }
+
+            if ($this->conversacionIaActiva($estado) && !$this->valorValidoConversacional($campo, $valor)) {
                 continue;
             }
 
@@ -131,6 +167,7 @@ final class WebDuchaConversationService
 
     private function continuar(array $estado): array
     {
+        $estado = $this->aplicarValoresDefectoNoPreguntables($estado);
         $estado = $this->aplicarValoresDerivados($estado);
         $validacion = $this->validar($estado);
         $estado = $this->sincronizarEstadosCamposResueltos($estado);
@@ -154,6 +191,10 @@ final class WebDuchaConversationService
             }
 
             return $this->finalizarIncompletoPorAplazados($estado, $validacion);
+        }
+
+        if ($this->conversacionIaActiva($estado)) {
+            return $this->continuarConConversacionIa($estado, $validacion, $pendientesConfiguracion, $pendientes, $faltantesBudgetFlow);
         }
 
         $grupo = $this->agruparSiguiente($pendientes);
@@ -213,6 +254,147 @@ final class WebDuchaConversationService
         ];
     }
 
+    private function continuarConConversacionIa(
+        array $estado,
+        array $validacion,
+        array $pendientesConfiguracion,
+        array $pendientes,
+        array $faltantesBudgetFlow
+    ): array {
+        $grupoMotor = $this->grupoConversacionalFallback($pendientes);
+        $preguntaDiagnostico = $this->generarPreguntaConversacionalConDiagnostico($estado, $grupoMotor, $pendientes, 0);
+        $grupo = $preguntaDiagnostico['campos'];
+        $grupoKey = $this->claveGrupo(array_map(static fn(array $campo): string => $campo['id'], $grupo));
+        $intentosSinProgreso = (int) ($estado['intentos_sin_progreso'][$grupoKey] ?? 0);
+
+        if ($intentosSinProgreso >= self::LIMITE_INTENTOS_SIN_PROGRESO) {
+            $preguntaDiagnostico['pregunta'] = $this->preguntaAclaracionSimple($grupo);
+            $preguntaDiagnostico['fuente'] = 'aclaracion_simple';
+            $preguntaDiagnostico['fallback_motivo'] = null;
+        } elseif ($intentosSinProgreso >= 1) {
+            $preguntaDiagnostico['pregunta'] = $this->preguntaAclaracionSimple($grupo);
+            $preguntaDiagnostico['fuente'] = 'aclaracion_simple';
+            $preguntaDiagnostico['fallback_motivo'] = null;
+        }
+
+        $estado['campos_pendientes_actuales'] = array_map(static fn(array $campo): string => $campo['id'], $grupo);
+        $estado['campos_solicitados_actuales'] = $estado['campos_pendientes_actuales'];
+        $estado['validacion'] = $validacion;
+        $estado['finalizada'] = false;
+        $pregunta = $preguntaDiagnostico['pregunta'];
+        $prefijo = is_string($estado['mensaje_prefijo'] ?? null) ? $estado['mensaje_prefijo'] : null;
+        unset($estado['mensaje_prefijo']);
+
+        if ($prefijo !== null && $pregunta !== '') {
+            $pregunta = $prefijo.' '.$pregunta;
+        }
+
+        $this->registrarDiagnosticoInteraccion(
+            $estado,
+            $validacion,
+            $pendientesConfiguracion,
+            $pendientes,
+            $grupo,
+            $faltantesBudgetFlow,
+            $preguntaDiagnostico
+        );
+
+        $this->logger->debug('web_presupuesto_ducha.answer.pendientes_despues_validar', [
+            'trace_id' => WebDuchaDebugContext::getTraceId(),
+            'validacion' => $validacion,
+            'pendientes_ids' => array_map(static fn(array $campo): string => $campo['id'], $pendientes),
+            'grupo_siguiente' => $estado['campos_pendientes_actuales'],
+            'grupo_siguiente_campos' => $grupo,
+            'pregunta' => $pregunta,
+            'modo_conversacion_ia' => true,
+        ]);
+
+        return [
+            'ok' => true,
+            'finalizada' => false,
+            'estado' => $estado,
+            'pregunta' => $pregunta,
+            'campos' => $grupo,
+            'opciones' => $this->opcionesParaGrupo($grupo, false),
+            'errores' => $validacion['errores'] ?? [],
+            'situacion' => $estado['ultima_situacion'],
+            'intentos_sin_progreso' => $intentosSinProgreso,
+            'estado_conversacion' => 'EN_CURSO',
+            'campos_aplazados' => $estado['campos_aplazados'] ?? [],
+        ];
+    }
+
+    /**
+     * @return array{pregunta: string, fuente: string, ia_respuesta: ?array, fallback_motivo: ?string, campos: array<int, array<string, mixed>>}
+     */
+    private function generarPreguntaConversacionalConDiagnostico(array $estado, array $grupo, array $pendientes, int $intentosSinProgreso): array
+    {
+        if ($grupo === []) {
+            return [
+                'pregunta' => 'Necesito un dato más para continuar.',
+                'fuente' => 'fallback',
+                'ia_respuesta' => null,
+                'fallback_motivo' => 'pendientes_vacio',
+                'campos' => [],
+            ];
+        }
+
+        if ($intentosSinProgreso >= self::LIMITE_INTENTOS_SIN_PROGRESO) {
+            return [
+                'pregunta' => $this->preguntaAclaracionSimple($grupo),
+                'fuente' => 'aclaracion_simple',
+                'ia_respuesta' => null,
+                'fallback_motivo' => null,
+                'campos' => $grupo,
+            ];
+        }
+
+        if ($intentosSinProgreso >= 1) {
+            return [
+                'pregunta' => $this->preguntaAclaracionSimple($grupo),
+                'fuente' => 'aclaracion_simple',
+                'ia_respuesta' => null,
+                'fallback_motivo' => null,
+                'campos' => $grupo,
+            ];
+        }
+
+        $contexto = $this->contextoRedaccionPregunta($estado, $grupo);
+
+        try {
+            $respuestaIa = $this->aiClient->generarPreguntaConversacional($contexto);
+            $pregunta = is_string($respuestaIa['pregunta'] ?? null) ? trim($respuestaIa['pregunta']) : '';
+
+            if (
+                $pregunta !== ''
+                && !$this->preguntaMencionaCamposFueraDelTurno($pregunta, $grupo, $estado['campos'])
+                && !$this->preguntaOmiteParteDelGrupo($pregunta, $grupo)
+            ) {
+                return [
+                    'pregunta' => $pregunta,
+                    'fuente' => 'ia_conversacional',
+                    'ia_respuesta' => $respuestaIa,
+                    'fallback_motivo' => null,
+                    'campos' => $grupo,
+                ];
+            }
+
+            $fallbackMotivo = $pregunta === '' ? 'ia_respuesta_vacia' : 'ia_pregunta_menciona_campos_fuera_del_turno';
+        } catch (\Throwable $e) {
+            $this->logger->error('IA no disponible al generar pregunta conversacional web presupuesto.', ['exception' => $e]);
+            $respuestaIa = null;
+            $fallbackMotivo = 'ia_error: '.$e->getMessage();
+        }
+
+        return [
+            'pregunta' => $this->preguntaFallbackSimple($grupo),
+            'fuente' => 'fallback',
+            'ia_respuesta' => $respuestaIa ?? null,
+            'fallback_motivo' => $fallbackMotivo,
+            'campos' => $grupo,
+        ];
+    }
+
     private function generar(array $estado, array $validacion): array
     {
         try {
@@ -230,6 +412,7 @@ final class WebDuchaConversationService
         $resultadoNormalizado = $this->normalizarResultado($resultado);
         $estado['finalizada'] = true;
         $estado['validacion'] = $validacion;
+        $estado['campos_pendientes_actuales'] = [];
 
         return [
             'ok' => true,
@@ -260,6 +443,7 @@ final class WebDuchaConversationService
         $estado['validacion'] = $validacion;
         $estado['valores_estimados'] = $valoresEstimados;
         $estado['valores_calculo'] = $valoresCalculo;
+        $estado['campos_pendientes_actuales'] = [];
 
         $resultadoNormalizado = $this->normalizarResultado($resultado);
         $resultadoNormalizado['contiene_estimaciones'] = true;
@@ -280,7 +464,7 @@ final class WebDuchaConversationService
     private function estadoBase(array $configurador): array
     {
         return [
-            'configurador_codigo' => 'web_ducha',
+            'configurador_codigo' => $this->configuradorCodigo,
             'configurador' => $configurador,
             'campos' => $this->campoExtractor->extraerCampos($configurador),
             'valores' => [],
@@ -297,6 +481,25 @@ final class WebDuchaConversationService
             'valores_deducidos' => [],
             'estado_conversacion' => 'EN_CURSO',
         ];
+    }
+
+    private function definicionConversacionalActiva(): bool
+    {
+        return ($this->conversacionIa[$this->configuradorCodigo] ?? false) === true;
+    }
+
+    private function obtenerDefinicionOFallbackConfigurador(): ?array
+    {
+        try {
+            return $this->budgetFlowProvider->obtenerDefinicion();
+        } catch (\Throwable $e) {
+            $this->logger->error('BudgetFlow no disponible al obtener definicion conversacional.', [
+                'configurador' => $this->configuradorCodigo,
+                'exception' => $e,
+            ]);
+
+            return null;
+        }
     }
 
     private function normalizarEstado(array $estado): array
@@ -393,12 +596,37 @@ final class WebDuchaConversationService
         return $estado;
     }
 
+    private function aplicarValoresDefectoNoPreguntables(array $estado): array
+    {
+        foreach ($estado['campos'] as $campo) {
+            if (!array_key_exists('valorDefecto', $campo) || ($campo['valorDefecto'] ?? null) === null) {
+                continue;
+            }
+
+            if (!array_key_exists('origenValor', $campo) || $campo['origenValor'] === null) {
+                continue;
+            }
+
+            if (!in_array($campo['origenValor'], ['fijo', 'interno'], true)) {
+                continue;
+            }
+
+            if (array_key_exists($campo['codigo'], $estado['valores'][$campo['componente']] ?? [])) {
+                continue;
+            }
+
+            $estado['valores'][$campo['componente']][$campo['codigo']] = $this->normalizarValor($campo, $campo['valorDefecto']);
+        }
+
+        return $estado;
+    }
+
     /**
      * @return array<int, mixed>
      */
     private function normalizarReglasValorDerivado(array $reglasDestino): array
     {
-        if (array_key_exists('origen', $reglasDestino) || array_key_exists('expresion', $reglasDestino)) {
+        if (array_key_exists('origen', $reglasDestino) || array_key_exists('expresion', $reglasDestino) || array_key_exists('valor', $reglasDestino)) {
             return [$reglasDestino];
         }
 
@@ -410,6 +638,15 @@ final class WebDuchaConversationService
      */
     private function resolverValorDerivado(array $estado, string $configuradorCodigo, string $destinoId, array $regla, array $camposDisponibles): array
     {
+        if (array_key_exists('valor', $regla)) {
+            return [
+                'disponible' => true,
+                'valor' => $regla['valor'],
+                'origen' => null,
+                'expresion' => null,
+            ];
+        }
+
         if (array_key_exists('origen', $regla)) {
             $origenId = $regla['origen'] ?? null;
 
@@ -758,16 +995,7 @@ final class WebDuchaConversationService
      */
     private function partesIdCampo(string $id): ?array
     {
-        $partes = explode('.', $id, 2);
-
-        if (count($partes) !== 2 || $partes[0] === '' || $partes[1] === '') {
-            return null;
-        }
-
-        return [
-            'componente' => $partes[0],
-            'campo' => $partes[1],
-        ];
+        return $this->campoPath->separar($id);
     }
 
     private function registrarValorDerivadoIgnorado(string $configuradorCodigo, string $destinoId, string $motivo, array $contexto = []): void
@@ -857,6 +1085,10 @@ final class WebDuchaConversationService
 
     private function debePreguntarse(array $campo): bool
     {
+        if (array_key_exists('origenValor', $campo) && $campo['origenValor'] !== null) {
+            return $campo['origenValor'] === 'usuario';
+        }
+
         if (($campo['valorDefecto'] ?? null) !== null) {
             return false;
         }
@@ -876,6 +1108,14 @@ final class WebDuchaConversationService
         }
 
         $primero = $pendientes[0];
+        $grupoEntrada = $primero['grupoEntrada'] ?? null;
+
+        if (is_string($grupoEntrada) && trim($grupoEntrada) !== '') {
+            return array_values(array_filter(
+                $pendientes,
+                static fn(array $campo): bool => ($campo['grupoEntrada'] ?? null) === $grupoEntrada
+            ));
+        }
 
         $relacionados = array_values(array_filter(
             $pendientes,
@@ -893,6 +1133,52 @@ final class WebDuchaConversationService
         }
 
         return array_slice($relacionados, 0, 2);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $pendientes
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function grupoConversacionalFallback(array $pendientes): array
+    {
+        if ($pendientes === []) {
+            return [];
+        }
+
+        $primero = $pendientes[0];
+        $grupoEntrada = $primero['grupoEntrada'] ?? null;
+
+        if (is_string($grupoEntrada) && trim($grupoEntrada) !== '') {
+            return array_values(array_filter(
+                $pendientes,
+                static fn(array $campo): bool => ($campo['grupoEntrada'] ?? null) === $grupoEntrada
+            ));
+        }
+
+        return array_slice($pendientes, 0, 1);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $grupo
+     */
+    private function grupoConversacionalPermitido(array $grupo): bool
+    {
+        if (count($grupo) <= 1) {
+            return $grupo !== [];
+        }
+
+        if (count($grupo) > 2) {
+            return false;
+        }
+
+        $componentes = array_unique(array_map(static fn(array $campo): string => (string) ($campo['componente'] ?? ''), $grupo));
+
+        if (count($componentes) !== 1) {
+            return false;
+        }
+
+        return $this->esGrupoMedidas($grupo);
     }
 
     private function generarPregunta(array $grupo, array $valores): string
@@ -1021,6 +1307,81 @@ final class WebDuchaConversationService
     /**
      * @param array<int, array<string, mixed>> $campos
      *
+     * @return array{0: array<string, mixed>, 1: string, 2: string}
+     */
+    private function interpretarRespuestaConversacionalConOrigen(array $estado, array $campos, string $respuesta): array
+    {
+        $situacionDeterminista = $this->detectarSituacionConversacional($respuesta);
+
+        if ($situacionDeterminista !== null) {
+            return [[], 'determinista_situacion', $situacionDeterminista];
+        }
+
+        $determinista = $this->interpretarDeterminista($campos, $respuesta);
+
+        if ($determinista !== []) {
+            return [$determinista, 'determinista', self::SITUACION_RESUELTO];
+        }
+
+        $valoresNumericos = $this->interpretarNumerosMultiplesTurno($campos, $respuesta);
+
+        if ($valoresNumericos !== []) {
+            return [$valoresNumericos, 'determinista_numeros_multiples', self::SITUACION_RESUELTO];
+        }
+
+        $idsSolicitados = array_values(array_map(static fn(array $campo): string => $campo['id'], $campos));
+        $contexto = $this->contextoConversacional($estado, $campos);
+        $contexto['campos_solicitados'] = $idsSolicitados;
+
+        try {
+            $interpretacion = $this->aiClient->interpretarRespuestaConversacional($contexto, $respuesta);
+            $this->logger->debug('web_presupuesto_ducha.ia_conversacional.interpretacion', [
+                'trace_id' => WebDuchaDebugContext::getTraceId(),
+                'campos_solicitados' => $idsSolicitados,
+                'contexto' => $contexto,
+                'respuesta_cliente' => $respuesta,
+                'respuesta_ia' => $interpretacion,
+            ]);
+        } catch (\Throwable $e) {
+            $this->logger->error('IA no disponible al interpretar respuesta conversacional web presupuesto.', ['exception' => $e]);
+
+            return $this->interpretarRespuestaConOrigen($campos, $respuesta, $estado['valores']);
+        }
+
+        $situacion = $this->normalizarSituacion($interpretacion['situacion'] ?? null);
+
+        if (($interpretacion['requiere_aclaracion'] ?? false) === true) {
+            return [[], 'ia_conversacional_aclaracion', $situacion ?? self::SITUACION_AMBIGUA];
+        }
+
+        $valores = is_array($interpretacion['valores'] ?? null) ? $interpretacion['valores'] : [];
+        $autorizados = array_flip($idsSolicitados);
+        $valoresDetectados = [];
+
+        foreach ($valores as $id => $valor) {
+            if (isset($autorizados[(string) $id])) {
+                $valoresDetectados[(string) $id] = $valor;
+            }
+        }
+
+        if ($valoresDetectados === [] && $valores !== []) {
+            return [[], 'ia_conversacional_campos_no_autorizados', self::SITUACION_AMBIGUA];
+        }
+
+        if ($valoresDetectados === []) {
+            $fallback = $this->interpretarDeterminista($campos, $respuesta);
+
+            if ($fallback !== []) {
+                return [$fallback, 'determinista', self::SITUACION_RESUELTO];
+            }
+        }
+
+        return [$valoresDetectados, 'ia_conversacional', $situacion ?? ($valoresDetectados === [] ? self::SITUACION_AMBIGUA : self::SITUACION_RESUELTO)];
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $campos
+     *
      * @return array<string, mixed>
      */
     private function interpretarDeterminista(array $campos, string $respuesta): array
@@ -1030,20 +1391,102 @@ final class WebDuchaConversationService
         }
 
         $campo = $campos[0];
+        $valor = $this->interpretarValorDeterministaUnico($campo, $respuesta);
 
-        if (!$this->esCampoNumerico($campo)) {
-            return [];
-        }
-
-        $numero = $this->extraerNumeroUnico($respuesta);
-
-        if ($numero === null) {
+        if ($valor === null) {
             return [];
         }
 
         return [
-            $campo['id'] => $this->normalizarNumeroPorUnidad($numero, $respuesta, $campo),
+            $campo['id'] => $valor,
         ];
+    }
+
+    private function interpretarValorDeterministaUnico(array $campo, string $respuesta): mixed
+    {
+        $tipo = $campo['tipo'] ?? 'texto';
+        $respuesta = trim($respuesta);
+
+        if ($respuesta === '') {
+            return null;
+        }
+
+        if (in_array($tipo, ['entero', 'decimal'], true)) {
+            return $this->interpretarNumeroDeterminista($campo, $respuesta);
+        }
+
+        if ($tipo === 'booleano') {
+            return $this->interpretarBooleanoDeterminista($respuesta);
+        }
+
+        if ($tipo === 'seleccion') {
+            return $this->interpretarSeleccionDeterminista($campo, $respuesta);
+        }
+
+        if ($tipo === 'texto') {
+            return $respuesta;
+        }
+
+        return null;
+    }
+
+    private function interpretarNumeroDeterminista(array $campo, string $respuesta): float|int|null
+    {
+        $numero = $this->extraerNumeroUnico($respuesta);
+
+        if ($numero === null) {
+            return null;
+        }
+
+        return $this->normalizarNumeroPorUnidad($numero, $respuesta, $campo);
+    }
+
+    private function interpretarBooleanoDeterminista(string $respuesta): ?bool
+    {
+        $normalizada = $this->normalizarTexto($respuesta);
+        $verdaderos = ['si', 'sí', 'true', '1', 'vale', 'correcto'];
+        $falsos = ['no', 'false', '0'];
+
+        if (in_array($normalizada, array_map(fn(string $valor): string => $this->normalizarTexto($valor), $verdaderos), true)) {
+            return true;
+        }
+
+        if (in_array($normalizada, array_map(fn(string $valor): string => $this->normalizarTexto($valor), $falsos), true)) {
+            return false;
+        }
+
+        return null;
+    }
+
+    private function interpretarSeleccionDeterminista(array $campo, string $respuesta): mixed
+    {
+        $normalizada = $this->normalizarTexto($respuesta);
+        $coincidencias = [];
+
+        foreach (array_filter($campo['opciones'] ?? [], 'is_array') as $opcion) {
+            $codigo = $opcion['codigo'] ?? null;
+
+            if ($codigo === null) {
+                continue;
+            }
+
+            $candidatos = array_filter([
+                (string) $codigo,
+                is_string($opcion['etiqueta'] ?? null) ? $opcion['etiqueta'] : null,
+                is_string($opcion['descripcion'] ?? null) ? $opcion['descripcion'] : null,
+            ], static fn(?string $valor): bool => is_string($valor) && trim($valor) !== '');
+
+            foreach ($candidatos as $candidato) {
+                if ($normalizada === $this->normalizarTexto($candidato)) {
+                    $coincidencias[] = $codigo;
+                    break;
+                }
+            }
+        }
+
+        $coincidencias = array_values(array_unique($coincidencias));
+
+        return count($coincidencias) === 1 ? $coincidencias[0] : null;
     }
 
     private function detectarSituacionConversacional(string $respuesta): ?string
@@ -1080,6 +1523,11 @@ final class WebDuchaConversationService
             'no sé elegir',
             'no se',
             'no sé',
+            'no lo se',
+            'no lo sé',
+            'ni idea',
+            'no tengo ese dato',
+            'no tengo la medida',
             'me da igual',
             'prefiero que me recomendeis',
             'prefiero que me recomendéis',
@@ -1215,6 +1663,42 @@ final class WebDuchaConversationService
         foreach (array_slice($campos, 0, 2) as $index => $campo) {
             $numero = $numeros[$index];
             $valores[$campo['id']] = $numero < 10 ? (int) round($numero * 100) : (int) round($numero);
+        }
+
+        return $valores;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $campos
+     *
+     * @return array<string, mixed>
+     */
+    private function interpretarNumerosMultiplesTurno(array $campos, string $respuesta): array
+    {
+        if (count($campos) !== 2) {
+            return [];
+        }
+
+        foreach ($campos as $campo) {
+            if (!$this->esCampoNumerico($campo)) {
+                return [];
+            }
+        }
+
+        $normalizada = mb_strtolower($respuesta);
+        $normalizada = str_replace(',', '.', $normalizada);
+
+        preg_match_all('/\d+(?:\.\d+)?/', $normalizada, $matches);
+        $numeros = array_map('floatval', $matches[0] ?? []);
+
+        if ($numeros === []) {
+            return [];
+        }
+
+        $valores = [];
+
+        foreach (array_slice($campos, 0, min(count($numeros), 2)) as $index => $campo) {
+            $valores[$campo['id']] = $this->normalizarNumeroPorUnidad($numeros[$index], $respuesta, $campo);
         }
 
         return $valores;
@@ -1563,6 +2047,8 @@ final class WebDuchaConversationService
             'opciones' => $campo['opciones'] ?? [],
             'aplicabilidad' => $campo['aplicabilidad'] ?? null,
             'restricciones' => $campo['restricciones'] ?? null,
+            'valorMinimo' => $campo['valorMinimo'] ?? null,
+            'valorMaximo' => $campo['valorMaximo'] ?? null,
         ], $campos);
     }
 
@@ -1640,6 +2126,15 @@ final class WebDuchaConversationService
         return false;
     }
 
+    private function valorValidoConversacional(array $campo, mixed $valor): bool
+    {
+        return match ($campo['tipo'] ?? 'texto') {
+            'entero', 'decimal' => is_numeric($valor),
+            'booleano' => is_bool($valor) || in_array($valor, [0, 1, '0', '1', 'true', 'false', 'si', 'sí', 'no'], true),
+            default => is_scalar($valor) || $valor === null,
+        };
+    }
+
     private function normalizarValor(array $campo, mixed $valor): mixed
     {
         return match ($campo['tipo'] ?? 'texto') {
@@ -1648,6 +2143,102 @@ final class WebDuchaConversationService
             'booleano' => in_array($valor, [true, 1, '1', 'true', 'si', 'sí'], true),
             default => $valor,
         };
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $campos
+     * @param array<string, mixed> $valoresDetectados
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function rechazosPorRango(array $campos, array $valoresDetectados): array
+    {
+        $rechazos = [];
+
+        foreach ($valoresDetectados as $id => $valor) {
+            $campo = $this->buscarCampo($campos, (string) $id);
+
+            if (!$campo || !in_array($campo['tipo'] ?? null, ['entero', 'decimal'], true)) {
+                continue;
+            }
+
+            if (($campo['valorMinimo'] ?? null) === null && ($campo['valorMaximo'] ?? null) === null) {
+                continue;
+            }
+
+            if (!is_numeric($valor)) {
+                continue;
+            }
+
+            $numero = (float) $valor;
+            $minimo = $campo['valorMinimo'] ?? null;
+            $maximo = $campo['valorMaximo'] ?? null;
+
+            if ($minimo !== null && $numero < (float) $minimo) {
+                $rechazos[] = $this->detalleRechazoRango($campo, $valor, $minimo, $maximo, 'inferior');
+                continue;
+            }
+
+            if ($maximo !== null && $numero > (float) $maximo) {
+                $rechazos[] = $this->detalleRechazoRango($campo, $valor, $minimo, $maximo, 'superior');
+            }
+        }
+
+        return $rechazos;
+    }
+
+    private function detalleRechazoRango(array $campo, mixed $valor, mixed $minimo, mixed $maximo, string $motivo): array
+    {
+        return [
+            'campo' => $campo['id'],
+            'componente' => $campo['componente'],
+            'codigo' => $campo['codigo'],
+            'valor_recibido' => $valor,
+            'valorMinimo' => $minimo,
+            'valorMaximo' => $maximo,
+            'motivo' => $motivo,
+        ];
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $rechazos
+     * @param array<int, string> $idsCamposActuales
+     * @param array<int, array<string, mixed>> $campos
+     */
+    private function mensajeRechazoRango(array $rechazos, array $idsCamposActuales, array $campos): string
+    {
+        $grupo = array_values(array_filter(
+            array_map(fn(string $id): ?array => $this->buscarCampo($campos, $id), $idsCamposActuales),
+            'is_array'
+        ));
+        $valores = array_map(
+            static fn(array $rechazo): string => (string) $rechazo['valor_recibido'],
+            $rechazos
+        );
+        $mensaje = count($valores) === 1
+            ? sprintf('El valor %s está fuera del rango admitido.', $valores[0])
+            : sprintf('Las medidas %s están fuera del rango admitido.', implode(' x ', $valores));
+
+        if ($grupo !== []) {
+            $etiquetas = array_map(
+                fn(array $campo): string => $this->etiquetaEnMinuscula((string) ($campo['etiqueta'] ?? $campo['codigo'])),
+                $grupo
+            );
+            $mensaje .= ' Indica de nuevo '.implode(' y ', $etiquetas).'.';
+        } else {
+            $mensaje .= ' Indícalo de nuevo, por favor.';
+        }
+
+        $ejemplos = array_values(array_filter(
+            array_map(static fn(array $campo): mixed => $campo['valorEjemplo'] ?? null, $grupo),
+            static fn(mixed $valor): bool => $valor !== null && !(is_string($valor) && trim($valor) === '')
+        ));
+
+        if ($ejemplos !== []) {
+            $mensaje .= ' Por ejemplo: '.implode(' x ', array_map('strval', $ejemplos)).'.';
+        }
+
+        return $mensaje;
     }
 
     private function esGrupoMedidas(array $grupo): bool
@@ -1674,9 +2265,62 @@ final class WebDuchaConversationService
                 : sprintf('Indica %s para continuar.', mb_strtolower($campo['etiqueta']));
         }
 
-        $labels = array_map(static fn(array $campo): string => mb_strtolower($campo['etiqueta']), $grupo);
+        $labels = array_map(static fn(array $campo): string => (string) ($campo['etiqueta'] ?? $campo['codigo']), $grupo);
 
-        return 'Indica '.implode(' y ', $labels).' para continuar.';
+        return 'Necesito estos datos para continuar: '.implode(' y ', $labels).'.';
+    }
+
+    private function preguntaFallbackSimple(array $grupo): string
+    {
+        if (count($grupo) !== 1) {
+            $labels = array_map(static fn(array $campo): string => (string) ($campo['etiqueta'] ?? $campo['codigo']), $grupo);
+
+            return $labels === []
+                ? 'Necesito un dato más para continuar.'
+                : 'Necesito estos datos para continuar: '.implode(' y ', $labels).'.';
+        }
+
+        $campo = $grupo[0];
+        $etiqueta = trim((string) ($campo['etiqueta'] ?? ($campo['codigo'] ?? '')));
+
+        if ($etiqueta === '') {
+            return 'Necesito este dato para continuar.';
+        }
+
+        $unidad = $campo['unidad'] ?? null;
+
+        if ($unidad === 'cm') {
+            return 'Indica '.$this->etiquetaEnMinuscula($etiqueta).' en centímetros.';
+        }
+
+        return 'Necesito este dato para continuar: '.$etiqueta.'.';
+    }
+
+    private function preguntaAclaracionSimple(array $grupo): string
+    {
+        if (count($grupo) !== 1) {
+            return $this->preguntaFallbackSimple($grupo);
+        }
+
+        $campo = $grupo[0];
+        $etiqueta = trim((string) ($campo['etiqueta'] ?? ($campo['codigo'] ?? '')));
+
+        if ($etiqueta === '') {
+            return 'No he podido interpretar ese dato. Indícalo de nuevo, por favor.';
+        }
+
+        $unidad = ($campo['unidad'] ?? null) === 'cm' ? ' en centímetros' : '';
+
+        return 'No he podido interpretar ese dato. Indica solo '.$this->etiquetaEnMinuscula($etiqueta).$unidad.'.';
+    }
+
+    private function etiquetaEnMinuscula(string $etiqueta): string
+    {
+        if ($etiqueta === '') {
+            return $etiqueta;
+        }
+
+        return mb_strtolower(mb_substr($etiqueta, 0, 1)).mb_substr($etiqueta, 1);
     }
 
     private function explicacionDesdeMetadatos(array $grupo): string
@@ -1779,7 +2423,158 @@ final class WebDuchaConversationService
             'unidad' => $campo['unidad'] ?? null,
             'ayuda' => $campo['ayuda'] ?? null,
             'opciones' => $campo['opciones'] ?? [],
+            'valorMinimo' => $campo['valorMinimo'] ?? null,
+            'valorMaximo' => $campo['valorMaximo'] ?? null,
         ], $campos);
+    }
+
+    private function conversacionIaActiva(array $estado): bool
+    {
+        $configuradorCodigo = $estado['configurador_codigo'] ?? ($estado['configurador']['codigo'] ?? $this->configuradorCodigo);
+
+        return is_string($configuradorCodigo)
+            && (($this->conversacionIa[$configuradorCodigo] ?? false) === true);
+    }
+
+    private function contextoConversacional(array $estado, array $camposPendientes): array
+    {
+        return [
+            'configurador' => [
+                'codigo' => $estado['configurador_codigo'] ?? ($estado['configurador']['codigo'] ?? $this->configuradorCodigo),
+                'descripcion' => $estado['configurador']['nombre'] ?? ($estado['configurador']['descripcion'] ?? null),
+            ],
+            'valores_conocidos' => $estado['valores'] ?? [],
+            'valores_deducidos' => $estado['valores_deducidos'] ?? [],
+            'campos_aplazados' => $estado['campos_aplazados'] ?? [],
+            'campos_pendientes' => array_map(fn(array $campo): array => $this->campoParaContextoConversacional($campo), $camposPendientes),
+        ];
+    }
+
+    private function contextoRedaccionPregunta(array $estado, array $camposTurno): array
+    {
+        $campos = array_map(fn(array $campo): array => $this->campoParaContextoConversacional($campo), $camposTurno);
+
+        return [
+            'configurador' => [
+                'codigo' => $estado['configurador_codigo'] ?? ($estado['configurador']['codigo'] ?? $this->configuradorCodigo),
+                'descripcion' => $estado['configurador']['nombre'] ?? ($estado['configurador']['descripcion'] ?? null),
+            ],
+            'valores_conocidos' => $estado['valores'] ?? [],
+            'campos' => $campos,
+            'campos_pendientes' => $campos,
+        ];
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $grupo
+     * @param array<int, array<string, mixed>> $pendientes
+     */
+    private function preguntaMencionaCamposFueraDelTurno(string $pregunta, array $grupo, array $pendientes): bool
+    {
+        $idsTurno = array_flip(array_map(static fn(array $campo): string => (string) ($campo['id'] ?? ''), $grupo));
+        $terminosTurno = [];
+
+        foreach ($grupo as $campoTurno) {
+            foreach ($this->terminosNormalizadosCampo($campoTurno) as $terminoTurno) {
+                $terminosTurno[$terminoTurno] = true;
+            }
+        }
+
+        $normalizada = $this->normalizarTexto($pregunta);
+
+        foreach ($pendientes as $campo) {
+            $id = (string) ($campo['id'] ?? '');
+
+            if ($id === '' || isset($idsTurno[$id])) {
+                continue;
+            }
+
+            foreach ($this->terminosNormalizadosCampo($campo) as $termino) {
+                if (isset($terminosTurno[$termino])) {
+                    continue;
+                }
+
+                if ($this->terminoCampoApareceEnPregunta($normalizada, $termino)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $grupo
+     */
+    private function preguntaOmiteParteDelGrupo(string $pregunta, array $grupo): bool
+    {
+        if (count($grupo) <= 1) {
+            return false;
+        }
+
+        $normalizada = $this->normalizarTexto($pregunta);
+        $menciones = 0;
+
+        foreach ($grupo as $campo) {
+            foreach ($this->terminosNormalizadosCampo($campo) as $termino) {
+                if ($this->terminoCampoApareceEnPregunta($normalizada, $termino)) {
+                    $menciones++;
+                    break;
+                }
+            }
+        }
+
+        return $menciones > 0 && $menciones < count($grupo);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function terminosNormalizadosCampo(array $campo): array
+    {
+        $terminos = [];
+
+        foreach ([$campo['etiqueta'] ?? null, $campo['codigo'] ?? null] as $termino) {
+            if (!is_string($termino) || trim($termino) === '') {
+                continue;
+            }
+
+            $normalizado = $this->normalizarTexto(str_replace('_', ' ', $termino));
+
+            if ($normalizado !== '' && strlen($normalizado) >= 4) {
+                $terminos[] = $normalizado;
+            }
+        }
+
+        return array_values(array_unique($terminos));
+    }
+
+    private function terminoCampoApareceEnPregunta(string $preguntaNormalizada, string $termino): bool
+    {
+        if ($termino === '' || strlen($termino) < 4) {
+            return false;
+        }
+
+        return str_contains($preguntaNormalizada, $termino);
+    }
+
+    private function campoParaContextoConversacional(array $campo): array
+    {
+        return [
+            'path' => $campo['id'],
+            'componente' => $campo['componente'],
+            'codigo' => $campo['codigo'],
+            'etiqueta' => $campo['etiqueta'],
+            'ayuda' => $campo['ayuda'] ?? null,
+            'tipo' => $campo['tipo'],
+            'unidad' => $campo['unidad'] ?? null,
+            'obligatorio' => (bool) ($campo['obligatorio'] ?? false),
+            'opciones' => $campo['opciones'] ?? [],
+            'valorEjemplo' => $campo['valorEjemplo'] ?? null,
+            'valorMinimo' => $campo['valorMinimo'] ?? null,
+            'valorMaximo' => $campo['valorMaximo'] ?? null,
+            'restricciones' => $campo['restricciones'] ?? null,
+        ];
     }
 
     private function pendientesDesdeErrores(array $estado, array $errores): array
@@ -1799,6 +2594,10 @@ final class WebDuchaConversationService
                     continue;
                 }
 
+                if (!$this->puedePreguntarseDesdeValidacion($campo)) {
+                    continue;
+                }
+
                 if ($campo['componente'] === $configurador && $campo['codigo'] === $campoCodigo) {
                     $pendientes[] = $campo;
                 }
@@ -1806,6 +2605,15 @@ final class WebDuchaConversationService
         }
 
         return $pendientes;
+    }
+
+    private function puedePreguntarseDesdeValidacion(array $campo): bool
+    {
+        if (array_key_exists('origenValor', $campo) && $campo['origenValor'] !== null) {
+            return $campo['origenValor'] === 'usuario';
+        }
+
+        return true;
     }
 
     private function normalizarResultado(array $resultado): array
@@ -1824,10 +2632,10 @@ final class WebDuchaConversationService
     private function construirSnapshotPresupuesto(array $estado, array $resultadoNormalizado, array $valoresCalculo): array
     {
         return [
-            'tipoPresupuesto' => 'ducha',
+            'tipoPresupuesto' => $this->tipoPresupuesto,
             'total' => $resultadoNormalizado['total'] ?? null,
             'jsonSolicitudBudgetFlow' => [
-                'configurador' => $estado['configurador_codigo'] ?? ($estado['configurador']['codigo'] ?? 'web_ducha'),
+                'configurador' => $estado['configurador_codigo'] ?? ($estado['configurador']['codigo'] ?? $this->configuradorCodigo),
                 'valores' => $valoresCalculo,
                 'valores_introducidos' => $estado['valores'] ?? [],
                 'valores_estimados' => $estado['valores_estimados'] ?? [],

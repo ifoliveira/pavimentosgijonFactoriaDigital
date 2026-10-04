@@ -21,6 +21,21 @@ final class BudgetFlowClientTest extends TestCase
         self::assertSame(['ok' => true, 'lineas' => []], $client->generar('reforma_bano', ['foo' => 'bar']));
     }
 
+    public function testObtenerDefinicionUsaEndpointNuevo(): void
+    {
+        $client = new BudgetFlowClient(new MockHttpClient(static function (string $method, string $url): MockResponse {
+            self::assertSame('GET', $method);
+            self::assertStringEndsWith('/api/v1/configuradores/web_ba%C3%B1o/definicion', $url);
+
+            return new MockResponse('{"codigo":"web_baño","componentes":[]}', ['http_code' => 200]);
+        }));
+
+        self::assertSame(
+            ['codigo' => 'web_baño', 'componentes' => []],
+            $client->obtenerDefinicion('web_baño')
+        );
+    }
+
     public function testRespuesta400RegistraContextoYLanzaMensajeUtil(): void
     {
         $logger = new ArrayLogger();

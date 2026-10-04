@@ -9,6 +9,7 @@ use App\Enum\EstadoPresupuestoWebComunicacion;
 use App\Enum\TipoPresupuestoWebComunicacion;
 use App\Repository\PresupuestoWebRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -26,6 +27,8 @@ final class PresupuestoWebService
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly Environment $twig,
         private readonly string $versionPrivacidad,
+        private readonly PresupuestoWebTelegramNotifier $telegramNotifier,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -97,6 +100,7 @@ final class PresupuestoWebService
         }
 
         $resultado['email_enviado'] = true;
+        $this->notificarGeneracionInicial($resultado['presupuesto']);
 
         return $resultado;
     }
@@ -147,7 +151,7 @@ final class PresupuestoWebService
     ): void {
         $asunto = 'Todos los presupuestos se parecen. Hasta que empieza la obra.';
         $urlPresupuesto = $this->urlGenerator->generate(
-            'web_presupuesto_ducha_ver',
+            $this->rutaVisualizacion((string) $presupuesto->getTipoPresupuesto()),
             [
                 'token' => $presupuesto->getToken(),
                 'c' => $comunicacion->getTokenAcceso(),
@@ -156,7 +160,7 @@ final class PresupuestoWebService
         );
 
         try {
-            $htmlEmail = $this->twig->render('emails/presupuesto_web_ducha.html.twig', [
+            $htmlEmail = $this->twig->render($this->plantillaEmailInicial((string) $presupuesto->getTipoPresupuesto()), [
                 'presupuesto' => $presupuesto,
                 'lead' => $lead,
                 'urlPresupuesto' => $urlPresupuesto,
@@ -179,5 +183,44 @@ final class PresupuestoWebService
 
             throw $e;
         }
+    }
+
+    private function notificarGeneracionInicial(PresupuestoWeb $presupuesto): void
+    {
+        if ($presupuesto->getTipoPresupuesto() !== 'bano') {
+            return;
+        }
+
+        if ($presupuesto->getTelegramGeneracionInicialEnviadoAt() !== null) {
+            return;
+        }
+
+        try {
+            $this->telegramNotifier->notificarGeneracionInicial($presupuesto);
+            $presupuesto->marcarTelegramGeneracionInicialEnviado(new \DateTimeImmutable());
+            $this->entityManager->flush();
+        } catch (\Throwable $e) {
+            $this->logger->error('No se ha podido enviar el aviso Telegram de generación inicial de presupuesto web.', [
+                'exception' => $e,
+                'presupuesto_id' => $presupuesto->getId(),
+                'tipo_presupuesto' => $presupuesto->getTipoPresupuesto(),
+            ]);
+        }
+    }
+
+    private function plantillaEmailInicial(string $tipoPresupuesto): string
+    {
+        return match ($tipoPresupuesto) {
+            'bano' => 'emails/presupuesto_web_bano.html.twig',
+            default => 'emails/presupuesto_web_ducha.html.twig',
+        };
+    }
+
+    private function rutaVisualizacion(string $tipoPresupuesto): string
+    {
+        return match ($tipoPresupuesto) {
+            'bano' => 'web_presupuesto_bano_ver',
+            default => 'web_presupuesto_ducha_ver',
+        };
     }
 }
