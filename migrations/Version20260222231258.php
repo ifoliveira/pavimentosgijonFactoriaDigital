@@ -23,7 +23,7 @@ final class Version20260222231258 extends AbstractMigration
         $this->addSql('CREATE TABLE sesion (id VARCHAR(36) NOT NULL, visitante_id VARCHAR(36) NOT NULL, fecha_inicio DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', fecha_fin DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', ruta_entrada VARCHAR(255) DEFAULT NULL, user_agent VARCHAR(255) DEFAULT NULL, dispositivo VARCHAR(100) DEFAULT NULL, numero_eventos INT NOT NULL, INDEX IDX_1B45E21BD80AA8AF (visitante_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('ALTER TABLE sesion ADD CONSTRAINT FK_1B45E21BD80AA8AF FOREIGN KEY (visitante_id) REFERENCES visitante (id)');
         $this->addSql('ALTER TABLE encuesta CHANGE p6 p6 LONGTEXT DEFAULT NULL COMMENT \'(DC2Type:array)\'');
-        $this->addSql('ALTER TABLE evento ADD sesion_id VARCHAR(36) NOT NULL');
+        $this->addSql('ALTER TABLE evento ADD sesion_id VARCHAR(36) DEFAULT NULL');
         $this->addSql('ALTER TABLE evento ADD CONSTRAINT FK_47860B051CCCADCB FOREIGN KEY (sesion_id) REFERENCES sesion (id)');
         $this->addSql('CREATE INDEX IDX_47860B051CCCADCB ON evento (sesion_id)');
     }

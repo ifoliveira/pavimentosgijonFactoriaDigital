@@ -75,7 +75,7 @@ final class Version20260222222940 extends AbstractMigration
         $this->addSql('DROP TABLE tipoproducto');
         $this->addSql('DROP TABLE tiposmovimiento');
         $this->addSql('DROP TABLE uso_de_stock');
-        $this->addSql('ALTER TABLE evento ADD sesion_id VARCHAR(36) NOT NULL');
+        $this->addSql('ALTER TABLE evento ADD sesion_id VARCHAR(36) DEFAULT NULL');
         $this->addSql('ALTER TABLE evento ADD CONSTRAINT FK_47860B051CCCADCB FOREIGN KEY (sesion_id) REFERENCES sesion (id)');
         $this->addSql('CREATE INDEX IDX_47860B051CCCADCB ON evento (sesion_id)');
     }

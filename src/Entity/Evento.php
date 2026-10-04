@@ -17,9 +17,8 @@ class Evento
     #[ORM\JoinColumn(nullable: false)]
     private ?Visitante $visitante = null;
 
-    // 🔹 NUEVA relación con Sesion
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Sesion $sesion = null;
 
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
