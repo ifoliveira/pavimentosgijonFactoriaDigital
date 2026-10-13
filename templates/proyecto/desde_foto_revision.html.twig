@@ -1,0 +1,184 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Revisar ficha{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Revisar datos de la ficha</h1>
+            <p class="text-muted mb-0">Presupuesto #{{ documento.id }} · completa los datos antes de generar líneas.</p>
+        </div>
+        <a href="{{ path('app_documento_show', {id: documento.id}) }}" class="btn btn-outline-secondary">Volver al presupuesto</a>
+    </div>
+
+    {% for message in app.flashes('warning') %}
+        <div class="alert alert-warning">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    {% if validacion and not (validacion.valido ?? false) %}
+        <div class="alert alert-danger">
+            <strong>BudgetFlow no valida estos datos.</strong>
+            <pre class="mb-0 mt-2">{{ validacion|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+        </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            {% if proyecto and proyecto.fichaFotoPath %}
+                {% set fotoFilename = proyecto.fichaFotoPath|split('/')|last %}
+                <img src="{{ path('app_proyecto_desde_foto_preview', {filename: fotoFilename}) }}"
+                     alt="Ficha de visita"
+                     class="img-fluid rounded border mb-3">
+            {% endif %}
+
+            {% if adaptacion.pendientes is defined and adaptacion.pendientes is not empty %}
+                <div class="alert alert-warning">
+                    <strong>Pendientes</strong>
+                    <ul class="mb-0">
+                        {% for item in adaptacion.pendientes %}<li>{{ item }}</li>{% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if adaptacion.avisos is defined and adaptacion.avisos is not empty %}
+                <div class="alert alert-warning">
+                    <strong>Avisos</strong>
+                    <ul class="mb-0">
+                        {% for item in adaptacion.avisos %}<li>{{ item }}</li>{% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if adaptacion.sin_correspondencia is defined and adaptacion.sin_correspondencia is not empty %}
+                <div class="alert alert-info">
+                    <strong>Sin correspondencia</strong>
+                    <ul class="mb-0">
+                        {% for item in adaptacion.sin_correspondencia %}<li>{{ item }}</li>{% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-8">
+            <form method="post" class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <input type="hidden" name="_token" value="{{ csrf_token('proyecto_desde_foto_revisar_' ~ documento.id) }}">
+
+                    {% for excluido in componentesExcluidos %}
+                        <input type="hidden" name="componentes_excluidos[]" value="{{ excluido }}">
+                    {% endfor %}
+
+                    {% set plato = valores.selector_plato_ducha ?? {} %}
+                    {% set mano = valores.selector_mano_obra ?? {} %}
+                    {% set mampara = valores.selector_mampara ?? {} %}
+                    {% set griferia = valores.griferia ?? {} %}
+                    {% set revest = valores.revestimientos ?? {} %}
+
+                    <h2 class="h5">Plato y mano de obra</h2>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Largo plato</label>
+                            <input type="number" name="valores[selector_plato_ducha][largo]" class="form-control" value="{{ plato.largo ?? '' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ancho plato</label>
+                            <input type="number" name="valores[selector_plato_ducha][ancho]" class="form-control" value="{{ plato.ancho ?? '' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Color plato</label>
+                            <select name="valores[selector_plato_ducha][color]" class="form-select">
+                                <option value="">Sin preferencia</option>
+                                {% for value,label in {'blanco':'Blanco','beige':'Beige','grafito':'Grafito','gris':'Gris'} %}
+                                    <option value="{{ value }}" {% if plato.color|default('') == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Tipo de trabajo</label>
+                            <select name="valores[selector_mano_obra][tipo_trabajo]" class="form-select" required>
+                                <option value="">Selecciona</option>
+                                {% for value,label in {'plato_por_plato':'Plato por plato','banera_plato_cenefa':'Plato por bañera hasta cenefa','banera_plato_zona_ducha':'Plato por bañera hasta techo'} %}
+                                    <option value="{{ value }}" {% if mano.tipo_trabajo|default('') == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    {% if 'selector_mampara' not in componentesExcluidos %}
+                        <h2 class="h5">Mampara</h2>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo instalación</label>
+                                <select name="valores[selector_mampara][tipo_instalacion]" class="form-select" required>
+                                    {% for value,label in {'frente':'Solo frente','frente_con_lateral_fijo':'Frente + lateral fijo','fijo':'Fijo'} %}
+                                        <option value="{{ value }}" {% if mampara.tipo_instalacion|default('') == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo apertura</label>
+                                <select name="valores[selector_mampara][tipo_apertura]" class="form-select" required>
+                                    {% for value,label in {'corredera':'Corredera','abatible':'Abatible','plegable':'Plegable','dos_fijos_dos_correderas':'Dos fijos + dos correderas'} %}
+                                        <option value="{{ value }}" {% if mampara.tipo_apertura|default('') == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ancho frente</label>
+                                <input type="number" step="any" name="valores[selector_mampara][ancho_frente]" class="form-control" value="{{ mampara.ancho_frente ?? '' }}" required>
+                                {% if adaptacion.procedencia['selector_mampara.ancho_frente'] is defined %}
+                                    <div class="form-text">{{ adaptacion.procedencia['selector_mampara.ancho_frente'].mensaje }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ancho lateral</label>
+                                <input type="number" step="any" name="valores[selector_mampara][ancho_lateral]" class="form-control" value="{{ mampara.ancho_lateral ?? '' }}">
+                                {% if adaptacion.procedencia['selector_mampara.ancho_lateral'] is defined %}
+                                    <div class="form-text">{{ adaptacion.procedencia['selector_mampara.ancho_lateral'].mensaje }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if 'griferia' not in componentesExcluidos %}
+                        <h2 class="h5">Grifería</h2>
+                        <div class="row g-3 mb-4">
+                            <input type="hidden" name="valores[griferia][uso]" value="ducha">
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo</label>
+                                <select name="valores[griferia][tipo]" class="form-select" required>
+                                    {% for value,label in {'monomando':'Monomando','termostatica':'Termostática','empotrado':'Empotrada'} %}
+                                        <option value="{{ value }}" {% if griferia.tipo|default('') == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Descripción/modelo</label>
+                                <input type="text" name="valores[griferia][descripcion]" class="form-control" value="{{ griferia.descripcion ?? '' }}">
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <h2 class="h5">Revestimiento</h2>
+                    <div class="row g-3">
+                        <input type="hidden" name="valores[revestimientos][azulejo]" value="1">
+                        <input type="hidden" name="valores[revestimientos][pavimento]" value="0">
+                        <div class="col-md-6">
+                            <label class="form-label">Metros azulejo</label>
+                            <input type="number" name="valores[revestimientos][metros_azulejo]" class="form-control" value="{{ revest.metros_azulejo ?? '' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white d-flex justify-content-end">
+                    <button class="btn btn-primary">Validar, generar e incorporar líneas</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

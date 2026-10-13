@@ -23,9 +23,14 @@
             <h1 class="h3 mb-1">Proyectos</h1>
             <p class="text-muted mb-0">Listado general de obras y proyectos.</p>
         </div>
-        <a href="{{ path('app_proyecto_new') }}" class="btn btn-primary">
-            Nuevo proyecto
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_proyecto_desde_foto') }}" class="btn btn-outline-primary">
+                Crear desde foto
+            </a>
+            <a href="{{ path('app_proyecto_new') }}" class="btn btn-primary">
+                Nuevo proyecto
+            </a>
+        </div>
     </div>
 
     <div class="card border-0 shadow-sm">

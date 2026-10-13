@@ -1,0 +1,232 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Crear proyecto desde foto{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Crear proyecto desde foto</h1>
+            <p class="text-muted mb-0">Sube la ficha de visita para iniciar la obra y su presupuesto inicial.</p>
+        </div>
+        <a href="{{ path('app_proyecto_index') }}" class="btn btn-outline-secondary">
+            Volver
+        </a>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    {% if warning %}
+        <div class="alert alert-warning">{{ warning }}</div>
+    {% endif %}
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data" data-photo-upload-form>
+                {% if telegramRecepcion is defined %}
+                    <input type="hidden" name="_token" value="{{ csrf_token('proyecto_desde_foto_telegram_' ~ telegramRecepcion.id) }}">
+                {% else %}
+                    <input type="hidden" name="_token" value="{{ csrf_token('proyecto_desde_foto') }}">
+                {% endif %}
+                <input type="hidden" name="_phase" value="{{ needs_review ? 'review' : 'upload' }}">
+
+                {% if foto_filename %}
+                    <input type="hidden" name="foto_filename" value="{{ foto_filename }}">
+                {% endif %}
+                {% if datos is defined %}
+                    <input type="hidden" name="datos_json" value="{{ datos|json_encode|e('html_attr') }}">
+                {% endif %}
+
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        {% if foto_filename %}
+                            <div class="mb-3">
+                                <img src="{{ path('app_proyecto_desde_foto_preview', {filename: foto_filename}) }}"
+                                     alt="Ficha de visita"
+                                     class="img-fluid rounded border">
+                            </div>
+                        {% endif %}
+
+                        {% if not needs_review %}
+                            <label class="form-label">Fotografía de la ficha</label>
+                            <input type="file" name="foto" class="form-control" accept="image/jpeg,image/png,image/webp" required data-photo-input>
+                            <div class="form-text" data-photo-status></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-lg-7">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Obra</label>
+                                <input type="text" name="obra" class="form-control" value="{{ obra }}" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Descripción</label>
+                                <textarea name="descripcion" class="form-control" rows="4">{{ descripcion }}</textarea>
+                            </div>
+
+                            {% if needs_review %}
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre del cliente</label>
+                                    <input type="text" name="nombre_cliente" class="form-control" value="{{ datos.nombre_cliente }}" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" name="telefono" class="form-control" value="{{ datos.telefono }}" required>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">Dirección de la obra</label>
+                                    <input type="text" name="direccion_obra" class="form-control" value="{{ datos.direccion_obra }}">
+                                    <div class="form-text">Se conservará junto a la foto; no se copiará al domicilio fiscal del cliente.</div>
+                                </div>
+
+                                {% if candidatos is not empty %}
+                                    <div class="col-12">
+                                        <label class="form-label">Cliente existente</label>
+                                        <select name="cliente_id" class="form-select" required>
+                                            <option value="">Selecciona un cliente</option>
+                                            {% for candidato in candidatos %}
+                                                <option value="{{ candidato.id }}">
+                                                    {{ candidato.nombreCl }} {{ candidato.apellidosCl }}
+                                                    {% if candidato.telefono1Cl %} · {{ candidato.telefono1Cl }}{% endif %}
+                                                    {% if candidato.telefono2Cl %} / {{ candidato.telefono2Cl }}{% endif %}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{{ path('app_proyecto_index') }}" class="btn btn-light">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">
+                        Crear proyecto y presupuesto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block jscustom %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const form = document.querySelector('[data-photo-upload-form]');
+            const input = document.querySelector('[data-photo-input]');
+            const status = document.querySelector('[data-photo-status]');
+            const maxDimension = 2400;
+            const targetBytes = 3.5 * 1024 * 1024;
+
+            if (!form || !input || !window.DataTransfer) {
+                return;
+            }
+
+            form.addEventListener('submit', async function (event) {
+                const file = input.files && input.files[0];
+
+                if (!file || !file.type.startsWith('image/') || input.dataset.compressed === '1') {
+                    return;
+                }
+
+                event.preventDefault();
+                const submit = form.querySelector('button[type="submit"]');
+                if (submit) {
+                    submit.disabled = true;
+                }
+                if (status) {
+                    status.textContent = 'Optimizando foto para el OCR...';
+                }
+
+                try {
+                    const compressed = await compressImage(file);
+                    if (compressed && compressed.size < file.size) {
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(compressed);
+                        input.files = dataTransfer.files;
+                        if (status) {
+                            status.textContent = formatBytes(file.size) + ' -> ' + formatBytes(compressed.size);
+                        }
+                    }
+                } catch (error) {
+                    if (status) {
+                        status.textContent = '';
+                    }
+                }
+
+                input.dataset.compressed = '1';
+                form.requestSubmit ? form.requestSubmit() : form.submit();
+            });
+
+            function compressImage(file) {
+                return new Promise(function (resolve, reject) {
+                    const image = new Image();
+                    const url = URL.createObjectURL(file);
+
+                    image.onload = async function () {
+                        URL.revokeObjectURL(url);
+
+                        const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+                        const width = Math.max(1, Math.round(image.width * scale));
+                        const height = Math.max(1, Math.round(image.height * scale));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const context = canvas.getContext('2d');
+                        context.fillStyle = '#fff';
+                        context.fillRect(0, 0, width, height);
+                        context.drawImage(image, 0, 0, width, height);
+
+                        let blob = await canvasToBlob(canvas, 0.84);
+                        if (blob.size > targetBytes) {
+                            blob = await canvasToBlob(canvas, 0.72);
+                        }
+                        if (blob.size > targetBytes) {
+                            blob = await canvasToBlob(canvas, 0.62);
+                        }
+
+                        resolve(new File([blob], replaceExtension(file.name), {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        }));
+                    };
+                    image.onerror = function () {
+                        URL.revokeObjectURL(url);
+                        reject(new Error('No se pudo leer la imagen.'));
+                    };
+                    image.src = url;
+                });
+            }
+
+            function canvasToBlob(canvas, quality) {
+                return new Promise(function (resolve, reject) {
+                    canvas.toBlob(function (blob) {
+                        blob ? resolve(blob) : reject(new Error('No se pudo comprimir la imagen.'));
+                    }, 'image/jpeg', quality);
+                });
+            }
+
+            function replaceExtension(filename) {
+                return filename.replace(/\.[^.]+$/, '') + '.jpg';
+            }
+
+            function formatBytes(bytes) {
+                if (bytes >= 1024 * 1024) {
+                    return (bytes / 1024 / 1024).toFixed(1).replace('.', ',') + ' MB';
+                }
+
+                return Math.round(bytes / 1024) + ' KB';
+            }
+        })();
+    </script>
+{% endblock %}

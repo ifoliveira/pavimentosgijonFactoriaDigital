@@ -33,6 +33,7 @@ use App\Service\PagoService;
 use App\Service\EconomicoPresuService;
 use App\Service\FinanciacionService;
 use App\Service\PagoManoObraService;
+use App\Service\PresupuestoFinalizadoTelegramNotifier;
 
 #[Route('/admin/presupuestos')]
 class PresupuestosController extends AbstractController
@@ -43,6 +44,7 @@ class PresupuestosController extends AbstractController
         private PagoService $pagoService,
         private EconomicoPresuService $economicoPresuService,
         private CestaUserService $cestaUserService,
+        private PresupuestoFinalizadoTelegramNotifier $telegramNotifier,
     ) {}
 
     #[Route('/', name: 'presupuestos_index', methods: ['GET'])]
@@ -354,6 +356,7 @@ class PresupuestosController extends AbstractController
         $presupuesto->getTicket()->setFechaFinCs(new \DateTime('now', new \DateTimeZone('Europe/Madrid')));
         
         $this->em->flush();
+        $this->telegramNotifier->notificarPresupuestoClasicoFinalizado($presupuesto);
 
         $response = new JsonResponse();
 

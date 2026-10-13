@@ -67,7 +67,8 @@ final class BudgetFlowConfiguratorService
 
     public function normalizarValores(
         array $configurador,
-        array $valores
+        array $valores,
+        array $componentesExcluidos = []
     ): array {
         /*
         * Configurador simple
@@ -87,6 +88,10 @@ final class BudgetFlowConfiguratorService
         foreach ($configurador['componentes'] ?? [] as $componente) {
 
             $codigoComponente = $componente['codigo'];
+
+            if (in_array($codigoComponente, $componentesExcluidos, true)) {
+                continue;
+            }
 
             $configuradorComponente = $componente['configurador'] ?? $componente;
 

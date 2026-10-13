@@ -27,10 +27,10 @@ class Clientes
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $direccionCl = null;
 
-    #[ORM\Column(type: 'string', length: 9, nullable: true)]
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private ?string $telefono1Cl = null;
 
-    #[ORM\Column(type: 'string', length: 9, nullable: true)]
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private ?string $telefono2Cl = null;
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]

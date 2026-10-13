@@ -18,6 +18,7 @@ use App\Service\Documento\DocumentoCabeceraService;
 use App\Service\Documento\DocumentoAccionesService;
 use App\Repository\ProductosRepository;
 use App\Service\Documento\DocumentoLineaService;
+use App\Service\Documento\BudgetFlowDocumentoService;
 use App\Repository\DocumentoRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Documento;
@@ -29,6 +30,7 @@ use App\Repository\TipoManoObraRepository;
 use App\Repository\TextoManoObraRepository;
 use App\Repository\StockReservaRepository;
 use App\Service\BudgetFlow\BudgetFlowConfiguratorService;
+use App\Service\PresupuestoFinalizadoTelegramNotifier;
 
 
 /**
@@ -350,7 +352,8 @@ class DocumentoController extends AbstractController
         Request $request,
         Documento $documento,
         string $codigo,
-        BudgetFlowConfiguratorService $budgetFlowConfiguratorService
+        BudgetFlowConfiguratorService $budgetFlowConfiguratorService,
+        BudgetFlowDocumentoService $budgetFlowDocumentoService
     ): Response {
         $configurador = $budgetFlowConfiguratorService->obtenerConfiguradorParaFormulario($codigo);
 
@@ -361,12 +364,10 @@ class DocumentoController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $valores = $request->request->all('valores');
-            $valores = $budgetFlowConfiguratorService->normalizarValores($configurador, $valores);
-            $solicitudApiJson = json_encode(
-                $budgetFlowConfiguratorService->construirSolicitudApi($configurador, $valores),
-                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
-            );
-            $validacion = $budgetFlowConfiguratorService->validar($configurador, $valores);
+            $preparacion = $budgetFlowDocumentoService->preparar($codigo, $valores);
+            $valores = $preparacion['valores'];
+            $validacion = $preparacion['validacion'];
+            $solicitudApiJson = json_encode($preparacion['solicitud'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
             if ($validacion['valido'] ?? false) {
                 $resultado = $budgetFlowConfiguratorService->generar($configurador, $valores);
@@ -388,7 +389,7 @@ class DocumentoController extends AbstractController
         Request $request,
         Documento $documento,
         string $codigo,
-        DocumentoLineaService $lineaService
+        BudgetFlowDocumentoService $budgetFlowDocumentoService
     ): Response {
         if (!$this->isCsrfTokenValid('budget-flow-anadir-lineas-' . $documento->getId(), $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Token CSRF no válido');
@@ -406,46 +407,7 @@ class DocumentoController extends AbstractController
         }
 
         try {
-            foreach ($lineas as $linea) {
-                if (!is_array($linea)) {
-                    continue;
-                }
-
-                $descripcion = trim((string) ($linea['descripcion'] ?? ''));
-
-                if ($descripcion === '') {
-                    continue;
-                }
-
-                $cantidad = (float) ($linea['cantidad'] ?? 1);
-                $destinoFacturacion = (string) (
-                    $linea['destinoFacturacion']
-                    ?? $linea['destino_facturacion']
-                    ?? DocumentoLinea::DESTINO_FACTURA_OBRA
-                );
-                $tipoIva = $destinoFacturacion === DocumentoLinea::DESTINO_FACTURA_OBRA
-                    ? $lineaService->resolverTipoIvaParaNuevaLineaFactura($documento)
-                    : (float) ($linea['tipoIva'] ?? $linea['tipo_iva'] ?? 21.0);
-                $precioSinIva = (float) ($linea['precioUnitarioSinIva'] ?? $linea['precio_unitario_sin_iva'] ?? 0);
-                $costeUnitarioSinIva = (float) ($linea['costeUnitarioSinIva'] ?? $linea['coste_unitario_sin_iva'] ?? 0);
-                $precioConIva = $precioSinIva * (1 + ($tipoIva / 100));
-                $tipoLinea = $lineaService->resolverTipoLineaBudgetFlow($linea['tipo'] ?? null, 'producto');
-
-                $lineaService->crearLinea(
-                    documento: $documento,
-                    descripcion: $descripcion,
-                    coste: $costeUnitarioSinIva,
-                    cantidad: $cantidad,
-                    precio: $precioConIva,
-                    descuento: 0.0,
-                    productoId: null,
-                    lineaId: 0,
-                    tipo: $tipoLinea,
-                    destinoFacturacion: $destinoFacturacion,
-                    origenLinea: 'budgetflow',
-                    tipoIva: $tipoIva
-                );
-            }
+            $budgetFlowDocumentoService->incorporarLineas($documento, $lineas, false);
         } catch (\RuntimeException $e) {
             $this->addFlash('error', $e->getMessage());
 
@@ -576,10 +538,16 @@ class DocumentoController extends AbstractController
     #[Route('/{id}/aceptar', name: 'app_documento_aceptar', methods: ['POST'])]
     public function aceptar(
         int $id,
-        DocumentoEstadoService $documentoEstadoService
+        DocumentoEstadoService $documentoEstadoService,
+        DocumentoRepository $documentoRepository,
+        PresupuestoFinalizadoTelegramNotifier $telegramNotifier
     ): Response {
         try {
+            $presupuesto = $documentoRepository->find($id);
             $factura = $documentoEstadoService->aceptarYGenerarFactura($id);
+            if ($presupuesto !== null) {
+                $telegramNotifier->notificarDocumentoAceptado($presupuesto, $factura);
+            }
             $this->addFlash('success', 'Presupuesto aceptado y factura generada correctamente.');
 
             return $this->redirectToRoute('app_documento_show', [

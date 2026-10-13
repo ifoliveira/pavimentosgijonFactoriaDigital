@@ -187,10 +187,6 @@ final class PresupuestoWebService
 
     private function notificarGeneracionInicial(PresupuestoWeb $presupuesto): void
     {
-        if ($presupuesto->getTipoPresupuesto() !== 'bano') {
-            return;
-        }
-
         if ($presupuesto->getTelegramGeneracionInicialEnviadoAt() !== null) {
             return;
         }

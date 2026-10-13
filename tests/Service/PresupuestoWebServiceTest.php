@@ -46,8 +46,8 @@ final class PresupuestoWebServiceTest extends TestCase
         self::assertNotNull($persistidos[2]->getFechaEnvio());
         self::assertCount(1, $emailsEnviados);
         self::assertSame(['emails/presupuesto_web_ducha.html.twig'], $plantillasRenderizadas->getArrayCopy());
-        self::assertSame([], $telegram->generacionesIniciales);
-        self::assertNull($persistidos[1]->getTelegramGeneracionInicialEnviadoAt());
+        self::assertSame([$persistidos[1]], $telegram->generacionesIniciales);
+        self::assertNotNull($persistidos[1]->getTelegramGeneracionInicialEnviadoAt());
         self::assertTrue($resultado['email_enviado']);
     }
 

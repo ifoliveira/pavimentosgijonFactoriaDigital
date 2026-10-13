@@ -115,6 +115,15 @@ class Proyecto
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $notas = null;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $fichaFotoPath = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $direccionObraExtraida = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $fichaDatosExtraidos = null;
+
     // -------------------------------------------------------------------------
     // KPIS DESNORMALIZADOS
     // -------------------------------------------------------------------------
@@ -311,6 +320,39 @@ class Proyecto
     public function setNotas(?string $notas): static
     {
         $this->notas = $notas;
+        return $this;
+    }
+
+    public function getFichaFotoPath(): ?string
+    {
+        return $this->fichaFotoPath;
+    }
+
+    public function setFichaFotoPath(?string $fichaFotoPath): static
+    {
+        $this->fichaFotoPath = $fichaFotoPath;
+        return $this;
+    }
+
+    public function getDireccionObraExtraida(): ?string
+    {
+        return $this->direccionObraExtraida;
+    }
+
+    public function setDireccionObraExtraida(?string $direccionObraExtraida): static
+    {
+        $this->direccionObraExtraida = $direccionObraExtraida;
+        return $this;
+    }
+
+    public function getFichaDatosExtraidos(): ?array
+    {
+        return $this->fichaDatosExtraidos;
+    }
+
+    public function setFichaDatosExtraidos(?array $fichaDatosExtraidos): static
+    {
+        $this->fichaDatosExtraidos = $fichaDatosExtraidos;
         return $this;
     }
 

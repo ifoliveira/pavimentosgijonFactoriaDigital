@@ -10,6 +10,15 @@ parameters:
     openai.api_key: '%env(OPENAI_API_KEY)%'    
     tpv.api_keys_default: ''
     tpv.api_keys: '%env(default:tpv.api_keys_default:TPV_API_KEYS)%'
+
+# --- TUS VARIABLES DE TELEGRAM Y ERP CONFIGURADAS ---
+    telegram.presupuestos_bot_token_default: ''
+    telegram.presupuestos_bot_token: '%env(default:telegram.presupuestos_bot_token_default:TELEGRAM_PRESUPUESTOS_BOT_TOKEN)%'
+    
+    telegram.presupuestos_allowed_user_ids_default: ''
+    telegram.presupuestos_allowed_user_ids: '%env(default:telegram.presupuestos_allowed_user_ids_default:TELEGRAM_PRESUPUESTOS_ALLOWED_USER_IDS)%'
+    
+    erp.public_base_url_default: ''    
     web_presupuesto.valores_provisionales:
       web_ducha:
         selector_plato_ducha.largo: 170
@@ -157,6 +166,7 @@ services:
         bind: 
             $c43Dir: "%kernel.project_dir%/public_html/C43"
             $tpvApiKeys: '%tpv.api_keys%'
+            $projectDir: '%kernel.project_dir%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -189,10 +199,25 @@ services:
         arguments:
             $openaiApiKey: '%openai.api_key%'            
 
+    App\Service\FichaVisita\FichaVisitaAiExtractorInterface:
+        alias: App\Service\FichaVisita\OpenAiFichaVisitaExtractor
+
     App\Service\TelegramNotifierService:
         arguments:
             $botToken: '%env(TELEGRAM_BOT_TOKEN)%'
             $chatId:   '%env(TELEGRAM_CHAT_ID)%'
+
+    App\Service\Telegram\TelegramBotClient:
+        arguments:
+            $botToken: '%env(default:telegram.presupuestos_bot_token_default:TELEGRAM_PRESUPUESTOS_BOT_TOKEN)%'
+
+    App\Service\Telegram\TelegramAutorizacion:
+        arguments:
+            $allowedUserIds: '%env(default:telegram.presupuestos_allowed_user_ids_default:TELEGRAM_PRESUPUESTOS_ALLOWED_USER_IDS)%'
+
+    App\Service\Telegram\TelegramPresupuestoRecepcionService:
+        arguments:
+            $erpPublicBaseUrl: '%env(default:erp.public_base_url_default:ERP_PUBLIC_BASE_URL)%'
 
     App\Service\WebPresupuesto\WebDuchaBudgetFlowProviderInterface:
         alias: App\Service\WebPresupuesto\BudgetFlowWebDuchaProvider
