@@ -1,0 +1,3 @@
+framework:
+    # Allow indexing in production; development keeps Symfony's default protection.
+    disallow_search_engine_index: false

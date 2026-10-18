@@ -83,6 +83,13 @@ class CosteGremio
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
+    /**
+     * Proyecto al que pertenece este coste de gremio.
+     */
+    #[ORM\ManyToOne(targetEntity: Proyecto::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Proyecto $proyecto = null;
+
 
     // -------------------------------------------------------------------------
     // GREMIO
