@@ -10,7 +10,6 @@ use App\Service\Documento\DocumentoManoObraService;
 use App\Service\Proyecto\ProyectoCalculatorService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use App\Repository\ClientesRepository;
 use App\Repository\ProyectoRepository;
@@ -31,19 +30,13 @@ use App\Repository\TextoManoObraRepository;
 use App\Repository\StockReservaRepository;
 use App\Service\BudgetFlow\BudgetFlowConfiguratorService;
 use App\Service\PresupuestoFinalizadoTelegramNotifier;
+use Symfony\Component\Routing\Attribute\Route;
 
-
-/**
- * @Route("/admin/documento")
- */
+#[Route('/admin/documento')]
 class DocumentoController extends AbstractController
 {
 
-    /**
-     * Crear documento y redirigir a su vista
-     *
-     * @Route("/nuevo", name="app_documento_nuevo", methods={"GET"})
-     */
+    #[Route('/nuevo', name: 'app_documento_nuevo', methods: ['GET'])]
     public function nuevo(DocumentoCrearService $crearService): Response
     {
         $documento = $crearService->crearDocumento('presupuesto');

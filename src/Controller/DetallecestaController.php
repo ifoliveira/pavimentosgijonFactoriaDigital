@@ -103,7 +103,7 @@ class DetallecestaController extends AbstractController
     {
 
         // Producto y cantidad a añadir
-        $producto = $request->query->get('producto');
+        $producto = $request->query->all('producto');;
         $cantidad = $request->query->get('cantidad');
         $importe = $request->query->get('importe');
         $coste = $request->query->get('coste');
