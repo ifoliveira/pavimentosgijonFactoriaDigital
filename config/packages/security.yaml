@@ -1,6 +1,5 @@
 security:
     # Nuevo sistema de autenticación (elimina todas las deprecations de security-bundle 5.3)
-    enable_authenticator_manager: true
 
     password_hashers:
         App\Entity\Admin:

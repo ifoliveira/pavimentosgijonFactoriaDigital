@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Banco;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use App\Entity\Efectivo;
 use App\Entity\Tiposmovimiento;
 use App\Form\Banco1Type;
@@ -61,7 +62,7 @@ class BancoController extends AbstractController
     }
     
     #[Route('/{id_Bn}', name: 'banco_show', methods: ['GET'])]
-    public function show(Banco $banco, DetallecestaRepository $detallecestaRepository): Response
+    public function show(#[MapEntity(id: 'id_Bn')] Banco $banco, DetallecestaRepository $detallecestaRepository): Response
     {
         return $this->render('banco/show.html.twig', [
             'banco' => $banco,
@@ -87,7 +88,7 @@ class BancoController extends AbstractController
     }
 
     #[Route('/{id_Bn}', name: 'banco_delete', methods: ['DELETE'])]
-    public function delete(Request $request, Banco $banco, DetallecestaRepository $detallecestaRepository): Response
+    public function delete(Request $request, #[MapEntity(id: 'id_Bn')] Banco $banco, DetallecestaRepository $detallecestaRepository): Response
     {
         if ($this->isCsrfTokenValid('delete'.$banco->getId(), $request->request->get('_token'))) {
             

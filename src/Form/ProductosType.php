@@ -10,7 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 
 class ProductosType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('incluir', CheckboxType::class, [
@@ -32,7 +32,7 @@ class ProductosType extends AbstractType
                 'label' => 'Tipo de producto' ));
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Productos::class,

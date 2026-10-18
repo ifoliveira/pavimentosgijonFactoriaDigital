@@ -10,7 +10,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PresupuestosType1 extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('estadoPe',null ,  array(
@@ -18,7 +18,7 @@ class PresupuestosType1 extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Presupuestos::class,

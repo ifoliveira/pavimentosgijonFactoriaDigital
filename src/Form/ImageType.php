@@ -10,7 +10,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ImageType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('file_path', FileType::class, [
@@ -22,7 +22,7 @@ class ImageType extends AbstractType
             ->add('alt', TextType::class);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Image::class,

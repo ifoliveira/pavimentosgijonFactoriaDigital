@@ -14,7 +14,7 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 
 class ClientesType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('nombreCl',null ,  array(
@@ -36,7 +36,7 @@ class ClientesType extends AbstractType
         $builder->add('presupuestosCl', CollectionType::class, ['entry_type' => PresupuestosType::class,]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Clientes::class,
