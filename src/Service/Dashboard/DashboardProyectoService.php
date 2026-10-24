@@ -320,8 +320,9 @@ class DashboardProyectoService
     }
 
     /**
-     * Cobros que aún no figuran como realizados. Son una previsión de proyecto,
-     * no un Forecast persistido: así no se duplican cuando exista un vencimiento real.
+     * Cobros que aún no figuran como realizados de presupuestos aceptados.
+     * Son una previsión de proyecto, no un Forecast persistido: así no se
+     * duplican cuando exista un vencimiento real.
      *
      * @return array<int, array{proyecto: Proyecto, importe: float, fecha: \DateTimeImmutable}>
      */
@@ -335,10 +336,17 @@ class DashboardProyectoService
                 continue;
             }
 
-            $importeBase = max(
-                (float) $proyecto->getTotalFacturado(),
-                (float) $proyecto->getTotalPresupuestado()
-            );
+            $presupuesto = $this->documentoRepository->findPresupuestoInicialDeProyecto($proyecto);
+            if (!$presupuesto || !in_array($presupuesto->getEstadoComercial(), ['aceptado', 'convertido'], true)) {
+                continue;
+            }
+
+            // totalFacturado ya contiene el importe comprometido de un
+            // presupuesto aceptado sin factura. No se usa el mayor con el
+            // presupuesto: de hacerlo, una factura completamente cobrada pero
+            // inferior al presupuesto inicial seguiría apareciendo como cobro
+            // pendiente.
+            $importeBase = (float) $proyecto->getTotalFacturado();
             $pendiente = max($importeBase - (float) $proyecto->getTotalCobrado(), 0.0);
             if ($pendiente <= 0) {
                 continue;

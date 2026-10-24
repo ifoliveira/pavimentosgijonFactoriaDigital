@@ -47,6 +47,36 @@ class DashboardProyectoMargenTest extends TestCase
         self::assertEquals(0.0, $service->getDashboardData()['economico']['margenEstimado']);
     }
 
+    public function testCobrosPendientesSoloIncluyePresupuestosAceptadosYNoInflaLaFactura(): void
+    {
+        $aceptado = (new Proyecto())
+            ->setFechaInicio(new \DateTimeImmutable('2026-01-01'))
+            ->setTotalPresupuestado('1200.00')
+            ->setTotalFacturado('800.00')
+            ->setTotalCobrado('100.00');
+        $borrador = (new Proyecto())
+            ->setFechaInicio(new \DateTimeImmutable('2026-01-01'))
+            ->setTotalPresupuestado('5000.00')
+            ->setTotalFacturado('0.00')
+            ->setTotalCobrado('0.00');
+
+        $presupuestoAceptado = (new Documento())->setEstadoComercial('aceptado');
+        $presupuestoBorrador = (new Documento())->setEstadoComercial('borrador');
+        $proyectos = $this->createMock(ProyectoRepository::class);
+        $proyectos->method('findAll')->willReturn([$aceptado, $borrador]);
+        $documentos = $this->createMock(DocumentoRepository::class);
+        $documentos->method('findPresupuestoInicialDeProyecto')->willReturnCallback(
+            static fn (Proyecto $proyecto): Documento => $proyecto === $aceptado ? $presupuestoAceptado : $presupuestoBorrador
+        );
+
+        $service = new DashboardProyectoService($proyectos, $documentos);
+
+        $cobros = $service->getCobrosPendientesProyectos(2026);
+        self::assertCount(1, $cobros);
+        self::assertSame($aceptado, $cobros[0]['proyecto']);
+        self::assertSame(700.0, $cobros[0]['importe']);
+    }
+
     private function servicio(Proyecto $proyecto, Documento $presupuesto, ?Documento $factura): DashboardProyectoService
     {
         $proyectos = $this->createMock(ProyectoRepository::class);
