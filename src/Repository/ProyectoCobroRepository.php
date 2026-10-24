@@ -14,6 +14,50 @@ class ProyectoCobroRepository extends ServiceEntityRepository
         parent::__construct($registry, ProyectoCobro::class);
     }
 
+    /** Importes pagados por el cliente, incluidas devoluciones y sin descontar comisiones. */
+    public function getTotalCobrado(?\DateTimeInterface $desde = null, ?\DateTimeInterface $hasta = null): string
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->select('COALESCE(SUM(c.importeBruto), 0)');
+        if ($desde !== null) {
+            $qb->andWhere('c.fecha >= :desde')->setParameter('desde', $desde);
+        }
+        if ($hasta !== null) {
+            $qb->andWhere('c.fecha < :hasta')->setParameter('hasta', $hasta);
+        }
+
+        return (string) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /** Cobros registrados directamente en proyectos, por fecha de cobro. */
+    public function getCobrosPorMes(\DateTimeInterface $desde, \DateTimeInterface $hasta): array
+    {
+        $cobros = $this->createQueryBuilder('c')
+            ->andWhere('c.fecha >= :desde AND c.fecha < :hasta')
+            ->setParameter('desde', $desde)
+            ->setParameter('hasta', $hasta)
+            ->orderBy('c.fecha', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $totales = [];
+        foreach ($cobros as $cobro) {
+            $fecha = $cobro->getFecha();
+            if ($fecha === null) {
+                continue;
+            }
+            $mes = (int) $fecha->format('n');
+            $totales[$mes] = ($totales[$mes] ?? 0.0) + (float) $cobro->getImporteBruto();
+        }
+
+        $resultado = [];
+        foreach ($totales as $mes => $importe) {
+            $resultado[] = ['mes' => $mes, 'importe' => $importe];
+        }
+
+        return $resultado;
+    }
+
     public function findCandidatosParaBanco(
         Banco $banco,
         int $limite = 10
@@ -30,8 +74,8 @@ class ProyectoCobroRepository extends ServiceEntityRepository
         * Un cobro puede aparecer en banco varios días después
         * de haber sido registrado.
         */
-        $desde = (clone $fechaBanco)->modify('-30 days');
-        $hasta = (clone $fechaBanco)->modify('+15 days');
+        $desde = (clone $fechaBanco)->modify('-45 days');
+        $hasta = (clone $fechaBanco)->modify('+45 days');
 
         /*
         * Recuperamos solo cobros que:
@@ -44,7 +88,7 @@ class ProyectoCobroRepository extends ServiceEntityRepository
             ->leftJoin('c.proyecto', 'p')
             ->addSelect('p')
             ->andWhere('c.banco IS NULL')
-            ->andWhere('c.metodo != :efectivo')
+            ->andWhere('LOWER(c.metodo) != :efectivo')
             ->andWhere('c.fecha BETWEEN :desde AND :hasta')
             ->setParameter('efectivo', 'efectivo')
             ->setParameter('desde', $desde)

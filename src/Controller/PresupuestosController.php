@@ -88,33 +88,11 @@ class PresupuestosController extends AbstractController
     }    
 
     #[Route('/new', name: 'presupuestos_new', methods: ['GET','POST'])]
-    public function new(Request $request, EstadocestasRepository $estadocestasRepository): Response
+    public function new(): Response
     {
-        $presupuesto = new Presupuestos();
-        $form = $this->createForm(PresupuestosType::class, $presupuesto);
-        $form->handleRequest($request);
-
-        $estadocesta=$estadocestasRepository->findOneBy(['id' => 6]);
-        $presupuesto->setEstadoPe($estadocesta);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-
-            $user = $this->getUser();
-            $presupuesto->setUserPe($user);
-            $cesta = new Cestas();
-            $cesta->setEstadoCs(11);
-            $this->em->persist($cesta);
-            $presupuesto->setTicket($cesta);            
-            $this->em->persist($presupuesto);
-
-            $this->em->flush();
-            return $this->redirectToRoute('presupuestos_show', ['id' => $presupuesto->getId()]);
-        }
-
-        return $this->render('presupuestos/new.html.twig', [
-            'presupuesto' => $presupuesto,
-            'form' => $form->createView(),
-        ]);
+        throw new \Symfony\Component\HttpKernel\Exception\GoneHttpException(
+            'La creación de presupuestos por esta vía está deshabilitada. Puedes consultar los presupuestos existentes desde la lista de presupuestos.'
+        );
     }
 
     #[Route('/{id}', name: 'presupuestos_show',  methods: ['GET','POST'])]

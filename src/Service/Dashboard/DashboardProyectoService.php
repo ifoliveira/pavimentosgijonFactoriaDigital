@@ -6,13 +6,14 @@ use App\Entity\Proyecto;
 use App\Repository\DocumentoRepository;
 use App\Repository\ProyectoRepository;
 use App\Repository\ProyectoGastoRepository;
+use App\Entity\ProyectoGasto;
 
 class DashboardProyectoService
 {
     public function __construct(
         private ProyectoRepository $proyectoRepository,
         private DocumentoRepository $documentoRepository,
-        private ProyectoGastoRepository $proyectoGastoRepository,
+        private ?ProyectoGastoRepository $proyectoGastoRepository = null,
     ) {
     }
 
@@ -42,14 +43,15 @@ class DashboardProyectoService
                 $factura
             );
 
+            $resumenEconomico = $this->getResumenProyecto($proyecto);
             $proyectosEnriquecidos[] = [
                 'proyecto' => $proyecto,
                 'presupuesto' => $presupuesto,
                 'factura' => $factura,
                 'situacion' => $situacion,
-                'margen' => $this->getCosteProyecto($proyecto)
-                    ? (float) $proyecto->getTotalFacturado() - $this->getCosteProyecto($proyecto)
-                    : null,
+                'economico' => $resumenEconomico,
+                // Se conserva para los consumidores existentes del servicio.
+                'margen' => $resumenEconomico['margenEstimado'],
             ];
         }
 
@@ -97,7 +99,7 @@ class DashboardProyectoService
             $factura = $this->documentoRepository->findFacturaDeProyecto($proyecto);
             $situacionCalculada = $this->calcularSituacionProyecto($proyecto, $presupuesto, $factura);
 
-            if ($situacion && $situacionCalculada !== $situacion) {
+            if (!$this->coincideConFiltroDashboard($situacionCalculada, $situacion)) {
                 continue;
             }
 
@@ -106,10 +108,51 @@ class DashboardProyectoService
                 'presupuesto' => $presupuesto,
                 'factura' => $factura,
                 'situacion' => $situacionCalculada,
+                'economico' => $this->getResumenProyecto($proyecto),
             ];
         }
 
         return $resultado;
+    }
+
+    public function buscarProyectosPaginados(
+        ?string $nombre,
+        ?string $cliente,
+        ?string $telefono,
+        ?string $situacion,
+        int $pagina,
+        int $porPagina = 20
+    ): array {
+        $resultado = $this->buscarProyectos($nombre, $cliente, $telefono, $situacion);
+        $total = count($resultado);
+        $paginas = max(1, (int) ceil($total / $porPagina));
+        $pagina = min(max(1, $pagina), $paginas);
+
+        return [
+            'resultados' => array_slice($resultado, ($pagina - 1) * $porPagina, $porPagina),
+            'total' => $total,
+            'pagina' => $pagina,
+            'paginas' => $paginas,
+        ];
+    }
+
+    private function coincideConFiltroDashboard(string $situacionCalculada, ?string $filtro): bool
+    {
+        if (!$filtro || $filtro === 'todos') {
+            return true;
+        }
+
+        if ($filtro === 'atencion') {
+            return in_array($situacionCalculada, [
+                'sin_presupuesto',
+                'presupuesto_borrador',
+                'presupuesto_entregado',
+                'aceptado_sin_factura',
+                'facturado_pendiente',
+            ], true);
+        }
+
+        return $situacionCalculada === $filtro;
     }
 
     private function calcularSituacionProyecto(Proyecto $proyecto, $presupuesto, $factura): string
@@ -138,7 +181,10 @@ class DashboardProyectoService
             return 'aceptado_sin_factura';
         }
 
-        if ($factura && in_array($factura->getEstadoCobro(), ['pendiente', 'parcial'], true)) {
+        // La realidad económica prevalece sobre el texto de estado: una
+        // factura con saldo pendiente debe permanecer en la bandeja de cobro,
+        // incluso si su estadoCobro antiguo no se actualizó correctamente.
+        if ($factura && (float) $factura->getTotalCobrado() < (float) $factura->getTotal()) {
             return 'facturado_pendiente';
         }
 
@@ -158,7 +204,9 @@ class DashboardProyectoService
         $totalCobrado = 0;
         $totalPendienteCobro = 0;
         $totalCostePrevisto = 0;
-        $margenEstimado = 0;
+        $totalIngresoSinIva = 0;
+        $totalCosteConfirmado = 0;
+        $totalPendienteConfirmar = 0;
 
         foreach ($proyectos as $proyecto) {
             $presupuestado = (float) $proyecto->getTotalPresupuestado();
@@ -166,16 +214,20 @@ class DashboardProyectoService
             $cobrado = (float) $proyecto->getTotalCobrado();
 
             $pendienteCobro = max($facturado - $cobrado, 0);
-            $costePrevisto = $this->getCosteProyecto($proyecto);
+            $resumenProyecto = $this->getResumenProyecto($proyecto);
+            $costePrevisto = $resumenProyecto['costeTotalEstimado'];
 
             $totalPresupuestado += $presupuestado;
             $totalFacturado += $facturado;
             $totalCobrado += $cobrado;
             $totalPendienteCobro += $pendienteCobro;
             $totalCostePrevisto += $costePrevisto;
+            $totalIngresoSinIva += $this->getIngresoSinIva($proyecto);
+            $totalCosteConfirmado += $resumenProyecto['costeConfirmado'];
+            $totalPendienteConfirmar += $resumenProyecto['costePrevistoPendiente'];
         }
 
-        $margenEstimado = $totalFacturado - $totalCostePrevisto;
+        $margenEstimado = $totalIngresoSinIva - $totalCostePrevisto;
 
         return [
             'totalPresupuestado' => $totalPresupuestado,
@@ -184,13 +236,174 @@ class DashboardProyectoService
             'totalPendienteCobro' => $totalPendienteCobro,
             'totalCostePrevisto' => $totalCostePrevisto,
             'margenEstimado' => $margenEstimado,
+            'totalCosteConfirmado' => $totalCosteConfirmado,
+            'totalPendienteConfirmar' => $totalPendienteConfirmar,
         ];
+    }
+
+    /** @return array<string, float> */
+    public function getResumenProyecto(Proyecto $proyecto): array
+    {
+        $costeConfirmado = 0.0;
+        $costePrevistoPendiente = 0.0;
+
+        foreach ($proyecto->getGastos() as $gasto) {
+            if ($gasto->getEstado() === ProyectoGasto::ESTADO_CANCELADO) {
+                continue;
+            }
+
+            // Hay datos históricos cuya transición de estado no se registró,
+            // pero el coste real sí es fiable y debe prevalecer.
+            if ($gasto->getBaseReal() !== null || $gasto->getImporteReal() !== null) {
+                $costeConfirmado += $this->costeSinIva($gasto, true);
+                continue;
+            }
+
+            if ($gasto->getEstado() === ProyectoGasto::ESTADO_PREVISTO) {
+                $costePrevistoPendiente += $this->costeSinIva($gasto, false);
+            }
+        }
+
+        $ingreso = $this->getIngresoSinIva($proyecto);
+        $costeTotalEstimado = $costeConfirmado + $costePrevistoPendiente;
+        $margenEstimado = $ingreso - $costeTotalEstimado;
+
+        return [
+            'ingresoSinIva' => $ingreso,
+            'costeConfirmado' => $costeConfirmado,
+            'costePrevistoPendiente' => $costePrevistoPendiente,
+            'costeTotalEstimado' => $costeTotalEstimado,
+            'margenEstimado' => $margenEstimado,
+            'margenSobreVentas' => $ingreso > 0 ? ($margenEstimado / $ingreso) * 100 : 0.0,
+        ];
+    }
+
+    /**
+     * Agrupa los costes de una colección de proyectos ya filtrada por el
+     * consumidor (por ejemplo, por ejercicio de facturación).
+     *
+     * @param iterable<Proyecto> $proyectos
+     * @return array{costeConfirmado: float, costePrevistoPendiente: float, costeTotalEstimado: float}
+     */
+    public function getResumenCostesProyectos(iterable $proyectos): array
+    {
+        $resumen = [
+            'costeConfirmado' => 0.0,
+            'costePrevistoPendiente' => 0.0,
+            'costeTotalEstimado' => 0.0,
+        ];
+
+        foreach ($proyectos as $proyecto) {
+            $costes = $this->getResumenProyecto($proyecto);
+            $resumen['costeConfirmado'] += $costes['costeConfirmado'];
+            $resumen['costePrevistoPendiente'] += $costes['costePrevistoPendiente'];
+            $resumen['costeTotalEstimado'] += $costes['costeTotalEstimado'];
+        }
+
+        return $resumen;
+    }
+
+    /** @return array<int, array{gasto: ProyectoGasto, importe: float}> */
+    public function getCompromisosPendientes(): array
+    {
+        if ($this->proyectoGastoRepository === null) {
+            return [];
+        }
+
+        return array_map(fn (ProyectoGasto $gasto) => [
+            'gasto' => $gasto,
+            'importe' => $this->costeSinIva($gasto, false),
+        ], array_filter(
+            $this->proyectoGastoRepository->findPrevistosDeProyectosAbiertos(),
+            static fn (ProyectoGasto $gasto) => $gasto->getBaseReal() === null && $gasto->getImporteReal() === null
+        ));
+    }
+
+    /**
+     * Cobros que aún no figuran como realizados. Son una previsión de proyecto,
+     * no un Forecast persistido: así no se duplican cuando exista un vencimiento real.
+     *
+     * @return array<int, array{proyecto: Proyecto, importe: float, fecha: \DateTimeImmutable}>
+     */
+    public function getCobrosPendientesProyectos(int $anio): array
+    {
+        $finAnio = new \DateTimeImmutable(sprintf('%d-12-31', $anio));
+        $cobros = [];
+
+        foreach ($this->proyectoRepository->findAll() as $proyecto) {
+            if ($proyecto->getFechaFinReal() !== null) {
+                continue;
+            }
+
+            $importeBase = max(
+                (float) $proyecto->getTotalFacturado(),
+                (float) $proyecto->getTotalPresupuestado()
+            );
+            $pendiente = max($importeBase - (float) $proyecto->getTotalCobrado(), 0.0);
+            if ($pendiente <= 0) {
+                continue;
+            }
+
+            $fecha = $proyecto->getFechaFinPrevista()
+                ? \DateTimeImmutable::createFromInterface($proyecto->getFechaFinPrevista())
+                : \DateTimeImmutable::createFromInterface($proyecto->getFechaInicio())->modify('+4 months');
+
+            // Esta vista es anual: una fecha estimada posterior se lleva al cierre.
+            if ($fecha > $finAnio) {
+                $fecha = $finAnio;
+            }
+
+            $cobros[] = [
+                'proyecto' => $proyecto,
+                'importe' => round($pendiente, 2),
+                'fecha' => $fecha,
+            ];
+        }
+
+        return $cobros;
     }
 
     private function getCosteProyecto(Proyecto $proyecto): float
     {
-        return $this->proyectoGastoRepository->sumarCosteActualPorProyecto($proyecto);
+        return $this->getResumenProyecto($proyecto)['costeTotalEstimado'];
     }    
+
+    private function costeSinIva(ProyectoGasto $gasto, bool $real): float
+    {
+        if ($real && $gasto->getBaseReal() !== null) {
+            return (float) $gasto->getBaseReal();
+        }
+        if (!$real && $gasto->getBasePrevista() !== null) {
+            return (float) $gasto->getBasePrevista();
+        }
+
+        $importe = (float) ($real ? $gasto->getImporteReal() : $gasto->getImportePrevisto());
+        $iva = (float) ($real ? $gasto->getIvaReal() : $gasto->getIvaPrevisto());
+        return $importe - $iva;
+    }
+
+    private function getIngresoSinIva(Proyecto $proyecto): float
+    {
+        $ingreso = 0.0;
+        $tieneDocumentoFiscal = false;
+        foreach ($proyecto->getDocumentos() as $documento) {
+            if (!in_array($documento->getTipoDocumento(), ['factura', 'ticket', 'ticket_rectificativo'], true)) {
+                continue;
+            }
+
+            $tieneDocumentoFiscal = true;
+            $ingreso += (float) $documento->getBaseImponible();
+        }
+
+        if ($tieneDocumentoFiscal) {
+            return $ingreso;
+        }
+
+        $presupuesto = $this->documentoRepository->findPresupuestoInicialDeProyecto($proyecto);
+        return $presupuesto && in_array($presupuesto->getEstadoComercial(), ['aceptado', 'convertido'], true)
+            ? (float) $presupuesto->getBaseImponible()
+            : 0.0;
+    }
 
     public function getProyectosOperativos(): array
     {

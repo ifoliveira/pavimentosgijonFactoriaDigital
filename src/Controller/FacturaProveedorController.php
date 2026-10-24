@@ -14,6 +14,8 @@ use App\Repository\TiposmovimientoRepository;
 use App\Service\FacturaPdfToJsonService;
 use App\Service\FacturaProveedor\FacturaProveedorService;
 use App\Service\FacturaProveedor\FacturaProveedorAsignacionService;
+use App\Service\FacturaProveedor\BuscadorGastoPrevistoService;
+use App\Service\FacturaProveedor\ConfirmacionGastoFacturaService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -184,6 +186,22 @@ class FacturaProveedorController extends AbstractController
 
             $accion = $request->request->get('accion');
             $lineaId = $request->request->getInt('linea_id');
+            $lineasSeleccionadas = array_map(
+                'intval',
+                $request->request->all('lineas_seleccionadas')
+            );
+
+            if (
+                in_array($accion, ['confirmar_seleccionadas', 'ignorar_seleccionadas'], true)
+                && $lineasSeleccionadas === []
+            ) {
+                $this->addFlash('warning', 'Selecciona al menos una línea.');
+
+                return $this->redirectToRoute(
+                    'factura_proveedor_revisar',
+                    ['id' => $factura->getId()]
+                );
+            }
 
             $facturaPost = $request->request->all('factura');
             $lineasPost = $request->request->all('lineas');
@@ -244,6 +262,13 @@ class FacturaProveedorController extends AbstractController
                 $id = $linea->getId();
 
                 if ($lineaId && $id !== $lineaId) {
+                    continue;
+                }
+
+                if (
+                    in_array($accion, ['confirmar_seleccionadas', 'ignorar_seleccionadas'], true)
+                    && !in_array($id, $lineasSeleccionadas, true)
+                ) {
                     continue;
                 }
 
@@ -317,11 +342,11 @@ class FacturaProveedorController extends AbstractController
 
                 $linea->setTotal($total);
 
-                if ($accion === 'confirmar_linea') {
+                if (in_array($accion, ['confirmar_linea', 'confirmar_seleccionadas'], true)) {
                     $linea->setEstado('pendiente');
                 }
 
-                if ($accion === 'ignorar_linea') {
+                if (in_array($accion, ['ignorar_linea', 'ignorar_seleccionadas'], true)) {
                     $linea->setEstado('ignorada');
                 }
             }
@@ -334,9 +359,12 @@ class FacturaProveedorController extends AbstractController
 
             $this->addFlash(
                 'success',
-                $accion === 'confirmar'
-                    ? 'Factura confirmada correctamente.'
-                    : 'Cambios guardados correctamente.'
+                match ($accion) {
+                    'confirmar_seleccionadas' => 'Líneas seleccionadas aceptadas correctamente.',
+                    'ignorar_seleccionadas' => 'Líneas seleccionadas quitadas correctamente.',
+                    'confirmar' => 'Factura confirmada correctamente.',
+                    default => 'Cambios guardados correctamente.',
+                }
             );
 
             return $this->redirectToRoute(
@@ -357,7 +385,8 @@ class FacturaProveedorController extends AbstractController
         Request $request,
         ProyectoRepository $proyectoRepository,
         FacturaProveedorRepository $facturaProveedorRepository,
-        FacturaProveedorAsignacionService $asignacionService
+        FacturaProveedorAsignacionService $asignacionService,
+        BuscadorGastoPrevistoService $buscadorGastoPrevisto
     ): Response {
 
         if ($request->isMethod('POST')) {
@@ -398,7 +427,42 @@ class FacturaProveedorController extends AbstractController
         return $this->render('factura_proveedor/asignar.html.twig', [
             'factura' => $factura,
             'proyectos' => $proyectoRepository->findAceptadosConCobros([], ['id' => 'DESC']),
+            'propuestasGasto' => array_filter(array_map(
+                static fn ($linea) => [
+                    'linea' => $linea,
+                    'candidatos' => $buscadorGastoPrevisto->buscar($linea),
+                ],
+                $factura->getLineas()->toArray()
+            ), static fn (array $propuesta) => $propuesta['linea']->getEstado() === 'pendiente' && $propuesta['candidatos'] !== []),
         ]);
+    }
+
+    #[Route('/{id}/confirmar-gastos-propuestos', name: 'factura_proveedor_confirmar_gastos_propuestos', methods: ['POST'])]
+    public function confirmarGastosPropuestos(
+        FacturaProveedor $factura,
+        Request $request,
+        ConfirmacionGastoFacturaService $confirmacionService
+    ): Response {
+        if (!$this->isCsrfTokenValid(
+            'confirmar_gastos_factura_'.$factura->getId(),
+            (string) $request->request->get('_token')
+        )) {
+            throw $this->createAccessDeniedException('Token CSRF no válido.');
+        }
+
+        $selecciones = $request->request->all('selecciones');
+        if ($selecciones === []) {
+            $this->addFlash('warning', 'Selecciona al menos una propuesta.');
+        } else {
+            try {
+                $cantidad = $confirmacionService->confirmarSeleccionadas($factura, $selecciones);
+                $this->addFlash('success', sprintf('%d gasto(s) confirmado(s) con el coste sin IVA de la factura.', $cantidad));
+            } catch (\LogicException $e) {
+                $this->addFlash('warning', $e->getMessage());
+            }
+        }
+
+        return $this->redirectToRoute('factura_proveedor_asignar', ['id' => $factura->getId()]);
     }
 
     #[Route('/{id}/pdf', name: 'factura_proveedor_pdf', methods: ['GET'])]

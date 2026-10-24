@@ -36,7 +36,7 @@ class ProyectoCobroService
             );
         }
 
-        $metodo = trim($metodo);
+        $metodo = strtolower(trim($metodo));
 
         if ($metodo === '') {
             throw new \RuntimeException(

@@ -6,6 +6,7 @@ namespace App\Service\Documento;
 use App\Entity\Documento;
 use App\Entity\DocumentoLinea;
 use App\Entity\ManoObra;
+use App\Entity\ProyectoGasto;
 use App\Repository\DocumentoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\Documento\SerieService;
@@ -90,7 +91,12 @@ class DocumentoEstadoService
         return $documento;
     }
 
-        public function aceptarYGenerarFactura(int $documentoId): Documento
+    public function aceptarYGenerarFactura(int $documentoId): Documento
+    {
+        return $this->em->wrapInTransaction(fn () => $this->convertirPresupuesto($documentoId));
+    }
+
+    private function convertirPresupuesto(int $documentoId): Documento
     {
         $presupuesto = $this->getDocumento($documentoId);
 
@@ -170,12 +176,47 @@ class DocumentoEstadoService
         // Esto crea StockMovimiento de salida y marca reservas como consumidas.
         $this->stockReservaService->consumirReservasDocumento($presupuesto);        
 
+        $this->crearGastosPrevistos($presupuesto);
+
         $proyecto = $presupuesto->getProyecto();
         $this->em->flush();
 
         $this->proyectoCalculatorService->recalcularProyecto($proyecto, false);
 
         return $factura ?? $ticket ?? $presupuesto;
+    }
+
+    private function crearGastosPrevistos(Documento $presupuesto): void
+    {
+        $proyecto = $presupuesto->getProyecto();
+
+        foreach ($presupuesto->getLineas() as $linea) {
+            $costeUnitario = (float) $linea->getCosteUnitario();
+            if ($costeUnitario == 0.0) {
+                continue;
+            }
+
+            $importe = number_format($costeUnitario * (float) $linea->getCantidad(), 2, '.', '');
+            $descripcion = trim((string) $linea->getDescripcion());
+            $gasto = new ProyectoGasto();
+            $gasto->setDocumento($presupuesto);
+            // Previsión editable que podrá asociarse después a una factura de proveedor.
+            $gasto->setOrigen(ProyectoGasto::ORIGEN_MANUAL);
+            $gasto->setCategoria(match ($linea->getTipoLinea()) {
+                'producto' => 'materiales',
+                'mano_obra' => 'mano_obra_externa',
+                default => 'varios',
+            });
+            $gasto->setConcepto(mb_substr($descripcion !== '' ? $descripcion : 'Concepto del presupuesto', 0, 255));
+            $gasto->setFechaPrevista(new \DateTime());
+            $gasto->setBasePrevista($importe);
+            $gasto->setImportePrevisto($importe);
+            // El coste es sin IVA; todavía no conocemos el impuesto de compra ni el vencimiento.
+            $gasto->setGeneraForecast(false);
+            $gasto->setNotas("Generado al aceptar el presupuesto. Coste previsto sin IVA.\n" . $descripcion);
+            $proyecto->addGasto($gasto);
+            $this->em->persist($gasto);
+        }
     }
 
     private function crearDocumentoDesdeLineas(

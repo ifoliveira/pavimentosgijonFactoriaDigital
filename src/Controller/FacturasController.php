@@ -33,7 +33,7 @@ final class FacturasController extends AbstractController
             $anio = $anioActual;
         }
 
-        if (!in_array($trimestre, [1, 2, 3, 4], true)) {
+        if (!in_array($trimestre, [0, 1, 2, 3, 4], true)) {
             $trimestre = $this->obtenerTrimestreActual();
         }
 
@@ -57,6 +57,7 @@ final class FacturasController extends AbstractController
             'resumen' => $resumen,
             'anio' => $anio,
             'trimestre' => $trimestre,
+            'esAnual' => $trimestre === 0,
             'fechaDesde' => $fechaDesde,
             'fechaHasta' => $fechaHasta->modify('-1 day'),
             'aniosDisponibles' => range($anioActual, $anioActual - 5),
@@ -74,6 +75,12 @@ final class FacturasController extends AbstractController
         int $anio,
         int $trimestre
     ): array {
+        if ($trimestre === 0) {
+            $fechaDesde = new \DateTimeImmutable(sprintf('%04d-01-01', $anio));
+
+            return [$fechaDesde, $fechaDesde->modify('+1 year')];
+        }
+
         $mesInicial = (($trimestre - 1) * 3) + 1;
 
         $fechaDesde = new \DateTimeImmutable(sprintf(
@@ -142,21 +149,16 @@ final class FacturasController extends AbstractController
         int $trimestre,
         DocumentoRepository $documentoRepository
     ): Response {
-        if (!in_array($trimestre, [1, 2, 3, 4], true)) {
+        if (!in_array($trimestre, [0, 1, 2, 3, 4], true)) {
             throw $this->createNotFoundException(
-                'Trimestre no válido.'
+                'Periodo no válido.'
             );
         }
 
-        $mesInicial = (($trimestre - 1) * 3) + 1;
-
-        $fechaDesde = new \DateTimeImmutable(sprintf(
-            '%04d-%02d-01',
+        [$fechaDesde, $fechaHasta] = $this->obtenerPeriodoTrimestre(
             $anio,
-            $mesInicial
-        ));
-
-        $fechaHasta = $fechaDesde->modify('+3 months');
+            $trimestre
+        );
 
         $tickets = $documentoRepository->findFacturasPorPeriodo(
             $fechaDesde,
@@ -165,7 +167,7 @@ final class FacturasController extends AbstractController
 
         if (empty($tickets)) {
             throw $this->createNotFoundException(
-                'No hay tickets en este trimestre.'
+                'No hay facturas en el periodo seleccionado.'
             );
         }
 
@@ -193,11 +195,9 @@ final class FacturasController extends AbstractController
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $nombreArchivo = sprintf(
-            'Tickets_%dT_%d.pdf',
-            $trimestre,
-            $anio
-        );
+        $nombreArchivo = $trimestre === 0
+            ? sprintf('Facturas_Anual_%d.pdf', $anio)
+            : sprintf('Facturas_%dT_%d.pdf', $trimestre, $anio);
 
         return new Response(
             $dompdf->output(),
@@ -247,6 +247,7 @@ final class FacturasController extends AbstractController
                 'resumen' => $resumen,
                 'anio' => $anio,
                 'trimestre' => $trimestre,
+                'esAnual' => $trimestre === 0,
                 'fechaDesde' => $fechaDesde,
                 'fechaHasta' => $fechaHasta->modify('-1 day'),
             ]
@@ -260,11 +261,9 @@ final class FacturasController extends AbstractController
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $nombre = sprintf(
-            'Resumen_Tickets_%dT_%d.pdf',
-            $trimestre,
-            $anio
-        );
+        $nombre = $trimestre === 0
+            ? sprintf('Resumen_Facturas_Anual_%d.pdf', $anio)
+            : sprintf('Resumen_Facturas_%dT_%d.pdf', $trimestre, $anio);
 
         return new Response(
             $dompdf->output(),
@@ -296,11 +295,9 @@ final class FacturasController extends AbstractController
             $fechaHasta
         );
 
-        $nombre = sprintf(
-            'Resumen_Facturas_%dT_%d.csv',
-            $trimestre,
-            $anio
-        );
+        $nombre = $trimestre === 0
+            ? sprintf('Resumen_Facturas_Anual_%d.csv', $anio)
+            : sprintf('Resumen_Facturas_%dT_%d.csv', $trimestre, $anio);
 
         $response = new StreamedResponse(
             function () use ($tickets): void {
@@ -316,6 +313,11 @@ final class FacturasController extends AbstractController
                 * BOM UTF-8 para que Excel reconozca tildes y ñ.
                 */
                 fwrite($salida, "\xEF\xBB\xBF");
+
+                // Fuerza a Excel a utilizar punto y coma como separador de
+                // columnas, para que las comas de los importes no generen
+                // columnas adicionales.
+                fwrite($salida, "sep=;\r\n");
 
                 fputcsv(
                     $salida,

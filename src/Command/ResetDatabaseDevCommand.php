@@ -51,6 +51,8 @@ class ResetDatabaseDevCommand extends Command
         $output->writeln('  - admin');
         $output->writeln('  - catalogo_producto');
         $output->writeln('  - catalogo_producto_configuracion');
+        $output->writeln('  - tiposmovimiento');
+        $output->writeln('  - serie_documento');
         $output->writeln('  - doctrine_migration_versions (tabla técnica)');
         $output->writeln('');
 
@@ -85,8 +87,6 @@ class ResetDatabaseDevCommand extends Command
             'tipo_mano_obra',
             'tipoproducto', 
             'tiposmovimiento',  
-            
-
             /*
              * No es dato de negocio, pero debe mantenerse.
              *
@@ -164,17 +164,46 @@ class ResetDatabaseDevCommand extends Command
             }
 
             /*
-             * Aquí podemos reiniciar campos de las tablas que conservamos.
-             *
-             * Por ahora NO tocamos nada.
-             *
-             * Más adelante, por ejemplo:
-             *
-             * UPDATE catalogo_producto SET stock = 0
-             *
-             * si decides que ciertos campos deben volver a su estado
-             * inicial aunque conservemos el catálogo.
+             * Dejamos las series preparadas para empezar de cero.
              */
+            $connection->executeStatement(
+                'UPDATE serie_documento SET ultimo_numero = 0, actualizado_en = NULL'
+            );
+
+            /*
+             * Saldo inicial de la caja de pruebas: 1.000 € en banco y
+             * 1.000 € en efectivo, fechados el primer día del mes actual.
+             */
+            $connection->executeStatement(
+                "INSERT INTO tiposmovimiento (descripcion_tm, patron_busqueda)
+                 SELECT 'Inicial', NULL FROM DUAL
+                 WHERE NOT EXISTS (SELECT 1 FROM tiposmovimiento WHERE descripcion_tm = 'Inicial')"
+            );
+            $tipoInicial = $connection->fetchOne(
+                "SELECT id FROM tiposmovimiento WHERE descripcion_tm = 'Inicial' LIMIT 1"
+            );
+            $fechaInicial = (new \DateTimeImmutable('first day of this month'))->format('Y-m-d');
+            $timestampInicial = $fechaInicial . ' 00:00:00';
+
+            $connection->insert('banco', [
+                'categoria_bn' => $tipoInicial,
+                'importe_bn' => 1000,
+                'concepto_bn' => 'Saldo inicial desarrollo',
+                'fecha_bn' => $fechaInicial,
+                'timestamp_bn' => $timestampInicial,
+                'conciliado' => 1,
+            ]);
+            $connection->insert('efectivo', [
+                'tipoEf' => $tipoInicial,
+                'concepto_ef' => 'Saldo inicial desarrollo',
+                'fecha_ef' => $fechaInicial,
+                'importe_ef' => 1000,
+                'timestamp_ef' => $timestampInicial,
+                'presupuestoef_id' => null,
+            ]);
+
+            $output->writeln('<info>Series reiniciadas a 0.</info>');
+            $output->writeln('<info>Saldo inicial creado: 1.000 € en banco y 1.000 € en efectivo.</info>');
 
         } catch (\Throwable $e) {
 

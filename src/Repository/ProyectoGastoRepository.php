@@ -37,4 +37,19 @@ class ProyectoGastoRepository extends ServiceEntityRepository
 
         return (float) $total;
     }
+
+    /** @return ProyectoGasto[] */
+    public function findPrevistosDeProyectosAbiertos(): array
+    {
+        return $this->createQueryBuilder('g')
+            ->innerJoin('g.proyecto', 'p')
+            ->addSelect('p')
+            ->andWhere('g.estado = :estado')
+            // Un proyecto con fecha de fin real se considera cerrado en el modelo actual.
+            ->andWhere('p.fechaFinReal IS NULL')
+            ->setParameter('estado', ProyectoGasto::ESTADO_PREVISTO)
+            ->orderBy('g.fechaPrevista', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -11,6 +11,23 @@
         <div class="card shadow-sm border-0">
             <div class="card-body">
 
+                {% if documento.rectificativaTpv %}
+                    <div class="alert alert-info">
+                        <strong>Rectificativa total</strong> de
+                        <a href="{{ path('app_documento_show', {id: documento.documentoRectificado.id}) }}">{{ documento.documentoRectificado.numeroFormateado }}</a>
+                        ({{ documento.documentoRectificado.fechaEmision|date('d/m/Y') }}).
+                        <div>Motivo: {{ documento.motivoRectificacion }}</div>
+                        <div>Reembolso: {{ documento.tpvReembolsoUuid ? 'realizado' : 'pendiente de confirmación del TPV' }}</div>
+                    </div>
+                {% elseif documento.ticketTpv and documento.rectificativas|length %}
+                    <div class="alert alert-warning">
+                        <strong>Ticket rectificado totalmente.</strong>
+                        {% for rectificativa in documento.rectificativas %}
+                            <a href="{{ path('app_documento_show', {id: rectificativa.id}) }}">{{ rectificativa.numeroFormateado }}</a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 {# FILA 1: IDENTIDAD + ACCIONES #}
                 <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
                     <div>
@@ -18,8 +35,14 @@
                             {{ documento.numeroFormateado ?? 'BORRADOR' }}
                         </h2>
                         <div class="text-muted small text-uppercase mt-1">
-                            {{ documento.tipoDocumento }}
+                            {{ documento.rectificativaTpv ? 'Ticket rectificativo' : documento.tipoDocumento }}
                         </div>
+                        {% if documento.tpvUuid %}
+                            <div class="text-muted small mt-1">
+                                TPV: {{ documento.tpvCaja }}
+                                {% if documento.tpvNumeroTicketLocal %} · Ticket local: {{ documento.tpvNumeroTicketLocal }}{% endif %}
+                            </div>
+                        {% endif %}
                     </div>
 
                     {% set btnBase = 'btn btn-sm' %}
@@ -29,6 +52,7 @@
                     {% set btnDanger = btnBase ~ ' btn-outline-danger' %}
 
                     <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0 align-items-center">
+                        {% if documento.proyecto %}
                         <a
                             href="{{ path('app_proyecto_show', {id: documento.proyecto.id}) }}"
                             target="_blank"
@@ -36,6 +60,9 @@
                         >
                             Volver a proyecto
                         </a>
+                        {% else %}
+                            <a href="{{ path('documento_index') }}" class="{{ btnDark }}">Volver a documentos</a>
+                        {% endif %}
                         {% if acciones.puedeEditarCabecera %}
                             <button
                                 type="button"
@@ -64,6 +91,14 @@
                             class="{{ btnDark }}"
                         >
                             PDF Imprimible
+                        </a>
+
+                        <a
+                            href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'clasico', ocultar_importes: 1}) }}"
+                            target="_blank"
+                            class="{{ btnDark }}"
+                        >
+                            PDF sin desglose
                         </a>
 
                         {% if acciones.puedeGenerarPdf %}
@@ -105,13 +140,6 @@
                                 </button>
                             </form>
                         {% endif %}
-
-                        <a
-                            href="{{ path('app_documento_configurar_ducha', {id: documento.id}) }}"
-                            class="{{ btnPrimary }}"
-                        >
-                            Configurar ducha
-                        </a>
 
                     </div>
                 </div>
@@ -346,13 +374,13 @@
     </div>
 </div>
 {# ── COBROS ── #}
-{% if acciones.puedeRegistrarCobro and not documento.proyecto %}
+{% if (acciones.puedeRegistrarCobro or documento.ticketTpv) and not documento.proyecto %}
 <div class="row mt-4">
     <div class="col-12">
         <div class="card">
             <div class="border-bottom title-part-padding d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0">Cobros</h4>
-                {% if documento.estadoCobro != 'cobrado' %}
+                {% if acciones.puedeRegistrarCobro and documento.estadoCobro != 'cobrado' %}
                     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoCobro">
                         + Registrar cobro
                     </button>
@@ -433,10 +461,12 @@
                                         <td>{{ cobro.referencia ?? '—' }}</td>
                                         <td>{{ cobro.notas ?? '—' }}</td>
                                         <td>
+                                            {% if not documento.ticketTpv %}
                                             <a class="text-inverse" data-toggle="tooltip" title="Borrar cobro"
                                                name="delete_cobro" data-id="{{ cobro.id }}">
                                                 <i class="ti-trash"></i>
                                             </a>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% endfor %}

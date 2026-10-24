@@ -7,6 +7,10 @@
         <div class="alert alert-success">{{ message }}</div>
     {% endfor %}
 
+    {% for message in app.flashes('warning') %}
+        <div class="alert alert-warning">{{ message }}</div>
+    {% endfor %}
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-1">Asignar costes a obra</h1>
@@ -19,6 +23,40 @@
             Volver a revisar
         </a>
     </div>
+
+    {% if propuestasGasto is not empty %}
+        <form method="post" action="{{ path('factura_proveedor_confirmar_gastos_propuestos', {id: factura.id}) }}" class="card border-0 shadow-sm mb-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('confirmar_gastos_factura_' ~ factura.id) }}">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="h5 mb-0">Propuestas de gastos previstos</h2>
+                    <div class="small text-muted">Se confirmarán sólo las propuestas que elijas, usando siempre la base sin IVA.</div>
+                </div>
+                <button class="btn btn-success" type="submit">Confirmar propuestas seleccionadas</button>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for propuesta in propuestasGasto %}
+                    <div class="list-group-item">
+                        <div class="fw-semibold">{{ propuesta.linea.descripcion }}</div>
+                        <div class="small text-muted mb-2">Base factura: {{ propuesta.candidatos[0].importeFacturaBase|number_format(2, ',', '.') }} € · IVA excluido</div>
+                        {% for candidato in propuesta.candidatos %}
+                            <label class="d-flex gap-2 border rounded p-2 mb-2 {{ candidato.confianza == 'alta' ? 'border-success' : '' }}">
+                                <input class="form-check-input mt-1" type="radio" name="selecciones[{{ propuesta.linea.id }}]" value="{{ candidato.gasto.id }}"
+                                    {{ candidato.confianza == 'alta' and loop.first ? 'checked' : '' }}>
+                                <span class="flex-grow-1">
+                                    <span class="fw-semibold">{{ candidato.gasto.proyecto.nombre }} — {{ candidato.gasto.concepto }}</span>
+                                    <span class="badge {{ candidato.confianza == 'alta' ? 'bg-success' : (candidato.confianza == 'media' ? 'bg-warning text-dark' : 'bg-secondary') }} ms-1">{{ candidato.confianza|capitalize }}</span>
+                                    <br>
+                                    <small class="text-muted">Previsto: {{ candidato.importePrevistoBase|number_format(2, ',', '.') }} € · Real sin IVA: {{ candidato.importeFacturaBase|number_format(2, ',', '.') }} € · Diferencia: {{ candidato.diferencia|number_format(2, ',', '.') }} €</small>
+                                    <br><small>{{ candidato.motivos|join(' · ') }}</small>
+                                </span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </form>
+    {% endif %}
 
     <form method="post">
         <div class="card border-0 shadow-sm">

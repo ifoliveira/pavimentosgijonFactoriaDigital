@@ -25,6 +25,7 @@ class SerieService
             'presupuesto' => 'P' . $anio,
             'factura' => 'F' . $anio,
             'ticket' => 'T' . $anio,
+            'ticket_rectificativo' => 'RT' . $anio,
             default => throw new \InvalidArgumentException(sprintf(
                 'Tipo de documento no soportado para serie: %s',
                 $tipoDocumento
@@ -47,7 +48,7 @@ class SerieService
             }
 
             // Bloqueo pesimista para evitar duplicados en concurrencia
-            $this->em->lock($serie, LockMode::PESSIMISTIC_WRITE);
+            $this->em->refresh($serie, LockMode::PESSIMISTIC_WRITE);
 
             $numero = $serie->incrementar();
             $this->em->flush();

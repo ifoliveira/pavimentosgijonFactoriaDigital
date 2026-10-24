@@ -25,7 +25,7 @@ class DocumentoAccionesService
 
         $estaCobrado = $estadoCobro === 'cobrado';
 
-        $bloqueado = $estaRechazado || $estaConvertido || $estaCobrado;
+        $bloqueado = $documento->isTicketTpv() || $estaRechazado || $estaConvertido || $estaCobrado;
 
         return [
             // Cabecera / edición general
@@ -43,7 +43,7 @@ class DocumentoAccionesService
             'puedeConvertirAFactura' => $esPresupuesto && $estaAceptado,
 
             // Flujo cobro
-            'puedeRegistrarCobro' => ($esFactura || $esTicket) ,
+            'puedeRegistrarCobro' => ($esFactura || $esTicket) && !$documento->isTicketTpv(),
 
             // Informativas
             'esEditable' => !$bloqueado,
@@ -56,6 +56,10 @@ class DocumentoAccionesService
 
     private function getMensajeBloqueo(Documento $documento): ?string
     {
+        if ($documento->isTicketTpv()) {
+            return 'Ticket emitido por el TPV. Las rectificaciones y devoluciones se gestionan desde el TPV.';
+        }
+
         return match ($documento->getEstadoComercial()) {
             'rechazado' => 'El documento está rechazado y no se puede modificar.',
             'convertido' => 'El presupuesto ya fue convertido y no se puede modificar.',

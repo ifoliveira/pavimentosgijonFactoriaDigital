@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     series: [
       {
-        name: "Gasto acumulado",
+        name: "Saldo banco previsto",
         data: forecast
       },
       {
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
         data: bancoCajaLine
       }
     ],
-    colors: ["#06d55c", "#1e88e5", "#fe88e5", "#f39c12"],
+    colors: ["#8fd3b5", "#8fb8df", "#e7b3d1", "#f2c48f"],
     chart: {
       fontFamily: "Montserrat,sans-serif",
       height: 400,
@@ -67,24 +67,33 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     },
     stroke: {
-      curve: "smooth",
-      width: 2
+      curve: "stepline",
+      width: [3, 1, 1, 1]
     },
     markers: {
-      size: 0,
-      strokeColors: "transparent"
+      size: 4,
+      strokeColors: "#fff",
+      hover: { size: 6 }
     },
     fill: {
-      type: "gradient",
+      type: "solid",
       gradient: {
         shade: "light",
         type: "vertical",
         shadeIntensity: 0.5,
-        opacityFrom: 0.5,
-        opacityTo: 0.3,
+        opacityFrom: 0.15,
+        opacityTo: 0.05,
         stops: [0, 50, 100],
       },
     },
+  annotations: {
+    yaxis: [{
+      y: 0,
+      borderColor: '#c58b8b',
+      strokeDashArray: 4,
+      label: { text: 'Saldo cero', style: { background: '#c58b8b', color: '#fff' } }
+    }]
+  },
   tooltip: {
       x: { format: "dd/MM/yy" },
       theme: "dark",

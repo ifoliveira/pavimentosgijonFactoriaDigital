@@ -33,7 +33,7 @@ final class TicketController extends AbstractController
             $anio = $anioActual;
         }
 
-        if (!in_array($trimestre, [1, 2, 3, 4], true)) {
+        if (!in_array($trimestre, [0, 1, 2, 3, 4], true)) {
             $trimestre = $this->obtenerTrimestreActual();
         }
 
@@ -57,6 +57,7 @@ final class TicketController extends AbstractController
             'resumen' => $resumen,
             'anio' => $anio,
             'trimestre' => $trimestre,
+            'esAnual' => $trimestre === 0,
             'fechaDesde' => $fechaDesde,
             'fechaHasta' => $fechaHasta->modify('-1 day'),
             'aniosDisponibles' => range($anioActual, $anioActual - 5),
@@ -74,6 +75,12 @@ final class TicketController extends AbstractController
         int $anio,
         int $trimestre
     ): array {
+        if ($trimestre === 0) {
+            $fechaDesde = new \DateTimeImmutable(sprintf('%04d-01-01', $anio));
+
+            return [$fechaDesde, $fechaDesde->modify('+1 year')];
+        }
+
         $mesInicial = (($trimestre - 1) * 3) + 1;
 
         $fechaDesde = new \DateTimeImmutable(sprintf(
@@ -90,11 +97,11 @@ final class TicketController extends AbstractController
     #[Route('/{id}/pdf',name: 'admin_ticket_pdf',methods: ['GET'])]
     public function pdf(Documento $ticket): Response
     {
-        if ($ticket->getTipoDocumento() !== 'ticket') {
+        /*if ($ticket->getTipoDocumento() !== 'ticket') {
             throw $this->createNotFoundException(
                 'El documento indicado no es un ticket.'
             );
-        }
+        }*/
 
         $html = $this->renderView(
             'admin_pro/ticket/pdf.html.twig',
@@ -145,21 +152,16 @@ final class TicketController extends AbstractController
         int $trimestre,
         DocumentoRepository $documentoRepository
     ): Response {
-        if (!in_array($trimestre, [1, 2, 3, 4], true)) {
+        if (!in_array($trimestre, [0, 1, 2, 3, 4], true)) {
             throw $this->createNotFoundException(
-                'Trimestre no válido.'
+                'Periodo no válido.'
             );
         }
 
-        $mesInicial = (($trimestre - 1) * 3) + 1;
-
-        $fechaDesde = new \DateTimeImmutable(sprintf(
-            '%04d-%02d-01',
+        [$fechaDesde, $fechaHasta] = $this->obtenerPeriodoTrimestre(
             $anio,
-            $mesInicial
-        ));
-
-        $fechaHasta = $fechaDesde->modify('+3 months');
+            $trimestre
+        );
 
         $tickets = $documentoRepository->findTicketsPorPeriodo(
             $fechaDesde,
@@ -168,7 +170,7 @@ final class TicketController extends AbstractController
 
         if (empty($tickets)) {
             throw $this->createNotFoundException(
-                'No hay tickets en este trimestre.'
+                'No hay tickets en el periodo seleccionado.'
             );
         }
 
@@ -199,11 +201,9 @@ final class TicketController extends AbstractController
 );
         $dompdf->render();
 
-        $nombreArchivo = sprintf(
-            'Tickets_%dT_%d.pdf',
-            $trimestre,
-            $anio
-        );
+        $nombreArchivo = $trimestre === 0
+            ? sprintf('Tickets_Anual_%d.pdf', $anio)
+            : sprintf('Tickets_%dT_%d.pdf', $trimestre, $anio);
 
         return new Response(
             $dompdf->output(),
@@ -253,6 +253,7 @@ final class TicketController extends AbstractController
                 'resumen' => $resumen,
                 'anio' => $anio,
                 'trimestre' => $trimestre,
+                'esAnual' => $trimestre === 0,
                 'fechaDesde' => $fechaDesde,
                 'fechaHasta' => $fechaHasta->modify('-1 day'),
             ]
@@ -266,11 +267,9 @@ final class TicketController extends AbstractController
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $nombre = sprintf(
-            'Resumen_Tickets_%dT_%d.pdf',
-            $trimestre,
-            $anio
-        );
+        $nombre = $trimestre === 0
+            ? sprintf('Resumen_Tickets_Anual_%d.pdf', $anio)
+            : sprintf('Resumen_Tickets_%dT_%d.pdf', $trimestre, $anio);
 
         return new Response(
             $dompdf->output(),
@@ -302,11 +301,9 @@ final class TicketController extends AbstractController
             $fechaHasta
         );
 
-        $nombre = sprintf(
-            'Resumen_Tickets_%dT_%d.csv',
-            $trimestre,
-            $anio
-        );
+        $nombre = $trimestre === 0
+            ? sprintf('Resumen_Tickets_Anual_%d.csv', $anio)
+            : sprintf('Resumen_Tickets_%dT_%d.csv', $trimestre, $anio);
 
         $response = new StreamedResponse(
             function () use ($tickets): void {
@@ -332,13 +329,15 @@ final class TicketController extends AbstractController
                         'IVA',
                         'Total',
                         'Total cobrado',
-                        'Estado de cobro',
+                        'Estado',
                     ],
-                    ';'
+                    ','
                 );
 
                 foreach ($tickets as $ticket) {
-
+                    $estado = $ticket->getTipoDocumento() === 'ticket_rectificativo'
+                        ? 'Rectifica'
+                        : ($ticket->getRectificativas()->isEmpty() ? $ticket->getEstadoCobro() : 'Rectificada');
 
                     fputcsv(
                         $salida,
@@ -348,30 +347,30 @@ final class TicketController extends AbstractController
                             number_format(
                                 (float) $ticket->getBaseImponible(),
                                 2,
-                                ',',
+                                '.',
                                 ''
                             ),
                             number_format(
                                 (float) $ticket->getTotalIva(),
                                 2,
-                                ',',
+                                '.',
                                 ''
                             ),
                             number_format(
                                 (float) $ticket->getTotal(),
                                 2,
-                                ',',
+                                '.',
                                 ''
                             ),
                             number_format(
                                 (float) $ticket->getTotalCobrado(),
                                 2,
-                                ',',
+                                '.',
                                 ''
                             ),
-                            $ticket->getEstadoCobro(),
+                            $estado,
                         ],
-                        ';'
+                        ','
                     );
                 }
 

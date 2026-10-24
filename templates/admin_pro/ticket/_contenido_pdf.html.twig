@@ -33,9 +33,19 @@
 
         <tr>
             <td class="text-center" colspan="2">
-                FACTURA SIMPLIFICADA
+                {{ ticket.tipoDocumento == 'ticket_rectificativo' ? 'FACTURA SIMPLIFICADA RECTIFICATIVA' : 'FACTURA SIMPLIFICADA' }}
             </td>
         </tr>
+        {% if ticket.documentoRectificado %}
+            <tr>
+                <td>Rectifica al ticket:</td>
+                <td class="text-end">{{ ticket.documentoRectificado.numeroFormateado }}</td>
+            </tr>
+            <tr>
+                <td>Fecha del original:</td>
+                <td class="text-end">{{ ticket.documentoRectificado.fechaEmision|date('d/m/Y') }}</td>
+            </tr>
+        {% endif %}
     </table>
 
     <table class="lineas">

@@ -48,6 +48,11 @@
                             id="trimestre"
                             class="form-select">
 
+                        <option value="0"
+                            {{ esAnual ? 'selected' : '' }}>
+                            Todo el año
+                        </option>
+
                         <option value="1"
                             {{ trimestre == 1 ? 'selected' : '' }}>
                             Enero - Marzo
@@ -153,7 +158,11 @@
 
         <div>
             <div class="fw-semibold">
-                Tickets del {{ trimestre }}.º trimestre de {{ anio }}
+                {% if esAnual %}
+                    Tickets de {{ anio }}
+                {% else %}
+                    Tickets del {{ trimestre }}.º trimestre de {{ anio }}
+                {% endif %}
             </div>
 
             <div class="text-muted small">
@@ -254,7 +263,15 @@
                         </td>
 
                         <td>
-                            {% if ticket.estadoCobro == 'cobrado' %}
+                            {% if ticket.tipoDocumento == 'ticket_rectificativo' %}
+                                <span class="badge bg-warning text-dark">
+                                    Rectifica
+                                </span>
+                            {% elseif ticket.rectificativas|length %}
+                                <span class="badge bg-secondary">
+                                    Rectificada
+                                </span>
+                            {% elseif ticket.estadoCobro == 'cobrado' %}
                                 <span class="badge bg-success">
                                     Cobrado
                                 </span>
@@ -280,7 +297,7 @@
                             target="_blank">
                                 PDF
                             </a>                        
-                            <a href="#"
+                            <a href="{{ path('app_documento_show', {id: ticket.id}) }}"
                                class="btn btn-sm btn-outline-primary">
                                 Ver
                             </a>
@@ -291,7 +308,7 @@
                     <tr>
                         <td colspan="10"
                             class="text-center text-muted py-5">
-                            No hay tickets en este trimestre.
+                            No hay tickets en el periodo seleccionado.
                         </td>
                     </tr>
                 {% endfor %}
@@ -301,7 +318,7 @@
                     <tfoot class="table-light fw-semibold">
                         <tr>
                             <td colspan="4">
-                                Total trimestre
+                                Total
                             </td>
 
                             <td class="text-end">

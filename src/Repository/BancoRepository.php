@@ -37,6 +37,24 @@ class BancoRepository extends ServiceEntityRepository
         
       }
 
+    /**
+     * Suma los movimientos bancarios por categoría para un ejercicio.
+     * El signo se conserva tal y como fue importado/registrado.
+     */
+    public function totalesPorCategoria(int $anio): array
+    {
+        return $this->getEntityManager()->getConnection()->fetchAllAssociative(
+            'SELECT COALESCE(tm.descripcion_tm, \'Sin categoría\') AS categoria,
+                    COALESCE(SUM(b.importe_bn), 0) AS importe
+             FROM banco b
+             LEFT JOIN tiposmovimiento tm ON tm.id = b.categoria_bn
+             WHERE YEAR(b.fecha_bn) = :anio
+             GROUP BY tm.id, tm.descripcion_tm
+             ORDER BY categoria',
+            ['anio' => $anio]
+        );
+    }
+
     public function ventamesBanco()
     {
         $conn = $this->getEntityManager()->getConnection();

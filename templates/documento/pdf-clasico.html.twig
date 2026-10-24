@@ -499,6 +499,7 @@
         </style>
 </head>
 <body>
+{% include 'documento/_rectificacion_pdf.html.twig' %}
 <div class="page">
 
     {# ── CABECERA ── #}
@@ -595,6 +596,7 @@
     {% endif %}
 
     {# ── LÍNEAS ── #}
+    {% set mostrarImportesLineas = mostrarImportesLineas is defined ? mostrarImportesLineas : true %}
     <div class="lineas-section">
         <div class="lineas-title">Detalle</div>
 
@@ -604,16 +606,18 @@
                     <th style="width:10px;">#</th>
                     <th>Descripción</th>
                     <th class="text-right" style="width:45px;">Cant.</th>
-                    <th class="text-right" style="width:55px;">Precio</th>
-                    <th class="text-right" style="width:45px;">Dto.</th>
-                    <th class="text-right" style="width:65px;">Subtotal</th>
+                    {% if mostrarImportesLineas %}
+                        <th class="text-right" style="width:55px;">Precio</th>
+                        <th class="text-right" style="width:45px;">Dto.</th>
+                        <th class="text-right" style="width:65px;">Subtotal</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
                 {% for linea in documento.lineas %}
                     {% if linea.tipoLinea == 'comentario' %}
                         <tr class="fila-comentario">
-                            <td colspan="6">
+                            <td colspan="{{ mostrarImportesLineas ? 6 : 3 }}">
                                 <span class="linea-comentario-text">{{ linea.descripcion }}</span>
                             </td>
                         </tr>
@@ -626,19 +630,21 @@
                             <td class="text-right">
                                 {{ linea.cantidad|number_format(0, ',', '.') }} ud
                             </td>
-                            <td class="text-right">
-                                {{ linea.precioUnitario|number_format(2, ',', '.') }} €
-                            </td>
-                            <td class="text-right">
-                                {% if linea.descuento > 0 %}
-                                    {{ linea.descuento|number_format(2, ',', '.') }} %
-                                {% else %}
-                                    —
-                                {% endif %}
-                            </td>
-                            <td class="text-right td-subtotal">
-                                {{ linea.subtotal|number_format(2, ',', '.') }} €
-                            </td>
+                            {% if mostrarImportesLineas %}
+                                <td class="text-right">
+                                    {{ linea.precioUnitario|number_format(2, ',', '.') }} €
+                                </td>
+                                <td class="text-right">
+                                    {% if linea.descuento > 0 %}
+                                        {{ linea.descuento|number_format(2, ',', '.') }} %
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td class="text-right td-subtotal">
+                                    {{ linea.subtotal|number_format(2, ',', '.') }} €
+                                </td>
+                            {% endif %}
                         </tr>
                     {% endif %}
                 {% endfor %}

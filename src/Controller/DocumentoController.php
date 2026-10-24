@@ -482,13 +482,21 @@ class DocumentoController extends AbstractController
             $tpl = 'clasico';
         }
 
+        if ($documento->isRectificativaTpv()) {
+            $tpl = 'clasico';
+        }
+
         $template = sprintf('documento/pdf-%s.html.twig', $tpl);
 
         $iva = $this->resolverEtiquetaIvaDocumento($documento);
+        // El PDF clásico puede compartirse sin el desglose económico de cada partida.
+        // Los totales fiscales se mantienen siempre, especialmente en facturas.
+        $mostrarImportesLineas = !$request->query->getBoolean('ocultar_importes');
         
         $html = $this->renderView($template, [
             'documento' => $documento,
             'iva' => $iva,
+            'mostrarImportesLineas' => $mostrarImportesLineas,
             'logoPath'  => $this->getParameter('kernel.project_dir') . '/public/img/logo.png',
         ]);
 

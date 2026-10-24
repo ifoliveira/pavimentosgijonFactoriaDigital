@@ -29,29 +29,9 @@ class ProductosController extends AbstractController
     }
 
     #[Route('/', name: 'productos_index', methods: ['GET'])]
-    public function index(ProductosRepository $productosRepository, CestasRepository $cestasRepository): Response
+    public function index(): Response
     {
-        $user = $this->getUser();
-        $cesta = new Cestas();
- 
-        $tienecesta = $cestasRepository->findOneBy(
-            ['userAdmin' => $user,
-            'estadoCs' => '1'],
-        );
-
-        if (!$tienecesta){ 
-            $cesta = new Cestas();
-            $cesta->setUserAdmin($user);
-            $this->em->persist($cesta);
-            $this->em->flush();
-        } else {
-            $cesta = $tienecesta;
-        };
-
-        return $this->render('productos/index.html.twig', [
-            'productos' => $productosRepository->findBy(array('obsoleto' => '0')),
-            'cestaId'   => $cesta->getId(),
-        ]);
+        return $this->redirectToRoute('productos_lista');
     }
 
     #[Route('/lista', name: 'productos_lista', methods: ['GET'])]

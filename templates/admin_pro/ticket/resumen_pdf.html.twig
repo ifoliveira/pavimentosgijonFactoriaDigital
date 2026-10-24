@@ -72,7 +72,11 @@
 <body>
 
     <h1>
-        Resumen de tickets {{ trimestre }}T {{ anio }}
+        {% if esAnual %}
+            Resumen anual de tickets {{ anio }}
+        {% else %}
+            Resumen de tickets {{ trimestre }}T {{ anio }}
+        {% endif %}
     </h1>
 
     <div class="periodo">
@@ -139,7 +143,12 @@
             {% set primerCobro = ticket.cobros|first %}
 
             <tr>
-                <td>{{ ticket.numeroFormateado }}</td>
+                <td>
+                    {{ ticket.numeroFormateado }}
+                    {% if ticket.documentoRectificado %}
+                        <br>Rectifica: {{ ticket.documentoRectificado.numeroFormateado }}
+                    {% endif %}
+                </td>
 
                 <td>
                     {{ ticket.fechaEmision|date('d/m/Y') }}

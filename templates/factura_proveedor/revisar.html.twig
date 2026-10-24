@@ -56,6 +56,10 @@
         <div class="alert alert-success">{{ message }}</div>
     {% endfor %}
 
+    {% for message in app.flashes('warning') %}
+        <div class="alert alert-warning">{{ message }}</div>
+    {% endfor %}
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-1">Revisar factura proveedor</h1>
@@ -267,10 +271,25 @@
             <div class="col-12 col-xl-7">
 
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white">
-                        <h2 class="h5 mb-0">Líneas detectadas</h2>
-                        <div class="small text-muted">
-                            Corrige los datos antes de confirmar la factura
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center gap-3">
+                        <div>
+                            <h2 class="h5 mb-0">Líneas detectadas</h2>
+                            <div class="small text-muted">
+                                Corrige los datos antes de confirmar la factura
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                            <span class="small text-muted" id="lineas-seleccionadas-contador">0 seleccionadas</span>
+                            <button type="submit" name="accion" value="confirmar_seleccionadas"
+                                    class="btn btn-sm btn-success js-accion-masiva" disabled>
+                                Aceptar marcadas
+                            </button>
+                            <button type="submit" name="accion" value="ignorar_seleccionadas"
+                                    class="btn btn-sm btn-outline-danger js-accion-masiva" disabled
+                                    onclick="return confirm('¿Quitar las líneas marcadas?');">
+                                Quitar marcadas
+                            </button>
                         </div>
                     </div>
 
@@ -280,6 +299,9 @@
                             <table class="table table-hover align-middle mb-0 factura-lineas-table">
                                 <thead class="table-light">
                                     <tr>
+                                        <th class="text-center" style="width: 42px;">
+                                            <input type="checkbox" class="form-check-input" id="seleccionar-todas-lineas" aria-label="Seleccionar todas las líneas">
+                                        </th>
                                         <th>Descripción</th>
                                         <th class="text-end col-num">Cant.</th>
                                         <th class="text-end col-money">P. unit.</th>
@@ -297,6 +319,14 @@
                                         {% set disabled = linea.estado == 'ignorada' ? 'disabled' : '' %}
 
                                         <tr class="{{ linea.estado == 'ignorada' ? 'table-secondary opacity-75' : '' }}" data-linea>
+                                            <td class="text-center">
+                                                <input type="checkbox"
+                                                    name="lineas_seleccionadas[]"
+                                                    value="{{ linea.id }}"
+                                                    class="form-check-input js-linea-seleccionada"
+                                                    aria-label="Seleccionar línea {{ linea.descripcion }}"
+                                                    {{ linea.estado == 'ignorada' ? 'disabled' : '' }}>
+                                            </td>
                                             <td class="col-descripcion">
                                                 <input type="text"
                                                     name="lineas[{{ linea.id }}][descripcion]"
@@ -398,7 +428,7 @@
                                         </tr>
                                     {% else %}
                                         <tr>
-                                            <td colspan="9" class="p-4 text-muted">
+                                            <td colspan="10" class="p-4 text-muted">
                                                 No hay líneas detectadas.
                                             </td>
                                         </tr>
@@ -407,13 +437,13 @@
 
                                 <tfoot class="table-light">
                                     <tr>
-                                        <th colspan="6" class="text-end">Total líneas activas</th>
+                                        <th colspan="7" class="text-end">Total líneas activas</th>
                                         <th class="text-end" id="total-lineas">0,00 €</th>
                                         <th></th>
                                         <th></th>
                                     </tr>
                                     <tr>
-                                        <th colspan="6" class="text-end">Total factura OCR</th>
+                                        <th colspan="7" class="text-end">Total factura OCR</th>
                                         <th class="text-end">
                                             {{ factura.totalFactura|default(0)|number_format(2, ',', '.') }} €
                                         </th>
@@ -456,6 +486,39 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const totalEl = document.getElementById('total-lineas');
+    const seleccionarTodas = document.getElementById('seleccionar-todas-lineas');
+    const seleccionables = Array.from(document.querySelectorAll('.js-linea-seleccionada'))
+        .filter(casilla => !casilla.disabled);
+    const accionesMasivas = document.querySelectorAll('.js-accion-masiva');
+    const contadorSeleccionadas = document.getElementById('lineas-seleccionadas-contador');
+
+    function actualizarSeleccion() {
+        const seleccionadas = seleccionables.filter(casilla => casilla.checked).length;
+
+        if (contadorSeleccionadas) {
+            contadorSeleccionadas.textContent = `${seleccionadas} seleccionada${seleccionadas === 1 ? '' : 's'}`;
+        }
+
+        accionesMasivas.forEach(boton => {
+            boton.disabled = seleccionadas === 0;
+        });
+
+        if (seleccionarTodas) {
+            seleccionarTodas.checked = seleccionables.length > 0 && seleccionadas === seleccionables.length;
+            seleccionarTodas.indeterminate = seleccionadas > 0 && seleccionadas < seleccionables.length;
+        }
+    }
+
+    seleccionarTodas?.addEventListener('change', () => {
+        seleccionables.forEach(casilla => {
+            casilla.checked = seleccionarTodas.checked;
+        });
+        actualizarSeleccion();
+    });
+
+    seleccionables.forEach(casilla => {
+        casilla.addEventListener('change', actualizarSeleccion);
+    });
 
 
 
@@ -586,6 +649,7 @@ actualizarCampoRecargo();
 
     actualizarIndicadoresRecargo();
     recalcularTodo();
+    actualizarSeleccion();
 });
 </script>
 

@@ -2,12 +2,12 @@
 
 namespace App\Controller;
 
-use App\Entity\Cestas;
-use App\Repository\CestasRepository;
 use App\Repository\ProductosRepository;
 use App\Service\Venta\VentaLineaInput;
-use App\Service\Venta\VentaTicketService;
+use App\Service\Venta\VentaDocumentoService;
 use App\Service\Venta\VentaTpvInput;
+use App\Service\Venta\RectificacionTicketService;
+use App\Service\Venta\TpvOperacionException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,8 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ApiTpvController extends AbstractController
 {
     public function __construct(
-        private VentaTicketService $ventaTicketService,
-        private CestasRepository $cestasRepository,
+        private VentaDocumentoService $ventaDocumentoService,
         private ProductosRepository $productosRepository,
         private string $tpvApiKeys,
     ) {}
@@ -46,15 +45,50 @@ class ApiTpvController extends AbstractController
             return $this->error('La API key no corresponde a la caja enviada.', 403);
         }
 
-        $existente = $this->cestasRepository->findOneBy(['tpvUuid' => $input->uuid]);
-
         try {
-            $cesta = $this->ventaTicketService->crearVentaTpv($input);
+            $resultado = $this->ventaDocumentoService->crearVentaTpv($input);
         } catch (\InvalidArgumentException $e) {
             return $this->error($e->getMessage(), 400);
         }
 
-        return new JsonResponse($this->respuestaVenta($cesta, $existente instanceof Cestas), $existente ? 200 : 201);
+        return new JsonResponse($resultado->toArray(), $resultado->idempotente ? 200 : 201);
+    }
+
+    #[Route('/ventas/{uuid}/rectificaciones', name: 'api_tpv_rectificacion_create', methods: ['POST'])]
+    public function rectificarVenta(Request $request, string $uuid, RectificacionTicketService $service): JsonResponse
+    {
+        return $this->operacionRectificativa($request, fn (array $data) => $service->rectificar($uuid, $data));
+    }
+
+    #[Route('/ventas/{uuid}/rectificaciones/{rectificacionUuid}/reembolso', name: 'api_tpv_rectificacion_reembolso', methods: ['POST'])]
+    public function confirmarReembolso(Request $request, string $uuid, string $rectificacionUuid, RectificacionTicketService $service): JsonResponse
+    {
+        return $this->operacionRectificativa($request, fn (array $data) => $service->confirmarReembolso($uuid, $rectificacionUuid, $data));
+    }
+
+    private function operacionRectificativa(Request $request, callable $operacion): JsonResponse
+    {
+        $auth = $this->autorizar($request);
+        if ($auth instanceof JsonResponse) {
+            return $auth;
+        }
+        $data = json_decode($request->getContent(), true);
+        if (!is_array($data) || array_is_list($data)) {
+            return $this->error('Se requiere un objeto JSON.', 400);
+        }
+        if ($auth !== true && isset($auth['caja']) && ($data['caja'] ?? null) !== $auth['caja']) {
+            return $this->error('La API key no corresponde a la caja enviada.', 403);
+        }
+        try {
+            $resultado = $operacion($data);
+            return new JsonResponse($resultado->toArray(), $resultado->idempotente ? 200 : 201);
+        } catch (TpvOperacionException $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'codigo' => $e->codigo,
+            ], $e->status);
+        }
     }
 
     #[Route('/productos', name: 'api_tpv_productos', methods: ['GET'])]
@@ -89,7 +123,7 @@ class ApiTpvController extends AbstractController
 
     private function mapearVentaInput(array $data): VentaTpvInput
     {
-        $uuid = $this->stringObligatorio($data, 'uuid');
+        $uuid = strtolower($this->stringObligatorio($data, 'uuid'));
         if (!preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/', $uuid)) {
             throw new \InvalidArgumentException('uuid no es un UUID valido.');
         }
@@ -152,22 +186,6 @@ class ApiTpvController extends AbstractController
             'TARJETA' => 'Tarjeta',
             default => $formaPago,
         };
-    }
-
-    private function respuestaVenta(Cestas $cesta, bool $idempotente): array
-    {
-        return [
-            'success' => true,
-            'idempotente' => $idempotente,
-            'id' => $cesta->getId(),
-            'numeroTicket' => $cesta->getNumticketCs(),
-            'uuid' => $cesta->getTpvUuid(),
-            'numeroTicketLocal' => $cesta->getTpvNumeroTicketLocal(),
-            'caja' => $cesta->getTpvCaja(),
-            'formaPago' => $cesta->getTipopagoCs(),
-            'total' => $cesta->getImporteTotCs(),
-            'estado' => $cesta->getEstadoCs(),
-        ];
     }
 
     private function autorizar(Request $request): array|bool|JsonResponse

@@ -51,23 +51,11 @@ class CestasController extends AbstractController
     }
 
     #[Route('/new', name: 'cestas_new', methods: ['GET','POST'])]
-    public function new(Request $request): Response
+    public function new(): Response
     {
-        $cesta = new Cestas();
-        $form = $this->createForm(CestasType::class, $cesta);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->em->persist($cesta);
-            $this->em->flush();
-
-            return $this->redirectToRoute('cestas_index');
-        }
-
-        return $this->render('cestas/new.html.twig', [
-            'cesta' => $cesta,
-            'form' => $form->createView(),
-        ]);
+        throw new \Symfony\Component\HttpKernel\Exception\GoneHttpException(
+            'La venta desde el ERP está deshabilitada. Las nuevas ventas se registran desde el TPV.'
+        );
     }
 
     #[Route('/{id}', name: 'cestas_show', methods: ['GET'])]
@@ -79,21 +67,11 @@ class CestasController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'cestas_edit', methods: ['GET','POST'])]
-    public function edit(Request $request, Cestas $cesta): Response
+    public function edit(): Response
     {
-        $form = $this->createForm(CestasType::class, $cesta);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->em->flush();
-
-            return $this->redirectToRoute('cestas_index');
-        }
-
-        return $this->render('cestas/edit.html.twig', [
-            'cesta' => $cesta,
-            'form' => $form->createView(),
-        ]);
+        throw new \Symfony\Component\HttpKernel\Exception\GoneHttpException(
+            'La venta desde el ERP está deshabilitada. Las nuevas ventas se registran desde el TPV.'
+        );
     }
 
     #[Route('/{id}', name: 'cestas_delete', methods: ['DELETE'])]
@@ -127,6 +105,12 @@ class CestasController extends AbstractController
    #[Route('/ticketpdf/{id}/epson', name: 'impepson', methods: ['GET','POST'])]
     public function epsonimp(Request $request, Cestas $cesta): jsonResponse
     {
+        if ($cesta->getEstadoCs() === 1) {
+            throw new \Symfony\Component\HttpKernel\Exception\GoneHttpException(
+                'No se pueden emitir tickets de cestas abiertas. Utiliza el TPV.'
+            );
+        }
+
    
     /* Fill in your own connector here */
 
@@ -279,6 +263,12 @@ class CestasController extends AbstractController
     #[Route('/ticketpdf/{id}/imprimir', name: 'ticketpdf', methods: ['GET','POST'])]
     public function imprimir(Request $request, Cestas $cesta): jsonResponse
     {
+        if ($cesta->getEstadoCs() === 1) {
+            throw new \Symfony\Component\HttpKernel\Exception\GoneHttpException(
+                'No se pueden emitir tickets de cestas abiertas. Utiliza el TPV.'
+            );
+        }
+
  
         // valores de data ajax
         $tipopago = $request->query->get('tipopago');

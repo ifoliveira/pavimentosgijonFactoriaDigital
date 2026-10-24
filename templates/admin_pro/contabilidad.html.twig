@@ -1,427 +1,229 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-            <!-- This page plugin CSS -->
-            <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css') }}" rel="stylesheet">
-            <!-- Custom CSS -->
-            <link href="{{ asset('dist/css/style.min.css') }}" rel="stylesheet">
-            <!-- This page CSS -->
-            <link href="{{ asset('assets/libs/jquery-steps/jquery.steps.css') }}" rel="stylesheet">
-            <link href="{{ asset('assets/libs/jquery-steps/steps.css') }}" rel="stylesheet">
-            <!-- Popup CSS -->
-            <link href="{{ asset('assets/libs/magnific-popup/dist/magnific-popup.css') }}" rel="stylesheet">
-            <!-- This Page CSS -->
-                <link rel="stylesheet" type="text/css" href="{{ asset('assets/libs/summernote/dist/summernote-bs4.css') }}">
-                <link rel="stylesheet" type="text/css" href="{{ asset('assets/extra-libs/prism/prism.css') }}">
-                <link href="{{ asset('dist/css/icons/themify-icons/themify-icons.css') }}" rel="stylesheet">   
-          <!-- This page plugin CSS -->
-          <!-- This Page CSS -->
-                <link rel="stylesheet" type="text/css"  href="{{ asset('assets/libs/select2/dist/css/select2.min.css') }}"/>                     
-{% endblock %}
-{% block cabecera %} Resumen económico {% endblock %}
-{% block breadcrumb %} <li class="breadcrumb-item active">Resumen económico</li>{% endblock %}
 {% block title %}Resumen económico{% endblock %}
+{% block cabecera %}Resumen económico{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Resumen económico</li>{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .economia { --eco-ink: #172d40; --eco-muted: #617386; --eco-line: #e1e8ef; --eco-green: #13745d; color: var(--eco-ink); padding-bottom: 24px; }
+    .economia * { box-sizing: border-box; }
+    .economia h2, .economia h3, .economia p { margin: 0; }
+    .eco-header, .eco-section-heading, .eco-row, .eco-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .eco-header { margin-bottom: 24px; flex-wrap: wrap; }
+    .eco-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--eco-muted); margin-bottom: 8px; display: block; }
+    .economia h2 { font-size: 26px; font-weight: 700; letter-spacing: -.6px; }
+    .economia h3 { font-size: 18px; font-weight: 700; }
+    .eco-muted { color: var(--eco-muted); font-size: 13px; line-height: 1.6; }
+    .eco-header p { margin-top: 6px; }
+    .eco-year { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .eco-year label { margin: 0; font-size: 13px; font-weight: 600; }
+    .eco-year select { width: 100px; border: 1px solid #c3d0dc; border-radius: 8px; padding: 9px 12px; background: #fff; color: var(--eco-ink); }
+    .eco-button { display: inline-flex; justify-content: center; align-items: center; gap: 8px; border: 1px solid #c3d0dc; border-radius: 8px; padding: 9px 14px; background: #fff; color: var(--eco-ink); font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .eco-button:hover { background: #eef4f8; color: #102c40; text-decoration: none; }
+    .eco-button-primary { background: #173b50; border-color: #173b50; color: #fff; }
+    .eco-button-primary:hover { background: #24536b; color: #fff; }
+    .economia a:focus-visible, .economia button:focus-visible, .economia select:focus-visible { outline: 3px solid #387fde; outline-offset: 3px; }
+    .eco-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-bottom: 28px; }
+    .eco-card { background: #fff; border: 1px solid var(--eco-line); border-radius: 14px; padding: 24px; box-shadow: 0 3px 12px rgba(25, 48, 68, .025); min-width: 0; }
+    .eco-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; gap: 12px; }
+    .eco-card-top h3 { font-size: 14px; font-weight: 600; }
+    .eco-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: #eef4f8; flex-shrink: 0; }
+    .eco-value { display: block; font-size: clamp(24px, 2.5vw, 36px); font-weight: 700; line-height: 1.2; letter-spacing: -1px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; margin-bottom: 10px; }
+    .eco-card-link { margin-top: 20px; display: inline-block; font-size: 13px; font-weight: 600; color: #235f79; }
+    .eco-feature { background: #173b50; color: white; border-color: #173b50; }
+    .eco-feature .eco-muted, .eco-feature .eco-eyebrow { color: #c8dce6; }
+    .eco-feature .eco-icon { background: rgba(255,255,255,.12); }
+    .eco-section-heading { margin: 26px 0 14px; flex-wrap: wrap; }
+    .eco-section-heading p { margin-top: 4px; }
+    .eco-badge { display: inline-block; border-radius: 6px; padding: 5px 9px; background: #edf3f7; color: #4b6275; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .eco-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .eco-row { padding: 16px 0; border-bottom: 1px solid var(--eco-line); font-size: 14px; align-items: baseline; }
+    .eco-row strong { font-variant-numeric: tabular-nums; text-align: right; flex-shrink: 0; }
+    .eco-row small { display: block; color: var(--eco-muted); margin-top: 4px; }
+    .eco-result { background: #f0f7f5; padding: 16px; border-radius: 9px; margin-top: 18px; border: none; }
+    .eco-positive { color: #13745d; }
+    .eco-negative { color: #b23c40; }
+    .eco-result.negative { background: #fdf0f0; }
+    .eco-note { margin-top: 14px !important; font-size: 12px; line-height: 1.6; color: var(--eco-muted); }
+    .eco-pending { border-top: 3px solid #d6a451; }
+    .eco-action { margin-top: 18px; }
+    .eco-notice { display: flex; justify-content: space-between; gap: 18px; align-items: center; background: #fff6e7; border: 1px solid #eed7af; border-radius: 10px; padding: 17px 20px; margin: 20px 0; color: #765119; }
+    .eco-notice p { font-size: 13px; margin-top: 3px; }
+    .eco-table { width: 100%; border-collapse: collapse; }
+    .eco-table th { background: #f5f8fa; color: #617386; text-transform: uppercase; font-size: 11px; letter-spacing: .05em; padding: 13px 16px; border-bottom: 1px solid var(--eco-line); }
+    .eco-table td { padding: 15px 16px; border-bottom: 1px solid var(--eco-line); font-size: 13px; vertical-align: middle; }
+    .eco-table tbody tr:hover { background: #f8fafc; }
+    .eco-table .eco-money { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .eco-table-card { padding: 0; overflow: hidden; }
+    .eco-toolbar { padding: 22px 24px; flex-wrap: wrap; }
+    .eco-empty { text-align: center; padding: 35px 20px; background: #f3f9f6; }
+    .eco-empty strong { display: block; color: var(--eco-green); margin-bottom: 6px; }
+    .eco-table-card .dataTables_wrapper { padding: 0 20px 20px; }
+    @media (max-width: 1100px) { .eco-summary { gap: 12px; } .eco-card { padding: 20px; } .eco-table-card { padding: 0; } }
+    @media (max-width: 767px) { .eco-summary, .eco-grid { grid-template-columns: 1fr; } .eco-header { align-items: flex-start; } .eco-notice { align-items: flex-start; flex-direction: column; } .eco-value { font-size: 32px; } .eco-row { gap: 10px; flex-wrap: wrap; } }
+</style>
+{% endblock %}
 
 {% block body %}
-                <!-- ============================================================== -->
-                <!-- End Bread crumb and right sidebar toggle -->
-                <!-- ============================================================== -->
-                <!-- ============================================================== -->
-                <!-- Start Page Content -->
-                <!-- ============================================================== -->
-                <!-- Cuentas generales -->
-                <form method="get" id="form-anio" class="mb-4">
-                    <div class="form-group row">
-                        <label for="anio" class="col-sm-2 col-form-label">Seleccionar año:</label>
-                        <div class="col-sm-3">
-                        {% set anioActual = "now"|date("Y")|number_format(0, '.', '') %}  {# fuerza a número sin decimales #}
-                        {% set anioInicio = anioActual - 5 %}
-                        <select name="anio" id="anio" class="form-control" onchange="document.getElementById('form-anio').submit();">
-                            {% for i in anioInicio..anioActual %}
-                                <option value="{{ i }}" {% if i == anio %}selected{% endif %}>{{ i }}</option>
-                            {% endfor %}
-                        </select>
-                        </div>
-                    </div>
-                </form>                
-                <h3 class="mb-3">Cuentas generales</h3>
-                <div class="row">
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-3 align-self-center">
-                                        <h4 class="mb-0">Total banco</h4>
-                                        <span class="text-muted">{{ bancototal["max(fecha_bn)"] |date("d/m/Y", "Europe/Paris") }}</span>
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ bancototal["sum(importe_bn)"] |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="paperclip" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-3 align-self-center">
-                                        <h4 class="mb-0">Total efectivo</h4>
-                                        <span class="text-muted">Efectivo actual</span>
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ efectivototal["efectivototal"] |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+{% set ventasTpvTotal = ventasTpv['totalVentas']|default(0) %}
+{% set ventasTpvSinIva = ventasTpv['totalBase']|default(0) %}
+{% set costeTpvTotal = ventasTpv['totalCoste']|default(0) %}
+{% set costeVentasTotal = costeTpvTotal %}
+{% set ventasTotales = ventasTpvSinIva %}
+{% set resultadoVentasTotal = ventasTotales - costeVentasTotal %}
+<div class="economia">
+    <header class="eco-header">
+        <div>
+            <span class="eco-eyebrow">Control económico</span>
+            <h2>Tu negocio, en perspectiva</h2>
+            <p class="eco-muted">Disponibilidad, resultados y próximos cobros y pagos en un solo lugar.</p>
+        </div>
+        <form method="get" class="eco-year">
+            <label for="anio">Ejercicio</label>
+            {% set anioActual = 'now'|date('Y') %}
+            <select name="anio" id="anio">
+                {% if anio < anioActual - 5 or anio > anioActual %}<option value="{{ anio }}" selected>{{ anio }}</option>{% endif %}
+                {% for i in anioActual..(anioActual - 5) %}
+                    <option value="{{ i }}" {% if i == anio %}selected{% endif %}>{{ i }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="eco-button eco-button-primary">Ver ejercicio</button>
+        </form>
+    </header>
 
-                <!-- Datos de ventas -->
-                <h3 class="mt-5 mb-3">Datos de ventas</h3>
-                <div class="row">
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-4 align-self-center">
-                                        <h4 class="mb-0">Ventas totales cobrado</h4>
-                                        <span class="text-muted">Ventas totales</span>
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ beneficio["pvp"] |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-4 align-self-center">
-                                        <h4 class="mb-0">Ventas totales coste</h4>
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ beneficio["precio"] |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-4 align-self-center">
-                                        <h4 class="mb-0">Beneficio total</h4>
-                                        {% if beneficio["precio"] > 0 %}
-                                            <span class="text-muted">{{ (((beneficio["pvp"] - beneficio["precio"]) / beneficio["precio"]) * 100) | number_format(2) }} %</span>
-                                        {% endif %}
-                                        
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ (beneficio["pvp"] - beneficio["precio"]) |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>                    
-                </div>
+    <div class="eco-summary">
+        <section class="eco-card eco-feature">
+            <div class="eco-card-top"><h3>Saldo en banco</h3><span class="eco-icon" aria-hidden="true"><i class="ti-wallet"></i></span></div>
+            <strong class="eco-value">{{ bancototal['sum(importe_bn)']|format_currency('EUR', locale='es') }}</strong>
+            <p class="eco-muted">Saldo acumulado · no depende del ejercicio</p>
+            <p class="eco-note eco-muted">{% if bancototal['max(fecha_bn)'] %}Último movimiento: {{ bancototal['max(fecha_bn)']|date('d/m/Y', 'Europe/Paris') }}{% else %}Sin movimientos registrados{% endif %}</p>
+            <a class="eco-button eco-action" href="{{ path('banco_index') }}">Ver movimientos <span aria-hidden="true">↗</span></a>
+        </section>
+        <section class="eco-card">
+            <div class="eco-card-top"><h3>Efectivo actual</h3><span class="eco-icon" aria-hidden="true"><i class="ti-money"></i></span></div>
+            <strong class="eco-value {{ efectivototal['efectivototal'] < 0 ? 'eco-negative' : '' }}">{{ efectivototal['efectivototal']|format_currency('EUR', locale='es') }}</strong>
+            <p class="eco-muted">Saldo acumulado · no depende del ejercicio</p>
+            <a class="eco-card-link" href="{{ path('efectivo_index') }}">Consultar caja <span aria-hidden="true">→</span></a>
+        </section>
+        <section class="eco-card">
+            <div class="eco-card-top"><h3>Resultado de ventas</h3><span class="eco-badge">{{ anio }}</span></div>
+            <strong class="eco-value {{ resultadoVentasTotal < 0 ? 'eco-negative' : (resultadoVentasTotal > 0 ? 'eco-positive' : '') }}">{{ resultadoVentasTotal|format_currency('EUR', locale='es') }}</strong>
+            <p class="eco-muted">Ventas TPV sin IVA menos coste</p>
+            <p class="eco-note">El coste se guarda siempre sin IVA.</p>
+        </section>
+    </div>
 
-                <!-- Pendiente de cobro -->
-                <h3 class="mt-5 mb-3">Pendientes</h3>
-                <div class="row">
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-4 align-self-center">
-                                        <h4 class="mb-0">Pendiente ya cobradas</h4>
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ ventaspdtefinalizar |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-4 align-self-center">
-                                        <h4 class="mb-0">Pendiente de cobro</h4>
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ pendiente |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>                    
-                </div>
+    {% set totalEntradas = 0 %}
+    {% set totalSalidas = 0 %}
+    {% for movimiento in movimientosEconomicos %}
+        {% if movimiento.tipo == 'entrada' %}{% set totalEntradas = totalEntradas + movimiento.importe %}{% endif %}
+        {% if movimiento.tipo == 'salida' %}{% set totalSalidas = totalSalidas + movimiento.importe %}{% endif %}
+    {% endfor %}
+    <div class="eco-section-heading">
+        <div><h3>Estructura de caja</h3><p class="eco-muted">Movimientos de banco y efectivo del ejercicio {{ anio }}, agrupados por categoría.</p></div>
+        <span class="eco-badge">Entradas − salidas: {{ (totalEntradas + totalSalidas)|format_currency('EUR', locale='es') }}</span>
+    </div>
+    <div class="eco-grid">
+        <section class="eco-card">
+            <span class="eco-eyebrow">Entradas</span>
+            <h3>Dinero que ha entrado</h3>
+            {% for movimiento in movimientosEconomicos %}
+                {% if movimiento.tipo == 'entrada' %}<div class="eco-row"><span>{{ movimiento.label }}</span><strong class="eco-positive">{{ movimiento.importe|format_currency('EUR', locale='es') }}</strong></div>{% endif %}
+            {% endfor %}
+            <div class="eco-row eco-result"><span>Total entradas</span><strong class="eco-positive">{{ totalEntradas|format_currency('EUR', locale='es') }}</strong></div>
+        </section>
+        <section class="eco-card">
+            <span class="eco-eyebrow">Salidas</span>
+            <h3>Costes y obligaciones</h3>
+            {% for movimiento in movimientosEconomicos %}
+                {% if movimiento.tipo == 'salida' %}<div class="eco-row"><span>{{ movimiento.label }}</span><strong class="eco-negative">{{ movimiento.importe|format_currency('EUR', locale='es') }}</strong></div>{% endif %}
+            {% endfor %}
+            <div class="eco-row eco-result negative"><span>Total salidas</span><strong class="eco-negative">{{ totalSalidas|format_currency('EUR', locale='es') }}</strong></div>
+        </section>
+    </div>
+    <p class="eco-note">Las transferencias entre banco y efectivo y los movimientos sin categoría se muestran aparte y no se mezclan con el resultado de caja.</p>
+    <div class="eco-grid">
+        {% for movimiento in movimientosEconomicos %}
+            {% if movimiento.tipo in ['interno', 'sin_categoria'] %}<section class="eco-card"><div class="eco-row"><span>{{ movimiento.label }}<small>No afecta al resultado</small></span><strong>{{ movimiento.importe|format_currency('EUR', locale='es') }}</strong></div></section>{% endif %}
+        {% endfor %}
+    </div>
 
-                <!-- Mano de obra -->
-                <h3 class="mt-5 mb-3">Datos Mano de Obra</h3>
-                <div class="row">
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-4 align-self-center">
-                                        <h4 class="mb-0">Mano de obra cobrado</h4>
-                                        <span class="text-muted">Totales</span>
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ cobrosMo |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-4 align-self-center">
-                                        <h4 class="mb-0">Mano de obra pagada</h4>
-                                        <span class="text-muted">Totales</span>
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ pagosMo |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-4 align-self-center">
-                                        <h4 class="mb-0">Diferencia total</h4>
-                                        {% if cobrosMo > 0 %}
-                                            <span class="text-muted">{{ (((cobrosMo - pagosMo) / cobrosMo) * 100) | number_format(2) }} %</span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ (cobrosMo - pagosMo) |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="eco-section-heading">
+        <div><h3>¿Qué resultado está dejando la actividad?</h3><p class="eco-muted">Ventas del ejercicio seleccionado y cobros registrados en proyectos y documentos.</p></div>
+        <span class="eco-badge">Ejercicio {{ anio }}</span>
+    </div>
+    <div class="eco-grid">
+        <section class="eco-card">
+            <span class="eco-eyebrow">01 / Ventas</span>
+            <h3>Venta de productos</h3>
+            <div class="eco-row"><span>Ventas TPV sin IVA</span><strong>{{ ventasTpv['totalBase']|default(0)|format_currency('EUR', locale='es') }}</strong></div>
+            <div class="eco-row"><span>Coste de las ventas sin IVA</span><strong>{{ costeVentasTotal|format_currency('EUR', locale='es') }}</strong></div>
+            <div class="eco-row"><span>IVA repercutido</span><strong>{{ ventasTpv['totalIva']|default(0)|format_currency('EUR', locale='es') }}</strong></div>
+            <div class="eco-row eco-result {{ resultadoVentasTotal < 0 ? 'negative' : '' }}"><span>Resultado ventas</span><strong class="{{ resultadoVentasTotal < 0 ? 'eco-negative' : 'eco-positive' }}">{{ resultadoVentasTotal|format_currency('EUR', locale='es') }}</strong></div>
+            <p class="eco-note">Incluye ventas y costes de los tickets TPV.</p>
+        </section>
+        <section class="eco-card">
+            <span class="eco-eyebrow">02 / Cobros de proyectos y documentos</span>
+            <h3>Cobrado a clientes</h3>
+            <div class="eco-row"><span>Cobrado en {{ anio }}<small>Por fecha del cobro</small></span><strong class="eco-positive">{{ cobradoEjercicio|format_currency('EUR', locale='es') }}</strong></div>
+            <div class="eco-row"><span>Cobrado acumulado<small>Todos los ejercicios</small></span><strong>{{ cobradoAcumulado|format_currency('EUR', locale='es') }}</strong></div>
+            <p class="eco-note">Incluye cobros de proyectos y documentos independientes, productos y servicios, todos los métodos de pago y las devoluciones descontadas. Importes con IVA, antes de comisiones, aunque aún no estén conciliados en banco.</p>
+            <a class="eco-card-link" href="{{ path('documento_index') }}">Ver documentos <span aria-hidden="true">→</span></a>
+        </section>
+    </div>
 
-                <!-- Pendientes adicionales -->
-                <div class="row mt-4">
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-4 align-self-center">
-                                        <h4 class="mb-0">Pendiente de cobro</h4>
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ pendientecobroMo |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-4 align-self-center">
-                                        <h4 class="mb-0">Pendiente de pago</h4>
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ pendientepagoMo |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-xl-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex flex-row">
-                                    <div class="round align-self-center round-success">
-                                        <i data-feather="dollar-sign" class="feather-sm"></i>
-                                    </div>
-                                    <div class="ms-4 align-self-center">
-                                        <h4 class="mb-0">Beneficio pendiente de cobro</h4>
-                                    </div>
-                                    <div class="ms-auto align-self-center">
-                                        <h2 class="font-weight-medium mb-0">{{ (pendientecobroMo - pendientepagoMo) |format_currency('EUR', locale='es') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>                    
-                </div>
+    <div class="eco-section-heading">
+        <div><h3>Rentabilidad de proyectos</h3><p class="eco-muted">Facturación y costes de las obras que han emitido documentos en {{ anio }}.</p></div>
+        <span class="eco-badge">Sin IVA</span>
+    </div>
+    <div class="eco-grid">
+        <section class="eco-card">
+            <span class="eco-eyebrow">03 / Proyectos facturados</span>
+            <h3>Importe generado en obras</h3>
+            <div class="eco-row"><span>Facturación emitida sin IVA<small>{{ facturacionProyectos['numeroDocumentos']|default(0) }} documentos de proyecto</small></span><strong>{{ facturacionProyectos['totalBase']|default(0)|format_currency('EUR', locale='es') }}</strong></div>
+            <div class="eco-row"><span>IVA repercutido</span><strong>{{ facturacionProyectos['totalIva']|default(0)|format_currency('EUR', locale='es') }}</strong></div>
+            <div class="eco-row"><span>Total facturado con IVA</span><strong>{{ facturacionProyectos['totalVentas']|default(0)|format_currency('EUR', locale='es') }}</strong></div>
+            <p class="eco-note">Incluye facturas, tickets y rectificativos vinculados a proyectos, por fecha de emisión.</p>
+        </section>
+        <section class="eco-card">
+            <span class="eco-eyebrow">04 / Margen de proyectos</span>
+            <h3>Beneficio estimado de obras</h3>
+            <div class="eco-row"><span>Costes ya registrados<small>Reales o confirmados</small></span><strong>{{ costesProyectos.costeConfirmado|format_currency('EUR', locale='es') }}</strong></div>
+            <div class="eco-row"><span>Costes todavía previstos</span><strong>{{ costesProyectos.costePrevistoPendiente|format_currency('EUR', locale='es') }}</strong></div>
+            <div class="eco-row eco-result {{ margenProyectos < 0 ? 'negative' : '' }}"><span>Margen estimado</span><strong class="{{ margenProyectos < 0 ? 'eco-negative' : 'eco-positive' }}">{{ margenProyectos|format_currency('EUR', locale='es') }}</strong></div>
+            <p class="eco-note">Facturación sin IVA menos el coste registrado y previsto de esas obras. Se actualizará al confirmar gastos.</p>
+            <a class="eco-card-link" href="{{ path('app_proyecto_index') }}">Ver proyectos <span aria-hidden="true">→</span></a>
+        </section>
+    </div>
 
+    <div class="eco-section-heading">
+        <div><h3>IVA a contabilizar por trimestre</h3><p class="eco-muted">Tickets y facturas aceptadas, incluidas las generadas al aceptar presupuestos de proyectos, del ejercicio {{ anio }}. Se asignan al trimestre de su fecha de emisión, estén cobrados o pendientes. Los presupuestos no se suman de nuevo.</p></div>
+    </div>
+    <section class="eco-card eco-table-card">
+        <table class="eco-table">
+            <thead><tr><th scope="col">Trimestre</th><th scope="col" class="eco-money">Base imponible</th><th scope="col" class="eco-money">IVA repercutido</th><th scope="col" class="eco-money">Total con IVA</th></tr></thead>
+            <tbody>
+            {% for trimestre in resumenIvaTrimestres %}
+                <tr><td>{{ trimestre.trimestre }}</td><td class="eco-money">{{ trimestre.baseImponible|format_currency('EUR', locale='es') }}</td><td class="eco-money">{{ trimestre.ivaRepercutido|format_currency('EUR', locale='es') }}</td><td class="eco-money">{{ trimestre.total|format_currency('EUR', locale='es') }}</td></tr>
+            {% else %}<tr><td colspan="4" class="eco-empty">No hay tickets ni facturas aceptadas para contabilizar en este ejercicio.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </section>
 
-              <!-- Row -->     
-                <!-- Footer callback -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">Costes no informados</h4>
-                                <h6 class="card-subtitle"></h6>
-                                <div class="table-responsive">
-                                    <table id="default_order2" class="table table-striped table-bordered display"
-                                        style="width:100%">
-                                            <thead>
-                                                <tr>
-                                                    <th>Id</th>
-                                                    <th>PVP</th>
-                                                    <th>Coste</th>
-                                                    <th>Producto</th>
-                                                 
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </thead>
-                                        <tbody>
-                                            {% for cesta in cestas %}
-                                                <tr>
-                                                    <td>{{ cesta.cestaDc.id }}</td>
-                                                    <td class="text-right">{{ cesta.pvpDc|format_currency('EUR', locale='es')  }}</td>
-                                                    <td class="text-right">{{ cesta.precioDc|format_currency('EUR', locale='es')  }}</td>
-                                                    <td>{{ cesta.productoDc.descripcionPd }}</td>
-                                                    <td><a class="text-inverse pr-2" data-toggle="tooltip" title="Modificar coste" name="modifica_coste" id="{{ cesta.id }}" >
-                                                            <i class="ti-money"></i>                                                        
-                                                    </a></td>
-                                                </tr>
-                                            {% else %}
-                                                <tr>
-                                                    <td colspan="8">no records found</td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="eco-section-heading">
+        <div><h3>¿Qué queda por resolver?</h3><p class="eco-muted">Distingue el dinero pendiente del que ya has cobrado.</p></div>
+        <a class="eco-button" href="{{ path('flujocaja') }}">Ver flujo de caja <span aria-hidden="true">↗</span></a>
+    </div>
+    <section class="eco-card eco-pending">
+        <span class="eco-eyebrow">Productos y servicios</span>
+        <div class="eco-row"><span>Pendiente de cobro<small>Acumulado · todos los ejercicios</small></span><strong>{{ pendiente|format_currency('EUR', locale='es') }}</strong></div>
+        <p class="eco-note">Importe con IVA pendiente de proyectos y documentos independientes. Cada proyecto se cuenta una sola vez, descontando sus cobros y los registrados directamente en sus documentos. Antes de facturar se toma el presupuesto aceptado; después, sus facturas y tickets.</p>
+        <a class="eco-button eco-action" href="{{ path('documento_index') }}">Revisar documentos <span aria-hidden="true">→</span></a>
+    </section>
 
-
-          
+</div>
 {% endblock %}
+
 {% block jscustom %}
-
-    <!--This page plugins -->
-    <script src="../../assets/libs/datatables/media/js/jquery.dataTables.min.js"></script>
-    <script src="../../dist/js/pages/datatable/custom-datatable.js"></script>
-    <!-- Bootstrap tether Core JavaScript -->
-    <script src="{{ asset('assets/extra-libs/sparkline/sparkline.js') }}"></script>
-    <script src="{{ asset('dist/js/ConectorJavaScript.js') }}"></script>
-    <!--Wave Effects -->
-    <script src="{{ asset('dist/js/waves.js') }}"></script>
-    <!--This page plugins -->
-    <script src="{{ asset('assets/extra-libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/extra-libs/datatables.net-bs4/js/dataTables.responsive.min.js') }}"></script>
-    <!--Custom JavaScript -->
-    <script src="{{ asset('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
-    <script src="{{ asset('assets/extra-libs/sweetalert2/sweet-alert.init.js') }}"></script>    
-    
-    <script language = "javascript">
-    $(document).ready(function(){   
-
-        $(document).on('click', 'a[name="modifica_coste"]' , function(event) {
-
-            let id = this.id;
-            let importe = 0;
-            const inputValue = Number(importe).toFixed(2);
-            const importe2 = 0;
-            const inputStep = 1;
-
-            console.log(inputValue);
-
-            // Pop up con datos del producto
-            Swal.fire({
-                showCancelButton: true,  // Activamos el botón de cancelar
-                confirmButtonText: 'Cambiar coste',
-                cancelButtonText: 'Cancelar',
-                title: 'Modificar importe',
-                html: `
-                    <h2> Importe </h2>
-                    <input type="number" value="${inputValue}" step="${inputStep}" class="swal2-input" id="range-value" style="text-align:right;"> €`
-
-                }).then((result) => {
-
-                    if (result.value) {
-            // Llamamos al insert line
-
-                        const inputNumber = Swal.getHtmlContainer().querySelector('#range-value');
-                        importe = inputNumber.value;
-      
-               
-                        actualiza_importe(id,importe); 
-                    }
-                })
-        })                
-
-            function actualiza_importe (id,importe) 
-            {
-                $.ajax({  
-                url:        '../admin/importe/ajax',  
-                type:       'GET',   
-                data:        ({importe:importe ,id:id}),
-                dataType:   'json',  
-                async:      true,  
-                
-                success: function(response) {  
-                    location.reload();   
-                },  
-                error : function(xhr, textStatus, errorThrown) {  
-                    alert(textStatus);  
-                }                      
-                });
-            };
-
-      });  
-   </script> 
 {% endblock %}
-

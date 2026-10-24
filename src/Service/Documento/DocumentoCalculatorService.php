@@ -91,6 +91,20 @@ class DocumentoCalculatorService
         $descuento = $this->normalizarDecimal($linea->getDescuento(), 2);
         $tipoIva = $this->normalizarDecimal($linea->getTipoIva(), 2);
 
+        if ($linea->getPrecioUnitarioConIva() !== null) {
+            $factorIva = bcadd('1', bcdiv($tipoIva, '100', 6), 6);
+            $factorDescuento = bcsub('1', bcdiv($descuento, '100', 6), 6);
+            $bruto = bcmul(bcmul($cantidad, $linea->getPrecioUnitarioConIva(), 6), $factorDescuento, 6);
+            $total = $this->redondear($bruto);
+            $base = $this->redondear(bcdiv($total, $factorIva, 6));
+
+            $linea->setPrecioUnitario($this->redondear(bcdiv($linea->getPrecioUnitarioConIva(), $factorIva, 6)));
+            $linea->setSubtotal($base);
+            $linea->setTotalIva(bcsub($total, $base, 2));
+            $this->recalcularCosteLinea($linea);
+            return;
+        }
+
         // subtotal bruto = cantidad × precio
         $subtotalBruto = bcmul($cantidad, $precioUnitario, 4);
 

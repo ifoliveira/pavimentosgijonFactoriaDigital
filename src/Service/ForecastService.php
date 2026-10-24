@@ -15,7 +15,7 @@ class ForecastService
      * Devuelve la lista de forecasts pendientes ordenados por fecha
      * y el array de datos acumulados para el gráfico.
      */
-    public function getForecastPendiente(): array
+    public function getForecastPendiente(float $saldoInicial = 0.0): array
     {
         $forecastList = $this->forecastRepository->findBy(
             ['estadoFr' => 'P'],
@@ -23,14 +23,18 @@ class ForecastService
         );
 
         $chartData = [];
-        $acumulado = 0;
+        $saldo = round($saldoInicial, 2);
+        $chartData = [[
+            'x' => (new \DateTimeImmutable('today'))->format('Y-m-d'),
+            'y' => $saldo,
+        ]];
 
         foreach ($forecastList as $item) {
-            $acumulado += $item->getImporteFr() * -1;
+            $saldo += (float) $item->getImporteFr();
 
             $chartData[] = [
                 'x' => $item->getFechaFr()->format('Y-m-d'),
-                'y' => round($acumulado, 2),
+                'y' => round($saldo, 2),
             ];
         }
 

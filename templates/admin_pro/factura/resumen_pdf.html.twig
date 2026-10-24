@@ -72,7 +72,11 @@
 <body>
 
     <h1>
-        Resumen de facturas {{ trimestre }}T {{ anio }}
+        {% if esAnual %}
+            Resumen anual de facturas {{ anio }}
+        {% else %}
+            Resumen de facturas {{ trimestre }}T {{ anio }}
+        {% endif %}
     </h1>
 
     <div class="periodo">
@@ -115,7 +119,7 @@
     </table>
 
     <div class="titulo-bloque">
-        Relación de tickets
+        Relación de facturas
     </div>
 
     <table>

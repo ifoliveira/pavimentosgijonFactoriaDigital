@@ -89,7 +89,6 @@
                                                 <td>{{ cliente.emailCl }}</td>
                                                 <td>{{ cliente.timestampaltaCl ? cliente.timestampaltaCl|date('Y-m-d H:i:s') : '' }}</td>
                                                 <td>
-                                                    <a href="{{ path('presupuestos_new')}}">Nuevo presupuesto</a>
                                                     <a href="{{ path('clientes_edit', {'id': cliente.id}) }}">edit</a>
                                                 </td>
                                             </tr>
@@ -100,7 +99,6 @@
                                         {% endfor %}
                                         </tbody>
                                     </table>
-                                    <a href="{{ path('clientes_new') }}">Crear nuevo</a>
                                 </div>
                             </div>
                         </div>

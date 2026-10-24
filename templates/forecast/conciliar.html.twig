@@ -273,6 +273,13 @@
 
                         </div>
 
+                        <div id="accionesMovimientoBanco" class="mb-4" style="display:none;">
+                            <button type="button" class="btn btn-outline-warning w-100" id="btnCrearForecast">
+                                Crear Forecast desde este movimiento
+                            </button>
+                            <div class="small text-muted mt-2">Úsalo para un gasto inesperado. Se conservará como previsión pendiente para futuros ejercicios.</div>
+                        </div>
+
 
                         {# =================================================
                            LOADING
@@ -479,6 +486,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const badgeCandidatos =
         document.getElementById('badgeCandidatos');
 
+    const accionesMovimientoBanco = document.getElementById('accionesMovimientoBanco');
+    const btnCrearForecast = document.getElementById('btnCrearForecast');
+
 
     /*
      * ============================================================
@@ -509,13 +519,51 @@ document.addEventListener('DOMContentLoaded', function () {
                     ? 'forecast'
                     : 'cobro';
 
-            actualizarTipoConciliacion();
+        actualizarTipoConciliacion();
 
-            mostrarBancoSeleccionado();
+        mostrarBancoSeleccionado();
+
+        accionesMovimientoBanco.style.display = bancoSeleccionado.importe < 0 ? 'block' : 'none';
 
             cargarCandidatos();
         });
 
+    });
+
+    btnCrearForecast.addEventListener('click', async function () {
+        if (!bancoSeleccionado) return;
+        const conceptoActual = bancoSeleccionado.concepto || 'Gasto bancario';
+        const concepto = window.prompt('Concepto del Forecast:', conceptoActual);
+        if (concepto === null) return;
+        if (!concepto.trim()) {
+            window.alert('El concepto no puede estar vacío.');
+            return;
+        }
+        const periodicidad = window.prompt(
+            'Periodicidad: unico, mensual, bimestral, trimestral o semestral',
+            'unico'
+        );
+        if (periodicidad === null) return;
+        const periodicidadNormalizada = periodicidad.trim().toLowerCase();
+        const periodicidadesValidas = ['unico', 'mensual', 'bimestral', 'trimestral', 'semestral'];
+        if (!periodicidadesValidas.includes(periodicidadNormalizada)) {
+            window.alert('Periodicidad no válida. Usa: unico, mensual, bimestral, trimestral o semestral.');
+            return;
+        }
+        this.disabled = true;
+        try {
+            const response = await fetch(`/admin/forecast/conciliacion/crear-forecast/${bancoSeleccionado.id}`, {
+                method: 'POST',
+                headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
+                body: new URLSearchParams({concepto: concepto.trim(), periodicidad: periodicidadNormalizada})
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || 'No se pudo crear el Forecast.');
+            window.location.reload();
+        } catch (error) {
+            alert(error.message);
+            this.disabled = false;
+        }
     });
 
 
@@ -539,7 +587,7 @@ document.addEventListener('DOMContentLoaded', function () {
             titulo.textContent = 'Cobros candidatos';
 
             subtitulo.textContent =
-                'Cobros de proyectos que pueden corresponder con este ingreso.';
+                'Cobros y previsiones de ingreso que pueden corresponder con este movimiento.';
         }
     }
 
@@ -749,8 +797,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     <div class="small text-muted">
 
-                        Previsto:
-                        ${tipoConciliacion === 'forecast' ? 'Previsto' : 'Cobro'}:
+                        ${candidato.origen === 'forecast' || tipoConciliacion === 'forecast' ? 'Previsto' : 'Cobro'}:
                         ${formatearFecha(candidato.fecha)}
 
                         ·
@@ -877,15 +924,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
             let url;
 
-            if (tipoConciliacion === 'forecast') {
+            if (tipoConciliacion === 'forecast' || candidatoSeleccionado.origen === 'forecast') {
 
                 url =
                     `/admin/forecast/${candidatoSeleccionado.id}/conciliar`;
 
             } else {
 
-                url =
-                    `/admin/forecast/conciliacion/cobro/${candidatoSeleccionado.id}`;
+                        url = candidatoSeleccionado.origen === 'documento'
+                            ? `/admin/forecast/conciliacion/documento-cobro/${candidatoSeleccionado.id}`
+                            : `/admin/forecast/conciliacion/cobro/${candidatoSeleccionado.id}`;
             }
 
             const formData = new FormData();

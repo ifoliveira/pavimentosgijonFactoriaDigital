@@ -31,6 +31,24 @@ class EfectivoRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     * Suma los movimientos de efectivo por categoría para un ejercicio.
+     * El signo se conserva tal y como fue registrado.
+     */
+    public function totalesPorCategoria(int $anio): array
+    {
+        return $this->getEntityManager()->getConnection()->fetchAllAssociative(
+            'SELECT COALESCE(tm.descripcion_tm, \'Sin categoría\') AS categoria,
+                    COALESCE(SUM(e.importe_ef), 0) AS importe
+             FROM efectivo e
+             LEFT JOIN tiposmovimiento tm ON tm.id = e.tipoEf
+             WHERE YEAR(e.fecha_ef) = :anio
+             GROUP BY tm.id, tm.descripcion_tm
+             ORDER BY categoria',
+            ['anio' => $anio]
+        );
+    }
+
     public function manoobraEfectivo()
     {
         $conn = $this->getEntityManager()->getConnection();

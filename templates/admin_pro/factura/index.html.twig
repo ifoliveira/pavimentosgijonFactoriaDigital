@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Tickets de venta{% endblock %}
+{% block title %}Facturas de venta{% endblock %}
 
 {% block body %}
 <div class="container-fluid py-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-1">Tickets de venta</h1>
+            <h1 class="h3 mb-1">Facturas de venta</h1>
             <div class="text-muted">
                 Del {{ fechaDesde|date('d/m/Y') }}
                 al {{ fechaHasta|date('d/m/Y') }}
@@ -48,6 +48,11 @@
                             id="trimestre"
                             class="form-select">
 
+                        <option value="0"
+                            {{ esAnual ? 'selected' : '' }}>
+                            Todo el año
+                        </option>
+
                         <option value="1"
                             {{ trimestre == 1 ? 'selected' : '' }}>
                             Enero - Marzo
@@ -67,13 +72,14 @@
                             {{ trimestre == 4 ? 'selected' : '' }}>
                             Octubre - Diciembre
                         </option>
+
                     </select>
                 </div>
 
                 <div class="col-md-3">
                     <button type="submit"
                             class="btn btn-primary w-100">
-                        Mostrar tickets
+                        Mostrar facturas
                     </button>
 
    
@@ -92,7 +98,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="text-muted small">
-                        Número de tickets
+                        Número de facturas
                     </div>
 
                     <div class="fs-3 fw-bold">
@@ -134,7 +140,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="text-muted small">
-                        Total vendido
+                        Total facturado
                     </div>
 
                     <div class="fs-3 fw-bold">
@@ -146,14 +152,18 @@
 
     </div>
 
-    {# TABLA DE TICKETS #}
+    {# TABLA DE FACTURAS #}
     <div class="card border-0 shadow-sm">
 
     <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
 
         <div>
             <div class="fw-semibold">
-                Tickets del {{ trimestre }}.º trimestre de {{ anio }}
+                {% if esAnual %}
+                    Facturas de {{ anio }}
+                {% else %}
+                    Facturas del {{ trimestre }}.º trimestre de {{ anio }}
+                {% endif %}
             </div>
 
             <div class="text-muted small">
@@ -300,7 +310,7 @@
                     <tr>
                         <td colspan="10"
                             class="text-center text-muted py-5">
-                            No hay tickets en este trimestre.
+                            No hay facturas en el periodo seleccionado.
                         </td>
                     </tr>
                 {% endfor %}
@@ -310,7 +320,7 @@
                     <tfoot class="table-light fw-semibold">
                         <tr>
                             <td colspan="4">
-                                Total trimestre
+                                Total
                             </td>
 
                             <td class="text-end">

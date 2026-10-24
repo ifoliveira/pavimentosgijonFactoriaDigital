@@ -73,9 +73,46 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity(repositoryClass: DocumentoRepository::class)]
 #[ORM\Table(name: 'documento')]
+#[ORM\UniqueConstraint(name: 'UNIQ_DOCUMENTO_TPV_UUID', columns: ['tpv_uuid'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_DOCUMENTO_TPV_REEMBOLSO', columns: ['tpv_reembolso_uuid'])]
+#[ORM\Index(name: 'IDX_DOCUMENTO_RECTIFICADO', columns: ['documento_rectificado_id'])]
 #[ORM\HasLifecycleCallbacks]
 class Documento
 {
+    #[ORM\Column(type: 'string', length: 36, nullable: true)]
+    private ?string $tpvUuid = null;
+
+    #[ORM\Column(type: 'string', length: 55, nullable: true)]
+    private ?string $tpvNumeroTicketLocal = null;
+
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $tpvCaja = null;
+
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $tpvFormaPago = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $tpvFecha = null;
+
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'rectificativas')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
+    private ?Documento $documentoRectificado = null;
+
+    #[ORM\OneToMany(mappedBy: 'documentoRectificado', targetEntity: self::class)]
+    private Collection $rectificativas;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $motivoRectificacion = null;
+
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $tpvRectificacionHuella = null;
+
+    #[ORM\Column(type: 'string', length: 36, nullable: true)]
+    private ?string $tpvReembolsoUuid = null;
+
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $tpvReembolsoHuella = null;
+
     // -------------------------------------------------------------------------
     // IDENTIFICACIÓN
     // -------------------------------------------------------------------------
@@ -286,6 +323,7 @@ class Documento
     public function __construct()
     {
         $this->presupuestosVinculados = new ArrayCollection();
+        $this->rectificativas = new ArrayCollection();
         $this->lineas = new ArrayCollection();
         $this->cobros = new ArrayCollection();
         $this->fechaEmision = new \DateTime();
@@ -306,6 +344,131 @@ class Documento
     // -------------------------------------------------------------------------
     // GETTERS Y SETTERS
     // -------------------------------------------------------------------------
+
+    public function getTpvUuid(): ?string
+    {
+        return $this->tpvUuid;
+    }
+
+    public function setTpvUuid(?string $tpvUuid): static
+    {
+        $this->tpvUuid = $tpvUuid;
+        return $this;
+    }
+
+    public function getTpvNumeroTicketLocal(): ?string
+    {
+        return $this->tpvNumeroTicketLocal;
+    }
+
+    public function setTpvNumeroTicketLocal(?string $tpvNumeroTicketLocal): static
+    {
+        $this->tpvNumeroTicketLocal = $tpvNumeroTicketLocal;
+        return $this;
+    }
+
+    public function getTpvCaja(): ?string
+    {
+        return $this->tpvCaja;
+    }
+
+    public function setTpvCaja(?string $tpvCaja): static
+    {
+        $this->tpvCaja = $tpvCaja;
+        return $this;
+    }
+
+    public function getTpvFormaPago(): ?string
+    {
+        return $this->tpvFormaPago;
+    }
+
+    public function setTpvFormaPago(?string $tpvFormaPago): static
+    {
+        $this->tpvFormaPago = $tpvFormaPago;
+        return $this;
+    }
+
+    public function getTpvFecha(): ?\DateTimeImmutable
+    {
+        return $this->tpvFecha;
+    }
+
+    public function setTpvFecha(?\DateTimeImmutable $tpvFecha): static
+    {
+        $this->tpvFecha = $tpvFecha;
+        return $this;
+    }
+
+    public function getDocumentoRectificado(): ?Documento
+    {
+        return $this->documentoRectificado;
+    }
+
+    public function setDocumentoRectificado(?Documento $documentoRectificado): static
+    {
+        $this->documentoRectificado = $documentoRectificado;
+        return $this;
+    }
+
+    public function getMotivoRectificacion(): ?string
+    {
+        return $this->motivoRectificacion;
+    }
+
+    public function setMotivoRectificacion(?string $motivoRectificacion): static
+    {
+        $this->motivoRectificacion = $motivoRectificacion;
+        return $this;
+    }
+
+    public function getTpvRectificacionHuella(): ?string
+    {
+        return $this->tpvRectificacionHuella;
+    }
+
+    public function setTpvRectificacionHuella(?string $tpvRectificacionHuella): static
+    {
+        $this->tpvRectificacionHuella = $tpvRectificacionHuella;
+        return $this;
+    }
+
+    public function getTpvReembolsoUuid(): ?string
+    {
+        return $this->tpvReembolsoUuid;
+    }
+
+    public function setTpvReembolsoUuid(?string $tpvReembolsoUuid): static
+    {
+        $this->tpvReembolsoUuid = $tpvReembolsoUuid;
+        return $this;
+    }
+
+    public function getTpvReembolsoHuella(): ?string
+    {
+        return $this->tpvReembolsoHuella;
+    }
+
+    public function setTpvReembolsoHuella(?string $tpvReembolsoHuella): static
+    {
+        $this->tpvReembolsoHuella = $tpvReembolsoHuella;
+        return $this;
+    }
+
+    public function getRectificativas(): Collection
+    {
+        return $this->rectificativas;
+    }
+
+    public function isTicketTpv(): bool
+    {
+        return $this->tpvUuid !== null && in_array($this->tipoDocumento, ['ticket', 'ticket_rectificativo'], true);
+    }
+
+    public function isRectificativaTpv(): bool
+    {
+        return $this->tpvUuid !== null && $this->tipoDocumento === 'ticket_rectificativo';
+    }
 
     public function getId(): ?int
     {

@@ -7,6 +7,26 @@
     {% for message in app.flashes('success') %}
         <div class="alert alert-success">{{ message }}</div>
     {% endfor %}
+    {% for message in app.flashes('warning') %}
+        <div class="alert alert-warning">{{ message }}</div>
+    {% endfor %}
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h2 class="h5 mb-0">Resumen económico de la obra</h2>
+            <div class="small text-muted">Importes sin IVA. El margen estimado combina costes confirmados y previsiones aún pendientes.</div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Ingresos sin IVA</div><div class="fw-bold">{{ economico.ingresoSinIva|number_format(2, ',', '.') }} €</div></div>
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Coste confirmado</div><div class="fw-bold">{{ economico.costeConfirmado|number_format(2, ',', '.') }} €</div></div>
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Pendiente de confirmar</div><div class="fw-bold text-warning">{{ economico.costePrevistoPendiente|number_format(2, ',', '.') }} €</div></div>
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Coste total estimado</div><div class="fw-bold">{{ economico.costeTotalEstimado|number_format(2, ',', '.') }} €</div></div>
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Margen estimado</div><div class="fw-bold {{ economico.margenEstimado >= 0 ? 'text-success' : 'text-danger' }}">{{ economico.margenEstimado|number_format(2, ',', '.') }} €</div></div>
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Margen sobre ventas</div><div class="fw-bold {{ economico.margenSobreVentas >= 0 ? 'text-success' : 'text-danger' }}">{{ economico.margenSobreVentas|number_format(1, ',', '.') }} %</div></div>
+            </div>
+        </div>
+    </div>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -174,7 +194,12 @@
 
                 <div class="col-md-4">
                     <div class="text-muted small">Fecha fin prevista</div>
-                    <div>{{ proyecto.fechaFinPrevista ? proyecto.fechaFinPrevista|date('d/m/Y') : '—' }}</div>
+                    <form method="post" action="{{ path('app_proyecto_fecha_fin_prevista', {id: proyecto.id}) }}" class="d-flex gap-2 align-items-center mt-1">
+                        <input type="hidden" name="_token" value="{{ csrf_token('proyecto_fecha_fin_prevista_' ~ proyecto.id) }}">
+                        <input type="date" name="fecha_fin_prevista" class="form-control form-control-sm" value="{{ proyecto.fechaFinPrevista ? proyecto.fechaFinPrevista|date('Y-m-d') : '' }}">
+                        <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">Guardar</button>
+                    </form>
+                    <div class="form-text">Al cambiarla, se moverán los gastos aún previstos y sus forecasts asociados.</div>
                 </div>
 
                 <div class="col-md-4">

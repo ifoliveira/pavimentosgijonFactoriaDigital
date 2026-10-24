@@ -1,0 +1,9 @@
+{% if documento.rectificativaTpv %}
+    <div style="border: 1px solid #777; padding: 10px; margin-bottom: 12px; font-size: 12px;">
+        <strong>FACTURA SIMPLIFICADA RECTIFICATIVA — {{ documento.numeroFormateado }}</strong><br>
+        Rectificación total por diferencias del ticket {{ documento.documentoRectificado.numeroFormateado }},
+        de fecha {{ documento.documentoRectificado.fechaEmision|date('d/m/Y') }}.<br>
+        Motivo: {{ documento.motivoRectificacion }}<br>
+        Se rectifican íntegramente sus líneas, base imponible, IVA e importe total.
+    </div>
+{% endif %}

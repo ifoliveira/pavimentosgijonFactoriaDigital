@@ -3,24 +3,17 @@
 namespace App\Controller;
 
 use App\Entity\Clientes;
-use App\Entity\Estadocestas;
-use App\Entity\Cestas;
-use App\Entity\Consultas;
-use App\Entity\Presupuestos;
+use App\Service\Cliente\ClienteFormato;
 use App\Form\ClientesType;
-use App\Form\PresupuestosType;
 use App\Form\Clientes2Type;
 use App\Repository\ClientesRepository;
-use App\Repository\EstadocestasRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Service\ManoObraService;
 use App\Repository\ConsultasRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Validator\Constraints\IsFalse;
 
 #[Route('/admin/clientes')]
 class ClientesController extends AbstractController
@@ -29,7 +22,6 @@ class ClientesController extends AbstractController
 
     public function __construct(
         private EntityManagerInterface $em,
-        private ManoObraService $manoObraService,
     ) {}
 
 
@@ -43,53 +35,11 @@ class ClientesController extends AbstractController
     }
 
     #[Route('/new', name: 'clientes_new', methods: ['GET','POST'])]
-    public function new(Request $request, EstadocestasRepository $estadocestasRepository): Response
-        {   
-
-        $estadocesta=$estadocestasRepository->findOneBy(['id' => 6]);
-        $cliente = new Clientes();
-        $presupuesto = new Presupuestos();
-        $presupuesto->setEstadoPe($estadocesta);
-        $cliente->getPresupuestosCl()->add($presupuesto);
-        $form = $this->createForm(ClientesType::class, $cliente);
-        $form->handleRequest($request);
-        
-
-
-        if ($form->isSubmitted() && $form->isValid()) {
-  
-            $this->em->persist($cliente);
-            $user = $this->getUser();
-
-            $presupuesto->setUserPe($user);
-            $presupuesto->setClientePe($cliente);
-
-    // Creamos la cesta para el presupuesto y la señal 
-            $cesta = new Cestas();
-            $user = $this->getUser();
-            $cesta->setUserAdmin($user);
-            $cesta->setEstadoCs(11);
-            $this->em->persist($cesta);
-    // Creamos el ticket para el presupuesto
-            $presupuesto->setTicket($cesta);
-            $this->em->persist($presupuesto);
-            $this->em->flush();
-
-            $this->manoObraService->iniciarPresupuesto($presupuesto);
-            $this->em->flush();
-            $micarpeta =  $this->getParameter("presupuestoDir") . '/' . $cliente->getNombreCl() . ' ' . $presupuesto->getFechainiPe()->format('Y-m-d') .'/fotos';
-            if (!file_exists($micarpeta)) {
-                mkdir($micarpeta, 0777, true);
-            }
-
-
-            return $this->redirectToRoute('presupuestos_index');
-        }
-
-        return $this->render('clientes/new.html.twig', [
-            'cliente' => $cliente,
-            'form' => $form->createView(),
-        ]);
+    public function new(): Response
+    {
+        throw new \Symfony\Component\HttpKernel\Exception\GoneHttpException(
+            'La creación de presupuestos por esta vía está deshabilitada. Puedes consultar los presupuestos existentes desde la lista de presupuestos.'
+        );
     }
 
     #[Route('/nuevo', name: 'clientes_nuevo', methods: ['GET', 'POST'])]
@@ -196,11 +146,14 @@ class ClientesController extends AbstractController
     #[Route('/clientes/quick-create', name: 'app_clientes_quick_create', methods: ['POST'])]
     public function quickCreate(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        $nombre = trim((string) $request->request->get('nombreCl', ''));
-        $apellidos = trim((string) $request->request->get('apellidosCl', ''));
-        $telefono1 = trim((string) $request->request->get('telefono1Cl', ''));
-        $ciudad = trim((string) $request->request->get('ciudadCl', ''));
-        $direccion = trim((string) $request->request->get('direccionCl', ''));
+        $nombre = ClienteFormato::texto((string) $request->request->get('nombreCl', ''));
+        $apellidos = ClienteFormato::texto((string) $request->request->get('apellidosCl', ''));
+        $telefono1 = ClienteFormato::telefono((string) $request->request->get('telefono1Cl', ''));
+        $ciudad = ClienteFormato::texto((string) $request->request->get('ciudadCl', ''));
+        $direccion = ClienteFormato::direccion(
+            (string) $request->request->get('direccionCl', ''),
+            (string) $request->request->get('tipoVia', 'Calle'),
+        );
 
         if ($nombre === '') {
             return $this->json([

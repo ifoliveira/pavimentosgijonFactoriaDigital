@@ -269,6 +269,35 @@ class DocumentoLinea
     // GETTERS Y SETTERS
     // -------------------------------------------------------------------------
 
+    // El TPV vende a PVP con IVA incluido; se conserva para recalcular sin perder céntimos.
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $precioUnitarioConIva = null;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $tpvPrecioOriginal = null;
+
+    public function getPrecioUnitarioConIva(): ?string
+    {
+        return $this->precioUnitarioConIva;
+    }
+
+    public function setPrecioUnitarioConIva(?string $precio): static
+    {
+        $this->precioUnitarioConIva = $precio;
+        return $this;
+    }
+
+    public function getTpvPrecioOriginal(): ?string
+    {
+        return $this->tpvPrecioOriginal;
+    }
+
+    public function setTpvPrecioOriginal(?string $precio): static
+    {
+        $this->tpvPrecioOriginal = $precio;
+        return $this;
+    }
+
     public function getId(): ?int
     {
         return $this->id;

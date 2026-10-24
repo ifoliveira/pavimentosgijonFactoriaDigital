@@ -24,17 +24,21 @@ class DashboardController extends AbstractController
         $nombre = trim((string) $request->query->get('nombre', ''));
         $cliente = trim((string) $request->query->get('cliente', ''));
         $telefono = trim((string) $request->query->get('telefono', ''));
-        $situacion = trim((string) $request->query->get('situacion', ''));
+        $pagina = max(1, $request->query->getInt('pagina', 1));
+        // El dashboard es una bandeja de trabajo: al abrirlo mostramos lo que
+        // requiere una decisión, no el historial de proyectos consultados.
+        $situacion = trim((string) $request->query->get('situacion', 'atencion'));
 
-        $hayBusqueda = $nombre || $cliente || $telefono || $situacion;
+        $hayBusqueda = true;
 
-        $resultadosBusqueda = [];
+        $resultadoPaginado = ['resultados' => [], 'total' => 0, 'pagina' => 1, 'paginas' => 1];
         if ($hayBusqueda) {
-            $resultadosBusqueda = $dashboardProyectoService->buscarProyectos(
+            $resultadoPaginado = $dashboardProyectoService->buscarProyectosPaginados(
                 $nombre ?: null,
                 $cliente ?: null,
                 $telefono ?: null,
-                $situacion ?: null
+                $situacion ?: null,
+                $pagina
             );
         }
 
@@ -46,7 +50,10 @@ class DashboardController extends AbstractController
                 'telefono' => $telefono,
                 'situacion' => $situacion,
                 'hayBusqueda' => $hayBusqueda,
-                'resultados' => $resultadosBusqueda,
+                'resultados' => $resultadoPaginado['resultados'],
+                'total' => $resultadoPaginado['total'],
+                'pagina' => $resultadoPaginado['pagina'],
+                'paginas' => $resultadoPaginado['paginas'],
             ],
         ]);
     }

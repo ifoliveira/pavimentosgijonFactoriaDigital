@@ -99,57 +99,12 @@ class DetallecestaController extends AbstractController
     }  
 
     #[Route('/nuevo/detalle', name: 'detallecesta_new', methods: ['GET','POST'])]
-    public function ajaxinscS(Request $request, DetallecestaRepository $detallecestaRepository): jsonResponse
+    public function ajaxinscS(): Response
     {
-
-        // Producto y cantidad a añadir
-        $producto = $request->query->all('producto');;
-        $cantidad = $request->query->get('cantidad');
-        $importe = $request->query->get('importe');
-        $coste = $request->query->get('coste');
-        $cestaId = $request->query->get('cesta');
-        $texto = $request->query->get('texto');
-        $descuento = $request->query->get('descuento');
-
-        if ($texto=="") {
-            $texto = NULL;
-
-        }
-        
-        // Creamos objeto detalle de cesta, con el usuario conectado y los metodos de CestaUser
-        $cestaactual = $this->em->getRepository('App\Entity\Cestas')->findOneBy(['id'=> $cestaId]);
-        $importeact = $cestaactual->getImporteTotCs();
-        $cestaactual->setImporteTotCs($importeact + ($importe * $cantidad));
-
-        $detcesta = new Detallecesta;
-        $detcesta->setCestaDc($cestaactual);
-        $detcesta->setproductoDc($this->em->getRepository('App\Entity\Productos')->find($producto[0]));
-        $detcesta->setCantidadDc($cantidad);
-        $detcesta->setPrecioDc($coste);
-        $detcesta->setTextoDc($texto);
-        $detcesta->setDescuentoDc($descuento);
-       // $detcesta->setpvpDc($producto[4]);
-        if ($importe != 0){
-            $detcesta->setpvpDc($importe); 
-        }
-
-        // Insertamos en la tabla el detalle
-        $this->em->persist($detcesta);
-        $this->em->flush();
-
-        //Volver a crear apartado del loop de la pantalla
-        $template =$this->render('productos/loop.html.twig', ['cestaId'=>$cestaId ])->getContent();
-        $response = new JsonResponse();
-        $response->setStatusCode(200);
-
-         // Cantidad total de elementos en la cesta
-        $cant = $detallecestaRepository->cantotalCesta($cestaactual);
-
-        return $response->setData(['template' => $template, 'cantidad' => $cant]);
-
-
-    }  
-
+        throw new \Symfony\Component\HttpKernel\Exception\GoneHttpException(
+            'La venta desde el ERP está deshabilitada. Las nuevas ventas se registran desde el TPV.'
+        );
+    }
 
     #[Route('/plusminus/ajax', name: 'detallecesta_plusminus_ajax', methods: ['GET','POST'])]
     public function ajaxplumincS(Request $request, DetallecestaRepository $detallecestaRepository): jsonResponse

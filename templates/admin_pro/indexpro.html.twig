@@ -82,21 +82,97 @@
                             </h4>
                             <ul class="list-inline mb-0 ms-auto">
                                 <li class="list-inline-item">
-                                    <h6 style="color:#06d55c"><i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color:#06d55c"></i>Gasto acumulado</h6>
+                                    <h6 style="color:#8fd3b5"><i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color:#8fd3b5"></i>Saldo banco previsto</h6>
                                 </li>
                                 <li class="list-inline-item">
-                                    <h6 style="color:#1e88e5"><i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color:#1e88e5"></i>Saldo Banco</h6>
+                                    <h6 style="color:#8fb8df"><i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color:#8fb8df"></i>Saldo Banco</h6>
                                 </li>
                                 <li class="list-inline-item">
-                                    <h6 style="color:#fe88e5"><i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color:#fe88e5"></i>Saldo Efectivo</h6>
+                                    <h6 style="color:#e7b3d1"><i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color:#e7b3d1"></i>Saldo Efectivo</h6>
                                 </li>
                                 <li class="list-inline-item">
-                                    <h6 style="color:#f39c12"><i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color:#f39c12"></i>Banco + Efectivo</h6>
+                                    <h6 style="color:#f2c48f"><i class="ri-checkbox-blank-circle-fill align-middle fs-4 font-10 me-2" style="color:#f2c48f"></i>Banco + Efectivo</h6>
                                 </li>
                             </ul>
                         </div>
                         <div id="Website-Visit" class="position-relative mt-4" style="height:400px; width:100%"></div>
                     </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                        <div>
+                            <h4 class="card-title mb-1"><span class="lstick d-inline-block align-middle"></span>Objetivo de caja {{ resumenAnual.anio }}</h4>
+                            <p class="text-muted mb-0">Proyección natural desde {{ resumenAnual.fechaCorte|date('d/m/Y') }} hasta {{ resumenAnual.fechaFin|date('d/m/Y') }}. El forecast es real; los gastos de obra son una hipótesis con IVA estimado.</p>
+                        </div>
+                        <span class="badge bg-light text-dark border">IVA supuesto en compromisos: 21 %</span>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-xl"><div class="border rounded p-3 h-100"><div class="small text-muted">Disponible hoy</div><div class="h4 mb-0">{{ resumenAnual.saldoActual|number_format(2, ',', '.') }} €</div><small class="text-muted">Banco + efectivo</small></div></div>
+                        <div class="col-md-6 col-xl"><div class="border rounded p-3 h-100"><div class="small text-muted">Cobros de proyectos estimados</div><div class="h4 mb-0 text-success">{{ resumenAnual.cobrosProyectoEstimados|number_format(2, ',', '.') }} €</div><small class="text-muted">Pendiente de cobrar por proyectos</small></div></div>
+                        <div class="col-md-6 col-xl"><div class="border rounded p-3 h-100"><div class="small text-muted">Pagos reales pendientes</div><div class="h4 mb-0 text-danger">{{ resumenAnual.pagosForecast|number_format(2, ',', '.') }} €</div><small class="text-muted">Forecast hasta fin de año</small></div></div>
+                        <div class="col-md-6 col-xl"><div class="border rounded p-3 h-100"><div class="small text-muted">Compromisos de obra</div><div class="h4 mb-0 text-warning">{{ resumenAnual.compromisosConIva|number_format(2, ',', '.') }} €</div><small class="text-muted">{{ resumenAnual.compromisosBase|number_format(2, ',', '.') }} € + {{ resumenAnual.compromisosIva|number_format(2, ',', '.') }} € IVA estimado</small></div></div>
+                        <div class="col-md-6 col-xl"><div class="border rounded p-3 h-100 {{ resumenAnual.saldoProyectadoFinAnio >= 0 ? 'border-success' : 'border-danger' }}"><div class="small text-muted">Cierre proyectado</div><div class="h4 mb-0 {{ resumenAnual.saldoProyectadoFinAnio >= 0 ? 'text-success' : 'text-danger' }}">{{ resumenAnual.saldoProyectadoFinAnio|number_format(2, ',', '.') }} €</div><small class="text-muted">{{ resumenAnual.saldoProyectadoFinAnio >= 0 ? 'Superávit estimado' : 'Déficit estimado' }}</small></div></div>
+                    </div>
+
+                    <div class="small text-muted mb-2">El forecast real por sí solo dejaría un saldo de {{ resumenAnual.saldoForecastReal|number_format(2, ',', '.') }} €. El cierre proyectado añade cobros de proyectos aún pendientes y descuenta compromisos de obras aún sin factura.</div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead class="table-light"><tr><th>Mes {{ resumenAnual.anio }}</th><th class="text-end">Cobros forecast</th><th class="text-end">Cobros proyectos</th><th class="text-end">Pagos forecast</th><th class="text-end">Obras estimadas (IVA incl.)</th><th class="text-end">Saldo proyectado</th></tr></thead>
+                            <tbody>
+                            {% for mes in resumenAnual.meses %}
+                                <tr class="{{ mes.pasado ? 'text-muted' : '' }}">
+                                    <td>{{ mes.nombre }}</td>
+                                    <td class="text-end text-success">{{ mes.cobrosForecast|number_format(2, ',', '.') }} €</td>
+                                    <td class="text-end text-success">{{ mes.cobrosProyectoEstimados|number_format(2, ',', '.') }} €</td>
+                                    <td class="text-end text-danger">{{ mes.pagosForecast|number_format(2, ',', '.') }} €</td>
+                                    <td class="text-end text-warning">{{ mes.compromisosProyecto|number_format(2, ',', '.') }} €</td>
+                                    <td class="text-end fw-semibold {{ mes.saldoProyectado >= 0 ? 'text-success' : 'text-danger' }}">{{ mes.saldoProyectado|number_format(2, ',', '.') }} €</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                        <div>
+                            <h4 class="card-title mb-1"><span class="lstick d-inline-block align-middle"></span>Compromisos pendientes de obras</h4>
+                            <p class="text-muted mb-0">Costes previstos sin IVA que aún no se han confirmado. Son una estimación de rentabilidad, no pagos reales y no se incluyen en la gráfica de flujo de caja.</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="small text-muted">Total pendiente de confirmar</div>
+                            <div class="h4 mb-0 text-warning">{{ totalCompromisosPendientes|number_format(2, ',', '.') }} €</div>
+                        </div>
+                    </div>
+
+                    {% if compromisosPendientes is empty %}
+                        <div class="alert alert-light border mb-0">No hay costes previstos pendientes de confirmar en proyectos abiertos.</div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead class="table-light"><tr><th>Fecha prevista</th><th>Proyecto</th><th>Concepto</th><th>Proveedor</th><th class="text-end">Coste previsto</th></tr></thead>
+                                <tbody>
+                                {% for compromiso in compromisosPendientes %}
+                                    {% set gasto = compromiso.gasto %}
+                                    <tr>
+                                        <td>{{ gasto.fechaPrevista ? gasto.fechaPrevista|date('d/m/Y') : '—' }}</td>
+                                        <td><a href="{{ path('app_proyecto_show', {id: gasto.proyecto.id}) }}">{{ gasto.proyecto.nombre }}</a></td>
+                                        <td>{{ gasto.concepto }}</td>
+                                        <td>{{ gasto.proveedor ?: '—' }}</td>
+                                        <td class="text-end fw-semibold">{{ compromiso.importe|number_format(2, ',', '.') }} €</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 

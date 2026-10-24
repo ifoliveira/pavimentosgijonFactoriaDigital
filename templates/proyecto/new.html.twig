@@ -2,93 +2,108 @@
 
 {% block title %}Nuevo proyecto{% endblock %}
 
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% block cabecera %}Proyectos{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_proyecto_index') }}">Proyectos</a></li>
+    <li class="breadcrumb-item active">Nuevo proyecto</li>
+{% endblock %}
+
 {% block stylesheets %}
     <style>
-        .proyecto-form .form-label {
-            min-height: 48px;
-            display: flex;
-            align-items: end;
-            margin-bottom: .5rem;
+        .proyecto-page { max-width: 1100px; }
+        .proyecto-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+        .proyecto-form { padding: clamp(1.25rem, 3vw, 2rem); }
+        .proyecto-form .form-label { display: block; margin-bottom: .5rem; font-weight: 600; }
+        .proyecto-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; }
+        .proyecto-grid > div { min-width: 0; }
+        .proyecto-full { grid-column: 1 / -1; }
+        .proyecto-cliente { display: flex; align-items: flex-start; gap: .75rem; }
+        .proyecto-cliente-field { flex: 1; min-width: 0; }
+        .proyecto-form .form-control, .proyecto-form .form-select {
+            width: 100%; min-width: 0; height: 42px; border-radius: .375rem;
+        }
+        .proyecto-form textarea.form-control { height: auto; min-height: 140px; resize: vertical; }
+        .proyecto-form .btn { min-height: 42px; white-space: nowrap; }
+        .proyecto-dates { display: grid; grid-template-columns: repeat(2, minmax(0, 220px)); gap: 1.5rem; }
+        .proyecto-actions { display: flex; justify-content: flex-end; gap: .75rem; margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid #e9ecef; }
+        @media (max-width: 767.98px) {
+            .proyecto-grid { grid-template-columns: minmax(0, 1fr); }
+            .proyecto-header { align-items: flex-start; }
+        }
+        @media (max-width: 479.98px) {
+            .proyecto-cliente { flex-direction: column; align-items: stretch; }
+            .proyecto-dates { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+            .proyecto-actions { flex-direction: column-reverse; }
         }
     </style>
 {% endblock %}
 
 {% block body %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-4 proyecto-page">
+    <div class="proyecto-header mb-4">
         <div>
             <h1 class="h3 mb-1">Nuevo proyecto</h1>
             <p class="text-muted mb-0">Crea la obra y luego podrás añadir presupuestos, factura y cobros.</p>
         </div>
-        <a href="{{ path('app_proyecto_index') }}" class="btn btn-outline-secondary">
-            Volver
-        </a>
+        <a href="{{ path('app_proyecto_index') }}" class="btn btn-outline-secondary">Volver</a>
     </div>
 
     <div class="card shadow-sm border-0">
-        <div class="card-body p-4 proyecto-form">
+        <div class="card-body proyecto-form">
             {{ form_start(form) }}
-
-            <div class="row g-3 align-items-start">
-                <div class="col-md-6">
-                    <div class="row g-2 align-items-end">
-                        <div class="col-8">
-                            <label for="{{ form.cliente.vars.id }}" class="form-label fixed-label">Cliente *</label>
+            {{ form_errors(form) }}
+            <div class="proyecto-grid">
+                <div class="proyecto-full">
+                    <label for="{{ form.cliente.vars.id }}" class="form-label">Cliente *</label>
+                    <div class="proyecto-cliente">
+                        <div class="proyecto-cliente-field">
                             {{ form_widget(form.cliente) }}
                             {{ form_errors(form.cliente) }}
                         </div>
-
-                        <div class="col-4">
-                            <label class="form-label fixed-label d-block">&nbsp;</label>
-                            <button type="button"
-                                    class="btn btn-outline-primary w-100"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalNuevoCliente">
-                                Nuevo cliente
-                            </button>
-                        </div>
+                        <button type="button" class="btn btn-outline-primary"
+                                data-bs-toggle="modal" data-bs-target="#modalNuevoCliente">
+                            Nuevo cliente
+                        </button>
                     </div>
                 </div>
-
-                <div class="col-md-6">
-                    <label class="form-label fixed-label">Tipo de obra</label>
+                <div>
+                    <label for="{{ form.nombre.vars.id }}" class="form-label">Nombre del proyecto</label>
+                    {{ form_widget(form.nombre) }}
+                    {{ form_errors(form.nombre) }}
+                </div>
+                <div>
+                    <label for="tipo_obra" class="form-label">Tipo de obra</label>
                     <select name="tipo_obra" id="tipo_obra" class="form-select">
                         <option value="">Selecciona tipo de obra</option>
                         <option value="ducha">Cambio bañera por ducha</option>
                         <option value="bano_completo">Baño completo</option>
                         <option value="otro">Otro</option>
                     </select>
-                </div>                
-
-                <div class="col-md-6">
-                    <label for="{{ form.nombre.vars.id }}" class="form-label fixed-label">Nombre del proyecto</label>
-                    {{ form_widget(form.nombre) }}
-                    {{ form_errors(form.nombre) }}
+                </div>
+                <div class="proyecto-full proyecto-dates">
+                    <div>
+                        <label for="{{ form.fechaInicio.vars.id }}" class="form-label">Fecha de inicio *</label>
+                        {{ form_widget(form.fechaInicio) }}
+                        {{ form_errors(form.fechaInicio) }}
+                    </div>
+                    <div>
+                        <label for="{{ form.fechaFinPrevista.vars.id }}" class="form-label">Fecha fin prevista</label>
+                        {{ form_widget(form.fechaFinPrevista) }}
+                        {{ form_errors(form.fechaFinPrevista) }}
+                    </div>
+                </div>
+                <div class="proyecto-full">
+                    <label for="{{ form.notas.vars.id }}" class="form-label">Notas</label>
+                    {{ form_widget(form.notas) }}
+                    {{ form_errors(form.notas) }}
                 </div>
             </div>
-
-                <div class="col-md-6">
-                    {{ form_row(form.fechaInicio) }}
-                </div>
-
-                <div class="col-md-6">
-                    {{ form_row(form.fechaFinPrevista) }}
-                </div>
-
-                <div class="col-12">
-                    {{ form_row(form.notas) }}
-                </div>
+            <div class="proyecto-actions">
+                <a href="{{ path('app_proyecto_index') }}" class="btn btn-light">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar proyecto</button>
             </div>
-
-            <div class="d-flex justify-content-end gap-2 mt-4">
-                <a href="{{ path('app_proyecto_index') }}" class="btn btn-light">
-                    Cancelar
-                </a>
-                <button type="submit" class="btn btn-primary">
-                    Guardar proyecto
-                </button>
-            </div>
-
             {{ form_end(form) }}
         </div>
     </div>
@@ -120,7 +135,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Teléfono principal</label>
-                            <input type="text" name="telefono1Cl" class="form-control">
+                            <input type="tel" name="telefono1Cl" class="form-control" autocomplete="tel" placeholder="600 123 456">
                         </div>
 
                         <div class="col-md-6">
@@ -128,9 +143,18 @@
                             <input type="text" name="ciudadCl" class="form-control">
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label">Dirección</label>
-                            <input type="text" name="direccionCl" class="form-control">
+                        <div class="col-md-4">
+                            <label for="clienteTipoVia" class="form-label">Tipo de vía</label>
+                            <select id="clienteTipoVia" name="tipoVia" class="form-select">
+                                {% for via, aliases in constant('App\\Service\\Cliente\\ClienteFormato::VIAS') %}
+                                    <option value="{{ via }}">{{ via }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="clienteDireccion" class="form-label">Dirección</label>
+                            <input id="clienteDireccion" type="text" name="direccionCl" class="form-control" placeholder="Calle Corrida, 12, 2º A">
+                            <small class="text-muted">El tipo de vía se añade automáticamente. Puedes escribir C/, Avda. o Pza.</small>
                         </div>
                     </div>
                 </div>
@@ -152,11 +176,57 @@ document.addEventListener('DOMContentLoaded', function () {
     const modal = new bootstrap.Modal(modalElement);
     const alertBox = document.getElementById('cliente-modal-alert');
 
+    const vias = {{ constant('App\\Service\\Cliente\\ClienteFormato::VIAS')|json_encode|raw }};
+    const campos = formNuevoCliente.elements;
+    const texto = value => value.trim().replace(/\s+/gu, ' ').toLocaleLowerCase('es')
+        .replace(/(^|[\s\-'’])(\p{L})/gu, (_, separator, letter) => separator + letter.toLocaleUpperCase('es'));
+    const telefono = value => {
+        value = value.trim();
+        if (!/^\+?[\d\s().-]*$/.test(value)) return value;
+        const digits = value.replace(/\D/g, '');
+        return (digits && value.startsWith('+') ? '+' : '') + (digits.match(/.{1,3}/g) || []).join(' ');
+    };
+    const normalizarDireccion = () => {
+        const value = campos.direccionCl.value.trim().replace(/\s+/gu, ' ');
+        if (!value) return;
+        for (const [via, aliases] of Object.entries(vias)) {
+            for (const alias of aliases) {
+                const lower = value.toLocaleLowerCase('es');
+                if (lower.startsWith(alias) && (/[/.]$/.test(alias) || lower.length === alias.length || lower[alias.length] === ' ')) {
+                    campos.tipoVia.value = via;
+                    campos.direccionCl.value = (via + ' ' + texto(value.slice(alias.length))).trim();
+                    return;
+                }
+            }
+        }
+        campos.direccionCl.value = campos.tipoVia.value + ' ' + texto(value);
+    };
+    const normalizar = () => {
+        for (const name of ['nombreCl', 'apellidosCl', 'ciudadCl']) campos[name].value = texto(campos[name].value);
+        campos.telefono1Cl.value = telefono(campos.telefono1Cl.value);
+        normalizarDireccion();
+    };
+    for (const name of ['nombreCl', 'apellidosCl', 'ciudadCl']) {
+        campos[name].addEventListener('blur', () => { campos[name].value = texto(campos[name].value); });
+    }
+    campos.telefono1Cl.addEventListener('blur', () => { campos.telefono1Cl.value = telefono(campos.telefono1Cl.value); });
+    campos.direccionCl.addEventListener('blur', normalizarDireccion);
+    campos.tipoVia.addEventListener('change', () => {
+        const selected = campos.tipoVia.value;
+        normalizarDireccion();
+        if (campos.direccionCl.value) {
+            const previous = campos.tipoVia.value;
+            campos.direccionCl.value = selected + campos.direccionCl.value.slice(previous.length);
+        }
+        campos.tipoVia.value = selected;
+    });
+
     formNuevoCliente.addEventListener('submit', async function (e) {
         e.preventDefault();
 
         alertBox.innerHTML = '';
 
+        normalizar();
         const formData = new FormData(formNuevoCliente);
 
         try {

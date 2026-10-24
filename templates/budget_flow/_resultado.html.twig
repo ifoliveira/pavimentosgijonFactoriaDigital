@@ -27,7 +27,7 @@
 
                 <div class="table-responsive">
 
-                    <table class="table table-striped align-middle">
+                    <table class="table table-striped align-middle budget-flow-result-table">
 
                         <thead>
                             <tr>
@@ -49,41 +49,41 @@
 
                                 <tr>
 
-                                    <td>
+                                    <td class="budget-flow-result-description" title="{{ linea.descripcion }}">
                                         {{ linea.descripcion }}
                                     </td>
 
-                                    <td class="text-end">
+                                    <td class="text-end budget-flow-result-number">
                                         {{ linea.cantidad|number_format(2, ',', '.') }}
                                     </td>
 
-                                    <td>
+                                    <td class="budget-flow-result-number">
                                         {{ linea.unidad }}
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end budget-flow-result-number">
                                         {% if linea.costeUnitarioSinIva %} 
                                             {{ linea.costeUnitarioSinIva|number_format(2, ',', '.') }} €
                                         {% else %}
                                             Coste desconocido
                                         {% endif %}
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end budget-flow-result-number">
                                         {{ linea.precioUnitarioSinIva|number_format(2, ',', '.') }} €
                                     </td>
 
-                                    <td class="text-end">
+                                    <td class="text-end budget-flow-result-number">
                                         {{ linea.tipoIva|number_format(2, ',', '.') }} %
                                     </td>
 
-                                    <td class="text-end">
+                                    <td class="text-end budget-flow-result-number">
                                         {{ linea.importeBase|number_format(2, ',', '.') }} €
                                     </td>
 
-                                    <td class="text-end">
+                                    <td class="text-end budget-flow-result-number">
                                         {{ linea.importeIva|number_format(2, ',', '.') }} €
                                     </td>
 
-                                    <td class="text-end fw-bold">
+                                    <td class="text-end fw-bold budget-flow-result-number">
                                         {{ linea.importeTotal|number_format(2, ',', '.') }} €
                                     </td>
 
@@ -110,3 +110,34 @@
     </div>
 
 {% endif %}
+
+<style>
+    .budget-flow-result-table {
+        min-width: 980px;
+        margin-bottom: 0;
+        table-layout: fixed;
+        font-size: .78rem;
+    }
+
+    .budget-flow-result-table th,
+    .budget-flow-result-table td {
+        padding: .55rem .45rem;
+        line-height: 1.25;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .budget-flow-result-table th:first-child,
+    .budget-flow-result-table td:first-child {
+        width: 25%;
+    }
+
+    .budget-flow-result-description {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .budget-flow-result-number {
+        width: 9.375%;
+    }
+</style>

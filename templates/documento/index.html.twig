@@ -9,7 +9,8 @@
     {% set tipoColores = {
         'presupuesto': 'primary',
         'factura':     'success',
-        'ticket':      'warning'
+        'ticket':      'warning',
+        'ticket_rectificativo': 'danger'
     } %}
 
     {% set ecColores = {
@@ -58,10 +59,20 @@
 
                                     <tr>
                                         <td>
-                                            <span class="badge bg-{{ colorTipo }}">{{ doc.tipoDocumento }}</span>
+                                            <span class="badge bg-{{ colorTipo }}">{{ doc.rectificativaTpv ? 'Rectificativa TPV' : doc.tipoDocumento }}</span>
                                         </td>
 
-                                        <td>{{ doc.numero ?? '—' }}</td>
+                                        <td>
+                                            {{ doc.numeroFormateado }}
+                                            {% if doc.rectificativaTpv %}
+                                                <div class="small">Rectifica {{ doc.documentoRectificado.numeroFormateado }}</div>
+                                            {% elseif doc.ticketTpv and doc.rectificativas|length %}
+                                                <div class="small text-warning">Rectificado totalmente</div>
+                                            {% endif %}
+                                            {% if doc.tpvNumeroTicketLocal %}
+                                                <div class="small text-muted">TPV: {{ doc.tpvNumeroTicketLocal }} · {{ doc.tpvCaja }}</div>
+                                            {% endif %}
+                                        </td>
 
                                         <td>
                                             {% if doc.cliente %}
@@ -82,7 +93,7 @@
                                         </td>
 
                                         <td>
-                                            {% if doc.tipoDocumento in ['factura', 'ticket'] %}
+                                            {% if doc.tipoDocumento in ['factura', 'ticket', 'ticket_rectificativo'] %}
                                                 <span class="badge bg-{{ colorCobro }}">{{ doc.estadoCobro }}</span>
                                             {% else %}
                                                 <span class="text-muted">—</span>

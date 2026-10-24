@@ -16,6 +16,7 @@ use App\Repository\BancoRepository;
 use App\Repository\DetallecestaRepository;
 use App\Repository\ForecastRepository;
 use App\Repository\ProyectoCobroRepository;
+use App\Repository\DocumentoCobroRepository;
 use App\Repository\ProyectoRepository;
 use App\Repository\TipoproductoRepository;
 use App\Repository\TiposmovimientoRepository;
@@ -48,14 +49,15 @@ class ForecastController extends AbstractController
     #[Route('/', name: 'forecast_index', methods: ['GET'])]
     public function index(
         ForecastRepository $forecastRepository,
-        BancoRepository $bancoRepository
+        BancoRepository $bancoRepository,
+        DocumentoCobroRepository $documentoCobroRepository
     ): Response {
 
         return $this->render('forecast/conciliar.html.twig', [
 
             'bancos' => $bancoRepository->findBy(
                 [
-                    'categoria_Bn' => ['4', '2', '11'],
+                    'categoria_Bn' => ['4', '2', '11', '3'],
                     'conciliado' => '0',
                 ],
                 [
@@ -67,6 +69,7 @@ class ForecastController extends AbstractController
                 $forecastRepository->count([
                     'estadoFr' => 'P'
                 ]),
+            'totalCobrosPendientes' => $documentoCobroRepository->countPendientesConciliacion(),
         ]);
     }
 
@@ -151,10 +154,14 @@ class ForecastController extends AbstractController
     }    
 
     #[Route('/consulta', name: 'forecast_consulta', methods: ['GET'])]
-    public function consulta(ForecastRepository $forecastRepository, DetallecestaRepository $detallecestaRepository): Response
+    public function consulta(Request $request, ForecastRepository $forecastRepository): Response
     {
+        $soloPendientes = $request->query->getBoolean('pendientes', false);
         return $this->render('forecast/consulta.html.twig', [
-            'forecasts' => $forecastRepository->findByEstadoFr("P"),
+            'forecasts' => $soloPendientes
+                ? $forecastRepository->findBy(['estadoFr' => 'P'], ['fechaFr' => 'DESC', 'id' => 'DESC'])
+                : $forecastRepository->findBy([], ['fechaFr' => 'DESC', 'id' => 'DESC']),
+            'soloPendientes' => $soloPendientes,
         ]);
     }
 
@@ -208,6 +215,53 @@ class ForecastController extends AbstractController
 
         return $response;
 
+    }
+
+    #[Route('/conciliacion/crear-forecast/{id}', name: 'forecast_crear_desde_banco', methods: ['POST'])]
+    public function crearForecastDesdeBanco(Banco $banco, Request $request): JsonResponse
+    {
+        if ($banco->isConciliado()) {
+            return $this->json(['success' => false, 'message' => 'El movimiento bancario ya está conciliado.'], 400);
+        }
+        if ($banco->getCategoriaBn() === null) {
+            return $this->json(['success' => false, 'message' => 'El movimiento no tiene categoría. Asígnale una antes de crear el Forecast.'], 400);
+        }
+        $concepto = trim((string) $request->request->get('concepto', $banco->getConceptoBn() ?: 'Gasto bancario'));
+        if ($concepto === '') {
+            return $this->json(['success' => false, 'message' => 'El concepto no puede estar vacío.'], 400);
+        }
+        $periodicidad = strtolower(trim((string) $request->request->get('periodicidad', 'unico')));
+        $intervalos = ['unico' => 0, 'mensual' => 1, 'bimestral' => 2, 'trimestral' => 3, 'semestral' => 6];
+        if (!array_key_exists($periodicidad, $intervalos)) {
+            return $this->json(['success' => false, 'message' => 'Periodicidad no válida.'], 400);
+        }
+
+        $fechaBase = \DateTimeImmutable::createFromInterface($banco->getFechaBn());
+        $fechas = [$fechaBase];
+        $intervalo = $intervalos[$periodicidad];
+        if ($intervalo > 0) {
+            $fecha = $fechaBase;
+            while ((int) $fecha->format('Y') === (int) $fechaBase->format('Y')) {
+                $fecha = $fecha->modify('+' . $intervalo . ' months');
+                if ((int) $fecha->format('Y') !== (int) $fechaBase->format('Y')) break;
+                $fechas[] = $fecha;
+            }
+        }
+
+        foreach ($fechas as $fecha) {
+            $forecast = new Forecast();
+            $forecast->setEstadoFr('P');
+            $forecast->setTipoFr($banco->getCategoriaBn());
+            $forecast->setFijovarFr($periodicidad === 'unico' ? 'V' : 'F');
+            $forecast->setOrigenFr('Banco');
+            $forecast->setImporteFr((float) $banco->getImporteBn());
+            $forecast->setFechaFr($fecha);
+            $forecast->setConceptoFr($concepto);
+            $this->em->persist($forecast);
+        }
+        $this->em->flush();
+
+        return $this->json(['success' => true, 'message' => count($fechas) . ' Forecast(s) creado(s). Ya puedes conciliar el primero.']);
     }
          
 
@@ -302,7 +356,10 @@ class ForecastController extends AbstractController
         $forecast = $this->em->getRepository('App\Entity\Forecast')->find($datos);
 
         // Marcado como pagado
-        $forecast->timestamp = new \DateTime();
+        if (!$forecast) {
+            return $this->json(['success' => false, 'message' => 'Forecast no encontrado.'], 404);
+        }
+        $forecast->setTimestamp(new \DateTime());
         $forecast->setEstadoFr('C');
         $this->em->flush();
 
@@ -350,7 +407,9 @@ class ForecastController extends AbstractController
     )]
     public function candidatosCobros(
         Banco $banco,
-        ProyectoCobroRepository $proyectoCobroRepository
+        ProyectoCobroRepository $proyectoCobroRepository,
+        DocumentoCobroRepository $documentoCobroRepository,
+        ForecastRepository $forecastRepository
     ): JsonResponse {
 
         if ((float) $banco->getImporteBn() <= 0) {
@@ -361,8 +420,17 @@ class ForecastController extends AbstractController
             ], 400);
         }
 
-        $candidatos = $proyectoCobroRepository
-            ->findCandidatosParaBanco($banco, 10);
+        $candidatos = $proyectoCobroRepository->findCandidatosParaBanco($banco, 10);
+        foreach ($candidatos as &$candidato) $candidato['origen'] = 'proyecto';
+        unset($candidato);
+        $candidatos = array_merge($candidatos, $documentoCobroRepository->findCandidatosParaBanco($banco, 10));
+        $forecasts = $forecastRepository->findCandidatosParaBanco($banco, 10);
+        foreach ($forecasts as &$forecast) {
+            $forecast['origen'] = 'forecast';
+        }
+        unset($forecast);
+        $candidatos = array_merge($candidatos, $forecasts);
+        usort($candidatos, static fn(array $a, array $b): int => $b['score'] <=> $a['score']);
 
         return $this->json([
             'success' => true,
@@ -427,6 +495,23 @@ class ForecastController extends AbstractController
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    #[Route('/conciliacion/documento-cobro/{id}', name: 'forecast_conciliacion_documento_cobro', methods: ['POST'])]
+    public function conciliarDocumentoCobro(
+        \App\Entity\DocumentoCobro $cobro,
+        Request $request,
+        BancoRepository $bancoRepository
+    ): JsonResponse {
+        $banco = $bancoRepository->find($request->request->getInt('banco'));
+        if (!$banco) return $this->json(['success' => false, 'message' => 'No se ha encontrado el movimiento bancario.'], 404);
+        if ($banco->isConciliado()) return $this->json(['success' => false, 'message' => 'El movimiento bancario ya está conciliado.'], 400);
+        if ((float) $banco->getImporteBn() <= 0) return $this->json(['success' => false, 'message' => 'El movimiento no es un ingreso.'], 400);
+        if (strtolower((string) $cobro->getMetodo()) === 'efectivo' || $cobro->getBanco()) return $this->json(['success' => false, 'message' => 'Este cobro no está disponible para conciliar.'], 400);
+        $cobro->setBanco($banco);
+        $banco->setConciliado(true);
+        $this->em->flush();
+        return $this->json(['success' => true, 'message' => 'Cobro de documento conciliado correctamente.']);
     }
 
     private function toFloat(mixed $value): float

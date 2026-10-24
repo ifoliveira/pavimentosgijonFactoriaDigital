@@ -30,16 +30,11 @@ class ForecastConciliacionService
             );
         }
 
-        /*
-         * Protección importante:
-         * salida con salida.
-         */
-        if (
-            (float) $forecast->getImporteFr() >= 0 ||
-            (float) $banco->getImporteBn() >= 0
-        ) {
+        // Una previsión de venta es un ingreso; una de pago, una salida.
+        // Ambas partes deben tener el mismo sentido para evitar conciliaciones erróneas.
+        if ((float) $forecast->getImporteFr() * (float) $banco->getImporteBn() <= 0) {
             throw new \LogicException(
-                'Este conciliador solo admite pagos/salidas.'
+                'El Forecast y el movimiento bancario deben tener el mismo sentido.'
             );
         }
 

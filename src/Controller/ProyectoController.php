@@ -312,11 +312,73 @@ class ProyectoController extends AbstractController
     }
 
     #[Route('/{id<\d+>}', name: 'app_proyecto_show', methods: ['GET'])]
-    public function show(Proyecto $proyecto): Response
+    public function show(
+        Proyecto $proyecto,
+        \App\Service\Dashboard\DashboardProyectoService $dashboardProyectoService
+    ): Response
     {
         return $this->render('proyecto/show.html.twig', [
             'proyecto' => $proyecto,
+            'economico' => $dashboardProyectoService->getResumenProyecto($proyecto),
         ]);
+    }
+
+    #[Route('/{id<\d+>}/fecha-fin-prevista', name: 'app_proyecto_fecha_fin_prevista', methods: ['POST'])]
+    public function actualizarFechaFinPrevista(
+        Proyecto $proyecto,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        if (!$this->isCsrfTokenValid(
+            'proyecto_fecha_fin_prevista_'.$proyecto->getId(),
+            (string) $request->request->get('_token')
+        )) {
+            throw $this->createAccessDeniedException('Token CSRF no válido.');
+        }
+
+        $valor = trim((string) $request->request->get('fecha_fin_prevista'));
+        $fechaNueva = $valor === '' ? null : \DateTimeImmutable::createFromFormat('!Y-m-d', $valor);
+
+        if ($valor !== '' && $fechaNueva === false) {
+            $this->addFlash('warning', 'La fecha de fin prevista no es válida.');
+            return $this->redirectToRoute('app_proyecto_show', ['id' => $proyecto->getId()]);
+        }
+
+        $fechaAnterior = $proyecto->getFechaFinPrevista()?->format('Y-m-d');
+        $proyecto->setFechaFinPrevista($fechaNueva ?: null);
+
+        $gastosMovidos = 0;
+        $forecastsMovidos = 0;
+        if ($fechaNueva !== null && $fechaAnterior !== $fechaNueva->format('Y-m-d')) {
+            foreach ($proyecto->getGastos() as $gasto) {
+                if ($gasto->getEstado() !== ProyectoGasto::ESTADO_PREVISTO) {
+                    continue;
+                }
+
+                $gasto->setFechaPrevista($fechaNueva);
+                $gasto->marcarActualizado();
+                ++$gastosMovidos;
+
+                // Sólo movemos previsiones de tesorería ya existentes: no
+                // generamos forecast nuevos al modificar la fecha de una obra.
+                if ($gasto->getForecast() !== null) {
+                    $gasto->getForecast()->setFechaFr($fechaNueva);
+                    ++$forecastsMovidos;
+                }
+            }
+        }
+
+        $em->flush();
+
+        if ($fechaNueva === null) {
+            $this->addFlash('success', 'Fecha fin prevista eliminada. Las fechas de los gastos se han mantenido sin cambios.');
+        } elseif ($gastosMovidos > 0) {
+            $this->addFlash('success', sprintf('Fecha fin prevista actualizada. Se han movido %d gasto(s) previsto(s) y %d forecast(s) asociado(s).', $gastosMovidos, $forecastsMovidos));
+        } else {
+            $this->addFlash('success', 'Fecha fin prevista actualizada. No había gastos pendientes que mover.');
+        }
+
+        return $this->redirectToRoute('app_proyecto_show', ['id' => $proyecto->getId()]);
     }
 
     #[Route('/', name: 'app_proyecto_index', methods: ['GET'])]
