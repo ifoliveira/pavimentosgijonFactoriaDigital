@@ -223,9 +223,7 @@
       {% if presupuestoCalculado.avisos %}
         <div class="mt-4">
           <h5>Avisos</h5>
-          {% for aviso in presupuestoCalculado.avisos %}
-            <div class="alert alert-warning py-2 mb-2">{{ aviso }}</div>
-          {% endfor %}
+          {% include 'budget_flow/_avisos.html.twig' with {avisos: presupuestoCalculado.avisos} only %}
         </div>
       {% endif %}
     </div>

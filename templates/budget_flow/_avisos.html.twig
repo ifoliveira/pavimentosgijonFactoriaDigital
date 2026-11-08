@@ -1,0 +1,152 @@
+{% for aviso in avisos %}
+    {% set esEstructurado = aviso is iterable %}
+    {% set mensajeExistente = esEstructurado ? (aviso.mensaje ?? aviso.texto ?? '') : aviso %}
+    {% set diagnostico = esEstructurado and aviso.diagnostico is defined and aviso.diagnostico is iterable ? aviso.diagnostico : null %}
+    {% set explicacion = diagnostico is not null and diagnostico.explicacion is defined and diagnostico.explicacion is iterable ? diagnostico.explicacion : null %}
+    {% set resumen = explicacion is not null and explicacion.resumen is defined and explicacion.resumen is not empty ? explicacion.resumen : mensajeExistente %}
+    {% set clasificacion = esEstructurado ? (aviso.clasificacion_seleccion ?? null) : null %}
+    {% set clasificacion = diagnostico is not null and diagnostico.clasificacion_seleccion is defined and diagnostico.clasificacion_seleccion is not empty ? diagnostico.clasificacion_seleccion : clasificacion %}
+    {% set clasificacion = explicacion is not null and explicacion.clasificacion_seleccion is defined and explicacion.clasificacion_seleccion is not empty ? explicacion.clasificacion_seleccion : clasificacion %}
+    {% set requiereRevision = (esEstructurado and aviso.requiere_revision is defined and aviso.requiere_revision is same as(true))
+        or (diagnostico is not null and diagnostico.requiere_revision is defined and diagnostico.requiere_revision is same as(true))
+        or (explicacion is not null and explicacion.requiere_revision is defined and explicacion.requiere_revision is same as(true)) %}
+    {% set esSinCoincidencia = clasificacion == 'sin_coincidencia' %}
+    {% set esAlternativaReal = clasificacion == 'alternativa_real' %}
+    {% set esReferenciaProvisional = clasificacion == 'referencia_provisional' %}
+    {% set clase = esSinCoincidencia ? 'danger' : (esAlternativaReal ? 'info' : 'warning') %}
+
+    <div
+        class="alert alert-{{ clase }} budget-flow-warning{% if requiereRevision %} border-start border-4 border-danger{% endif %}"
+        {% if esSinCoincidencia or esAlternativaReal or esReferenciaProvisional %}data-clasificacion-seleccion="{{ clasificacion }}"{% endif %}
+        {% if requiereRevision %}data-requiere-revision="true"{% endif %}
+    >
+        {% if resumen is not empty %}
+            <div class="fw-semibold">{{ resumen }}</div>
+        {% endif %}
+
+        {% if esReferenciaProvisional or requiereRevision %}
+            <div class="d-flex flex-wrap gap-2 mt-2">
+                {% if esReferenciaProvisional %}
+                    <span class="badge budget-flow-status budget-flow-status--provisional">Referencia provisional · no es una coincidencia exacta</span>
+                {% endif %}
+                {% if requiereRevision %}
+                    <span class="badge budget-flow-status budget-flow-status--review">Requiere revisión</span>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if explicacion is not null %}
+            {% if explicacion.motivos is defined and explicacion.motivos is iterable and explicacion.motivos is not empty %}
+                <div class="mt-3">
+                    <h6 class="mb-1">Motivos</h6>
+                    <ul class="mb-0">
+                        {% for motivo in explicacion.motivos %}
+                            {% if motivo is iterable and motivo.texto is defined and motivo.texto is not empty %}
+                                <li>{{ motivo.texto }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if explicacion.restricciones is defined and explicacion.restricciones is iterable and explicacion.restricciones is not empty %}
+                <div class="mt-3">
+                    <h6 class="mb-1">Condiciones mantenidas</h6>
+                    <ul class="mb-0">
+                        {% for restriccion in explicacion.restricciones %}
+                            {% if restriccion is iterable and restriccion.texto is defined and restriccion.texto is not empty %}
+                                <li>{{ restriccion.texto }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if explicacion.alternativas is defined and explicacion.alternativas is iterable and explicacion.alternativas is not empty %}
+                <div class="mt-3">
+                    <h6 class="mb-2">Alternativas disponibles</h6>
+                    <div class="row g-2">
+                        {% for alternativa in explicacion.alternativas %}
+                            {% if alternativa is iterable %}
+                                <div class="col-md-6">
+                                    <article class="card h-100 budget-flow-alternative">
+                                        <div class="card-body py-3">
+                                            {% if alternativa.nombre is defined and alternativa.nombre is not empty %}
+                                                <h6 class="card-title mb-2">{{ alternativa.nombre }}</h6>
+                                            {% endif %}
+                                            {% if alternativa.referencia is defined and alternativa.referencia is not empty %}
+                                                <p class="small mb-1">
+                                                    <strong>{{ esReferenciaProvisional ? 'Referencia propuesta' : 'Referencia' }}:</strong>
+                                                    {{ alternativa.referencia }}
+                                                </p>
+                                            {% endif %}
+                                            {% if alternativa.precio_unitario_sin_iva is defined and alternativa.precio_unitario_sin_iva is not same as(null) and alternativa.precio_unitario_sin_iva != '' %}
+                                                <p class="small mb-1">
+                                                    <strong>Precio unitario sin IVA:</strong>
+                                                    {{ alternativa.precio_unitario_sin_iva|number_format(2, ',', '.') }} €
+                                                </p>
+                                            {% endif %}
+                                            {% if alternativa.diferencias is defined and alternativa.diferencias is iterable and alternativa.diferencias is not empty %}
+                                                <ul class="small mb-0 mt-2">
+                                                    {% for diferencia in alternativa.diferencias %}
+                                                        {% if diferencia is iterable and diferencia.texto is defined and diferencia.texto is not empty %}
+                                                            <li>{{ diferencia.texto }}</li>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </ul>
+                                            {% endif %}
+                                        </div>
+                                    </article>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endfor %}
+
+<style>
+    .budget-flow-warning.alert-warning {
+        background-color: #fff3cd;
+        border-color: #e8bd4f;
+        color: #3d2e00;
+    }
+
+    .budget-flow-warning.alert-info {
+        background-color: #dff3ff;
+        border-color: #62a9cf;
+        color: #0b3d5c;
+    }
+
+    .budget-flow-warning.alert-danger {
+        background-color: #fde8e7;
+        border-color: #d97a72;
+        color: #651a1a;
+    }
+
+    .budget-flow-warning .card,
+    .budget-flow-warning .card-body {
+        color: #1f2933;
+    }
+
+    .budget-flow-alternative {
+        background-color: #ffffff;
+        border-color: #9aa7b3;
+    }
+
+    .budget-flow-status {
+        font-weight: 600;
+    }
+
+    .budget-flow-status--provisional {
+        background-color: #8a5a00;
+        color: #ffffff;
+    }
+
+    .budget-flow-status--review {
+        background-color: #9f1d1d;
+        color: #ffffff;
+    }
+</style>

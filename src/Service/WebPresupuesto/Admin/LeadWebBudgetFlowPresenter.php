@@ -46,7 +46,7 @@ final class LeadWebBudgetFlowPresenter
     }
 
     /**
-     * @return array{lineas: array<int, array<string, string>>, avisos: string[], total: ?string}
+     * @return array{lineas: array<int, array<string, string>>, avisos: array<int, array{mensaje: string, clasificacion_seleccion: ?string, diagnostico: ?array}>, total: ?string}
      */
     public function presupuesto(array $jsonPresupuesto): array
     {
@@ -71,12 +71,28 @@ final class LeadWebBudgetFlowPresenter
 
         foreach (($jsonPresupuesto['avisos'] ?? []) as $aviso) {
             if (is_scalar($aviso) && trim((string) $aviso) !== '') {
-                $avisos[] = trim((string) $aviso);
+                $avisos[] = [
+                    'mensaje' => trim((string) $aviso),
+                    'clasificacion_seleccion' => null,
+                    'diagnostico' => null,
+                ];
             } elseif (is_array($aviso)) {
-                $texto = $aviso['mensaje'] ?? $aviso['texto'] ?? null;
+                $diagnostico = is_array($aviso['diagnostico'] ?? null) ? $aviso['diagnostico'] : null;
+                $explicacion = is_array($diagnostico['explicacion'] ?? null) ? $diagnostico['explicacion'] : null;
+                $texto = $this->textoONull($aviso['mensaje'] ?? $aviso['texto'] ?? null);
+                $resumen = $this->textoONull($explicacion['resumen'] ?? null);
 
-                if (is_scalar($texto) && trim((string) $texto) !== '') {
-                    $avisos[] = trim((string) $texto);
+                if ($texto !== null || $resumen !== null) {
+                    $avisos[] = [
+                        'mensaje' => $texto ?? $resumen,
+                        'clasificacion_seleccion' => $this->textoONull(
+                            $aviso['clasificacion_seleccion']
+                            ?? $diagnostico['clasificacion_seleccion']
+                            ?? $explicacion['clasificacion_seleccion']
+                            ?? null
+                        ),
+                        'diagnostico' => $diagnostico,
+                    ];
                 }
             }
         }
@@ -178,6 +194,13 @@ final class LeadWebBudgetFlowPresenter
     private function texto(mixed $valor): string
     {
         return is_scalar($valor) ? trim((string) $valor) : '';
+    }
+
+    private function textoONull(mixed $valor): ?string
+    {
+        $texto = $this->texto($valor);
+
+        return $texto === '' ? null : $texto;
     }
 
     private function importe(mixed $valor): ?string

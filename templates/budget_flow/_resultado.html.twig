@@ -12,12 +12,7 @@
 
             {# AVISOS #}
             {% if resultado.avisos is defined and resultado.avisos|length > 0 %}
-
-                {% for aviso in resultado.avisos %}
-                    <div class="alert alert-warning">
-                        {{ aviso.mensaje ?? aviso }}
-                    </div>
-                {% endfor %}
+                {% include 'budget_flow/_avisos.html.twig' with {avisos: resultado.avisos} only %}
 
             {% endif %}
 
@@ -140,4 +135,5 @@
     .budget-flow-result-number {
         width: 9.375%;
     }
+
 </style>
