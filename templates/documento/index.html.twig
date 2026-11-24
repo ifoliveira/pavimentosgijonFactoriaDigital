@@ -111,7 +111,7 @@
                                             </a>
 
                                             {% if doc.tipoDocumento == 'presupuesto' and doc.estadoComercial in ['enviado', 'aceptado'] %}
-                                                <a href="{{ path('documento_convertir', {id: doc.id}) }}"
+                                                <a href="#"
                                                    class="text-inverse pr-2" data-toggle="tooltip" title="Convertir a factura">
                                                     <i class="ti-arrow-right"></i>
                                                 </a>
