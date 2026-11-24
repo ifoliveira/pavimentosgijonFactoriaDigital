@@ -37,6 +37,12 @@ class Efectivo
     #[ORM\OneToMany(mappedBy: 'efectivoPg', targetEntity: Pagos::class, cascade: ['persist', 'remove'])]
     private Collection $pagos;
 
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $registradoPor = null;
+
+    public function getRegistradoPor(): ?string { return $this->registradoPor; }
+    public function setRegistradoPor(?string $nombre): self { $this->registradoPor = $nombre; return $this; }
+
     public function __construct()
     {
         $this->timestampEf = new \DateTime();

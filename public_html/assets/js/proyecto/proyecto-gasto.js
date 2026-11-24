@@ -241,6 +241,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (data.success) {
+                if (origen === 'efectivo') {
+                    alert(data.message || 'El importe se ha descontado de la caja de efectivo.');
+                }
                 window.location.reload();
                 return;
             }

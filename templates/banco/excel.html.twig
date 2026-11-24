@@ -1,159 +1,134 @@
-
-
 {% extends 'base.html.twig' %}
 
-{% block cabecera %} Banco {% endblock %}
+{% block title %}Importar movimientos · Pavimentos Gijón{% endblock %}
+{% block cabecera %}Importar movimientos{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('banco_index') }}">Banco</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Importar movimientos</li>
+{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('dist/css/banco-upload.css') }}">
+{% endblock %}
+
 {% block body %}
-
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            {{ form_start(form) }}
-                                {{ form_widget(form) }}
-
-                            {{ form_end(form) }}
-                        </div>                
-                    </div>
-                </div>
-
-                <!-- ============================================================== -->
-                <!-- Start Page Content -->
-                <!-- ============================================================== -->
-                <!-- Footer callback -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">Movimientos</h4>
-                                <h6 class="card-subtitle"></h6>
-                                <div class="table-responsive">
-                                    <table id="footer" class="table table-striped table-bordered display"
-                                        style="width:100%">
-                                        <thead>
-                                            <tr>
-                                                <th>Id_Bn</th>
-                                                <th>Categoria_Bn</th>
-                                                <th>Concepto_Bn</th>
-                                                <th>Fecha_Bn</th>
-                                                <th>Importe_Bn</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for banco in bancos %}
-                                            <tr>
-                                                <td>{{ banco.id }}</td>
-                                                <td>{{ banco.categoriaBn }}</td>
-                                                <td>{{ banco.conceptoBn }}</td>
-                                                <td class="text-center">{{ banco.fechaBn ? banco.fechaBn|date('Y-m-d') : '' }}</td>
-                                                <td class="text-right">{{ banco.importeBn|format_currency('EUR', locale='es') }}</td>
-                                                <td>
-                                                        <a href="{{ path('banco_edit', {'id': banco.id}) }}">edit</a>
-                                                        <a href="{{ path('banco_transferencia', {'id' : banco.id}) }}" class="text-inverse" title="Transferencia" data-toggle="tooltip">
-                                                                <i  class="ti-shift-right"></i>
-                                                        </a>
-                                                </td>
-                                            </tr>
-                                        {% else %}
-                                            <tr>
-                                                <td colspan="7">no records found</td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                        <tfoot>
-
-                                        </tfoot>
-                                    </table>
-                                    <a href="{{ path('banco_new') }}">Create new</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-    
-                <!-- ============================================================== -->
-                <!-- End PAge Content -->
-                <!-- ============================================================== -->
-                <!-- ============================================================== -->
-                <!-- Right sidebar -->
-                <!-- ============================================================== -->
-                <!-- .right-sidebar -->
-                <!-- ============================================================== -->
-                <!-- End Right sidebar -->
-                <!-- ============================================================== -->
-            </div>
-            <!-- ============================================================== -->
-            <!-- End Container fluid  -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- footer -->
-            <!-- ============================================================== -->
-            <footer class="footer">
-                © 2020 Admin Pro Admin by wrappixel.com
-            </footer>
-            <!-- ============================================================== -->
-            <!-- End footer -->
-            <!-- ============================================================== -->
-        </div>
-        <!-- ============================================================== -->
-        <!-- End Page wrapper  -->
-        <!-- ============================================================== -->
+<div class="bank-upload">
+    <div class="bank-upload-heading">
+        <p>Incorpora tu extracto de Excel y revisa los nuevos movimientos bancarios.</p>
+        <a class="btn btn-outline-secondary" href="{{ path('banco_index') }}"><i class="ti-arrow-left" aria-hidden="true"></i> Volver al banco</a>
     </div>
-    <!-- ============================================================== -->
-    <!-- End Wrapper -->
-    <!-- ============================================================== -->
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success" role="status"><i class="ti-check-box" aria-hidden="true"></i> {{ message }} · {{ bancos|length }} movimientos añadidos.</div>
+    {% endfor %}
+
+    <div class="bank-upload-grid">
+        <section class="bank-upload-card" aria-labelledby="upload-title">
+            <div class="bank-upload-section-heading">
+                <span class="bank-upload-icon"><i class="ti-upload" aria-hidden="true"></i></span>
+                <div><h2 id="upload-title">Subir extracto bancario</h2><p>Selecciona el archivo que has descargado de tu banco.</p></div>
+            </div>
+            {{ form_start(form, {'attr': {'id': 'bank-upload-form'}}) }}
+                {{ form_errors(form) }}
+                <div class="bank-upload-file">
+                    <span class="bank-upload-file-icon"><i class="ti-file" aria-hidden="true"></i></span>
+                    {{ form_label(form.excel_file, 'Selecciona tu archivo Excel') }}
+                    <p id="bank-upload-help">Extracto bancario en formato .xlsx</p>
+                    {{ form_widget(form.excel_file, {'attr': {'class': 'form-control', 'accept': '.xlsx', 'aria-describedby': 'bank-upload-help bank-upload-selection'}}) }}
+                    {{ form_errors(form.excel_file) }}
+                    <p id="bank-upload-selection" class="bank-upload-selection" aria-live="polite">Elige un archivo para comenzar.</p>
+                </div>
+                <div class="bank-upload-submit">
+                    <span><i class="ti-lock" aria-hidden="true"></i> Revisa el archivo antes de importar.</span>
+                    {{ form_widget(form.submit, {'label': 'Importar movimientos', 'attr': {'class': 'btn btn-primary'}}) }}
+                </div>
+            {{ form_end(form) }}
+        </section>
+
+        <aside class="bank-upload-guide" aria-labelledby="guide-title">
+            <span class="bank-upload-eyebrow">ANTES DE IMPORTAR</span>
+            <h2 id="guide-title">Tu extracto, en tres pasos</h2>
+            <ol>
+                <li><strong>Descarga el extracto</strong><span>Exporta los movimientos desde tu banco en formato Excel.</span></li>
+                <li><strong>Comprueba las columnas</strong><span>El archivo debe incluir fecha en la primera columna, concepto en la tercera e importe en la cuarta.</span></li>
+                <li><strong>Importa y revisa</strong><span>Los movimientos añadidos aparecerán debajo para que puedas revisarlos.</span></li>
+            </ol>
+            <div class="bank-upload-tip"><i class="ti-info-alt" aria-hidden="true"></i><p>Conserva la cabecera del extracto: la primera columna debe comenzar por «Fecha».</p></div>
+        </aside>
+    </div>
+
+    <section class="bank-upload-card bank-upload-results" aria-labelledby="results-title">
+        <div class="bank-upload-results-heading">
+            <div><h2 id="results-title">Movimientos importados <span class="bank-upload-count">{{ bancos|length }}</span></h2><p>Resultados de esta importación. Cambia la categoría y pulsa Guardar sin salir de esta página.</p></div>
+            <a href="{{ path('banco_new') }}" class="btn btn-outline-secondary"><i class="ti-plus" aria-hidden="true"></i> Añadir manualmente</a>
+        </div>
+        {% if bancos is empty %}
+            <div class="bank-upload-empty">
+                <span class="bank-upload-icon"><i class="ti-list" aria-hidden="true"></i></span>
+                <h3>No hay movimientos para mostrar</h3>
+                <p>Cuando importes un extracto, los nuevos movimientos aparecerán aquí.</p>
+            </div>
+        {% else %}
+            {% set total = 0 %}
+            <div class="table-responsive">
+                <table id="bank-upload-results-table" class="table" style="width:100%">
+                    <thead><tr><th scope="col">Referencia</th><th scope="col">Categoría</th><th scope="col">Concepto</th><th scope="col">Fecha</th><th scope="col" class="text-end">Importe</th><th scope="col">Acciones</th></tr></thead>
+                    <tbody>
+                    {% for banco in bancos %}
+                        {% set total = total + banco.importeBn %}
+                        <tr>
+                            <td class="text-muted">#{{ banco.id }}</td>
+                            <td data-search="{{ banco.categoriaBn|default('Sin categoría') }}" data-order="{{ banco.categoriaBn|default('Sin categoría') }}">
+                                {% include 'banco/_categoria.html.twig' %}
+                            </td>
+                            <td class="bank-upload-concept">{{ banco.conceptoBn }}</td>
+                            <td class="bank-upload-nowrap" data-order="{{ banco.fechaBn ? banco.fechaBn|date('Y-m-d') : '' }}">{{ banco.fechaBn ? banco.fechaBn|date('d/m/Y') : '—' }}</td>
+                            <td class="bank-upload-amount {{ banco.importeBn < 0 ? 'bank-upload-negative' : 'bank-upload-positive' }}" data-order="{{ banco.importeBn }}">{{ banco.importeBn|format_currency('EUR', locale='es') }}</td>
+                            <td><div class="bank-upload-actions">
+                                <a class="btn btn-sm btn-outline-secondary" href="{{ path('banco_transferencia', {'id': banco.id}) }}" aria-label="Transferencia del movimiento {{ banco.id }}"><i class="ti-shift-right" aria-hidden="true"></i> Transferencia</a>
+                            </div></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot><tr><th colspan="4" scope="row">Total importado</th><td class="bank-upload-amount">{{ total|format_currency('EUR', locale='es') }}</td><td></td></tr></tfoot>
+                </table>
+            </div>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}
 
 {% block jscustom %}
-    <!--This page plugins -->
-
-    <!--This page plugins -->
-    <script src="{{ asset('assets/extra-libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/extra-libs/datatables.net-bs4/js/dataTables.responsive.min.js') }}"></script>
-    <script language = "javascript">
-            //=============================================//
-            //    Footer callback                          //
-            //=============================================//
-            $('#footer').DataTable({
-                "order": [
-                            [3, "desc"]
-                         ],
-                "footerCallback": function(row, data, start, end, display) {
-                    var api = this.api(),
-                        data;
-
-
-                    // Remove the formatting to get integer data for summation
-                    var intVal = function(i) {
-                        return typeof i === 'string' ?
-                            i.replace(/[\$,]/g, '') * 1 :
-                            typeof i === 'number' ?
-                            i : 0;
-                    };
-
-                    // Total over all pages
-                    total = api
-                        .column(4)
-                        .data()
-                        .reduce(function(a, b) {
-                            return intVal(a) + intVal(b);
-                        }, 0);
-
-                    // Total over this page
-                    pageTotal = api
-                        .column(4, { page: 'current' })
-                        .data()
-                        .reduce(function(a, b) {
-                            return intVal(a) + intVal(b);
-                        }, 0);
-
-                    // Update footer
-                    $(api.column(4).footer()).html(
-                        pageTotal.toFixed(2) + '€ (' + total.toFixed(2) + ' € total)'
-                    );
+<script src="{{ asset('dist/js/banco-categoria.js') }}"></script>
+<script>
+    (function () {
+        var form = document.getElementById('bank-upload-form');
+        var input = form.querySelector('input[type="file"]');
+        var selection = document.getElementById('bank-upload-selection');
+        input.addEventListener('change', function () {
+            var file = input.files[0];
+            selection.textContent = file ? 'Archivo seleccionado: ' + file.name : 'Elige un archivo para comenzar.';
+            input.closest('.bank-upload-file').classList.toggle('has-file', Boolean(file));
+        });
+        form.addEventListener('submit', function () {
+            var button = form.querySelector('button[type="submit"]');
+            button.textContent = 'Importando movimientos…';
+            button.disabled = true;
+            form.setAttribute('aria-busy', 'true');
+        });
+        if (document.getElementById('bank-upload-results-table')) {
+            var table = $('#bank-upload-results-table').DataTable({
+                order: [[3, 'desc']],
+                columnDefs: [{ targets: 5, orderable: false, searchable: false }],
+                language: {
+                    search: 'Buscar:', lengthMenu: 'Mostrar _MENU_ movimientos',
+                    info: 'Mostrando _START_ a _END_ de _TOTAL_ movimientos',
+                    infoEmpty: 'No hay movimientos', infoFiltered: '(de _MAX_ movimientos)',
+                    zeroRecords: 'No hay movimientos que coincidan con la búsqueda.',
+                    paginate: { first: 'Primera', last: 'Última', next: 'Siguiente', previous: 'Anterior' }
                 }
             });
-
-    </script> 
-
+            initBancoCategoria(document.getElementById('bank-upload-results-table'), table);
+        }
+    })();
+</script>
 {% endblock %}

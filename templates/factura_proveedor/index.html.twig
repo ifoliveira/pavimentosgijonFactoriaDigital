@@ -478,6 +478,16 @@
                                         PDF
                                     </a>
 
+                                    <form method="post"
+                                          action="{{ path('factura_proveedor_eliminar', {id: factura.id}) }}"
+                                          class="d-inline"
+                                          onsubmit="return confirm('¿Eliminar esta factura por completo? Se borrarán sus líneas, vencimientos, asignaciones, gastos y movimientos de stock asociados.');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('eliminar_factura_proveedor_' ~ factura.id) }}">
+                                        <button type="submit" class="btn btn-outline-danger">
+                                            Borrar
+                                        </button>
+                                    </form>
+
                                 </div>
                         </td>
 
@@ -522,5 +532,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 {% endblock %}
-
 

@@ -1,0 +1,14 @@
+<form class="bank-category-form" action="{{ path('banco_categoria', {'id': banco.id}) }}" method="post">
+    <input type="hidden" name="_token" value="{{ csrf_token('banco_categoria_' ~ banco.id) }}">
+    <label class="visually-hidden" for="bank-category-{{ banco.id }}">Categoría del movimiento {{ banco.id }}</label>
+    <div class="bank-category-controls">
+        <select id="bank-category-{{ banco.id }}" name="categoria" class="form-select form-select-sm">
+            <option value="">Sin categoría</option>
+            {% for categoria in categorias %}
+                <option value="{{ categoria.id }}" {{ banco.categoriaBn and banco.categoriaBn.id == categoria.id ? 'selected' : '' }}>{{ categoria.descripcionTm }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-sm btn-outline-primary" type="submit">Guardar</button>
+    </div>
+    <span class="bank-category-status" role="status" aria-live="polite"></span>
+</form>

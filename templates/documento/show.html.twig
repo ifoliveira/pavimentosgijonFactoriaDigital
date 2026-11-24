@@ -29,7 +29,7 @@
                 {% endif %}
 
                 {# FILA 1: IDENTIDAD + ACCIONES #}
-                <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
                     <div>
                         <h2 class="mb-0 fw-bold">
                             {{ documento.numeroFormateado ?? 'BORRADOR' }}
@@ -85,39 +85,48 @@
                             </form>
                         {% endif %}
 
-                        <a
-                            href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'clasico'}) }}"
-                            target="_blank"
-                            class="{{ btnDark }}"
-                        >
-                            PDF Imprimible
-                        </a>
-
-                        <a
-                            href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'clasico', ocultar_importes: 1}) }}"
-                            target="_blank"
-                            class="{{ btnDark }}"
-                        >
-                            PDF sin desglose
-                        </a>
-
-                        {% if acciones.puedeGenerarPdf %}
-                            <a
-                                href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'moderno'}) }}"
-                                target="_blank"
-                                class="{{ btnDark }}"
-                            >
-                                PDF Email
-                            </a>
-
-                            <a
-                                href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'cliente'}) }}"
-                                target="_blank"
-                                class="{{ btnDark }}"
-                            >
-                                PDF Cliente
-                            </a>
-                        {% endif %}
+                        <div class="dropdown">
+                            <button type="button"
+                                    id="documento-pdf-menu"
+                                    class="{{ btnDark }} dropdown-toggle"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                PDF
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="documento-pdf-menu">
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'clasico'}) }}"
+                                       target="_blank" rel="noopener">
+                                        PDF Imprimible
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'clasico', ocultar_importes: 1}) }}"
+                                       target="_blank" rel="noopener">
+                                        PDF sin desglose
+                                    </a>
+                                </li>
+                                {% if acciones.puedeGenerarPdf %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'moderno'}) }}"
+                                           target="_blank" rel="noopener">
+                                            PDF Email
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{{ path('app_documento_pdf', {id: documento.id, tpl: 'cliente'}) }}"
+                                           target="_blank" rel="noopener">
+                                            PDF Cliente
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
 
                         {% if acciones.puedeAceptar %}
                             <form method="post"
@@ -143,6 +152,12 @@
 
                     </div>
                 </div>
+
+                {% if acciones.requiereClienteParaAceptar %}
+                    <p class="text-warning small mb-3">
+                        Asigna un cliente en «Editar cabecera» para poder aceptar este presupuesto.
+                    </p>
+                {% endif %}
 
                 {# FILA 2: DATOS PRINCIPALES #}
                 <div class="row g-3 align-items-start">
@@ -388,6 +403,8 @@
             </div>
             <div class="card-body">
 
+                {% include 'documento/_resumen_factura_final.html.twig' with {documento: documento} only %}
+
                 {# Resumen importes #}
                 <div class="row mb-3 text-center">
                     <div class="col-4">
@@ -597,6 +614,13 @@
                                 onclick="abrirNuevaLinea()">
                             Añadir línea
                         </button>
+                        {% if esPresupuestoComplementario %}
+                            <button class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalDescontarConcepto">
+                                Descontar concepto anterior
+                            </button>
+                        {% endif %}
                         {% endif %}
                     </div>
                 </div>
@@ -942,6 +966,27 @@
     </div>
   </div>
 </div>
+{% if esPresupuestoComplementario %}
+<div class="modal fade" id="modalDescontarConcepto" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Descontar concepto anterior</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
+      <thead><tr><th>Presupuesto</th><th>Concepto</th><th class="text-end">Disponible</th><th></th></tr></thead><tbody>
+      {% for linea in lineasDescontables %}
+        <tr><td>{{ linea.documento.numeroFormateado }}</td><td>{{ linea.descripcion }}</td><td class="text-end">{{ linea.cantidad|number_format(3, ',', '.') }} {{ linea.unidad }}</td><td class="text-end">
+          <form method="post" action="{{ path('app_documento_linea_descontar', {id: documento.id, linea: linea.id}) }}" class="d-flex gap-2 justify-content-end">
+            <input type="number" name="cantidad" min="0.001" max="{{ linea.cantidad }}" step="0.001" value="{{ linea.cantidad }}" class="form-control form-control-sm" style="width:90px" required>
+            <button class="btn btn-sm btn-danger" type="submit">Descontar</button>
+          </form>
+        </td></tr>
+      {% else %}
+        <tr><td colspan="4" class="text-center text-muted py-4">No hay líneas aceptadas disponibles para descontar.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div></div>
+  </div></div>
+</div>
+{% endif %}
 {% endblock %}
 {% block offcanvas %}
 <div class="offcanvas offcanvas-end offcanvas-linea"
@@ -1065,7 +1110,7 @@
                 id="f-cantidad"
                 class="form-control form-control-custom text-end js-recalcular-linea"
                 value="1"
-                min="1"
+                min="{{ esPresupuestoComplementario ? '-999999' : '1' }}"
                 step="1"
                 required>
         </div>
@@ -1196,7 +1241,7 @@
                 id="f-cantidad-servicio"
                 class="form-control form-control-custom text-end js-recalcular-servicio"
                 value="1"
-                min="1"
+                min="{{ esPresupuestoComplementario ? '-999999' : '1' }}"
                 step="1">
         </div>
         <div class="col-4">
@@ -2252,6 +2297,18 @@
                 e.preventDefault();
 
                 const form = this;
+                const tipoLinea = document.getElementById('hidden-tipo-linea').value;
+                const campoCantidad = tipoLinea === 'servicio'
+                    ? document.getElementById('f-cantidad-servicio')
+                    : document.getElementById('f-cantidad');
+                const cantidad = parseFloat(campoCantidad?.value ?? '0');
+
+                if (!Number.isFinite(cantidad) || cantidad === 0 || (!{{ esPresupuestoComplementario ? 'true' : 'false' }} && cantidad < 0)) {
+                    alert({{ esPresupuestoComplementario ? "'La cantidad debe ser distinta de cero.'" : "'La cantidad debe ser mayor que cero.'" }});
+                    campoCantidad?.focus();
+                    return;
+                }
+
                 const botonGuardar = document.getElementById('btn-guardar-linea');
 
                 botonGuardar.disabled = true;

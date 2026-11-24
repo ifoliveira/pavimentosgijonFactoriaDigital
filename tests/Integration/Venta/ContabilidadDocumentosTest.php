@@ -56,7 +56,8 @@ final class ContabilidadDocumentosTest extends TpvDatabaseTestCase
         $proyecto->setCliente($this->em->getReference(\App\Entity\Clientes::class, 1));
         $proyecto->setTotalFacturado('1200.00');
         $this->em->persist($proyecto);
-        $this->documento('factura', '1000.00', '100.00')->setProyecto($proyecto);
+        $factura = $this->documento('factura', '1000.00', '100.00')->setProyecto($proyecto);
+        $this->cobro($factura, '2026-01-01', '100.00');
         $this->documento('ticket', '200.00', '0.00')->setProyecto($proyecto);
         $this->documento('presupuesto', '1200.00', '0.00')->setProyecto($proyecto);
         foreach ([['2025-12-31', '200.00'], ['2026-01-01', '300.00']] as [$fecha, $importe]) {
@@ -77,6 +78,81 @@ final class ContabilidadDocumentosTest extends TpvDatabaseTestCase
         $this->documento('ticket_rectificativo', '-700.00', '0.00')->setProyecto($proyecto);
         $this->em->flush();
         self::assertEquals(0, $proyectos->getTotalPendienteCobro());
+    }
+
+    public function testFacturaAnticipoNoCancelaLaDeudaCompletaDelProyecto(): void
+    {
+        $schema = (new \Doctrine\ORM\Tools\SchemaTool($this->em))->getSchemaFromMetadata([
+            $this->em->getClassMetadata(\App\Entity\Proyecto::class),
+            $this->em->getClassMetadata(\App\Entity\ProyectoCobro::class),
+        ]);
+        foreach ($schema->getTables() as $table) {
+            foreach ($table->getForeignKeys() as $key) {
+                $table->removeForeignKey($key->getName());
+            }
+        }
+        foreach ($schema->toSql($this->em->getConnection()->getDatabasePlatform()) as $sql) {
+            $this->em->getConnection()->executeStatement($sql);
+        }
+
+        $proyecto = (new \App\Entity\Proyecto())
+            ->setNombre('Obra con anticipo')
+            ->setCliente($this->em->getReference(\App\Entity\Clientes::class, 1))
+            ->setTotalPresupuestado('12100.00')
+            ->setTotalFacturado('12100.00');
+        $this->em->persist($proyecto);
+
+        $anticipo = $this->documento('factura', '1210.00', '1210.00')->setProyecto($proyecto);
+        $cobro = (new \App\Entity\ProyectoCobro())
+            ->setProyecto($proyecto)
+            ->setFecha(new \DateTime('2026-01-01'))
+            ->setMetodo('transferencia')
+            ->setImporteBruto('1210.00')
+            ->setImporteNeto('1210.00')
+            ->setFacturaAnticipo($anticipo);
+        $this->em->persist($cobro);
+        $this->em->flush();
+
+        self::assertNull((new DocumentoRepository($this->registry))->findFacturaCompletaDeProyecto($proyecto));
+        self::assertEquals(
+            10890,
+            (new \App\Repository\ProyectoRepository($this->registry))->getTotalPendienteCobro()
+        );
+
+        $presupuesto = $this->documento('presupuesto', '12100.00', '0.00')
+            ->setProyecto($proyecto)->setEstadoComercial('aceptado')
+            ->setBaseImponible('10000.00')->setTotalIva('2100.00');
+        foreach ([[$presupuesto, '10000.00', '2100.00'], [$anticipo, '1000.00', '210.00']] as [$doc, $base, $iva]) {
+            $doc->addLinea((new \App\Entity\DocumentoLinea())
+                ->setTipoLinea('servicio')->setDescripcion('Obra')
+                ->setCantidad('1.000')->setPrecioUnitario($base)->setTipoIva('21.00')
+                ->setSubtotal($base)->setTotalIva($iva));
+        }
+        $this->em->flush();
+        $repo = new DocumentoRepository($this->registry);
+        $calculator = new \App\Service\Proyecto\ProyectoCalculatorService($repo, $this->em);
+        $series = $this->createMock(\App\Service\Documento\SerieService::class);
+        $series->method('asignarNumeracion')->willReturnCallback(function (Documento $doc): void {
+            $doc->setSerie('TEST')->setNumero(++$this->numero);
+        });
+        $service = new \App\Service\Proyecto\FacturaFinalService($this->em, $repo, $series, $calculator);
+        $final = $service->emitir($proyecto);
+        self::assertSame('10890.00', $final->getTotal());
+        self::assertSame('12100.00', $proyecto->getTotalFacturado());
+        self::assertSame('10890.00', $proyecto->getPendienteCobro());
+        self::assertSame($final, $service->emitir($proyecto));
+
+        $cobrosService = new \App\Service\Proyecto\ProyectoCobroService(
+            $this->em, $calculator, $this->createMock(\App\Service\Efectivo\EfectivoService::class),
+            new \App\Service\Proyecto\FacturaAnticipoService($this->em, $series, new \App\Service\Documento\DocumentoCalculatorService()),
+            $repo,
+            $service
+        );
+        $pagoFinal = $cobrosService->registrarCobro($proyecto, new \DateTime(), 'transferencia', 1000);
+        self::assertNull($pagoFinal->getFacturaAnticipo());
+        self::assertSame('1000.00', $final->getTotalCobrado());
+        self::assertSame('9890.00', $proyecto->getPendienteCobro());
+        self::assertEquals(9890, (new \App\Repository\ProyectoRepository($this->registry))->getTotalPendienteCobro());
     }
 
     public function testIvaTrimestralIncluyeFacturasAceptadasSinDependerDelCobro(): void

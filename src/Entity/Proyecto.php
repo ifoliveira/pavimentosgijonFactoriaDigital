@@ -6,6 +6,8 @@ use App\Repository\ProyectoRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * ENTIDAD PROYECTO
@@ -77,12 +79,16 @@ class Proyecto
     private ?string $nombre = null;
 
     /**
-     * Cliente propietario del proyecto.
-     * Apunta a la entidad Clientes existente (no se modifica).
+     * Cliente propietario del proyecto. Puede asignarse más adelante si la
+     * obra se ha identificado inicialmente con un nombre descriptivo.
      */
     #[ORM\ManyToOne(targetEntity: Clientes::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Clientes $cliente = null;
+
+    /** Clasificación opcional para localizar y agrupar la obra. */
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $tipoObra = null;
 
     // -------------------------------------------------------------------------
     // FECHAS
@@ -102,8 +108,7 @@ class Proyecto
     private ?\DateTimeInterface $fechaFinPrevista = null;
 
     /**
-     * Fecha real en que se completó y cobró todo.
-     * La rellena ProyectoService cuando estadoCobro de la factura = cobrado.
+     * Fecha de finalización manual de la obra, independiente de sus cobros.
      */
     #[ORM\Column(type: 'date', nullable: true)]
     private ?\DateTimeInterface $fechaFinReal = null;
@@ -279,6 +284,47 @@ class Proyecto
         return $this;
     }
 
+    public function getTipoObra(): ?string
+    {
+        return $this->tipoObra;
+    }
+
+    public function setTipoObra(?string $tipoObra): static
+    {
+        $this->tipoObra = $tipoObra;
+        return $this;
+    }
+
+    public function getTipoObraEtiqueta(): ?string
+    {
+        return match ($this->tipoObra) {
+            'plato_ducha' => 'Plato de ducha',
+            'bano' => 'Baño',
+            'mampara' => 'Mampara',
+            'mueble' => 'Mueble',
+            'otros' => 'Otros',
+            'ducha' => 'Cambio bañera por ducha',
+            'bano_completo' => 'Baño completo',
+            'otro' => 'Otro',
+            default => null,
+        };
+    }
+
+    /**
+     * Un proyecto sin cliente debe conservar una referencia legible que
+     * permita encontrarlo y asignarle el cliente correcto más adelante.
+     */
+    #[Assert\Callback]
+    public function validarIdentificacionSinCliente(ExecutionContextInterface $context): void
+    {
+        if ($this->cliente === null && trim((string) $this->nombre) === '') {
+            $context
+                ->buildViolation('Selecciona un cliente o escribe un nombre descriptivo para identificar la obra antes de guardarla.')
+                ->atPath('nombre')
+                ->addViolation();
+        }
+    }
+
     public function getFechaInicio(): ?\DateTimeInterface
     {
         return $this->fechaInicio;
@@ -389,6 +435,23 @@ class Proyecto
         return $this;
     }
 
+    /** El rechazo comercial depende de todos los presupuestos, no solo del inicial. */
+    public function isRechazado(): bool
+    {
+        $tienePresupuestos = false;
+        foreach ($this->documentos as $documento) {
+            if ($documento->getTipoDocumento() !== 'presupuesto') {
+                continue;
+            }
+            $tienePresupuestos = true;
+            if ($documento->getEstadoComercial() !== 'rechazado') {
+                return false;
+            }
+        }
+
+        return $tienePresupuestos;
+    }
+
     public function getDocumentos(): Collection
     {
         return $this->documentos;
@@ -423,13 +486,64 @@ class Proyecto
         return $this->actualizadoEn;
     }
 
-    /**
-     * Importe pendiente de cobro.
-     * totalFacturado - totalCobrado (con IVA incluido en factura).
-     */
+    /** Importe de la obra con IVA, también antes de emitir su factura completa. */
+    public function getTotalOperacion(): string
+    {
+        foreach ($this->documentos as $documento) {
+            if ($documento->getTipoDocumento() === 'factura' && !$documento->esFacturaAnticipo()) {
+                return $this->totalFacturado;
+            }
+        }
+        if (bccomp($this->totalFacturado, '0.00', 2) === 0) {
+            return $this->totalPresupuestado;
+        }
+
+        foreach ($this->cobros as $cobro) {
+            if ($cobro->getFacturaAnticipo() !== null) {
+                return bccomp($this->totalPresupuestado, $this->totalFacturado, 2) > 0
+                    ? $this->totalPresupuestado
+                    : $this->totalFacturado;
+            }
+        }
+
+        return $this->totalFacturado;
+    }
+
+    /** Finalizar la ejecución no liquida los importes pendientes de cobro. */
+    public function finalizarObra(): void
+    {
+        if (!$this->isObraFinalizada()) {
+            $this->fechaFinReal = new \DateTimeImmutable();
+        }
+        foreach ($this->documentos as $documento) {
+            if ($documento->getTipoDocumento() === 'factura') {
+                $documento->setEstadoEjecucion('completada');
+            }
+        }
+    }
+
+    public function isObraFinalizada(): bool
+    {
+        if ($this->fechaFinReal === null) {
+            return false;
+        }
+        // Las fechas antiguas podían proceder del cobro automático, mientras
+        // que las facturas aún conservaban la obra pendiente de ejecución.
+        foreach ($this->documentos as $documento) {
+            if ($documento->getTipoDocumento() === 'factura' && $documento->getEstadoEjecucion() !== 'completada') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /** Importe de la obra pendiente de cobro, con IVA. */
     public function getPendienteCobro(): string
     {
-        return bcsub($this->totalFacturado, $this->totalCobrado, 2);
+        $pendiente = bcsub($this->getTotalOperacion(), $this->totalCobrado, 2);
+
+        return bccomp($pendiente, '0.00', 2) > 0 ? $pendiente : '0.00';
     }
 
     /**
@@ -444,7 +558,7 @@ class Proyecto
 
     public function getPendiente(): string
     {
-        return number_format((float)$this->totalFacturado - (float)$this->totalCobrado, 2, '.', '');
+        return $this->getPendienteCobro();
     }    
     public function getGastos(): Collection
     {

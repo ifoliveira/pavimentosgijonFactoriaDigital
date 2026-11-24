@@ -18,23 +18,19 @@ class ProyectoCalculatorService
 
     public function recalcularProyecto(Proyecto $proyecto, bool $flush = true): void
     {
-        $presupuestoInicial = $this->documentoRepository->findPresupuestoInicialDeProyecto($proyecto);
-        $factura = $this->documentoRepository->findFacturaDeProyecto($proyecto);
+        $facturaCompleta = $this->documentoRepository->findFacturaCompletaDeProyecto($proyecto);
         $ticket = $this->documentoRepository->findTicketDeProyecto($proyecto);
+        $presupuestosAceptados = $this->documentoRepository->findPresupuestosAceptadosDeProyecto($proyecto);
 
         $totalPresupuestado = '0.00';
-
-        if (
-            $presupuestoInicial
-            && in_array($presupuestoInicial->getEstadoComercial(), ['aceptado', 'convertido', 'entregado', 'borrador'], true)
-        ) {
-            $totalPresupuestado = $this->normalizarDecimal($presupuestoInicial->getTotal());
+        foreach ($presupuestosAceptados as $presupuesto) {
+            $totalPresupuestado = bcadd($totalPresupuestado, $this->normalizarDecimal($presupuesto->getTotal()), 2);
         }
 
         $totalFacturadoFloat = $this->calcularTotalFacturadoProyecto(
-            factura: $factura,
+            facturaCompleta: $facturaCompleta,
             ticket: $ticket,
-            presupuestoInicial: $presupuestoInicial
+            proyecto: $proyecto
         );
 
         $totalCobradoFloat = $this->calcularTotalCobradoProyecto($proyecto);
@@ -43,11 +39,25 @@ class ProyectoCalculatorService
         $proyecto->setTotalFacturado(number_format($totalFacturadoFloat, 2, '.', ''));
         $proyecto->setTotalCobrado(number_format($totalCobradoFloat, 2, '.', ''));
 
-        if ($totalFacturadoFloat > 0 && $totalCobradoFloat >= $totalFacturadoFloat) {
-            $proyecto->setFechaFinReal(new \DateTime());
-        } else {
-            $proyecto->setFechaFinReal(null);
+        if ($facturaCompleta !== null) {
+            $cobradoFinal = '0.00';
+            foreach ($proyecto->getCobros() as $cobro) {
+                if ($cobro->getFacturaAnticipo() === null) {
+                    $cobradoFinal = bcadd($cobradoFinal, $cobro->getImporteBruto(), 2);
+                }
+            }
+            foreach ($facturaCompleta->getCobros() as $cobro) {
+                $cobradoFinal = bcadd($cobradoFinal, $cobro->getImporteBruto(), 2);
+            }
+            $facturaCompleta->setTotalCobrado($cobradoFinal);
+            $facturaCompleta->setEstadoCobro(
+                bccomp($cobradoFinal, $facturaCompleta->getTotal(), 2) >= 0
+                    ? 'cobrado' : (bccomp($cobradoFinal, '0', 2) > 0 ? 'parcial' : 'pendiente')
+            );
         }
+
+        // La finalización de la obra es manual e independiente del cobro.
+        // Un recálculo económico nunca debe cerrar ni reabrir el proyecto.
 
         if ($flush) {
             $this->em->flush();
@@ -55,25 +65,23 @@ class ProyectoCalculatorService
     }
 
     private function calcularTotalFacturadoProyecto(
-        ?Documento $factura,
+        ?Documento $facturaCompleta,
         ?Documento $ticket,
-        ?Documento $presupuestoInicial
+        Proyecto $proyecto
     ): float {
-        $totalFiscal = (float) ($factura?->getTotal() ?? 0)
+        $totalFiscal = (float) ($facturaCompleta?->getTotal() ?? 0)
             + (float) ($ticket?->getTotal() ?? 0);
 
-        if ($totalFiscal > 0) {
-            return $totalFiscal;
+        $vistos = new \SplObjectStorage();
+        foreach ($proyecto->getCobros() as $cobro) {
+            $anticipo = $cobro->getFacturaAnticipo();
+            if ($anticipo !== null && !$vistos->contains($anticipo)) {
+                $totalFiscal += (float) $anticipo->getTotal();
+                $vistos->attach($anticipo);
+            }
         }
 
-        if (
-            $presupuestoInicial
-            && in_array($presupuestoInicial->getEstadoComercial(), ['aceptado', 'convertido'], true)
-        ) {
-            return (float) $presupuestoInicial->getTotal();
-        }
-
-        return 0.0;
+        return $totalFiscal;
     }
 
     private function calcularTotalCobradoProyecto(Proyecto $proyecto): float
@@ -82,6 +90,13 @@ class ProyectoCalculatorService
 
         foreach ($proyecto->getCobros() as $cobro) {
             $total += (float) $cobro->getImporteBruto();
+        }
+        foreach ($proyecto->getDocumentos() as $documento) {
+            if (in_array($documento->getTipoDocumento(), ['factura', 'ticket', 'ticket_rectificativo'], true)) {
+                foreach ($documento->getCobros() as $cobro) {
+                    $total += (float) $cobro->getImporteBruto();
+                }
+            }
         }
 
         return $total;

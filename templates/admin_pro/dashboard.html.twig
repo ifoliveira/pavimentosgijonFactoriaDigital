@@ -1,257 +1,113 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Obras en curso{% endblock %}
-{% block cabecera %}Obras en curso{% endblock %}
+{% block title %}Proyectos pendientes{% endblock %}
+{% block cabecera %}Proyectos pendientes{% endblock %}
 
 {% block breadcrumb %}
-    <li class="breadcrumb-item active">Obras en curso</li>
+    <li class="breadcrumb-item active">Proyectos pendientes</li>
 {% endblock %}
 
 {% block body %}
 
+    <p class="text-muted">{{ proyectosDashboard|length }} proyectos · Los presupuestos pendientes de aceptar se gestionan desde su propia bandeja.</p>
     <div class="row">
 
         {% for item in proyectosDashboard %}
 
             {% set proyecto = item.proyecto %}
 
-            <div class="col-md-6 col-xl-4 mb-4">
+            <div class="col-md-6 col-xl-4 mb-3">
 
-                <div class="card h-100 shadow-sm border-0">
+                <div class="card shadow-sm border-0">
 
-                    {# =====================================================
-                       CABECERA
-                       ===================================================== #}
-                    <div class="card-body pb-2">
-
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-
-                            <div>
-                                <span class="badge bg-light-primary text-primary">
-                                    EN CURSO
-                                </span>
-                            </div>
-
-                            <small class="text-muted">
-                                #{{ proyecto.id }}
-                            </small>
-
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge {{ item.obraFinalizada ? 'bg-success' : 'bg-warning text-dark' }}">
+                                {{ item.obraFinalizada ? 'Obra finalizada' : 'Obra no finalizada' }}
+                            </span>
+                            <small class="text-muted">#{{ proyecto.id }}</small>
+                        </div>
+                        <h4 class="card-title mb-1">{{ item.clienteNombre }}</h4>
+                        <div class="fw-semibold mb-1">{{ proyecto.nombre ?: 'Proyecto sin nombre' }}</div>
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            {% if item.estadoCobro == 'cobrado' %}
+                                <span class="badge bg-success">Cobrada</span>
+                            {% elseif item.estadoCobro == 'parcial' %}
+                                <span class="badge bg-warning text-dark">Cobro parcial</span>
+                            {% elseif item.estadoCobro == 'pendiente' %}
+                                <span class="badge bg-danger">Pendiente de cobro</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Sin importe pendiente</span>
+                            {% endif %}
+                            <span class="badge {{ item.facturaFinal ? 'bg-success' : 'bg-warning text-dark' }}">
+                                {{ item.facturaFinal ? 'Factura final emitida' : 'Factura final pendiente' }}
+                            </span>
+                        </div>
+                        <div class="small d-flex flex-wrap gap-2 mb-2">
+                            {% if item.direccion %}<span class="text-muted"><i class="ti ti-map-pin me-1"></i>{{ item.direccion }}</span>{% endif %}
+                            {% if item.clienteTelefono %}<a href="tel:{{ item.clienteTelefono|replace({' ': ''}) }}"><i class="ti ti-phone me-1"></i>{{ item.clienteTelefono }}</a>{% endif %}
+                        </div>
+                        <div class="row g-2 border-top border-bottom py-2 mb-2">
+                            <div class="col-4"><small class="text-muted d-block">Total obra</small><strong>{{ item.total|format_currency('EUR', locale='es') }}</strong></div>
+                            <div class="col-4"><small class="text-muted d-block">Cobrado</small><strong>{{ item.cobrado|format_currency('EUR', locale='es') }}</strong></div>
+                            <div class="col-4"><small class="text-muted d-block">Pendiente</small><strong class="{{ item.pendiente > 0 ? 'text-danger' : 'text-success' }}">{{ item.pendiente|format_currency('EUR', locale='es') }}</strong></div>
                         </div>
 
+                        {% include 'admin_pro/_facturas_proyecto.html.twig' with {proyecto: proyecto} only %}
 
-                        {# =====================================================
-                           CLIENTE
-                           ===================================================== #}
-
-                        <h4 class="card-title mb-1">
-                            {{ item.clienteNombre }}
-                        </h4>
-
-                        <div class="text-muted mb-1">
-                            <i class="ti ti-map-pin me-1"></i>
-                            {{ item.direccion }}
+                        <div class="d-flex flex-wrap gap-3 mt-2">
+                            {% if item.presupuesto %}
+                                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none btnPresupuesto"
+                                        data-url="{{ path('app_proyecto_presupuesto_resumen', {id: proyecto.id}) }}">
+                                    <i class="ti ti-file-text me-1"></i>Presupuesto
+                                </button>
+                            {% endif %}
+                            {% if proyecto.cobros|length > 0 %}
+                                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none btnJustificantes"
+                                        data-url="{{ path('app_proyecto_justificantes', {id: proyecto.id}) }}">
+                                    <i class="ti ti-printer me-1"></i>Justificantes
+                                </button>
+                            {% endif %}
                         </div>
-
-                        {% if item.clienteTelefono %}
-                            <div class="mb-3">
-
-                                <a
-                                    href="tel:{{ item.clienteTelefono }}"
-                                    class="text-decoration-none"
-                                >
-                                    <i class="ti ti-phone me-1"></i>
-                                    {{ item.clienteTelefono }}
-                                </a>
-
-                            </div>
-                        {% endif %}
-
-
-                        {# =====================================================
-                           PENDIENTE DE COBRO
-                           ===================================================== #}
-
-                        <div class="mt-4">
-
-                            <small class="text-uppercase text-muted fw-semibold">
-                                Pendiente de cobro
-                            </small>
-
-                            <div class="d-flex align-items-center justify-content-between mt-1">
-
-                                <h2 class="mb-0">
-
-                                    {% if item.pendiente > 0 %}
-
-                                        {{ item.pendiente
-                                            | format_currency(
-                                                'EUR',
-                                                locale='es'
-                                            )
-                                        }}
-
-                                    {% else %}
-
-                                        <span class="text-success">
-                                            Cobrado
-                                        </span>
-
-                                    {% endif %}
-
-                                </h2>
-
-                            </div>
-
-                        </div>
-
-
-                        {# =====================================================
-                           TOTAL / COBRADO
-                           ===================================================== #}
-
-                        <div class="d-flex justify-content-between mt-3 pt-3 border-top">
-
-                            <div>
-                                <small class="text-muted d-block">
-                                    Total obra
-                                </small>
-
-                                <strong>
-                                    {{ item.total
-                                        | format_currency(
-                                            'EUR',
-                                            locale='es'
-                                        )
-                                    }}
-                                </strong>
-                            </div>
-
-                            <div class="text-end">
-                                <small class="text-muted d-block">
-                                    Cobrado
-                                </small>
-
-                                <strong>
-                                    {{ item.cobrado
-                                        | format_currency(
-                                            'EUR',
-                                            locale='es'
-                                        )
-                                    }}
-                                </strong>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    {# =====================================================
-                       GASTOS PENDIENTES
-                       ===================================================== #}
-
-                    <div class="px-4 py-3">
-
-                        {% if item.gastosPendientesCantidad > 0 %}
-
-                            <button
-                                type="button"
-                                class="btn w-100 bg-light-warning border-0 text-start btnGastosPendientes"
-                                data-url="{{ path(
-                                    'app_proyecto_gastos_pendientes',
-                                    {id: proyecto.id}
-                                ) }}"
-                            >
-
-                                <div class="d-flex justify-content-between align-items-center">
-
-                                    <span>
-                                        <i class="ti ti-alert-circle me-1"></i>
-
-                                        {{ item.gastosPendientesCantidad }}
-
-                                        {% if item.gastosPendientesCantidad == 1 %}
-                                            gasto pendiente
-                                        {% else %}
-                                            gastos pendientes
-                                        {% endif %}
-                                    </span>
-
-                                    <strong>
-                                        {{ item.gastosPendientesImporte
-                                            | format_currency('EUR', locale='es')
-                                        }}
-                                    </strong>
-
-                                </div>
-
-                            </button>
-
-
-
-                        {% else %}
-
-                            <div class="d-flex align-items-center bg-light-success rounded p-2 text-success">
-
-                                <i class="ti ti-circle-check me-1"></i>
-                                Sin pagos pendientes
-
-                            </div>
-
-                        {% endif %}
-
-                    </div>
-              
-                    <div class="px-4 py-3">
-                    {% if proyecto.cobros|length > 0 %}
-                    
-                        <button
-                            type="button"
-                            class="btn btn-link btn-sm p-0 text-decoration-none btnJustificantes"
-                            data-url="{{ path(
-                                'app_proyecto_justificantes',
-                                {id: proyecto.id}
-                            ) }}"
-                        >
-                            <i class="ti ti-printer me-1"></i>
-                            Justificantes
-                        </button>
-
-                        {% if item.presupuesto %}
-
-                            <button
-                                type="button"
-                                class="btn btn-link btn-sm p-0 text-decoration-none btnPresupuesto"
-                                data-url="{{ path(
-                                    'app_proyecto_presupuesto_resumen',
-                                    {id: proyecto.id}
-                                ) }}"
-                            >
-                                <i class="ti ti-file-text me-1"></i>
-                                Presupuesto
-                            </button>
-
-                        {% endif %}                        
-                    {% endif %}
                     </div>
 
                     {# =====================================================
                        ACCIONES
                        ===================================================== #}
 
-                    <div class="card-body pt-0 mt-auto">
+                    <div class="card-body p-3 pt-0">
+
+                        {% if not item.obraFinalizada and item.puedeFinalizarObra and item.facturaFinal %}
+                            <form method="post" action="{{ path('app_proyecto_finalizar', {id: proyecto.id}) }}" class="mb-2"
+                                  onsubmit="return confirm('¿Confirmas que has terminado esta obra? Los cobros pendientes se mantienen.');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('finalizar_proyecto_' ~ proyecto.id) }}">
+                                <input type="hidden" name="volver" value="panel">
+                                <button type="submit" class="btn btn-sm btn-success w-100">Finalizar obra</button>
+                            </form>
+                        {% endif %}
+                        {% if item.puedeEmitirFacturaFinal %}
+                            <form method="post" action="{{ path('app_proyecto_factura_final', {id: proyecto.id}) }}" class="mb-2"
+                                  onsubmit="return confirm('Se emitirá la factura final de los presupuestos aceptados, descontando los anticipos. ¿Continuar?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('factura_final_' ~ proyecto.id) }}">
+                                <input type="hidden" name="volver" value="panel">
+                                <button type="submit" class="btn btn-sm btn-primary w-100">Generar factura final</button>
+                            </form>
+                        {% elseif not item.facturaFinal %}
+                            <p class="small text-muted">Para generar la factura final, primero acepta un presupuesto.</p>
+                        {% endif %}
 
                         <div class="row g-2">
 
-                            <div class="col-6">
+                            <div class="col-12">
 
                                 <button
                                     type="button"
-                                    class="btn btn-light-primary w-100 btnNuevoCobro"
+                                    class="btn btn-sm btn-light-primary w-100 btnNuevoCobro"
                                     data-url="{{ path('proyecto_cobro_nuevo', {id: proyecto.id}) }}"
                                     data-proyecto="{{ proyecto.id }}"
                                     data-cliente="{{ item.clienteNombre|e('html_attr') }}"
                                     data-pendiente="{{ item.pendiente }}"
+                                    {% if item.pendiente <= 0 %}disabled{% endif %}
                                 >
                                     <i class="ti ti-receipt me-1"></i>
                                     Añadir cobro
@@ -260,23 +116,12 @@
                             </div>
 
 
-                            <div class="col-6">
 
-                                <button
-                                    type="button"
-                                    class="btn btn-light-warning w-100 btnNuevoGasto"
-                                    data-url="{{ path('app_proyecto_gasto_new', {id: proyecto.id}) }}"
-                                >
-                                    <i class="ti ti-receipt me-1"></i>
-                                    Añadir gasto
-                                </button>
-
-                            </div>
 
                         </div>
 
 
-                        <div class="mt-3 text-center">
+                        <div class="mt-2 text-center">
 
                             <a
                                 href="{{ path(
@@ -316,11 +161,11 @@
                         ></i>
 
                         <h4 class="mt-3">
-                            No hay obras en curso
+                            No hay proyectos pendientes
                         </h4>
 
                         <p class="text-muted mb-0">
-                            Actualmente no existen proyectos activos.
+                            No quedan proyectos pendientes de finalizar, cobrar o emitir su factura final.
                         </p>
 
                     </div>

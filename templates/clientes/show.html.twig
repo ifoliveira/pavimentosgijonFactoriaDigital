@@ -1,54 +1,158 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Clientes{% endblock %}
+{% block title %}{{ cliente }} · Clientes{% endblock %}
+{% block cabecera %}Ficha de cliente{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('clientes_index') }}">Clientes</a></li>
+    <li class="breadcrumb-item active">Ficha</li>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .cliente-profile { background: linear-gradient(120deg, #1e4dcc, #2962ff); border: 0; border-radius: 1rem; color: #fff; overflow: hidden; }
+        .cliente-profile-avatar { align-items: center; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); border-radius: 50%; display: inline-flex; flex: 0 0 auto; font-size: 1.15rem; font-weight: 700; height: 4.5rem; justify-content: center; width: 4.5rem; }
+        .cliente-stat { border-left: 1px solid #e8edf3; }
+        .cliente-info-label { color: #78909c; display: block; font-size: .72rem; font-weight: 700; letter-spacing: .04em; margin-bottom: .15rem; text-transform: uppercase; }
+        .cliente-info-value { color: #37474f; word-break: break-word; }
+        .cliente-section-title { font-size: 1rem; font-weight: 650; }
+        .cliente-activity-table td, .cliente-activity-table th { vertical-align: middle; }
+        @media (max-width: 767.98px) { .cliente-stat { border-left: 0; border-top: 1px solid #e8edf3; } }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Clientes</h1>
+    {% set nombreCompleto = (cliente.nombreCl ~ ' ' ~ (cliente.apellidosCl ?? ''))|trim %}
+    {% set iniciales = ((cliente.nombreCl|default(''))|slice(0, 1) ~ (cliente.apellidosCl|default(''))|slice(0, 1))|upper %}
+    {% set tipoColores = {'presupuesto': 'primary', 'factura': 'success', 'ticket': 'warning', 'ticket_rectificativo': 'danger'} %}
+    {% set estadoColores = {'borrador': 'secondary', 'enviado': 'info', 'aceptado': 'success', 'rechazado': 'danger', 'convertido': 'primary', 'aplicado': 'warning'} %}
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ cliente.id }}</td>
-            </tr>
-            <tr>
-                <th>NombreCl</th>
-                <td>{{ cliente.nombreCl }}</td>
-            </tr>
-            <tr>
-                <th>ApellidosCl</th>
-                <td>{{ cliente.apellidosCl }}</td>
-            </tr>
-            <tr>
-                <th>CiudadCl</th>
-                <td>{{ cliente.ciudadCl }}</td>
-            </tr>
-            <tr>
-                <th>DireccionCl</th>
-                <td>{{ cliente.direccionCl }}</td>
-            </tr>
-            <tr>
-                <th>Telefono1Cl</th>
-                <td>{{ cliente.telefono1Cl }}</td>
-            </tr>
-            <tr>
-                <th>Telefono2Cl</th>
-                <td>{{ cliente.telefono2Cl }}</td>
-            </tr>
-            <tr>
-                <th>EmailCl</th>
-                <td>{{ cliente.emailCl }}</td>
-            </tr>
-            <tr>
-                <th>TimestampaltaCl</th>
-                <td>{{ cliente.timestampaltaCl ? cliente.timestampaltaCl|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <a href="{{ path('clientes_index') }}" class="btn btn-outline-secondary btn-sm"><i class="ti-arrow-left me-1"></i> Volver a clientes</a>
+        <a href="{{ path('clientes_edit', {id: cliente.id}) }}" class="btn btn-primary"><i class="ti-pencil me-1"></i> Editar datos</a>
+    </div>
 
-    <a href="{{ path('clientes_index') }}">back to list</a>
+    <div class="card cliente-profile mb-4 shadow-sm">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <span class="cliente-profile-avatar">{{ iniciales ?: '?' }}</span>
+                <div class="me-auto">
+                    <h3 class="mb-1 text-white">{{ nombreCompleto ?: 'Cliente sin nombre' }}</h3>
+                    <span class="opacity-75">Cliente #{{ cliente.id }} · Alta {{ cliente.timestampaltaCl ? cliente.timestampaltaCl|date('d/m/Y') : 'sin fecha' }}</span>
+                </div>
+                {% if cliente.telefono1Cl %}<a class="btn btn-light" href="tel:{{ cliente.telefono1Cl|replace({' ': ''}) }}"><i class="ti-mobile me-1"></i>{{ cliente.telefono1Cl }}</a>{% endif %}
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ path('clientes_edit', {'id': cliente.id}) }}">edit</a>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="row g-0 text-center">
+            <div class="col-md-4"><div class="card-body py-3"><span class="cliente-info-label">Proyectos</span><strong class="fs-4">{{ resumen.proyectos }}</strong></div></div>
+            <div class="col-md-4 cliente-stat"><div class="card-body py-3"><span class="cliente-info-label">Presupuestos</span><strong class="fs-4">{{ resumen.presupuestos }}</strong><span class="d-block small text-muted">históricos y actuales</span></div></div>
+            <div class="col-md-4 cliente-stat"><div class="card-body py-3"><span class="cliente-info-label">Documentos</span><strong class="fs-4">{{ resumen.documentos }}</strong><span class="d-block small text-muted">del flujo actual</span></div></div>
+        </div>
+    </div>
 
-    {{ include('clientes/_delete_form.html.twig') }}
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="cliente-section-title mb-0">Datos de contacto</h5>
+                        <a href="{{ path('clientes_edit', {id: cliente.id}) }}" class="small">Editar</a>
+                    </div>
+                    <div class="mb-3"><span class="cliente-info-label">Teléfono principal</span><span class="cliente-info-value">{% if cliente.telefono1Cl %}<a href="tel:{{ cliente.telefono1Cl|replace({' ': ''}) }}">{{ cliente.telefono1Cl }}</a>{% else %}—{% endif %}</span></div>
+                    <div class="mb-3"><span class="cliente-info-label">Teléfono secundario</span><span class="cliente-info-value">{% if cliente.telefono2Cl %}<a href="tel:{{ cliente.telefono2Cl|replace({' ': ''}) }}">{{ cliente.telefono2Cl }}</a>{% else %}—{% endif %}</span></div>
+                    <div class="mb-3"><span class="cliente-info-label">Correo electrónico</span><span class="cliente-info-value">{% if cliente.emailCl %}<a href="mailto:{{ cliente.emailCl }}">{{ cliente.emailCl }}</a>{% else %}—{% endif %}</span></div>
+                    <div class="mb-3"><span class="cliente-info-label">NIF / DNI</span><span class="cliente-info-value">{{ cliente.dni ?: '—' }}</span></div>
+                    <div class="mb-3"><span class="cliente-info-label">Ciudad</span><span class="cliente-info-value">{{ cliente.ciudadCl ?: '—' }}</span></div>
+                    <div><span class="cliente-info-label">Dirección</span><span class="cliente-info-value">{{ cliente.direccionCl ?: '—' }}</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-0">
+                    <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                        <div><h5 class="cliente-section-title mb-1">Proyectos</h5><p class="text-muted small mb-0">Obras asociadas a este cliente.</p></div>
+                        <span class="badge bg-primary">{{ actividad.proyectos|length }}</span>
+                    </div>
+                    {% if actividad.proyectos|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover cliente-activity-table mb-0">
+                                <thead class="table-light"><tr><th>Proyecto</th><th>Inicio</th><th class="text-end">Importe</th><th></th></tr></thead>
+                                <tbody>
+                                    {% for proyecto in actividad.proyectos %}
+                                        <tr>
+                                            <td><strong>{{ proyecto.nombre ?: 'Proyecto sin nombre' }}</strong><div class="small text-muted">{{ proyecto.documentos|length }} {{ proyecto.documentos|length == 1 ? 'documento' : 'documentos' }}</div></td>
+                                            <td>{{ proyecto.fechaInicio ? proyecto.fechaInicio|date('d/m/Y') : '—' }}</td>
+                                            <td class="text-end"><strong>{{ proyecto.totalFacturado > 0 ? proyecto.totalFacturado|format_currency('EUR', locale='es') : proyecto.totalPresupuestado|format_currency('EUR', locale='es') }}</strong></td>
+                                            <td class="text-end"><a href="{{ path('app_proyecto_show', {id: proyecto.id}) }}" class="btn btn-sm btn-outline-secondary">Abrir</a></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="p-4 text-muted">Este cliente todavía no tiene proyectos asociados.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-0">
+            <div class="p-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div><h5 class="cliente-section-title mb-1">Documentos actuales</h5><p class="text-muted small mb-0">Presupuestos, facturas y tickets vinculados al cliente.</p></div>
+                <a href="{{ path('documento_index', {busqueda: nombreCompleto}) }}" class="btn btn-sm btn-outline-secondary">Ver documentos</a>
+            </div>
+            {% if actividad.documentos|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover cliente-activity-table mb-0">
+                        <thead class="table-light"><tr><th>Documento</th><th>Fecha</th><th>Estado</th><th>Proyecto</th><th class="text-end">Total</th><th></th></tr></thead>
+                        <tbody>
+                            {% for documento in actividad.documentos %}
+                                {% set tipo = documento.tipoDocumento ?: 'documento' %}
+                                <tr>
+                                    <td><span class="badge bg-{{ tipoColores[tipo]|default('secondary') }}">{{ tipo|replace({'_': ' '})|capitalize }}</span><div class="small mt-1">{{ documento.numeroFormateado ?: ('#' ~ documento.id) }}</div></td>
+                                    <td>{{ documento.fechaEmision ? documento.fechaEmision|date('d/m/Y') : '—' }}</td>
+                                    <td><span class="badge bg-{{ estadoColores[documento.estadoComercial]|default('secondary') }}">{{ documento.estadoComercial|replace({'_': ' '})|capitalize }}</span></td>
+                                    <td>{% if documento.proyecto %}<a href="{{ path('app_proyecto_show', {id: documento.proyecto.id}) }}">{{ documento.proyecto.nombre }}</a>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+                                    <td class="text-end">{{ documento.total|format_currency('EUR', locale='es') }}</td>
+                                    <td class="text-end"><a href="{{ path('app_documento_show', {id: documento.id}) }}" class="btn btn-sm btn-outline-secondary">Abrir</a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-4 text-muted">No hay documentos actuales asociados a este cliente.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if actividad.presupuestosAntiguos|length > 0 %}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-0">
+                <div class="p-4 border-bottom"><h5 class="cliente-section-title mb-1">Presupuestos históricos</h5><p class="text-muted small mb-0">Registros creados en el sistema anterior.</p></div>
+                <div class="table-responsive">
+                    <table class="table table-hover cliente-activity-table mb-0">
+                        <thead class="table-light"><tr><th>Referencia</th><th>Fecha</th><th>Estado</th><th class="text-end">Importe</th><th></th></tr></thead>
+                        <tbody>
+                            {% for presupuesto in actividad.presupuestosAntiguos %}
+                                <tr>
+                                    <td>#{{ presupuesto.id }}</td>
+                                    <td>{{ presupuesto.fechainiPe ? presupuesto.fechainiPe|date('d/m/Y') : '—' }}</td>
+                                    <td>{{ presupuesto.estadoPe ? presupuesto.estadoPe.descripcionEc : '—' }}</td>
+                                    <td class="text-end">{{ presupuesto.importetotPe|format_currency('EUR', locale='es') }}</td>
+                                    <td class="text-end"><a href="{{ path('presupuestos_show', {id: presupuesto.id}) }}" class="btn btn-sm btn-outline-secondary">Abrir</a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

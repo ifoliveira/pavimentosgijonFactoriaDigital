@@ -57,14 +57,27 @@ class AdminProController extends AbstractController
         Request $request,
         BancoRepository $bancoRepository,
         EfectivoRepository $efectivoRepository,
-        DashboardProyectoService $dashboardProyectoService,
         FlujoCajaAnualService $flujoCajaAnualService
     ): Response {
+        $anioActual = (int) date('Y');
+        $anio = max($anioActual, $this->getAnio($request));
+        $inicioAnio = new \DateTimeImmutable(sprintf('%d-01-01', $anio));
+        $finAnio = new \DateTimeImmutable(sprintf('%d-12-31', $anio));
+        $esAnioActual = $anio === $anioActual;
         $bancototal = $bancoRepository->totalBanco();
         $efectivoTotal = (float) ($efectivoRepository->totalefectivo()['efectivototal'] ?? 0);
-        $forecast = $this->forecastService->getForecastPendiente((float) ($bancototal['sum(importe_bn)'] ?? 0));
-        $compromisosPendientes = $dashboardProyectoService->getCompromisosPendientes();
+        $forecast = $this->forecastService->getForecastPendiente(
+            (float) ($bancototal['sum(importe_bn)'] ?? 0),
+            $esAnioActual ? null : $inicioAnio,
+            $finAnio,
+            $esAnioActual ? new \DateTimeImmutable('today') : $inicioAnio,
+        );
         $saldoActual = (float) ($bancototal['sum(importe_bn)'] ?? 0) + $efectivoTotal;
+        $aniosDisponibles = range($anioActual, $anioActual + 5);
+        if (!in_array($anio, $aniosDisponibles, true)) {
+            $aniosDisponibles[] = $anio;
+            sort($aniosDisponibles);
+        }
 
         $response = $this->render('admin_pro/indexpro.html.twig', [
             'controller_name'   => 'AdminProController',
@@ -73,9 +86,13 @@ class AdminProController extends AbstractController
             'cookies'           => $request->cookies->get('Mensaje', ''),
             'forecast'          => $forecast['list'],
             'forecastChartData' => $forecast['chartData'],
-            'compromisosPendientes' => $compromisosPendientes,
-            'totalCompromisosPendientes' => array_sum(array_column($compromisosPendientes, 'importe')),
-            'resumenAnual' => $flujoCajaAnualService->calcular($saldoActual),
+            'anio' => $anio,
+            'aniosDisponibles' => $aniosDisponibles,
+            'resumenAnual' => $flujoCajaAnualService->calcular(
+                $saldoActual,
+                new \DateTimeImmutable('today'),
+                $anio,
+            ),
         ]);
 
         return $response;

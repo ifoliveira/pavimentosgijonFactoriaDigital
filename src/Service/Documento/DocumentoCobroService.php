@@ -32,6 +32,10 @@ class DocumentoCobroService
         if ($documento->getEstadoCobro() === 'cobrado') {
             throw new \LogicException('La factura ya está completamente cobrada.');
         }
+        $pendiente = bcsub($documento->getTotal(), $documento->getTotalCobrado(), 2);
+        if (bccomp($importeBruto, '0', 2) <= 0 || bccomp($importeBruto, $pendiente, 2) > 0) {
+            throw new \RuntimeException('El cobro debe ser positivo y no puede superar el pendiente de la factura.');
+        }
 
         $cobro = new DocumentoCobro();
         $cobro->setDocumento($documento);
@@ -48,6 +52,7 @@ class DocumentoCobroService
 
         // Pasamos el cobro nuevo directamente
         $this->actualizarEstadoCobro($documento, $cobro);
+        $documento->addCobro($cobro);
 
         if ($documento && $documento->getProyecto()) {
             $this->proyectoService->recalcularProyecto($documento->getProyecto());

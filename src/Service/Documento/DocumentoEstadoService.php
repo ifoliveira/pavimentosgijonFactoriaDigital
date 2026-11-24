@@ -91,17 +91,17 @@ class DocumentoEstadoService
         return $documento;
     }
 
-    public function aceptarYGenerarFactura(int $documentoId): Documento
+    public function aceptarPresupuesto(int $documentoId): Documento
     {
-        return $this->em->wrapInTransaction(fn () => $this->convertirPresupuesto($documentoId));
+        return $this->em->wrapInTransaction(fn () => $this->procesarAceptacionPresupuesto($documentoId));
     }
 
-    private function convertirPresupuesto(int $documentoId): Documento
+    private function procesarAceptacionPresupuesto(int $documentoId): Documento
     {
         $presupuesto = $this->getDocumento($documentoId);
 
         if ($presupuesto->getTipoDocumento() !== 'presupuesto') {
-            throw new \RuntimeException('Solo se puede aceptar y convertir un presupuesto.');
+            throw new \RuntimeException('Solo se puede aceptar un presupuesto.');
         }
 
         if ($presupuesto->getEstadoComercial() !== 'entregado') {
@@ -126,51 +126,8 @@ class DocumentoEstadoService
             }
         }
 
-        $lineasFactura = [];
-        $lineasTicket = [];
-
-        foreach ($presupuesto->getLineas() as $lineaOrigen) {
-            if ($lineaOrigen->isFacturaObra()) {
-                $lineasFactura[] = $lineaOrigen;
-            }
-
-            if ($lineaOrigen->isTicketTienda()) {
-                $lineasTicket[] = $lineaOrigen;
-            }
-        }
-
-        if (count($lineasFactura) === 0 && count($lineasTicket) === 0) {
-            throw new \RuntimeException('No hay líneas para generar factura ni ticket.');
-        }
-
-        $factura = null;
-        $ticket = null;
-
-        if (count($lineasFactura) > 0) {
-            $factura = $this->crearDocumentoDesdeLineas(
-                presupuestoOrigen: $presupuesto,
-                tipoDocumento: 'factura',
-                lineasOrigen: $lineasFactura
-            );
-
-            $this->copiarManoObra($presupuesto, $factura);
-        }
-
-        if (count($lineasTicket) > 0) {
-            $ticket = $this->crearDocumentoDesdeLineas(
-                presupuestoOrigen: $presupuesto,
-                tipoDocumento: 'ticket',
-                lineasOrigen: $lineasTicket
-            );
-        }
-
-        $presupuesto->setEstadoComercial('convertido');
+        $presupuesto->setEstadoComercial('aceptado');
         $presupuesto->setFechaAceptacion(new \DateTime());
-
-        if ($factura) {
-            $presupuesto->setFacturaVinculada($factura);
-        }
-
 
         // Consume las reservas del presupuesto original.
         // Esto crea StockMovimiento de salida y marca reservas como consumidas.
@@ -183,7 +140,7 @@ class DocumentoEstadoService
 
         $this->proyectoCalculatorService->recalcularProyecto($proyecto, false);
 
-        return $factura ?? $ticket ?? $presupuesto;
+        return $presupuesto;
     }
 
     private function crearGastosPrevistos(Documento $presupuesto): void
@@ -301,18 +258,4 @@ class DocumentoEstadoService
         $this->documentoCalculatorService->recalcularCostesDocumento($documento);
     }
 
-    private function copiarManoObra(Documento $presupuestoOrigen, Documento $factura): void
-    {
-        foreach ($presupuestoOrigen->getManoObra() as $manoObraOrigen) {
-            $lineaManoObra = new ManoObra();
-
-            $lineaManoObra->setCategoriaMo($manoObraOrigen->getCategoriaMo());
-            $lineaManoObra->setCoste($manoObraOrigen->getCoste());
-            $lineaManoObra->setPagado($manoObraOrigen->isPagado());
-            $lineaManoObra->setTextoMo($manoObraOrigen->getTextoMo());
-            $lineaManoObra->setDocumentoMo($factura);
-
-            $factura->addManoObra($lineaManoObra);
-        }
-    }
 }

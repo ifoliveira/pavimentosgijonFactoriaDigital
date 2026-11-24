@@ -58,6 +58,25 @@ class DocumentoRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * La factura de anticipo es fiscalmente válida, pero no representa por sí
+     * sola el importe íntegro de la obra.
+     */
+    public function findFacturaCompletaDeProyecto(Proyecto $proyecto): ?Documento
+    {
+        return $this->createQueryBuilder('d')
+            ->leftJoin('d.cobroAnticipo', 'anticipo')
+            ->where('d.proyecto = :proyecto')
+            ->andWhere('d.tipoDocumento = :tipo')
+            ->andWhere('anticipo.id IS NULL')
+            ->setParameter('proyecto', $proyecto)
+            ->setParameter('tipo', 'factura')
+            ->orderBy('d.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
     public function findTicketDeProyecto(Proyecto $proyecto): ?Documento
     {
         return $this->createQueryBuilder('d')
@@ -73,17 +92,48 @@ class DocumentoRepository extends ServiceEntityRepository
 
     public function findPresupuestoInicialDeProyecto(Proyecto $proyecto): ?Documento
     {
+        $inicialAceptado = $this->createQueryBuilder('d')
+            ->where('d.proyecto = :proyecto')
+            ->andWhere('d.tipoDocumento = :tipo')
+            ->andWhere('d.estadoComercial IN (:estados)')
+            ->setParameter('proyecto', $proyecto)
+            ->setParameter('tipo', 'presupuesto')
+            ->setParameter('estados', ['aceptado', 'convertido'])
+            ->orderBy('d.fechaAceptacion', 'ASC')
+            ->addOrderBy('d.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($inicialAceptado instanceof Documento) {
+            return $inicialAceptado;
+        }
+
+        return $this->createQueryBuilder('d')
+            ->where('d.proyecto = :proyecto')
+            ->andWhere('d.tipoDocumento = :tipo')
+            ->setParameter('proyecto', $proyecto)
+            ->setParameter('tipo', 'presupuesto')
+            ->orderBy('d.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /** @return Documento[] */
+    public function findPresupuestosAceptadosDeProyecto(Proyecto $proyecto): array
+    {
         return $this->createQueryBuilder('d')
             ->where('d.proyecto = :proyecto')
             ->andWhere('d.tipoDocumento = :tipo')
             ->andWhere('d.estadoComercial IN (:estados)')
             ->setParameter('proyecto', $proyecto)
             ->setParameter('tipo', 'presupuesto')
-            ->setParameter('estados', ['convertido', 'aceptado', 'borrador', 'rechazado', 'entregado'])
-            ->orderBy('d.id', 'ASC')
-            ->setMaxResults(1)
+            ->setParameter('estados', ['aceptado', 'convertido'])
+            ->orderBy('d.fechaAceptacion', 'ASC')
+            ->addOrderBy('d.id', 'ASC')
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getResult();
     }
 
     public function findPresupuestosAdicionalesDeFactura(Documento $factura): array

@@ -498,7 +498,9 @@
         </div>
 
 
-        {# OBSERVACIONES #}
+        {% include 'documento/_resumen_factura_final.html.twig' with {documento: documento} only %}
+
+    {# OBSERVACIONES #}
 
         {% if documento.notas %}
 

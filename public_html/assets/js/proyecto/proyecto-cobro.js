@@ -80,13 +80,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
 
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: new FormData(form),
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+            const datos = new FormData(form);
+            let response;
+
+            while (true) {
+                response = await fetch(form.action, {
+                    method: 'POST',
+                    body: datos,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const esJson = (response.headers.get('content-type') || '')
+                    .includes('application/json');
+
+                if (esJson) {
+                    const resultado = await response.clone().json();
+
+                    if (resultado.requiereConfirmacionFacturaFinal) {
+                        const generarFinal = window.confirm(resultado.message);
+
+                        datos.set(
+                            'confirmarFacturaFinal',
+                            generarFinal ? '1' : '0'
+                        );
+                        continue;
+                    }
                 }
-            });
+
+                break;
+            }
 
             const contentType =
                 response.headers.get('content-type') || '';
@@ -99,7 +123,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const data = await response.json();
 
                 if (data.success) {
-                    window.location.reload();
+                    if (data.redirectUrl) {
+                        window.location.assign(data.redirectUrl);
+                    } else {
+                        window.location.reload();
+                    }
                     return;
                 }
 

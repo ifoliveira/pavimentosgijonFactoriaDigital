@@ -236,6 +236,14 @@ class Documento
     #[ORM\OneToMany(mappedBy: 'facturaVinculada', targetEntity: self::class)]
     private Collection $presupuestosVinculados;
 
+    /**
+     * Cuando la factura procede de un cobro a cuenta, el cobro es el dueño de
+     * la relación. Tener el inverso aquí permite distinguirla de la factura
+     * completa de la obra sin depender de textos libres o de sus líneas.
+     */
+    #[ORM\OneToOne(mappedBy: 'facturaAnticipo', targetEntity: ProyectoCobro::class)]
+    private ?ProyectoCobro $cobroAnticipo = null;
+
     // -------------------------------------------------------------------------
     // TOTALES (desnormalizados para rendimiento y consultas rápidas)
     // -------------------------------------------------------------------------
@@ -617,6 +625,23 @@ class Documento
         return $this->presupuestosVinculados;
     }
 
+    public function getCobroAnticipo(): ?ProyectoCobro
+    {
+        return $this->cobroAnticipo;
+    }
+
+    /** Una factura de anticipo documenta un cobro, no el importe completo de la obra. */
+    public function esFacturaAnticipo(): bool
+    {
+        return $this->cobroAnticipo !== null;
+    }
+
+    /** @internal La relación se guarda desde ProyectoCobro. */
+    public function asignarCobroAnticipo(?ProyectoCobro $cobro): void
+    {
+        $this->cobroAnticipo = $cobro;
+    }
+
     public function getBaseImponible(): string
     {
         return $this->baseImponible;
@@ -834,6 +859,37 @@ class Documento
         }
         return $this;
     }    
+
+    /** Resumen de la obra a partir de los importes conservados en la factura final. */
+    public function getResumenFacturaFinal(): ?array
+    {
+        if ($this->tipoDocumento !== 'factura' || $this->esFacturaAnticipo()) {
+            return null;
+        }
+
+        $esFinal = false;
+        $anticipos = '0.00';
+        foreach ($this->getLineas() as $linea) {
+            if ($linea->getOrigenLinea() === 'factura_final') {
+                $esFinal = true;
+            }
+            if ($linea->getOrigenLinea() === 'descuento_anticipo') {
+                $esFinal = true;
+                $anticipos = bcsub($anticipos, bcadd($linea->getSubtotal(), $linea->getTotalIva(), 2), 2);
+            }
+        }
+        if (!$esFinal) {
+            return null;
+        }
+
+        return [
+            'totalObra' => bcadd($this->getTotal(), $anticipos, 2),
+            'anticipos' => $anticipos,
+            'totalFactura' => $this->getTotal(),
+            'cobradoFactura' => $this->getTotalCobrado(),
+            'pendiente' => bcsub($this->getTotal(), $this->getTotalCobrado(), 2),
+        ];
+    }
 
     public function __toString(): string
     {

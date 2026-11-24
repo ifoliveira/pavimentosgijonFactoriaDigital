@@ -4,6 +4,7 @@ namespace App\Tests\Service;
 
 use App\Entity\Documento;
 use App\Entity\Proyecto;
+use App\Entity\ProyectoCobro;
 use App\Entity\ProyectoGasto;
 use App\Repository\DocumentoRepository;
 use App\Repository\ProyectoRepository;
@@ -77,6 +78,35 @@ class DashboardProyectoMargenTest extends TestCase
         self::assertSame(700.0, $cobros[0]['importe']);
     }
 
+    public function testAnticipoCobradoMantieneElMargenYLaDeudaDeLaObra(): void
+    {
+        $proyecto = (new Proyecto())
+            ->setTotalPresupuestado('12100.00')
+            ->setTotalFacturado('12100.00')
+            ->setTotalCobrado('1210.00');
+        $presupuesto = (new Documento())
+            ->setTipoDocumento('presupuesto')
+            ->setEstadoComercial('aceptado')
+            ->setBaseImponible('10000.00')
+            ->setTotal('12100.00');
+        $anticipo = (new Documento())
+            ->setTipoDocumento('factura')
+            ->setBaseImponible('1000.00')
+            ->setTotal('1210.00')
+            ->setTotalCobrado('1210.00')
+            ->setEstadoCobro('cobrado');
+
+        (new ProyectoCobro())->setFacturaAnticipo($anticipo);
+        $proyecto->addDocumento($presupuesto);
+        $proyecto->addDocumento($anticipo);
+
+        $data = $this->servicio($proyecto, $presupuesto, $anticipo)->getDashboardData();
+
+        self::assertSame(10000.0, $data['economico']['margenEstimado']);
+        self::assertSame(10890.0, $data['economico']['totalPendienteCobro']);
+        self::assertSame('facturado_pendiente', $data['ultimosProyectos'][0]['situacion']);
+    }
+
     private function servicio(Proyecto $proyecto, Documento $presupuesto, ?Documento $factura): DashboardProyectoService
     {
         $proyectos = $this->createMock(ProyectoRepository::class);
@@ -84,6 +114,11 @@ class DashboardProyectoMargenTest extends TestCase
         $proyectos->method('findUltimosProyectosDashboard')->willReturn([$proyecto]);
         $documentos = $this->createMock(DocumentoRepository::class);
         $documentos->method('findPresupuestoInicialDeProyecto')->willReturn($presupuesto);
+        $documentos->method('findPresupuestosAceptadosDeProyecto')->willReturnCallback(
+            static fn () => in_array($presupuesto->getEstadoComercial(), ['aceptado', 'convertido'], true)
+                ? [$presupuesto]
+                : []
+        );
         $documentos->method('findFacturaDeProyecto')->willReturn($factura);
         return new DashboardProyectoService($proyectos, $documentos);
     }

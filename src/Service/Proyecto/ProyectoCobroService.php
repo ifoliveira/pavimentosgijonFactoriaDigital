@@ -5,7 +5,7 @@ namespace App\Service\Proyecto;
 use App\Entity\Proyecto;
 use App\Entity\ProyectoCobro;
 use App\Entity\Banco;
-
+use App\Repository\DocumentoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\Efectivo\EfectivoService;
 
@@ -15,6 +15,9 @@ class ProyectoCobroService
         private EntityManagerInterface $em,
         private ProyectoCalculatorService $proyectoCalculatorService,
         private EfectivoService $efectivoService,
+        private FacturaAnticipoService $facturaAnticipoService,
+        private DocumentoRepository $documentos,
+        private FacturaFinalService $facturaFinalService,
     ) {
     }
 
@@ -28,14 +31,54 @@ class ProyectoCobroService
         float $importeNeto = 0,
         ?string $referencia = null,
         ?string $notas = null,
+        ?bool $confirmarFacturaFinal = null,
     ): ProyectoCobro {
+        $args = func_get_args();
+        return $this->em->wrapInTransaction(function () use ($proyecto, $args): ProyectoCobro {
+            $this->em->refresh($proyecto, \Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE);
+            return $this->registrarCobroBloqueado(...$args);
+        });
+    }
 
-        if ($importeBruto <= 0) {
+    private function registrarCobroBloqueado(
+        Proyecto $proyecto,
+        \DateTimeInterface $fecha,
+        string $metodo,
+        float $importeBruto,
+        float $porcentajeRecargo = 0,
+        float $importeRecargo = 0,
+        float $importeNeto = 0,
+        ?string $referencia = null,
+        ?string $notas = null,
+        ?bool $confirmarFacturaFinal = null,
+    ): ProyectoCobro {
+        if (!is_finite($importeBruto) || bccomp($this->money($importeBruto), '0.00', 2) <= 0) {
             throw new \RuntimeException(
                 'El importe del cobro debe ser mayor que cero.'
             );
         }
 
+        $this->proyectoCalculatorService->recalcularProyecto($proyecto, false);
+        if (bccomp($this->money($importeBruto), $proyecto->getPendienteCobro(), 2) > 0) {
+            throw new \RuntimeException(sprintf(
+                'El cobro supera el importe pendiente de la obra (%s €).',
+                number_format((float) $proyecto->getPendienteCobro(), 2, ',', '.')
+            ));
+        }
+
+        $facturaFinal = $this->documentos->findFacturaCompletaDeProyecto($proyecto);
+        $restante = bcsub($proyecto->getPendienteCobro(), $this->money($importeBruto), 2);
+        $cercanoAlTotal = bccomp($restante, '0.00', 2) > 0 && bccomp($restante, '5.00', 2) <= 0;
+        if ($facturaFinal === null && $cercanoAlTotal && $confirmarFacturaFinal === null) {
+            throw new ConfirmacionFacturaFinalRequerida(sprintf(
+                'Quedan %s € pendientes. ¿Generar la factura final aplicando ese importe como descuento de cierre? Aceptar: factura final. Cancelar: registrar un anticipo y mantener el saldo pendiente.',
+                number_format((float) $restante, 2, ',', '.')
+            ));
+        }
+        if ($facturaFinal === null && $confirmarFacturaFinal === true && bccomp($restante, '5.00', 2) > 0) {
+            throw new \RuntimeException('El descuento de cierre no puede superar 5 €. Revisa el importe del cobro.');
+        }
+        $emitirFinal = bccomp($restante, '0.00', 2) === 0 || ($cercanoAlTotal && $confirmarFacturaFinal === true);
         $metodo = strtolower(trim($metodo));
 
         if ($metodo === '') {
@@ -103,6 +146,15 @@ class ProyectoCobroService
         $proyecto->addCobro($cobro);
 
         $this->em->persist($cobro);
+        $this->em->flush();
+
+        if ($facturaFinal === null) {
+            if ($emitirFinal) {
+                $this->facturaFinalService->emitir($proyecto, $restante);
+            } else {
+                $this->facturaAnticipoService->emitir($cobro);
+            }
+        }
 
         $this->proyectoCalculatorService->recalcularProyecto(
             $proyecto,
@@ -174,6 +226,9 @@ class ProyectoCobroService
 
     public function eliminarCobro(ProyectoCobro $cobro): void
     {
+        if ($cobro->getFacturaAnticipo()) {
+            throw new \LogicException('No se puede anular un cobro con factura de anticipo emitida; requiere una rectificación.');
+        }
         $proyecto = $cobro->getProyecto();
 
         if ($proyecto) {

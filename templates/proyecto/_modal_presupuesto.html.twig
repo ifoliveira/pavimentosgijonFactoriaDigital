@@ -14,10 +14,14 @@
 
         <div class="text-muted small">
 
-            {{ proyecto.cliente.nombreCl }}
+            {% if proyecto.cliente %}
+                {{ proyecto.cliente.nombreCl }}
 
-            {% if proyecto.cliente.apellidosCl %}
-                {{ proyecto.cliente.apellidosCl }}
+                {% if proyecto.cliente.apellidosCl %}
+                    {{ proyecto.cliente.apellidosCl }}
+                {% endif %}
+            {% else %}
+                Sin cliente asignado
             {% endif %}
 
             {% if presupuesto.numero %}

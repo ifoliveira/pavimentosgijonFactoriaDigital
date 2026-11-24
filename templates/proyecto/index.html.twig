@@ -53,11 +53,21 @@
                         {% for proyecto in proyectos %}
                             <tr>
                                 <td>{{ proyecto.id }}</td>
-                                <td>{{ proyecto.nombre }}</td>
                                 <td>
-                                    {{ proyecto.cliente.nombreCl }}
-                                    {% if proyecto.cliente.apellidosCl %}
-                                        {{ proyecto.cliente.apellidosCl }}
+                                    {{ proyecto.nombre }}
+                                    {% if proyecto.rechazado %}<span class="badge bg-danger ms-1">Proyecto rechazado</span>{% endif %}
+                                    {% if proyecto.tipoObraEtiqueta %}
+                                        <div><small class="text-muted">{{ proyecto.tipoObraEtiqueta }}</small></div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if proyecto.cliente %}
+                                        {{ proyecto.cliente.nombreCl }}
+                                        {% if proyecto.cliente.apellidosCl %}
+                                            {{ proyecto.cliente.apellidosCl }}
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-warning">Pendiente de asignar</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ proyecto.fechaInicio ? proyecto.fechaInicio|date('d/m/Y') : '—' }}</td>

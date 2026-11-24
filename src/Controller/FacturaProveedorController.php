@@ -16,6 +16,7 @@ use App\Service\FacturaProveedor\FacturaProveedorService;
 use App\Service\FacturaProveedor\FacturaProveedorAsignacionService;
 use App\Service\FacturaProveedor\BuscadorGastoPrevistoService;
 use App\Service\FacturaProveedor\ConfirmacionGastoFacturaService;
+use App\Service\FacturaProveedor\FacturaProveedorEliminacionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -499,12 +500,21 @@ class FacturaProveedorController extends AbstractController
     }
 
     #[Route('/{id}/eliminar', name: 'factura_proveedor_eliminar', methods: ['POST'])]
-    public function eliminar(FacturaProveedor $factura): Response
-    {
-        $this->em->remove($factura);
-        $this->em->flush();
+    public function eliminar(
+        FacturaProveedor $factura,
+        Request $request,
+        FacturaProveedorEliminacionService $eliminacionService
+    ): Response {
+        if (!$this->isCsrfTokenValid(
+            'eliminar_factura_proveedor_'.$factura->getId(),
+            (string) $request->request->get('_token')
+        )) {
+            throw $this->createAccessDeniedException('Token CSRF no válido.');
+        }
 
-        $this->addFlash('success', 'Factura eliminada correctamente.');
+        $eliminacionService->eliminar($factura);
+
+        $this->addFlash('success', 'Factura y todos sus datos asociados eliminados. La bolsa de gastos se ha recalculado.');
 
         return $this->redirectToRoute('factura_proveedor_index');
     }

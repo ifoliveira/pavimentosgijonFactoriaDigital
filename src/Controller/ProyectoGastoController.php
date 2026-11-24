@@ -78,9 +78,13 @@ class ProyectoGastoController extends AbstractController
             return $this->json([
                 'success' => true,
                 'message' => $origen === 'efectivo'
-                    ? 'Gasto pagado en efectivo.'
+                    ? 'Gasto pagado. El importe se ha descontado de la caja de efectivo.'
                     : 'Gasto pendiente de conciliación bancaria.',
             ]);
+        }
+
+        if ($origen === 'efectivo') {
+            $this->addFlash('success', 'Gasto pagado. El importe se ha descontado de la caja de efectivo.');
         }
 
         return $this->redirectToRoute('app_proyecto_show', [

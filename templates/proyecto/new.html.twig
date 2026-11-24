@@ -54,12 +54,19 @@
         <div class="card-body proyecto-form">
             {{ form_start(form) }}
             {{ form_errors(form) }}
+            <div class="alert alert-light border mb-4" role="note">
+                <strong>Cómo identificar esta obra:</strong> selecciona un cliente. Si todavía no lo tienes,
+                escribe un nombre descriptivo del proyecto; por ejemplo, la dirección o el trabajo pendiente.
+            </div>
             <div class="proyecto-grid">
                 <div class="proyecto-full">
-                    <label for="{{ form.cliente.vars.id }}" class="form-label">Cliente *</label>
+                    <label for="{{ form.cliente.vars.id }}" class="form-label">Cliente</label>
                     <div class="proyecto-cliente">
                         <div class="proyecto-cliente-field">
                             {{ form_widget(form.cliente) }}
+                            <small id="proyecto-cliente-ayuda" class="form-text text-muted d-block mt-1">
+                                Recomendado. Si aún no conoces el cliente, puedes continuar indicando un nombre para la obra.
+                            </small>
                             {{ form_errors(form.cliente) }}
                         </div>
                         <button type="button" class="btn btn-outline-primary"
@@ -69,18 +76,20 @@
                     </div>
                 </div>
                 <div>
-                    <label for="{{ form.nombre.vars.id }}" class="form-label">Nombre del proyecto</label>
+                    <label for="{{ form.nombre.vars.id }}" class="form-label">
+                        Descripción del proyecto <span id="proyecto-nombre-obligatorio" class="text-danger">*</span>
+                    </label>
                     {{ form_widget(form.nombre) }}
+                    <small id="proyecto-nombre-ayuda" class="form-text text-muted">
+                        Obligatorio mientras no selecciones un cliente. Describe la obra para poder identificarla después.
+                    </small>
                     {{ form_errors(form.nombre) }}
                 </div>
                 <div>
-                    <label for="tipo_obra" class="form-label">Tipo de obra</label>
-                    <select name="tipo_obra" id="tipo_obra" class="form-select">
-                        <option value="">Selecciona tipo de obra</option>
-                        <option value="ducha">Cambio bañera por ducha</option>
-                        <option value="bano_completo">Baño completo</option>
-                        <option value="otro">Otro</option>
-                    </select>
+                    <label for="{{ form.tipoObra.vars.id }}" class="form-label">Tipo de obra</label>
+                    {{ form_widget(form.tipoObra) }}
+                    {{ form_help(form.tipoObra) }}
+                    {{ form_errors(form.tipoObra) }}
                 </div>
                 <div class="proyecto-full proyecto-dates">
                     <div>
@@ -171,10 +180,43 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const formNuevoCliente = document.getElementById('formNuevoCliente');
+    const formularioProyecto = document.querySelector('form[name="{{ form.vars.name }}"]');
     const clienteSelect = document.getElementById('{{ form.cliente.vars.id }}');
+    const nombreProyecto = document.getElementById('{{ form.nombre.vars.id }}');
+    const nombreObligatorio = document.getElementById('proyecto-nombre-obligatorio');
+    const ayudaNombreProyecto = document.getElementById('proyecto-nombre-ayuda');
     const modalElement = document.getElementById('modalNuevoCliente');
     const modal = new bootstrap.Modal(modalElement);
     const alertBox = document.getElementById('cliente-modal-alert');
+
+    const actualizarReglaIdentificacion = () => {
+        const sinCliente = clienteSelect.value === '';
+
+        nombreProyecto.required = sinCliente;
+        nombreObligatorio.classList.toggle('d-none', !sinCliente);
+        ayudaNombreProyecto.textContent = sinCliente
+            ? 'Obligatorio mientras no selecciones un cliente. Describe la obra para poder identificarla después.'
+            : 'Opcional: añade una referencia, dirección o detalle para reconocer mejor la obra.';
+
+        if (!sinCliente || nombreProyecto.value.trim() !== '') {
+            nombreProyecto.setCustomValidity('');
+        }
+    };
+
+    clienteSelect.addEventListener('change', actualizarReglaIdentificacion);
+    nombreProyecto.addEventListener('input', actualizarReglaIdentificacion);
+    formularioProyecto.addEventListener('submit', function (event) {
+        if (clienteSelect.value === '' && nombreProyecto.value.trim() === '') {
+            const mensaje = 'Selecciona un cliente o escribe un nombre descriptivo para identificar la obra.';
+            nombreProyecto.setCustomValidity(mensaje);
+            nombreProyecto.reportValidity();
+            event.preventDefault();
+            return;
+        }
+
+        nombreProyecto.setCustomValidity('');
+    });
+    actualizarReglaIdentificacion();
 
     const vias = {{ constant('App\\Service\\Cliente\\ClienteFormato::VIAS')|json_encode|raw }};
     const campos = formNuevoCliente.elements;
@@ -252,6 +294,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             clienteSelect.appendChild(option);
             clienteSelect.value = data.id;
+            actualizarReglaIdentificacion();
 
             formNuevoCliente.reset();
             modal.hide();

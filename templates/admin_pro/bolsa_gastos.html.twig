@@ -1,0 +1,175 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bolsa de gastos futuros{% endblock %}
+{% block cabecera %}Bolsa de gastos futuros{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('flujocaja') }}">Flujo de caja</a></li>
+    <li class="breadcrumb-item active">Bolsa de gastos</li>
+{% endblock %}
+
+{% block body %}
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <p class="text-muted mb-0">Los presupuestos aceptados aportan costes previstos. Las facturas recibidas consumen esta bolsa aunque estén pendientes de asignar a una obra.</p>
+        <a href="{{ path('flujocaja') }}" class="btn btn-outline-secondary">Volver al flujo de caja</a>
+    </div>
+
+    {% for mensaje in app.flashes('success') %}
+        <div class="alert alert-success" role="status">{{ mensaje }}</div>
+    {% endfor %}
+    {% if errores is not empty %}
+        <div class="alert alert-danger" role="alert">
+            <strong>No se han guardado los cambios.</strong>
+            <ul class="mb-0 mt-2">{% for error in errores %}<li>{{ error }}</li>{% endfor %}</ul>
+        </div>
+    {% endif %}
+
+    {% if not resumen.activo %}
+        <div class="alert alert-info">{% if configuracion.fechaInicio %}La bolsa empezará a contar el {{ configuracion.fechaInicio|date('d/m/Y') }}.{% else %}La bolsa está desactivada. Elige y guarda la fecha desde la que quieres empezar a contar.{% endif %}</div>
+    {% else %}
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100 mb-0"><div class="card-body">
+                    <div class="text-muted">Pendiente de recibir en facturas</div>
+                    <div class="h3 mb-1">{{ resumen.saldoConIva|number_format(2, ',', '.') }} €</div>
+                    <small class="text-muted">{{ resumen.saldoBase|number_format(2, ',', '.') }} € sin IVA + {{ resumen.saldoIva|number_format(2, ',', '.') }} € de IVA estimado</small>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 mb-0"><div class="card-body">
+                    <div class="text-muted">Aportado por presupuestos</div>
+                    <div class="h3 mb-1">{{ resumen.aportacionesBase|number_format(2, ',', '.') }} €</div>
+                    <small class="text-muted">Sin IVA · Ajustes acumulados: {{ resumen.ajustesBase|number_format(2, ',', '.') }} €</small>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 mb-0"><div class="card-body">
+                    <div class="text-muted">Consumido por facturas</div>
+                    <div class="h3 mb-1">{{ resumen.consumidoBase|number_format(2, ',', '.') }} €</div>
+                    <small class="text-muted">Sin IVA · Las facturas pagadas también consumen la bolsa.</small>
+                </div></div>
+            </div>
+        </div>
+        <p class="text-muted">Importes desde {{ configuracion.fechaInicio|date('d/m/Y') }} hasta {{ resumen.fechaCorte|date('d/m/Y') }}. Los vencimientos pendientes de las facturas se muestran aparte en el flujo de caja. El saldo de esta bolsa es una estimación de las compras que faltan.</p>
+    {% endif %}
+
+    {% if resumen.incidencias is not empty %}
+        <div class="alert alert-warning" role="status">
+            <strong>Datos que conviene revisar</strong>
+            <ul class="mb-0 mt-2">{% for incidencia in resumen.incidencias %}<li>{{ incidencia }}</li>{% endfor %}</ul>
+        </div>
+    {% endif %}
+    {% if resumen.excesoFacturasBase > 0 %}
+        <div class="alert alert-warning">Hay {{ resumen.excesoFacturasBase|number_format(2, ',', '.') }} € sin IVA de facturas que superaban la bolsa disponible al recibirse. Sus pagos se mantienen en el flujo de caja.</div>
+    {% endif %}
+
+    <div class="card mb-4"><div class="card-body">
+        <h4 class="card-title">Configuración</h4>
+        <p class="text-muted">Se incluyen las aceptaciones y las facturas desde la fecha elegida. La bolsa continúa al cambiar de año. Los datos anteriores se conservan. Cambiar la fecha o los proveedores excluidos recalcula todo el periodo.</p>
+        <form method="post" action="{{ path('admin_bolsa_gastos') }}">
+            <input type="hidden" name="accion" value="guardar_configuracion">
+            <input type="hidden" name="_token" value="{{ csrf_token('bolsa_gastos_configuracion') }}">
+            <div class="row g-3">
+                <div class="col-md-6 col-xl-3">
+                    <label for="bolsa-fecha-inicio" class="form-label">Fecha de inicio</label>
+                    <input type="date" id="bolsa-fecha-inicio" name="fechaInicio" class="form-control" value="{{ formConfiguracion.fechaInicio }}" aria-describedby="bolsa-fecha-ayuda">
+                    <small id="bolsa-fecha-ayuda" class="form-text text-muted">Déjala vacía para desactivar la bolsa sin borrar sus ajustes.</small>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <label for="bolsa-iva" class="form-label">IVA estimado (%)</label>
+                    <input type="text" id="bolsa-iva" name="ivaEstimado" class="form-control" value="{{ formConfiguracion.ivaEstimado }}" inputmode="decimal" pattern="[0-9]{1,3}([.,][0-9]{1,2})?" required aria-describedby="bolsa-iva-ayuda">
+                    <small id="bolsa-iva-ayuda" class="form-text text-muted">Solo para los gastos aún sin factura. Entre 0 y 100.</small>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <label for="bolsa-plazo-obra" class="form-label">Plazo de obra estimado (días)</label>
+                    <input type="number" id="bolsa-plazo-obra" name="plazoObraDias" class="form-control" value="{{ formConfiguracion.plazoObraDias }}" min="0" max="730" step="1" required aria-describedby="bolsa-obra-ayuda">
+                    <small id="bolsa-obra-ayuda" class="form-text text-muted">Para presupuestos sin una fecha prevista de finalización.</small>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <label for="bolsa-plazo-pago" class="form-label">Plazo de pago estimado (días)</label>
+                    <input type="number" id="bolsa-plazo-pago" name="plazoPagoDias" class="form-control" value="{{ formConfiguracion.plazoPagoDias }}" min="0" max="365" step="1" required aria-describedby="bolsa-pago-ayuda">
+                    <small id="bolsa-pago-ayuda" class="form-text text-muted">Se añade a la fecha prevista para situar los gastos futuros en caja.</small>
+                </div>
+                <div class="col-12">
+                    <label for="bolsa-proveedores-excluidos" class="form-label">Proveedores cuyas facturas no consumen la bolsa</label>
+                    <textarea id="bolsa-proveedores-excluidos" name="proveedoresExcluidos" class="form-control" rows="3" aria-describedby="bolsa-proveedores-ayuda">{{ formConfiguracion.proveedoresExcluidos }}</textarea>
+                    <small id="bolsa-proveedores-ayuda" class="form-text text-muted">Todas las facturas se incluyen por defecto. Escribe un nombre de proveedor por línea para excluir sus facturas, por ejemplo gastos generales que no estén previstos en las obras. Sus vencimientos siguen contando en caja.</small>
+                </div>
+            </div>
+            <button class="btn btn-primary mt-3" type="submit">Guardar configuración</button>
+        </form>
+    </div></div>
+
+    <div class="card mb-4"><div class="card-body">
+        <h4 class="card-title">Ajustar lo que falta por facturar</h4>
+        <p class="text-muted">Añade una corrección cuando cambie tu estimación. Un importe positivo aumenta la bolsa y uno negativo la reduce; el importe se suma al saldo, no lo sustituye. Se aplica después de las facturas de ese día. Los abonos no reponen la bolsa automáticamente: puedes reflejar aquí las compras que todavía falten.</p>
+        {% if resumen.activo %}
+            <form method="post" action="{{ path('admin_bolsa_gastos') }}">
+                <input type="hidden" name="accion" value="crear_ajuste">
+                <input type="hidden" name="_token" value="{{ csrf_token('bolsa_gastos_ajuste') }}">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="bolsa-ajuste-fecha" class="form-label">Fecha del ajuste</label>
+                        <input type="date" id="bolsa-ajuste-fecha" name="fecha" class="form-control" value="{{ formAjuste.fecha }}" min="{{ configuracion.fechaInicio|date('Y-m-d') }}" max="{{ hoy|date('Y-m-d') }}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="bolsa-ajuste-importe" class="form-label">Ajuste sin IVA (€)</label>
+                        <input type="text" id="bolsa-ajuste-importe" name="importeBase" class="form-control" value="{{ formAjuste.importeBase }}" inputmode="decimal" pattern="[+\-]?[0-9]{1,10}([.,][0-9]{1,2})?" placeholder="+1500,00 o -500,00" required aria-describedby="bolsa-ajuste-ayuda">
+                        <small id="bolsa-ajuste-ayuda" class="form-text text-muted">+ aumenta · − reduce. Sin separadores de miles.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="bolsa-ajuste-motivo" class="form-label">Motivo</label>
+                        <input type="text" id="bolsa-ajuste-motivo" name="motivo" class="form-control" value="{{ formAjuste.motivo }}" maxlength="255" placeholder="Ej.: compras pendientes anteriores a la fecha de inicio" required>
+                    </div>
+                </div>
+                <button class="btn btn-outline-primary mt-3" type="submit">Añadir ajuste</button>
+            </form>
+        {% else %}
+            <p class="mb-0">Guarda una fecha de inicio para poder añadir ajustes.</p>
+        {% endif %}
+
+        {% if ajustes is not empty %}
+            <div class="table-responsive mt-4">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <caption>Ajustes guardados desde la fecha de inicio</caption>
+                    <thead><tr><th scope="col">Fecha</th><th scope="col">Motivo</th><th scope="col" class="text-end">Ajuste sin IVA</th></tr></thead>
+                    <tbody>{% for ajuste in ajustes %}
+                        <tr>
+                            <td>{{ ajuste.fecha|date('d/m/Y') }}</td>
+                            <td>{{ ajuste.motivo }}</td>
+                            <td class="text-end text-nowrap">{{ ajuste.importeBase > 0 ? '+' : '' }}{{ ajuste.importeBase|number_format(2, ',', '.') }} €</td>
+                        </tr>
+                    {% endfor %}</tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div></div>
+
+    {% if resumen.activo %}
+        <div class="card"><div class="card-body">
+            <h4 class="card-title">Movimientos de la bolsa</h4>
+            <p class="text-muted">Importes sin IVA. Asignar después una factura a una obra no vuelve a descontarla.</p>
+            {% if resumen.movimientos is empty %}
+                <p class="mb-0">Todavía no hay movimientos desde la fecha de inicio.</p>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead><tr><th scope="col">Fecha</th><th scope="col">Concepto</th><th scope="col" class="text-end">Importe</th><th scope="col" class="text-end">Efecto en la bolsa</th><th scope="col" class="text-end">Saldo</th></tr></thead>
+                        <tbody>{% for movimiento in resumen.movimientos %}
+                            <tr>
+                                <td class="text-nowrap">{{ movimiento.fecha|date('d/m/Y') }}</td>
+                                <td>
+                                    {{ movimiento.concepto }}
+                                    {% if movimiento.incidencia|default(null) %}<small class="d-block text-warning">{{ movimiento.incidencia }}</small>{% endif %}
+                                    {% if movimiento.excesoCentimos > 0 %}<small class="d-block text-muted">{{ (movimiento.excesoCentimos / 100)|number_format(2, ',', '.') }} € sin reserva disponible.</small>{% endif %}
+                                </td>
+                                <td class="text-end text-nowrap">{{ (movimiento.importeCentimos / 100)|number_format(2, ',', '.') }} €</td>
+                                <td class="text-end text-nowrap">{{ (movimiento.aplicadoCentimos / 100)|number_format(2, ',', '.') }} €</td>
+                                <td class="text-end text-nowrap">{{ (movimiento.saldoCentimos / 100)|number_format(2, ',', '.') }} €</td>
+                            </tr>
+                        {% endfor %}</tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div></div>
+    {% endif %}
+{% endblock %}

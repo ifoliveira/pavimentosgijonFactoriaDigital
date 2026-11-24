@@ -24,7 +24,8 @@ class ProyectoCobroController extends AbstractController
     ): Response {
         $fecha = new \DateTime($request->request->get('fecha', 'now'));
 
-        $cobroService->registrarCobro(
+        try {
+            $cobro = $cobroService->registrarCobro(
             proyecto: $proyecto,
             fecha: $fecha,
             metodo: $request->request->get('metodo', 'transferencia'),
@@ -34,19 +35,33 @@ class ProyectoCobroController extends AbstractController
             importeNeto: (float) $request->request->get('importeNeto', 0),
             referencia: $request->request->get('referencia') ?: null,
             notas: $request->request->get('notas') ?: null,
-        );
+            confirmarFacturaFinal: $request->request->has('confirmarFacturaFinal')
+                ? $request->request->getBoolean('confirmarFacturaFinal') : null,
+            );
+        } catch (\RuntimeException $e) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                    'requiereConfirmacionFacturaFinal' => $e instanceof \App\Service\Proyecto\ConfirmacionFacturaFinalRequerida,
+                ], 422);
+            }
+            $this->addFlash('warning', $e->getMessage());
+            return $this->redirectToRoute('app_proyecto_show', ['id' => $proyecto->getId()]);
+        }
 
         $this->addFlash('success', 'Cobro registrado correctamente.');
         if ($request->isXmlHttpRequest()) {
             return $this->json([
                 'success' => true,
                 'message' => 'Cobro registrado correctamente.',
+                'redirectUrl' => $this->generateUrl('proyecto_cobro_justificante', ['id' => $cobro->getId()]),
             ]);
         }
 
 
-        return $this->redirectToRoute('app_proyecto_show', [
-            'id' => $proyecto->getId(),
+        return $this->redirectToRoute('proyecto_cobro_justificante', [
+            'id' => $cobro->getId(),
         ]);
     }
 
@@ -105,6 +120,19 @@ class ProyectoCobroController extends AbstractController
 
         return $this->redirectToRoute('app_proyecto_show', [
             'id' => $proyecto?->getId(),
+        ]);
+    }
+
+    #[Route('/{id}/justificante', name: 'proyecto_cobro_justificante', methods: ['GET'])]
+    public function justificante(ProyectoCobro $cobro): Response
+    {
+        if (!$cobro->getProyecto()) {
+            throw $this->createNotFoundException('Cobro sin proyecto asociado.');
+        }
+
+        return $this->render('proyecto/justificante_cobro.html.twig', [
+            'cobro' => $cobro,
+            'proyecto' => $cobro->getProyecto(),
         ]);
     }
 

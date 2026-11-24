@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Editar proyecto{% endblock %}
+
+{% form_theme form with ['bootstrap_4_layout.html.twig'] only %}
+
+{% block cabecera %}Proyectos{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_proyecto_index') }}">Proyectos</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_proyecto_show', {id: proyecto.id}) }}">{{ proyecto.nombre }}</a></li>
+    <li class="breadcrumb-item active">Editar</li>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4" style="max-width: 850px;">
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Editar proyecto</h1>
+            <p class="text-muted mb-0">Actualiza cómo identificas la obra y conserva sus observaciones.</p>
+        </div>
+        <a href="{{ path('app_proyecto_show', {id: proyecto.id}) }}" class="btn btn-outline-secondary text-nowrap">Volver a la ficha</a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            {{ form_start(form) }}
+            {{ form_errors(form) }}
+
+            <div class="alert alert-light border" role="note">
+                El cliente se asigna desde la ficha del proyecto para que los presupuestos existentes se actualicen correctamente.
+            </div>
+
+            {{ form_row(form.nombre) }}
+            {{ form_row(form.notas) }}
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                <a href="{{ path('app_proyecto_show', {id: proyecto.id}) }}" class="btn btn-light">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

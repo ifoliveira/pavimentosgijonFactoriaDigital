@@ -62,6 +62,8 @@ final class DocumentoTicketViewTest extends KernelTestCase
             'seleccionadosManoObra' => [],
             'textosManuales' => [],
             'productosBuscador' => [],
+            'esPresupuestoComplementario' => false,
+            'lineasDescontables' => [],
         ]);
         self::assertStringContainsString('T2026-0042', $html);
         self::assertStringContainsString('LOCAL-42', $html);

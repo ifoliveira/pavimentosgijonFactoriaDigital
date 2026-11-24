@@ -1,0 +1,61 @@
+.bank-upload { color: #263648; }
+.bank-upload-heading, .bank-upload-results-heading, .bank-upload-submit { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.bank-upload-heading { margin-bottom: 24px; }
+.bank-upload p { color: #64748b; line-height: 1.6; margin: 0; }
+.bank-upload .btn { border-radius: 8px; padding: 10px 16px; font-weight: 600; }
+.bank-upload .btn i { margin-right: 6px; }
+.bank-upload .btn:focus-visible { outline: 3px solid #185fa5; outline-offset: 3px; }
+.bank-upload-grid { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(270px, 1fr); gap: 24px; margin-bottom: 24px; }
+.bank-upload-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 28px; box-shadow: 0 4px 18px rgba(30, 50, 75, .035); min-width: 0; }
+.bank-upload h2 { font-size: 19px; font-weight: 650; color: #263648; margin: 0 0 6px; }
+.bank-upload-section-heading { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.bank-upload-icon { width: 48px; height: 48px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: #edf4fc; color: #185fa5; font-size: 22px; flex-shrink: 0; }
+.bank-upload-file { background: #f8fafd; border: 2px dashed #cbd7e5; border-radius: 12px; padding: 26px; text-align: center; }
+.bank-upload-file:focus-within, .bank-upload-file.has-file { border-color: #185fa5; background: #f0f6fd; }
+.bank-upload-file-icon { display: block; font-size: 30px; color: #185fa5; margin-bottom: 12px; }
+.bank-upload-file label { display: block; font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+.bank-upload-file input { max-width: 460px; margin: 20px auto 0; height: auto; background: #fff; text-align: left; }
+.bank-upload-file input::file-selector-button { border: 0; padding: 10px 14px; margin-right: 12px; color: #185fa5; background: #eaf2fc; cursor: pointer; }
+.bank-upload-selection { margin-top: 12px !important; font-size: 13px; overflow-wrap: anywhere; }
+.bank-upload-submit { margin-top: 22px; }
+.bank-upload-submit > span { font-size: 12px; color: #64748b; }
+.bank-upload-submit .btn { flex-shrink: 0; }
+.bank-upload-guide { border: 1px solid #e1e9f2; background: #f0f5fa; border-radius: 16px; padding: 28px; }
+.bank-upload-eyebrow { display: block; color: #185fa5; font-size: 11px; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 10px; }
+.bank-upload-guide ol { list-style: none; counter-reset: steps; padding: 0; margin: 24px 0; }
+.bank-upload-guide li { counter-increment: steps; position: relative; padding-left: 40px; margin-bottom: 20px; }
+.bank-upload-guide li::before { content: counter(steps); position: absolute; left: 0; top: 0; border: 1px solid #d5e2ef; background: #fff; color: #185fa5; border-radius: 50%; width: 27px; height: 27px; display: grid; place-items: center; font-weight: 600; font-size: 12px; }
+.bank-upload-guide strong, .bank-upload-guide li span { display: block; }
+.bank-upload-guide li span { color: #64748b; font-size: 13px; line-height: 1.6; margin-top: 4px; }
+.bank-upload-tip { border-top: 1px solid #d9e3ee; padding-top: 18px; display: flex; gap: 10px; }
+.bank-upload-tip i { color: #185fa5; margin-top: 4px; }
+.bank-upload-tip p { font-size: 12px; }
+.bank-upload-results-heading { margin-bottom: 24px; }
+.bank-upload-count { display: inline-block; background: #edf4fc; color: #185fa5; padding: 4px 9px; border-radius: 6px; font-size: 12px; vertical-align: middle; margin-left: 6px; }
+.bank-upload-empty { padding: 36px 16px; text-align: center; border-top: 1px solid #edf1f5; }
+.bank-upload-empty h3 { font-size: 17px; margin: 16px 0 6px; }
+.bank-upload-empty p { font-size: 14px; }
+.bank-upload .table th { background: #f8fafd; font-size: 12px; color: #53657a; border-top: 0; }
+.bank-upload .table td, .bank-upload .table th { padding: 14px 12px; vertical-align: middle; }
+.bank-upload .table tbody tr:hover { background: #f8fafd; }
+.bank-upload-amount { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
+.bank-upload-positive { color: #187554; }
+.bank-upload-negative { color: #b24444; }
+.bank-upload-nowrap { white-space: nowrap; }
+.bank-upload-concept { min-width: 220px; }
+.bank-upload-actions { display: flex; gap: 6px; white-space: nowrap; }
+.bank-upload-actions .btn { padding: 6px 10px; font-size: 12px; }
+@media (max-width: 991.98px) { .bank-upload-grid { grid-template-columns: 1fr; } }
+@media (max-width: 575.98px) {
+    .bank-upload-heading, .bank-upload-results-heading, .bank-upload-submit { align-items: stretch; flex-direction: column; gap: 14px; }
+    .bank-upload-card, .bank-upload-guide { padding: 20px; }
+    .bank-upload-file { padding: 20px 12px; }
+    .bank-upload-section-heading { align-items: flex-start; gap: 12px; }
+    .bank-upload .btn { text-align: center; }
+}
+
+.bank-category-form { min-width: 260px; }
+.bank-category-controls { display: flex; align-items: center; gap: 8px; }
+.bank-category-controls select { min-width: 170px; }
+.bank-category-controls .btn { padding: 6px 10px; font-size: 12px; }
+.bank-category-status { display: block; min-height: 20px; margin-top: 5px; color: #187554; font-size: 12px; }

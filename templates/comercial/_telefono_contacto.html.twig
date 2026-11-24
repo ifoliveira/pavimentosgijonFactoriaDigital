@@ -1,0 +1,10 @@
+{% set contacto = presupuesto.cliente ?: (presupuesto.proyecto ? presupuesto.proyecto.cliente : null) %}
+{% set telefono = contacto ? (contacto.telefono1Cl|trim ?: contacto.telefono2Cl|trim) : '' %}
+<div class="small mt-1">
+    {% if telefono %}
+        <span class="text-muted">Teléfono:</span>
+        <a href="tel:{{ telefono|replace({' ': '', '-': '', '(': '', ')': '', '.': ''}) }}">{{ telefono }}</a>
+    {% else %}
+        <span class="text-muted">Sin teléfono de contacto</span>
+    {% endif %}
+</div>

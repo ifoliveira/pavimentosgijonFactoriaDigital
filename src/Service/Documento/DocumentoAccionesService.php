@@ -25,7 +25,7 @@ class DocumentoAccionesService
 
         $estaCobrado = $estadoCobro === 'cobrado';
 
-        $bloqueado = $documento->isTicketTpv() || $estaRechazado || $estaConvertido || $estaCobrado;
+        $bloqueado = $documento->isTicketTpv() || $estaRechazado || $estaAceptado || $estaConvertido || $estaCobrado;
 
         return [
             // Cabecera / edición general
@@ -38,8 +38,9 @@ class DocumentoAccionesService
             // Flujo presupuesto
             'puedeEntregar' => $esPresupuesto && ($estaBorrador || $estaNegociacion),
             'puedeGenerarPdf' => $esPresupuesto && ($estaEntregado || $estaConvertido ||$estaBorrador || $estaNegociacion),
-            'puedeAceptar' => $esPresupuesto && $estaEntregado,
+            'puedeAceptar' => $esPresupuesto && $estaEntregado && $documento->getCliente() !== null,
             'puedeRechazar' => $esPresupuesto && $estaEntregado,
+            'requiereClienteParaAceptar' => $esPresupuesto && $estaEntregado && $documento->getCliente() === null,
             'puedeConvertirAFactura' => $esPresupuesto && $estaAceptado,
 
             // Flujo cobro
@@ -62,6 +63,7 @@ class DocumentoAccionesService
 
         return match ($documento->getEstadoComercial()) {
             'rechazado' => 'El documento está rechazado y no se puede modificar.',
+            'aceptado' => 'El presupuesto está aceptado y no se puede modificar. Crea un presupuesto complementario para cambiar el importe.',
             'convertido' => 'El presupuesto ya fue convertido y no se puede modificar.',
             default => $documento->getEstadoCobro() === 'cobrado'
                 ? 'El documento está cobrado y no se puede modificar.'

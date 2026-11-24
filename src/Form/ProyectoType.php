@@ -7,6 +7,7 @@ use App\Entity\Clientes;
 use App\Entity\Proyecto;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -24,16 +25,33 @@ class ProyectoType extends AbstractType
                     $nombre = trim(($cliente->getNombreCl() ?? '') . ' ' . ($cliente->getApellidosCl() ?? ''));
                     return $nombre !== '' ? $nombre : 'Cliente #' . $cliente->getId();
                 },
-                'label' => 'Cliente *',
+                'label' => 'Cliente',
                 'placeholder' => 'Selecciona un cliente',
-                'required' => true,
-            ])
-            ->add('nombre', TextType::class, [
-                'label' => 'Nombre del proyecto',
                 'required' => false,
                 'attr' => [
-                    'placeholder' => 'Ayuda a identificar el proyecto...',
+                    'aria-describedby' => 'proyecto-cliente-ayuda',
                 ],
+            ])
+            ->add('nombre', TextType::class, [
+                'label' => 'Descripción del proyecto',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Ej.: Reforma del piso de la calle Corrida 12',
+                    'aria-describedby' => 'proyecto-nombre-ayuda',
+                ],
+            ])
+            ->add('tipoObra', ChoiceType::class, [
+                'label' => 'Tipo de obra',
+                'placeholder' => 'Selecciona el tipo de obra',
+                'required' => false,
+                'choices' => [
+                    'Plato de ducha' => 'plato_ducha',
+                    'Baño' => 'bano',
+                    'Mampara' => 'mampara',
+                    'Mueble' => 'mueble',
+                    'Otros' => 'otros',
+                ],
+                'help' => 'Una clasificación opcional para encontrar el proyecto con más facilidad.',
             ])
             ->add('fechaInicio', DateType::class, [
                 'label' => 'Fecha de inicio',

@@ -1,0 +1,20 @@
+{% set facturas = proyecto.documentos|filter(documento => documento.tipoDocumento == 'factura') %}
+<div class="mt-2">
+    <div class="fw-semibold small mb-1">Facturas <span class="text-muted">({{ facturas|length }})</span></div>
+    {% for factura in facturas %}
+        {% set numero = factura.numero ? factura.numeroFormateado : 'Borrador #' ~ factura.id %}
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom py-2">
+            <div>
+                <a class="fw-semibold small" href="{{ path('app_documento_show', {id: factura.id}) }}">{{ numero }}</a>
+                <div class="small text-muted">{{ factura.esFacturaAnticipo() ? 'Anticipo' : 'Final' }} · {{ factura.total|number_format(2, ',', '.') }} €</div>
+            </div>
+            <div class="d-flex gap-1">
+                <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_documento_show', {id: factura.id}) }}" aria-label="Ver factura {{ numero }}">Ver</a>
+                <a class="btn btn-sm btn-outline-primary" href="{{ path('app_documento_pdf', {id: factura.id, tpl: 'clasico', ocultar_importes: 1}) }}"
+                   target="_blank" rel="noopener" aria-label="Abrir PDF para imprimir factura {{ numero }}"><i class="ti ti-printer me-1"></i>Imprimir PDF</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="small text-muted">Sin facturas generadas.</div>
+    {% endfor %}
+</div>

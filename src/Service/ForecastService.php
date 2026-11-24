@@ -15,17 +15,42 @@ class ForecastService
      * Devuelve la lista de forecasts pendientes ordenados por fecha
      * y el array de datos acumulados para el gráfico.
      */
-    public function getForecastPendiente(float $saldoInicial = 0.0): array
-    {
-        $forecastList = $this->forecastRepository->findBy(
+    public function getForecastPendiente(
+        float $saldoInicial = 0.0,
+        ?\DateTimeInterface $desde = null,
+        ?\DateTimeInterface $hasta = null,
+        ?\DateTimeInterface $fechaInicioGrafico = null,
+    ): array {
+        $todosLosForecasts = $this->forecastRepository->findBy(
             ['estadoFr' => 'P'],
             ['fechaFr' => 'ASC']
         );
 
-        $chartData = [];
         $saldo = round($saldoInicial, 2);
+        if ($desde !== null) {
+            foreach ($todosLosForecasts as $forecast) {
+                if ($forecast->getFechaFr() < $desde) {
+                    $saldo += (float) $forecast->getImporteFr();
+                }
+            }
+        }
+
+        $forecastList = $todosLosForecasts;
+        if ($desde !== null || $hasta !== null) {
+            $forecastList = array_values(array_filter(
+                $todosLosForecasts,
+                static function (Forecast $forecast) use ($desde, $hasta): bool {
+                    $fecha = $forecast->getFechaFr();
+
+                    return ($desde === null || $fecha >= $desde)
+                        && ($hasta === null || $fecha <= $hasta);
+                }
+            ));
+        }
+
+        $chartData = [];
         $chartData = [[
-            'x' => (new \DateTimeImmutable('today'))->format('Y-m-d'),
+            'x' => ($fechaInicioGrafico ?? new \DateTimeImmutable('today'))->format('Y-m-d'),
             'y' => $saldo,
         ]];
 

@@ -62,9 +62,11 @@ class DocumentoController extends AbstractController
         TextoManoObraRepository $textoManoObraRepository,
         ProductosRepository $productosRepository,
         DocumentoLineaService $lineaService,
-        DocumentoCalculatorService $documentoCalculatorService
+        DocumentoCalculatorService $documentoCalculatorService,
+        DocumentoRepository $documentoRepository
     ): Response {
         $documento = $documentoVerService->obtenerPorId($id);
+        $esComplementario = $this->esPresupuestoComplementario($documento, $documentoRepository);
         $editarCabecera = $request->query->getBoolean('editarCabecera');
         $acciones = $documentoAccionesService->getAccionesDisponibles($documento);
         $seleccionadosManoObra = $this->construirSeleccionadosPorRelacion($documento);
@@ -86,6 +88,8 @@ class DocumentoController extends AbstractController
             'seleccionadosManoObra' => $seleccionadosManoObra,
             'textosManuales' => $textosManuales,
             'productosBuscador' => $productos,
+            'esPresupuestoComplementario' => $esComplementario,
+            'lineasDescontables' => $esComplementario ? $this->lineasDescontables($documento) : [],
 
         ]);
     }
@@ -199,7 +203,8 @@ class DocumentoController extends AbstractController
     public function guardarLinea(
         Request $request,
         Documento $documento,
-        DocumentoLineaService $lineaService
+        DocumentoLineaService $lineaService,
+        DocumentoRepository $documentoRepository
     ): Response {
         $productoId = $request->request->get('productoId') ?: null;
         $tipoLinea = $request->request->get('tipoLinea', 'producto');
@@ -221,7 +226,12 @@ class DocumentoController extends AbstractController
         try {
             $tipoIva = 21.0;
 
-            if ($destinoFacturacion === DocumentoLinea::DESTINO_FACTURA_OBRA) {
+            if ($this->esPresupuestoComplementario($documento, $documentoRepository)) {
+                $tipoIva = $this->obtenerIvaUnicoProyecto($documento);
+            }
+
+            if (!$this->esPresupuestoComplementario($documento, $documentoRepository)
+                && $destinoFacturacion === DocumentoLinea::DESTINO_FACTURA_OBRA) {
                 $ivaFacturaEstado = $lineaService->obtenerEstadoIvaFactura($documento);
                 $tipoIvaSolicitado = (float) $request->request->get('tipoIvaFacturaActual', 21);
 
@@ -259,6 +269,7 @@ class DocumentoController extends AbstractController
             destinoFacturacion: $destinoFacturacion,
             origenLinea: $origenLinea,
             tipoIva: $tipoIva,
+            permitirCantidadNegativa: $this->esPresupuestoComplementario($documento, $documentoRepository),
         );
 
         // Si viene por AJAX, no recargamos la página
@@ -274,6 +285,30 @@ class DocumentoController extends AbstractController
         return $this->redirectToRoute('app_documento_show', [
             'id' => $documento->getId(),
         ]);
+    }
+
+    #[Route('/{id}/linea/{linea}/descontar', name: 'app_documento_linea_descontar', methods: ['POST'])]
+    public function descontarLineaAnterior(
+        Documento $documento,
+        DocumentoLinea $linea,
+        Request $request,
+        DocumentoRepository $documentoRepository,
+        DocumentoLineaService $lineaService
+    ): Response {
+        if (!$this->esPresupuestoComplementario($documento, $documentoRepository)
+            || $linea->getDocumento()?->getProyecto()?->getId() !== $documento->getProyecto()?->getId()
+            || !in_array($linea->getDocumento()?->getEstadoComercial(), ['aceptado', 'convertido'], true)) {
+            throw $this->createAccessDeniedException('La línea seleccionada no se puede descontar en este presupuesto.');
+        }
+
+        try {
+            $lineaService->crearLineaDeDescuento($documento, $linea, (float) $request->request->get('cantidad', 0));
+            $this->addFlash('success', 'Concepto descontado en el presupuesto complementario.');
+        } catch (\InvalidArgumentException|\RuntimeException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_documento_show', ['id' => $documento->getId()]);
     }
 
     #[Route('/linea/{id}/coste', name: 'app_documento_linea_actualizar_coste', methods: ['POST'])]
@@ -539,23 +574,33 @@ class DocumentoController extends AbstractController
     #[Route('/{id}/aceptar', name: 'app_documento_aceptar', methods: ['POST'])]
     public function aceptar(
         int $id,
-        DocumentoEstadoService $documentoEstadoService,
-        DocumentoRepository $documentoRepository,
-        PresupuestoFinalizadoTelegramNotifier $telegramNotifier
+        Request $request,
+        DocumentoEstadoService $documentoEstadoService
     ): Response {
+        $volverAlDashboardComercial = $request->request->get('volver') === 'presupuestos_comercial';
+
         try {
-            $presupuesto = $documentoRepository->find($id);
-            $factura = $documentoEstadoService->aceptarYGenerarFactura($id);
-            if ($presupuesto !== null) {
-                $telegramNotifier->notificarDocumentoAceptado($presupuesto, $factura);
+            $presupuesto = $documentoEstadoService->aceptarPresupuesto($id);
+
+            $this->addFlash(
+                'success',
+                'Presupuesto aceptado correctamente.'
+            );
+
+            if ($volverAlDashboardComercial) {
+                return $this->redirectToRoute('admin_comercial_presupuestos');
             }
-            $this->addFlash('success', 'Presupuesto aceptado y factura generada correctamente.');
 
             return $this->redirectToRoute('app_documento_show', [
-                'id' => $factura->getId(),
+                'id' => $presupuesto->getId(),
             ]);
+
         } catch (\RuntimeException $e) {
             $this->addFlash('error', $e->getMessage());
+
+            if ($volverAlDashboardComercial) {
+                return $this->redirectToRoute('admin_comercial_presupuestos');
+            }
 
             return $this->redirectToRoute('app_documento_show', [
                 'id' => $id,
@@ -643,6 +688,66 @@ class DocumentoController extends AbstractController
         }
 
         return 'varios';
+    }
+
+    private function esPresupuestoComplementario(Documento $documento, DocumentoRepository $documentoRepository): bool
+    {
+        if ($documento->getTipoDocumento() !== 'presupuesto' || !$documento->getProyecto()) {
+            return false;
+        }
+
+        $inicial = $documentoRepository->findPresupuestoInicialDeProyecto($documento->getProyecto());
+
+        return $inicial !== null
+            && $inicial->getId() !== $documento->getId()
+            && in_array($inicial->getEstadoComercial(), ['aceptado', 'convertido'], true);
+    }
+
+    private function lineasDescontables(Documento $documento): array
+    {
+        $lineas = [];
+        foreach ($documento->getProyecto()->getDocumentos() as $origen) {
+            if ($origen === $documento
+                || $origen->getTipoDocumento() !== 'presupuesto'
+                || !in_array($origen->getEstadoComercial(), ['aceptado', 'convertido'], true)) {
+                continue;
+            }
+
+            foreach ($origen->getLineas() as $linea) {
+                if ($linea->getTipoLinea() !== 'comentario' && (float) $linea->getCantidad() > 0) {
+                    $lineas[] = $linea;
+                }
+            }
+        }
+
+        return $lineas;
+    }
+
+    private function obtenerIvaUnicoProyecto(Documento $documento): float
+    {
+        $tipos = [];
+        foreach ($documento->getProyecto()->getDocumentos() as $presupuesto) {
+            if ($presupuesto === $documento || $presupuesto->getTipoDocumento() !== 'presupuesto'
+                || !in_array($presupuesto->getEstadoComercial(), ['aceptado', 'convertido'], true)) {
+                continue;
+            }
+            foreach ($presupuesto->getLineas() as $linea) {
+                if ((float) $linea->getSubtotal() !== 0.0) {
+                    $tipos[(string) $linea->getTipoIva()] = (float) $linea->getTipoIva();
+                }
+            }
+        }
+
+        if (count($tipos) !== 1) {
+            throw new \RuntimeException('El proyecto debe tener un único IVA (10 % o 21 %) antes de crear presupuestos complementarios.');
+        }
+
+        $iva = (float) reset($tipos);
+        if (!in_array((int) $iva, [10, 21], true)) {
+            throw new \RuntimeException('El IVA del proyecto debe ser 10 % o 21 %.');
+        }
+
+        return $iva;
     }
 
     #[Route('/documento/{id}/preset/{tipo}', name: 'app_documento_mano_obra_preset')]

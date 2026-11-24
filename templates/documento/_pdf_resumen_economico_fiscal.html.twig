@@ -1,0 +1,41 @@
+{# Las referencias se toman del texto guardado al emitir la factura, no de datos actuales del proyecto. #}
+{% set referenciasAnticipos = [] %}
+{% for linea in documento.lineas|filter(linea => linea.origenLinea == 'descuento_anticipo') %}
+    {% set referencia = linea.descripcion|split(' — ')|first|replace({'Descuento anticipo ': ''}) %}
+    {% if referencia and referencia not in referenciasAnticipos %}
+        {% set referenciasAnticipos = referenciasAnticipos|merge([referencia]) %}
+    {% endif %}
+{% endfor %}
+<div class="resumen-economico-fiscal" style="page-break-inside: avoid; margin-top: 8px; padding: 8px 12px; border: 1px solid #666; color: #111;">
+    <div style="font-size: 11px; font-weight: bold; margin-bottom: 5px;">Resumen económico y fiscal</div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+        <tr>
+            <td style="padding: 4px 0; font-weight: bold;">Precio total de la reforma, IVA incluido</td>
+            <td style="padding: 4px 0; text-align: right; white-space: nowrap; font-weight: bold;">{{ resumenObra.totalObra|number_format(2, ',', '.') }} €</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 0;">Anticipos facturados y abonados{% if referenciasAnticipos %}<br> <span style="font-size: 9px; color: #444;">Facturas: {{ referenciasAnticipos|join(', ') }}</span>{% endif %}</td>
+            <td style="text-align: right; white-space: nowrap;">−{{ resumenObra.anticipos|number_format(2, ',', '.') }} €</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 0 3px; border-top: 1px solid #ccc;">Base imponible de esta factura</td>
+            <td style="padding-top: 5px; border-top: 1px solid #ccc; text-align: right; white-space: nowrap;">{{ documento.baseImponible|number_format(2, ',', '.') }} €</td>
+        </tr>
+        <tr>
+            <td style="padding: 3px 0;">IVA {{ iva }} de esta factura</td>
+            <td style="text-align: right; white-space: nowrap;">{{ documento.totalIva|number_format(2, ',', '.') }} €</td>
+        </tr>
+        <tr style="font-weight: bold;">
+            <td style="padding: 4px 0;">Total de esta factura final</td>
+            <td style="text-align: right; white-space: nowrap;">{{ documento.total|number_format(2, ',', '.') }} €</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 0;">Pagos posteriores imputados a esta factura</td>
+            <td style="text-align: right; white-space: nowrap;">{{ documento.totalCobrado|number_format(2, ',', '.') }} €</td>
+        </tr>
+        <tr style="font-size: 12px; font-weight: bold;">
+            <td style="padding: 5px 0 0; border-top: 1px solid #666;">Pendiente de pago</td>
+            <td style="padding: 5px 0 0; border-top: 1px solid #666; text-align: right; white-space: nowrap;">{{ resumenObra.pendiente|number_format(2, ',', '.') }} €</td>
+        </tr>
+    </table>
+</div>

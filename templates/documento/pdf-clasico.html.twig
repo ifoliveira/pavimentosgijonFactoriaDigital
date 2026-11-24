@@ -595,6 +595,8 @@
         </div>
     {% endif %}
 
+    {% set resumenObra = documento.resumenFacturaFinal %}
+
     {# ── LÍNEAS ── #}
     {% set mostrarImportesLineas = mostrarImportesLineas is defined ? mostrarImportesLineas : true %}
     <div class="lineas-section">
@@ -614,7 +616,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for linea in documento.lineas %}
+                {% for linea in documento.lineas|filter(linea => not resumenObra or linea.origenLinea != 'descuento_anticipo') %}
                     {% if linea.tipoLinea == 'comentario' %}
                         <tr class="fila-comentario">
                             <td colspan="{{ mostrarImportesLineas ? 6 : 3 }}">
@@ -652,6 +654,9 @@
         </table>
     </div>
 
+    {% if resumenObra %}
+        {% include 'documento/_pdf_resumen_economico_fiscal.html.twig' with {documento: documento, resumenObra: resumenObra, iva: iva} only %}
+    {% else %}
     {# ── TOTALES ── #}
     <div class="totales-section">
         <table class="totales-table">
@@ -676,7 +681,7 @@
                                 <td colspan="2"><hr class="totales-divider"></td>
                             </tr>
                             <tr>
-                                <td class="totales-total-label">Total</td>
+                                <td class="totales-total-label">{{ documento.resumenFacturaFinal ? 'Total de esta factura' : 'Total' }}</td>
                                 <td class="totales-total-value">
                                     {{ documento.total|number_format(2, ',', '.') }} €
                                 </td>
@@ -688,10 +693,14 @@
         </table>
     </div>
 
-    {% set totalCobrado = documento.proyecto.totalCobrado ?? 0 %}
+    {% endif %}
+
+    {# Los anticipos ya se dedujeron del total de la factura final.
+       Solo los cobros de esta factura reducen su saldo pendiente. #}
+    {% set totalCobrado = documento.totalCobrado %}
     {% set pendiente = (documento.total ?? 0) - totalCobrado %}
-    {% if documento.tipoDocumento == 'factura' %}
-        {% if pendiente > 0.009 and documento.cobros is defined and documento.proyecto.cobros|length > 0 %}
+    {% if documento.tipoDocumento == 'factura' and not resumenObra %}
+        {% if pendiente > 0.009 %}
             <div class="cobros-section">
                 <div class="cobros-box">
                     <div class="cobros-title">Situación de cobro</div>

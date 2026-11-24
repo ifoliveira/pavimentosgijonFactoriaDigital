@@ -97,6 +97,8 @@ class DocumentoLineaService
 
     public function cambiarIvaLineasFactura(Documento $documento, float $tipoIva): void
     {
+        $this->asegurarDocumentoEditable($documento);
+
         if (!in_array((int) $tipoIva, [10, 21], true)) {
             throw new \InvalidArgumentException('Tipo de IVA de factura no permitido.');
         }
@@ -130,8 +132,15 @@ class DocumentoLineaService
         string $tipo,
         string $destinoFacturacion = DocumentoLinea::DESTINO_FACTURA_OBRA,
         string $origenLinea = 'manual',
-        float $tipoIva = 21.0
+        float $tipoIva = 21.0,
+        bool $permitirCantidadNegativa = false
     ): DocumentoLinea {
+
+        $this->asegurarDocumentoEditable($documento);
+
+        if ($cantidad === 0.0 || ($cantidad < 0.0 && !$permitirCantidadNegativa)) {
+            throw new \InvalidArgumentException('La cantidad debe ser mayor que cero. Solo los presupuestos complementarios admiten cantidades negativas.');
+        }
 
         $descripcionFormateada = $this->descripcionPresupuestoFormatter->formatear($descripcion);
         $esEdicion = $lineaId > 0;
@@ -355,10 +364,6 @@ class DocumentoLineaService
             $tipoIva = 0;
         }
 
-        if ($cantidad <= 0) {
-            $cantidad = 1;
-        }
-
         $precioConIva = round($precioConIva, 2);
 
         /*
@@ -421,6 +426,8 @@ class DocumentoLineaService
             throw new \RuntimeException('La línea no tiene documento asociado.');
         }
 
+        $this->asegurarDocumentoEditable($documento);
+
         $costeNormalizado = number_format(round($costeUnitario, 2), 2, '.', '');
 
         $linea->setCosteUnitario($costeNormalizado);
@@ -438,6 +445,8 @@ class DocumentoLineaService
             throw new \RuntimeException('La línea no tiene documento asociado.');
         }
 
+        $this->asegurarDocumentoEditable($documento);
+
         $documento->removeLinea($linea);
         $this->em->remove($linea);
 
@@ -449,6 +458,45 @@ class DocumentoLineaService
         }        
 
         $this->em->flush();
+    }
+
+    public function crearLineaDeDescuento(Documento $documento, DocumentoLinea $origen, float $cantidad): DocumentoLinea
+    {
+        $this->asegurarDocumentoEditable($documento);
+
+        if ($cantidad <= 0 || $cantidad > abs((float) $origen->getCantidad())) {
+            throw new \InvalidArgumentException('La cantidad a descontar debe ser mayor que cero y no superar la cantidad original.');
+        }
+
+        $linea = (new DocumentoLinea())
+            ->setPosicion(count($documento->getLineas()) + 1)
+            ->setTipoLinea($origen->getTipoLinea())
+            ->setDestinoFacturacion($origen->getDestinoFacturacion())
+            ->setProducto($origen->getProducto())
+            ->setCatalogoProducto($origen->getCatalogoProducto())
+            ->setDescripcion($origen->getDescripcion())
+            ->setCantidad(number_format(-$cantidad, 3, '.', ''))
+            ->setUnidad($origen->getUnidad())
+            ->setPrecioUnitario($origen->getPrecioUnitario())
+            ->setCosteUnitario($origen->getCosteUnitario())
+            ->setDescuento($origen->getDescuento())
+            ->setTipoIva($origen->getTipoIva())
+            ->setAfectaStock(false)
+            ->setStockMovido(false)
+            ->setOrigenLinea('descuento_presupuesto');
+
+        $documento->addLinea($linea);
+        $this->documentoCalculatorService->recalcularLinea($linea);
+        $this->em->persist($linea);
+        $this->recalcularTotalesDocumento($documento);
+
+        if ($documento->getProyecto()) {
+            $this->proyectoService->recalcularProyecto($documento->getProyecto());
+        }
+
+        $this->em->flush();
+
+        return $linea;
     }
 
     private function reordenarPosiciones(Documento $documento): void
@@ -483,6 +531,8 @@ class DocumentoLineaService
         bool $tieneRecargoEquivalencia = false,
         ?float $porcentajeRecargoEquivalencia = null
     ): DocumentoLinea { 
+        $this->asegurarDocumentoEditable($documento);
+
         $linea = new DocumentoLinea();
 
         $linea->setDocumento($documento);
@@ -550,6 +600,8 @@ class DocumentoLineaService
         Documento $documento,
         bool $flush = true
     ): void {
+        $this->asegurarDocumentoEditable($documento);
+
         foreach ($documento->getLineas()->toArray() as $linea) {
             $documento->removeLinea($linea);
             $this->em->remove($linea);
@@ -571,6 +623,8 @@ class DocumentoLineaService
         array $origenes,
         bool $flush = true
     ): void {
+        $this->asegurarDocumentoEditable($documento);
+
         foreach ($documento->getLineas()->toArray() as $linea) {
             if (!in_array($linea->getOrigenLinea(), $origenes, true)) {
                 continue;
@@ -615,5 +669,15 @@ class DocumentoLineaService
             'comentario' => DocumentoLinea::DESTINO_NO_FACTURABLE,
             default => DocumentoLinea::DESTINO_PENDIENTE,
         };
+    }
+
+    private function asegurarDocumentoEditable(Documento $documento): void
+    {
+        if (
+            $documento->getTipoDocumento() === 'presupuesto'
+            && in_array($documento->getEstadoComercial(), ['aceptado', 'convertido'], true)
+        ) {
+            throw new \RuntimeException('El presupuesto aceptado no se puede modificar. Crea un presupuesto complementario para cambiar el importe.');
+        }
     }
 }

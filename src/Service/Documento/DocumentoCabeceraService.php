@@ -48,6 +48,15 @@ class DocumentoCabeceraService
         $documento->setProyecto($proyecto);
         $documento->setNotas($data['notas'] ?? null);
 
+        // Al identificar desde el presupuesto una obra que aún no tenía
+        // cliente, mantenemos ambos registros alineados. No sobrescribimos
+        // nunca un cliente ya asignado al proyecto.
+        if ($cliente instanceof Clientes
+            && $documento->getProyecto() !== null
+            && $documento->getProyecto()->getCliente() === null) {
+            $documento->getProyecto()->setCliente($cliente);
+        }
+
         if (!empty($data['fechaEmision'])) {
             $documento->setFechaEmision(new \DateTime($data['fechaEmision']));
         }

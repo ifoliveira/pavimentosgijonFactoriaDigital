@@ -43,6 +43,10 @@ final class ProyectoPresupuestoFactory
     }
 
     /**
+     * El presupuesto inicial se crea siempre, incluso si el cliente todavía
+     * no se conoce. La aceptación del presupuesto es la operación que exige
+     * identificar al cliente.
+     *
      * @return array{proyecto: Proyecto, presupuesto: Documento}
      */
     public function crearDesdeProyecto(
@@ -61,15 +65,21 @@ final class ProyectoPresupuestoFactory
         ): array {
             $cliente = $proyecto->getCliente();
 
-            if (!$cliente instanceof Clientes) {
-                throw new \RuntimeException('El proyecto necesita un cliente para crear el presupuesto inicial.');
+            $nombreManual = trim((string) $proyecto->getNombre());
+
+            if (!$cliente instanceof Clientes && $nombreManual === '') {
+                throw new \RuntimeException('Selecciona un cliente o escribe un nombre descriptivo para identificar la obra.');
             }
 
-            if ($cliente->getId() === null) {
+            if ($cliente instanceof Clientes && $cliente->getId() === null) {
                 $this->em->persist($cliente);
             }
 
-            $proyecto->setNombre($this->construirNombre($cliente, (string) $proyecto->getNombre(), $tipoObra));
+            $proyecto->setNombre(
+                $cliente instanceof Clientes
+                    ? $this->construirNombre($cliente, $nombreManual, $tipoObra)
+                    : $nombreManual
+            );
             $proyecto->setFichaFotoPath($fichaFotoPath);
             $proyecto->setDireccionObraExtraida($direccionObraExtraida);
             $proyecto->setFichaDatosExtraidos($fichaDatosExtraidos !== [] ? $fichaDatosExtraidos : null);
@@ -77,7 +87,10 @@ final class ProyectoPresupuestoFactory
             $this->em->persist($proyecto);
             $this->em->flush();
 
-            $presupuesto = $this->documentoCrearService->crearDocumento('presupuesto', $cliente->getId());
+            $presupuesto = $this->documentoCrearService->crearDocumento(
+                'presupuesto',
+                $cliente instanceof Clientes ? $cliente->getId() : null
+            );
             $presupuesto->setProyecto($proyecto);
 
             $this->em->flush();
@@ -92,8 +105,15 @@ final class ProyectoPresupuestoFactory
     public function construirNombre(Clientes $cliente, string $nombreManual, ?string $tipoObra = null): string
     {
         $prefijo = match ($tipoObra) {
+            'plato_ducha' => 'Plato de ducha',
+            'bano' => 'Baño',
+            'mampara' => 'Mampara',
+            'mueble' => 'Mueble',
+            'otros' => 'Otros',
+            // Valores conservados para proyectos creados antes de ampliar el catálogo.
             'ducha' => 'Cambio bañera por ducha',
             'bano_completo' => 'Baño completo',
+            'otro' => 'Otro',
             default => null,
         };
 
@@ -111,6 +131,11 @@ final class ProyectoPresupuestoFactory
 
         if ($direccion !== '') {
             $partes[] = $direccion;
+        }
+
+        if ($partes === []) {
+            $nombreCliente = trim(($cliente->getNombreCl() ?? '') . ' ' . ($cliente->getApellidosCl() ?? ''));
+            $partes[] = $nombreCliente !== '' ? 'Proyecto de ' . $nombreCliente : 'Proyecto sin descripción';
         }
 
         return implode(' - ', $partes);

@@ -1,15 +1,15 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard Comercial de Presupuestos{% endblock %}
+{% block title %}Seguimiento comercial de presupuestos{% endblock %}
 
 {% block body %}
 <div class="container-fluid py-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-1">Dashboard comercial de presupuestos</h1>
+            <h1 class="h3 mb-1">Seguimiento comercial de presupuestos</h1>
             <p class="text-muted mb-0">
-                Seguimiento comercial de presupuestos antes de convertirse en obra real.
+                Presupuestos pendientes de aceptación: registra el contacto con el cliente y su resultado.
             </p>
         </div>
 
@@ -18,9 +18,16 @@
         </a>
     </div>
 
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger" role="alert">{{ message }}</div>
+    {% endfor %}
+
     <div class="row g-3 mb-4">
 
-        <div class="col-xl-2 col-md-4 col-6">
+        <div class="col-md-4 col-12">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="small text-muted">Borradores</div>
@@ -29,7 +36,7 @@
             </div>
         </div>
 
-        <div class="col-xl-2 col-md-4 col-6">
+        <div class="col-md-4 col-12">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="small text-muted">Entregados</div>
@@ -38,34 +45,7 @@
             </div>
         </div>
 
-        <div class="col-xl-2 col-md-4 col-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="small text-muted">Aceptados</div>
-                    <div class="fs-3 fw-bold text-success">{{ resumen.aceptado }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-2 col-md-4 col-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="small text-muted">Convertidos</div>
-                    <div class="fs-3 fw-bold text-primary">{{ resumen.convertido }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-2 col-md-4 col-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="small text-muted">Rechazados</div>
-                    <div class="fs-3 fw-bold text-danger">{{ resumen.rechazado }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-2 col-md-4 col-6">
+        <div class="col-md-4 col-12">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="small text-muted">Importe vivo</div>
@@ -78,32 +58,13 @@
 
     </div>
 
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white">
-            <h2 class="h5 mb-0">Embudo comercial</h2>
-        </div>
-        <div class="card-body">
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <span class="badge bg-warning text-dark p-3">Borrador</span>
-                <span class="text-muted">→</span>
-                <span class="badge bg-info p-3">Entregado</span>
-                <span class="text-muted">→</span>
-                <span class="badge bg-success p-3">Aceptado</span>
-                <span class="text-muted">→</span>
-                <span class="badge bg-primary p-3">Convertido en obra</span>
-                <span class="text-muted mx-2">/</span>
-                <span class="badge bg-danger p-3">Rechazado</span>
-            </div>
-        </div>
-    </div>
-
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
 
             <div>
-                <h2 class="h5 mb-0">Presupuestos recientes</h2>
+                <h2 class="h5 mb-0">Presupuestos pendientes</h2>
                 <div class="small text-muted">
-                    Control comercial de presupuestos generados
+                    Últimos 100 presupuestos en borrador o entregados
                 </div>
             </div>
 
@@ -114,11 +75,7 @@
 
                     Rechazados
 
-                    {% if resumen.rechazado > 0 %}
-                        <span class="badge bg-danger ms-1">
-                            {{ resumen.rechazado }}
-                        </span>
-                    {% endif %}
+
                 </a>
 
             </div>
@@ -129,7 +86,7 @@
 
             {% if presupuestos is empty %}
                 <div class="alert alert-light border mb-0">
-                    Todavía no hay presupuestos.
+                    No hay presupuestos pendientes de aceptación.
                 </div>
             {% else %}
                 <div class="table-responsive">
@@ -140,6 +97,7 @@
                                 <th>Proyecto / cliente</th>
                                 <th>Estado</th>
                                 <th>Fecha</th>
+                                <th>Seguimiento comercial</th>
                                 <th class="text-end">Importe</th>
                                 <th class="text-end">Acciones</th>
                             </tr>
@@ -155,15 +113,6 @@
                                 {% if estado == 'entregado' %}
                                     {% set estadoTexto = 'Entregado' %}
                                     {% set estadoClase = 'bg-info' %}
-                                {% elseif estado == 'aceptado' %}
-                                    {% set estadoTexto = 'Aceptado' %}
-                                    {% set estadoClase = 'bg-success' %}
-                                {% elseif estado == 'convertido' %}
-                                    {% set estadoTexto = 'Convertido' %}
-                                    {% set estadoClase = 'bg-primary' %}
-                                {% elseif estado == 'rechazado' %}
-                                    {% set estadoTexto = 'Rechazado' %}
-                                    {% set estadoClase = 'bg-danger' %}
                                 {% endif %}
 
                                 <tr>
@@ -198,6 +147,7 @@
                                                 Sin cliente
                                             {% endif %}
                                         </div>
+                                        {% include 'comercial/_telefono_contacto.html.twig' with {presupuesto: presupuesto} only %}
                                     </td>
 
                                     <td>
@@ -210,6 +160,12 @@
                                             {{ presupuesto.fechaEmision|date('d/m/Y') }}
                                         {% else %}
                                             -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="small text-muted">{{ presupuesto.fechaUltimoSeguimiento ? presupuesto.fechaUltimoSeguimiento|date('d/m/Y H:i') : 'Sin seguimiento' }}</div>
+                                        {% if presupuesto.notaComercial %}
+                                            <details><summary>Ver notas</summary><div class="small" style="white-space: pre-line">{{ presupuesto.notaComercial }}</div></details>
                                         {% endif %}
                                     </td>
                                     <td class="text-end fw-semibold">
@@ -230,10 +186,11 @@
                                                 <form method="post"
                                                     action="{{ path('admin_comercial_presupuesto_estado', {id: presupuesto.id}) }}">
 
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('comercial_presupuesto_' ~ presupuesto.id) }}">
                                                     <input type="hidden" name="estado" value="entregado">
 
                                                     <button class="btn btn-sm btn-outline-info">
-                                                        Entregado
+                                                        Marcar entregado
                                                     </button>
                                                 </form>
 
@@ -244,54 +201,47 @@
                                                 <form method="post"
                                                     action="{{ path('app_documento_aceptar', {id: presupuesto.id}) }}">
 
-                                                    <input type="hidden" name="estado" value="aceptado">
+                                                    <input type="hidden" name="volver" value="presupuestos_comercial">
 
                                                     <button class="btn btn-sm btn-outline-success">
-                                                        Aceptado
-                                                    </button>
-                                                </form>
-
-                                                <button type="button"
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#modalRechazar{{ presupuesto.id }}">
-                                                    Perdido
-                                                </button>
-
-                                            {% endif %}
-
-                                            {% if presupuesto.estadoComercial == 'rechazado' %}
-
-                                                <form method="post"
-                                                    action="{{ path('admin_comercial_presupuesto_estado', {id: presupuesto.id}) }}">
-
-                                                    <input type="hidden" name="estado" value="entregado">
-
-                                                    <button class="btn btn-sm btn-outline-dark">
-                                                        Recuperar
+                                                        Aceptar
                                                     </button>
                                                 </form>
 
                                             {% endif %}
+                                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                    data-bs-toggle="modal" data-bs-target="#modalComercial{{ presupuesto.id }}">
+                                                Acción comercial
+                                            </button>
 
                                         </div>
 
                                     </td>
                                 </tr>
-                    {# MODAL MARCAR COMO PERDIDO #}
-                                <div class="modal fade" id="modalRechazar{{ presupuesto.id }}" tabindex="-1">
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                    {% for presupuesto in presupuestos %}
+                                <div class="modal fade" id="modalComercial{{ presupuesto.id }}" tabindex="-1">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <form method="post" action="{{ path('admin_comercial_presupuesto_estado', {id: presupuesto.id}) }}">
-                                                <input type="hidden" name="estado" value="rechazado">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('comercial_presupuesto_' ~ presupuesto.id) }}">
 
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title">Marcar presupuesto como perdido</h5>
+                                                    <h5 class="modal-title">Acción comercial · Presupuesto {{ presupuesto.id }}</h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
 
                                                 <div class="modal-body">
-                                                    <label class="form-label">Motivo</label>
+                                                    <label class="form-label" for="accion{{ presupuesto.id }}">Resultado</label>
+                                                    <select id="accion{{ presupuesto.id }}" name="estado" class="form-select mb-3">
+                                                        <option value="seguimiento">Registrar seguimiento</option>
+                                                        {% if presupuesto.estadoComercial == 'borrador' %}<option value="entregado">Marcar como entregado</option>{% endif %}
+                                                        <option value="rechazado">Rechazar presupuesto</option>
+                                                    </select>
+                                                    <label class="form-label">Motivo (solo para rechazar)</label>
                                                     <select name="motivo_perdida" class="form-select mb-3">
                                                         <option value="precio_alto">Le parece caro</option>
                                                         <option value="sin_respuesta">No responde</option>
@@ -302,25 +252,22 @@
 
                                                     <label class="form-label">Nota</label>
                                                     <textarea name="nota_comercial" class="form-control" rows="3"
-                                                            placeholder="Ej: llama y dice que se le va de presupuesto"></textarea>
+                                                            placeholder="Ej.: llamada al cliente; pendiente de decidir. Obligatoria para registrar seguimiento."></textarea>
                                                 </div>
 
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">
                                                         Cancelar
                                                     </button>
-                                                    <button class="btn btn-danger">
-                                                        Marcar como perdido
+                                                    <button class="btn btn-primary">
+                                                        Guardar acción
                                                     </button>
                                                 </div>
                                             </form>
                                         </div>
                                     </div>
                                 </div>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+{% endfor %}
             {% endif %}
 
         </div>

@@ -4,13 +4,14 @@ namespace App\Service\FacturaProveedor;
 
 use App\Entity\FacturaProveedor;
 use App\Entity\FacturaProveedorLinea;
+use App\Entity\FacturaProveedorLineaAsignacion;
 use App\Entity\ProyectoGasto;
 use App\Repository\ProyectoGastoRepository;
 use App\Service\Proyecto\ProyectoCalculatorService;
 use App\Service\ProyectoGasto\ProyectoGastoService;
 use Doctrine\ORM\EntityManagerInterface;
 
-/** Confirma costes reales desde una factura sin crear asociaciones ni forecast. */
+/** Confirma costes reales desde una factura sin crear un forecast duplicado. */
 final class ConfirmacionGastoFacturaService
 {
     public function __construct(
@@ -92,7 +93,17 @@ final class ConfirmacionGastoFacturaService
         $gasto->setRecargoReal(number_format((float) ($linea->getImporteRecargoEquivalencia() ?? 0), 2, '.', ''));
         $gasto->confirmar();
 
-        // Evita reutilizar la línea sin crear una relación factura-gasto persistente.
+        // La relación permite deshacer por completo una factura duplicada.
+        $asignacion = new FacturaProveedorLineaAsignacion();
+        $asignacion->setLinea($linea);
+        $asignacion->setProyecto($gasto->getProyecto());
+        $asignacion->setProyectoGasto($gasto);
+        $asignacion->setCantidad(max((float) ($linea->getCantidad() ?? 1), 1));
+        $asignacion->setImporte(number_format((float) $base, 2, '.', ''));
+        $asignacion->setTipoDestino('obra');
+        $asignacion->setEstado('aplicada');
+        $this->em->persist($asignacion);
+
         $linea->setEstado('confirmada_gasto');
     }
 

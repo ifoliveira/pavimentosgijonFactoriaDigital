@@ -19,6 +19,17 @@ class EfectivoRepository extends ServiceEntityRepository
         parent::__construct($registry, Efectivo::class);
     }
 
+    /** Mantiene el inicio de caja utilizado por el resumen económico existente. */
+    public function saldoCentimos(): int
+    {
+        $total = $this->createQueryBuilder('e')
+            ->select('COALESCE(SUM(e.importeEf), 0)')
+            ->where('e.fechaEf >= :inicio')->andWhere('e.fechaEf <= :hoy')
+            ->setParameter('inicio', '2024-01-01')->setParameter('hoy', date('Y-m-d'))
+            ->getQuery()->getSingleScalarResult();
+        return (int) round((float) $total * 100);
+    }
+
     public function totalefectivo()
     {
         $conn = $this->getEntityManager()->getConnection();

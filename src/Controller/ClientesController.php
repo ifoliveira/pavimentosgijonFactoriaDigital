@@ -11,7 +11,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Repository\ConsultasRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -26,11 +25,34 @@ class ClientesController extends AbstractController
 
 
     #[Route('/', name: 'clientes_index', methods: ['GET'])]
-    public function index(ClientesRepository $clientesRepository, ConsultasRepository $consultasRepository): Response
+    public function index(Request $request, ClientesRepository $clientesRepository): Response
     {
+        $filtros = [
+            'busqueda' => (string) $request->query->get('q', ''),
+            'actividad' => (string) $request->query->get('actividad', 'todos'),
+            'orden' => (string) $request->query->get('orden', 'nombre'),
+            'direccion' => (string) $request->query->get('dir', 'asc'),
+        ];
+
+        $resultado = $clientesRepository->findPaginaGestion(
+            $filtros['busqueda'],
+            $filtros['actividad'],
+            $filtros['orden'],
+            $filtros['direccion'],
+            $request->query->getInt('page', 1),
+        );
+
+        $resumenesActividad = $clientesRepository->obtenerResumenActividad(array_map(
+            static fn (Clientes $cliente): int => $cliente->getId() ?? 0,
+            $resultado['clientes']
+        ));
+
         return $this->render('clientes/index.html.twig', [
-            'clientes' => $clientesRepository->findAll(),
-            'consultas' => $consultasRepository->findBy(array('atencion' => false)),
+            'clientes' => $resultado['clientes'],
+            'filtros' => $filtros,
+            'pagination' => $resultado['pagination'],
+            'resumen' => $clientesRepository->obtenerResumenGestion(),
+            'resumenesActividad' => $resumenesActividad,
         ]);
     }
 
@@ -65,10 +87,18 @@ class ClientesController extends AbstractController
     }
 
     #[Route('/{id}', name: 'clientes_show', methods: ['GET'])]
-    public function show(Clientes $cliente): Response
+    public function show(Clientes $cliente, ClientesRepository $clientesRepository): Response
     {
+        $resumen = $clientesRepository->obtenerResumenActividad([$cliente->getId() ?? 0]);
+
         return $this->render('clientes/show.html.twig', [
             'cliente' => $cliente,
+            'resumen' => $resumen[$cliente->getId() ?? 0] ?? [
+                'proyectos' => 0,
+                'documentos' => 0,
+                'presupuestos' => 0,
+            ],
+            'actividad' => $clientesRepository->obtenerActividadCliente($cliente),
         ]);
     }
 
@@ -81,6 +111,7 @@ class ClientesController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->em->flush();
 
+            $this->addFlash('success', 'Los datos del cliente se han actualizado.');
             return $this->redirectToRoute('clientes_index');
         }
 

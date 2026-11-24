@@ -87,6 +87,32 @@ class BancoController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/categoria', name: 'banco_categoria', methods: ['POST'])]
+    public function categoria(Request $request, Banco $banco, TiposmovimientoRepository $tipos): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('banco_categoria_'.$banco->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['message' => 'La sesión ha caducado. Vuelve a abrir la página.'], 403);
+        }
+
+        $id = $request->request->get('categoria');
+        if (!is_string($id) || ($id !== '' && (!ctype_digit($id) || (int) $id < 1))) {
+            return new JsonResponse(['message' => 'Selecciona una categoría válida.'], 422);
+        }
+
+        $categoria = $id === '' ? null : $tipos->find($id);
+        if ($id !== '' && !$categoria) {
+            return new JsonResponse(['message' => 'La categoría seleccionada ya no existe.'], 422);
+        }
+
+        $banco->setCategoriaBn($categoria);
+        $this->em->flush();
+
+        return new JsonResponse([
+            'id' => $categoria?->getId(),
+            'descripcion' => $categoria?->getDescripcionTm() ?? 'Sin categoría',
+        ]);
+    }
+
     #[Route('/{id_Bn}', name: 'banco_delete', methods: ['DELETE'])]
     public function delete(Request $request, #[MapEntity(id: 'id_Bn')] Banco $banco, DetallecestaRepository $detallecestaRepository): Response
     {

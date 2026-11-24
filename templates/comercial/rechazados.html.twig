@@ -116,6 +116,7 @@
                                             {% endif %}
 
                                         </div>
+                                        {% include 'comercial/_telefono_contacto.html.twig' with {presupuesto: presupuesto} only %}
 
                                     </td>
 
@@ -190,6 +191,7 @@
                                             <form method="post"
                                                   action="{{ path('admin_comercial_presupuesto_estado', {id: presupuesto.id}) }}">
 
+                                                <input type="hidden" name="_token" value="{{ csrf_token('comercial_presupuesto_' ~ presupuesto.id) }}">
                                                 <input type="hidden"
                                                        name="estado"
                                                        value="entregado">

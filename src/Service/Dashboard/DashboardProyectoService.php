@@ -55,16 +55,18 @@ class DashboardProyectoService
             ];
         }
 
-        $sinPresupuesto = $this->proyectoRepository->countProyectosSinPresupuesto();
-        $presupuestoBorrador = $this->proyectoRepository->countProyectosConPresupuestoBorrador();
+        $contadores = $this->getContadoresSituacion();
+        $sinPresupuesto = $contadores['sin_presupuesto'];
+        $presupuestoBorrador = $contadores['presupuesto_borrador'];
         $aceptadoOConvertido = $this->proyectoRepository->countProyectosConPresupuestoAceptadoOConvertido();
         $facturados = $this->proyectoRepository->countProyectosFacturados();
-        $pendienteCobro = $this->proyectoRepository->countProyectosPendientesCobro();
-        $cerrados = $this->proyectoRepository->countProyectosCerrados();
-        $entregados = $this->proyectoRepository->countProyectosConPresupuestoEntregado();
+        $pendienteCobro = $contadores['facturado_pendiente'];
+        $cerrados = $contadores['cerrado'];
+        $entregados = $contadores['presupuesto_entregado'];
         $economico = $this->getResumenEconomico();
 
         return [
+            'contadoresSituacion' => $contadores,
             'resumen' => [
                 'sinPresupuesto' => $sinPresupuesto,
                 'presupuestoBorrador' => $presupuestoBorrador,
@@ -78,7 +80,7 @@ class DashboardProyectoService
             'pendientes' => [
                 'sinPresupuesto' => $sinPresupuesto,
                 'presupuestoBorrador' => $presupuestoBorrador,
-                'aceptadosSinFactura' => $this->proyectoRepository->countProyectosAceptadosSinFactura(),
+                'aceptadosSinFactura' => $contadores['aceptado_sin_factura'],
                 'pendienteCobro' => $pendienteCobro,
             ],
             'ultimosProyectos' => $proyectosEnriquecidos,
@@ -136,6 +138,30 @@ class DashboardProyectoService
         ];
     }
 
+    private function getContadoresSituacion(): array
+    {
+        $contadores = array_fill_keys([
+            'atencion', 'sin_presupuesto', 'presupuesto_borrador',
+            'presupuesto_entregado', 'presupuesto_rechazado',
+            'aceptado_sin_factura', 'facturado_pendiente', 'en_proceso', 'cerrado',
+        ], 0);
+
+        // Mismo conjunto sin paginar y misma clasificación que el listado.
+        foreach ($this->proyectoRepository->buscarProyectosDashboard(null, null, null, null) as $proyecto) {
+            $situacion = $this->calcularSituacionProyecto(
+                $proyecto,
+                $this->documentoRepository->findPresupuestoInicialDeProyecto($proyecto),
+                $this->documentoRepository->findFacturaDeProyecto($proyecto)
+            );
+            ++$contadores[$situacion];
+            if ($this->coincideConFiltroDashboard($situacion, 'atencion')) {
+                ++$contadores['atencion'];
+            }
+        }
+
+        return $contadores;
+    }
+
     private function coincideConFiltroDashboard(string $situacionCalculada, ?string $filtro): bool
     {
         if (!$filtro || $filtro === 'todos') {
@@ -149,6 +175,7 @@ class DashboardProyectoService
                 'presupuesto_entregado',
                 'aceptado_sin_factura',
                 'facturado_pendiente',
+                'en_proceso',
             ], true);
         }
 
@@ -157,17 +184,39 @@ class DashboardProyectoService
 
     private function calcularSituacionProyecto(Proyecto $proyecto, $presupuesto, $factura): string
     {
-        if ($proyecto->getFechaFinReal() !== null) {
+        if ($proyecto->isRechazado()) {
+            return 'presupuesto_rechazado';
+        }
+
+        // Un presupuesto antiguo rechazado no representa los demás vigentes.
+        if ($presupuesto?->getEstadoComercial() === 'rechazado') {
+            $presupuesto = null;
+            foreach ($proyecto->getDocumentos() as $documento) {
+                if ($documento->getTipoDocumento() === 'presupuesto'
+                    && $documento->getEstadoComercial() !== 'rechazado') {
+                    $presupuesto = $documento;
+                    break;
+                }
+            }
+        }
+
+        $facturaFinal = $this->documentoRepository->findFacturaCompletaDeProyecto($proyecto);
+        if ($proyecto->isObraFinalizada() && $facturaFinal !== null
+            && bccomp($proyecto->getPendienteCobro(), '0', 2) === 0) {
             return 'cerrado';
+        }
+
+        // Ni el cobro de un anticipo ni la finalización física cierran la gestión.
+        if ($factura && bccomp($proyecto->getPendienteCobro(), '0', 2) > 0) {
+            return 'facturado_pendiente';
+        }
+        if ($facturaFinal !== null) {
+            return 'en_proceso';
         }
 
         if (!$presupuesto) {
             return 'sin_presupuesto';
         }
-
-        if ($presupuesto->getEstadoComercial() === 'rechazado') {
-            return 'presupuesto_rechazado';
-        }        
 
         if ($presupuesto->getEstadoComercial() === 'borrador') {
             return 'presupuesto_borrador';
@@ -177,19 +226,8 @@ class DashboardProyectoService
             return 'presupuesto_entregado';
         }        
 
-        if (in_array($presupuesto->getEstadoComercial(), ['aceptado', 'convertido'], true) && !$factura) {
+        if (in_array($presupuesto->getEstadoComercial(), ['aceptado', 'convertido'], true)) {
             return 'aceptado_sin_factura';
-        }
-
-        // La realidad económica prevalece sobre el texto de estado: una
-        // factura con saldo pendiente debe permanecer en la bandeja de cobro,
-        // incluso si su estadoCobro antiguo no se actualizó correctamente.
-        if ($factura && (float) $factura->getTotalCobrado() < (float) $factura->getTotal()) {
-            return 'facturado_pendiente';
-        }
-
-        if ($factura && $factura->getEstadoCobro() === 'cobrado') {
-            return 'cerrado';
         }
 
         return 'en_proceso';
@@ -213,7 +251,7 @@ class DashboardProyectoService
             $facturado = (float) $proyecto->getTotalFacturado();
             $cobrado = (float) $proyecto->getTotalCobrado();
 
-            $pendienteCobro = max($facturado - $cobrado, 0);
+            $pendienteCobro = (float) $proyecto->getPendienteCobro();
             $resumenProyecto = $this->getResumenProyecto($proyecto);
             $costePrevisto = $resumenProyecto['costeTotalEstimado'];
 
@@ -341,12 +379,9 @@ class DashboardProyectoService
                 continue;
             }
 
-            // totalFacturado ya contiene el importe comprometido de un
-            // presupuesto aceptado sin factura. No se usa el mayor con el
-            // presupuesto: de hacerlo, una factura completamente cobrada pero
-            // inferior al presupuesto inicial seguiría apareciendo como cobro
-            // pendiente.
-            $importeBase = (float) $proyecto->getTotalFacturado();
+            // Antes de la factura final, los anticipos no sustituyen al importe
+            // contratado como referencia de los cobros pendientes.
+            $importeBase = (float) $proyecto->getTotalOperacion();
             $pendiente = max($importeBase - (float) $proyecto->getTotalCobrado(), 0.0);
             if ($pendiente <= 0) {
                 continue;
@@ -393,30 +428,37 @@ class DashboardProyectoService
     private function getIngresoSinIva(Proyecto $proyecto): float
     {
         $ingreso = 0.0;
-        $tieneDocumentoFiscal = false;
+        $tieneDocumentoFiscalCompleto = false;
         foreach ($proyecto->getDocumentos() as $documento) {
             if (!in_array($documento->getTipoDocumento(), ['factura', 'ticket', 'ticket_rectificativo'], true)) {
                 continue;
             }
 
-            $tieneDocumentoFiscal = true;
+            // Una factura de anticipo no sustituye al presupuesto aceptado en
+            // el margen de la obra. Sí se suma cuando ya existe el documento
+            // final: ambos forman entonces la facturación fiscal completa.
+            if (!$documento->esFacturaAnticipo()) {
+                $tieneDocumentoFiscalCompleto = true;
+            }
             $ingreso += (float) $documento->getBaseImponible();
         }
 
-        if ($tieneDocumentoFiscal) {
+        if ($tieneDocumentoFiscalCompleto) {
             return $ingreso;
         }
 
-        $presupuesto = $this->documentoRepository->findPresupuestoInicialDeProyecto($proyecto);
-        return $presupuesto && in_array($presupuesto->getEstadoComercial(), ['aceptado', 'convertido'], true)
-            ? (float) $presupuesto->getBaseImponible()
-            : 0.0;
+        $ingresoPresupuestado = 0.0;
+        foreach ($this->documentoRepository->findPresupuestosAceptadosDeProyecto($proyecto) as $presupuesto) {
+            $ingresoPresupuestado += (float) $presupuesto->getBaseImponible();
+        }
+
+        return $ingresoPresupuestado;
     }
 
     public function getProyectosOperativos(): array
     {
         $proyectos = $this->proyectoRepository
-            ->findUltimosProyectosDashboard(100);
+            ->findTodosProyectosDashboard();
 
         $resultado = [];
 
@@ -425,8 +467,19 @@ class DashboardProyectoService
             $presupuesto = $this->documentoRepository
                 ->findPresupuestoInicialDeProyecto($proyecto);
 
+            // Los presupuestos rechazados se consultan en el histórico comercial.
+            if ($proyecto->isRechazado()) {
+                continue;
+            }
+
             $factura = $this->documentoRepository
                 ->findFacturaDeProyecto($proyecto);
+
+            // La fase comercial no es todavía una obra operativa. Conservamos
+            // proyectos históricos facturados aunque no tengan presupuesto.
+            if (!$factura && !$this->tienePresupuestoAceptado($proyecto)) {
+                continue;
+            }
 
             $situacion = $this->calcularSituacionProyecto(
                 $proyecto,
@@ -434,38 +487,23 @@ class DashboardProyectoService
                 $factura
             );
 
-            /*
-            * Solo queremos obras reales:
-            * aceptadas, facturadas o en proceso.
-            */
-            if (!in_array($situacion, [
-                'aceptado_sin_factura',
-                'facturado_pendiente',
-                'en_proceso',
-            ], true)) {
-                continue;
-            }
+            $facturaFinal = $this->documentoRepository
+                ->findFacturaCompletaDeProyecto($proyecto);
 
             $cliente = $proyecto->getCliente();
 
-            /*
-            * IMPORTE DE LA OPERACIÓN
-            *
-            * Si existe factura usamos el total facturado.
-            * Si todavía no existe, usamos el presupuestado.
-            */
-            $totalFacturado = (float) $proyecto->getTotalFacturado();
-            $totalPresupuestado = (float) $proyecto->getTotalPresupuestado();
             $totalCobrado = (float) $proyecto->getTotalCobrado();
 
-            $total = $totalFacturado > 0
-                ? $totalFacturado
-                : $totalPresupuestado;
+            $total = (float) $proyecto->getTotalOperacion();
 
-            $pendiente = max(
-                $total - $totalCobrado,
-                0
-            );
+            $pendiente = (float) $proyecto->getPendienteCobro();
+            // Solo desaparece del panel cuando no queda ninguna de estas tareas.
+            if ($proyecto->isObraFinalizada() && $facturaFinal !== null && $pendiente <= 0) {
+                continue;
+            }
+            $estadoCobro = $pendiente > 0
+                ? ($totalCobrado > 0 ? 'parcial' : 'pendiente')
+                : ($total > 0 || $totalCobrado > 0 ? 'cobrado' : 'sin_importe');
 
             /*
             * GASTOS
@@ -506,6 +544,13 @@ class DashboardProyectoService
                 'presupuesto' => $presupuesto,
                 'factura' => $factura,
                 'situacion' => $situacion,
+                'obraFinalizada' => $proyecto->isObraFinalizada(),
+                'puedeFinalizarObra' => $presupuesto !== null
+                    && in_array($presupuesto->getEstadoComercial(), ['aceptado', 'convertido'], true),
+                'facturaFinal' => $facturaFinal,
+                'puedeEmitirFacturaFinal' => $facturaFinal === null
+                    && count($this->documentoRepository->findPresupuestosAceptadosDeProyecto($proyecto)) > 0,
+                'estadoCobro' => $estadoCobro,
 
                 'clienteNombre' =>
                     $cliente?->getNombreCl() ?? 'Sin cliente',
@@ -530,5 +575,17 @@ class DashboardProyectoService
 
         return $resultado;
     }    
+
+    private function tienePresupuestoAceptado(Proyecto $proyecto): bool
+    {
+        foreach ($proyecto->getDocumentos() as $documento) {
+            if ($documento->getTipoDocumento() === 'presupuesto'
+                && in_array($documento->getEstadoComercial(), ['aceptado', 'convertido'], true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
 }

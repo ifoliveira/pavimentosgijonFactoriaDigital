@@ -9,49 +9,54 @@
                 <i class="mdi mdi-dots-horizontal"></i>
                 <span class="hide-menu">Personal</span>
               </li>
-              <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i data-feather="home" class="feather-icon"></i><span class="hide-menu">Tickets antiguos</span></a>
-                  <ul aria-expanded="false" class="collapse  first-level">
+              <li class="sidebar-item">
+                  <a class="sidebar-link waves-effect waves-dark{{ app.request.attributes.get('_route') starts with 'efectivo_' ? ' active' : '' }}" href="{{ path('efectivo_index') }}">
+                      <i class="mdi mdi-cash-multiple"></i><span class="hide-menu">Caja · Efectivo</span>
+                  </a>
+              </li>
+              <li class="sidebar-item">
+                    <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)"
+                      aria-expanded="false">
+                      <i data-feather="tag" class="feather-icon"></i>
+                      <span class="hide-menu">Proyectos</span>
+                    </a>
+                    <ul aria-expanded="false" class="collapse  first-level">
                       <li class="sidebar-item">
-                          <a href="{{ path('cestas_index')}}" class="sidebar-link">
-                               <i class="mdi  mdi-book-open-page-variant"></i>
-                               <span class="hide-menu">Consulta</span>
+                          <a href="{{ path('app_dashboard') }}" class="sidebar-link">
+                              <i class="mdi mdi-database-plus"></i>
+                              <span class="hide-menu">Proyectos</span>
                           </a>
                       </li>
-                  </ul>
-              </li>     
+                      <li class="sidebar-item">
+                          <a href="{{ path('documento_index') }}" class="sidebar-link">
+                              <i class="mdi mdi-database-plus"></i>
+                              <span class="hide-menu">Consultar Documentos</span>
+                          </a>
+                      </li>
+                      <li class="sidebar-item">
+                          <a href="{{ path('admin_ticket_index') }}" class="sidebar-link">
+                              <i class="mdi mdi-database-plus"></i>
+                              <span class="hide-menu">Consultar Tickets</span>
+                          </a>
+                      </li>
+                      <li class="sidebar-item">
+                          <a href="{{ path('admin_factura_index') }}" class="sidebar-link">
+                              <i class="mdi mdi-database-plus"></i>
+                              <span class="hide-menu">Consultar Facturas</span>
+                          </a>
+                      </li>
 
-             <li class="sidebar-item">
-                <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
-                    <i data-feather="box" class="feather-icon"></i>
-                                <span class="hide-menu">Presupuestos<span class="side-badge badge badge-info"></span></span>
-                </a>
-                <ul aria-expanded="false" class="collapse  first-level">
-                  <li class="sidebar-item">
-                      <a href="{{ path('presupuestos_index')}}" class="sidebar-link">
-                          <i class="mdi  mdi-book-open-page-variant"></i>
-                          <span class="hide-menu">Lista presupuestos</span>
-                      </a>
-                  </li>
-                  <li class="sidebar-item">
-                      <a href="{{ path('admin_leads_web_index')}}" class="sidebar-link">
-                          <i class="mdi mdi-account-search"></i>
-                          <span class="hide-menu">Leads web</span>
-                      </a>
-                  </li>
-                  <li class="sidebar-item">
-                      <a href="{{ path('presupuestos_finalizados')}}" class="sidebar-link">
-                          <i class="mdi  mdi-book-open-page-variant"></i>
-                          <span class="hide-menu">Presupuestos finalizados</span>
-                      </a>
-                  </li>                  
-                  <li class="sidebar-item">
-                      <a href="{{ path('app_financiacion')}}" class="sidebar-link">
-                          <i class="mdi  mdi-book-open-page-variant"></i>
-                          <span class="hide-menu">Simulación Financiación</span>
-                      </a>
-                  </li>                                                  
-                </ul>
-              </li>
+
+                    </ul>
+
+
+                </li>
+              <li class="sidebar-item">
+                    <a class="sidebar-link waves-effect waves-dark" href="{{ path('admin_comercial_presupuestos') }}">
+                      <i data-feather="check-square" class="feather-icon"></i>
+                      <span class="hide-menu">Presupuestos pendientes</span>
+                    </a>
+                </li>
               <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i data-feather="credit-card" class=" "></i><span class="hide-menu">Contabilidad</span></a>
 
                   <ul aria-expanded="false" class="collapse first-level">
@@ -63,11 +68,11 @@
                       <a href="{{ path('resumenventas')}}" class="sidebar-link">
                               <i class="mdi  mdi-book-open-page-variant"></i>
                               <span class="hide-menu">Resumen Ventas</span>
-                      </a>     
+                      </a>
                       <a href="{{ path('flujocaja')}}" class="sidebar-link">
                               <i class="mdi  mdi-book-open-page-variant"></i>
                               <span class="hide-menu">Flujo Caja</span>
-                      </a>                                        
+                      </a>
                       <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-bank"></i><span class="hide-menu">Banco</span></a>
                           <ul aria-expanded="false" class="collapse second-level">
                               <li class="sidebar-item"><a href="{{ path('uploadBank') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Insertar</span></a></li>
@@ -75,12 +80,7 @@
                               <li class="sidebar-item"><a href="{{ path('forecast_index') }}" class="sidebar-link"><i class="mdi mdi-link-variant"></i><span class="hide-menu">Conciliar</span></a></li>
                           </ul>
                       </li>
-                      <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-cash-multiple"></i><span class="hide-menu">Efectivo</span></a>
-                          <ul aria-expanded="false" class="collapse second-level">
-                              <li class="sidebar-item"><a href="{{ path('efectivo_new') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Insertar</span></a></li>
-                              <li class="sidebar-item"><a href="{{ path('efectivo_index') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu">Consultar</span></a></li>
-                          </ul>
-                      </li>
+
                       <li class="sidebar-item"><a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-cash-multiple"></i><span class="hide-menu">Forecast</span></a>
                           <ul aria-expanded="false" class="collapse second-level">
                               <li class="sidebar-item"><a href="{{ path('forecast_new') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Insertar</span></a></li>
@@ -91,7 +91,6 @@
                       </li>
                    </ul>
               </li>
-
               <li class="sidebar-item">
                   <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)"
                       aria-expanded="false">
@@ -111,7 +110,7 @@
                               <span class="hide-menu">Consulta</span>
                           </a>
                       </li>
-                      
+
                   </ul>
               </li>
               <li class="sidebar-item">
@@ -132,75 +131,74 @@
                               <i class="mdi mdi-database-plus"></i>
                               <span class="hide-menu">Listar Clientes</span>
                           </a>
-                      </li>     
+                      </li>
 
                   </ul>
                 </li>
-
-              <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i data-feather="credit-card" class=" "></i><span class="hide-menu">Blog</span></a>
-
+              <li class="sidebar-item">
+                  <a href="{{ path('admin_leads_web_index') }}" class="sidebar-link waves-effect waves-dark">
+                      <i class="mdi mdi-account-search"></i>
+                      <span class="hide-menu">Leads web</span>
+                  </a>
+              </li>
+              <li class="sidebar-item">
+                  <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                      <i data-feather="archive" class="feather-icon"></i>
+                      <span class="hide-menu">Histórico</span>
+                  </a>
                   <ul aria-expanded="false" class="collapse first-level">
-
-                      <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-bank"></i><span class="hide-menu">Entradas</span></a>
+                      <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i data-feather="home" class="feather-icon"></i><span class="hide-menu">Tickets antiguos</span></a>
                           <ul aria-expanded="false" class="collapse second-level">
-                              <li class="sidebar-item"><a href="{{ path('post_new') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Nueva</span></a></li>
-                              <li class="sidebar-item"><a href="{{ path('upload_img') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu"> Subir Imagenes</span></a></li>
-
+                              <li class="sidebar-item">
+                                  <a href="{{ path('cestas_index')}}" class="sidebar-link">
+                                       <i class="mdi  mdi-book-open-page-variant"></i>
+                                       <span class="hide-menu">Consulta</span>
+                                  </a>
+                              </li>
                           </ul>
                       </li>
-                   </ul>
+
+                     <li class="sidebar-item">
+                        <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                            <i data-feather="box" class="feather-icon"></i>
+                                        <span class="hide-menu">Presupuestos<span class="side-badge badge badge-info"></span></span>
+                        </a>
+                        <ul aria-expanded="false" class="collapse second-level">
+                          <li class="sidebar-item">
+                              <a href="{{ path('presupuestos_index')}}" class="sidebar-link">
+                                  <i class="mdi  mdi-book-open-page-variant"></i>
+                                  <span class="hide-menu">Lista presupuestos</span>
+                              </a>
+                          </li>
+                          <li class="sidebar-item">
+                              <a href="{{ path('presupuestos_finalizados')}}" class="sidebar-link">
+                                  <i class="mdi  mdi-book-open-page-variant"></i>
+                                  <span class="hide-menu">Presupuestos finalizados</span>
+                              </a>
+                          </li>
+                          <li class="sidebar-item">
+                              <a href="{{ path('app_financiacion')}}" class="sidebar-link">
+                                  <i class="mdi  mdi-book-open-page-variant"></i>
+                                  <span class="hide-menu">Simulación Financiación</span>
+                              </a>
+                          </li>
+                        </ul>
+                      </li>
+                      <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i data-feather="credit-card" class=" "></i><span class="hide-menu">Blog</span></a>
+
+                          <ul aria-expanded="false" class="collapse second-level">
+
+                              <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-bank"></i><span class="hide-menu">Entradas</span></a>
+                                  <ul aria-expanded="false" class="collapse third-level">
+                                      <li class="sidebar-item"><a href="{{ path('post_new') }}" class="sidebar-link"><i class="mdi mdi-database-plus"></i><span class="hide-menu">Nueva</span></a></li>
+                                      <li class="sidebar-item"><a href="{{ path('upload_img') }}" class="sidebar-link"><i class="mdi mdi-book-open-page-variant"></i><span class="hide-menu"> Subir Imagenes</span></a></li>
+
+                                  </ul>
+                              </li>
+                           </ul>
+                      </li>
+                  </ul>
               </li>
-
-
-                <li class="sidebar-item">
-                    <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)"
-                      aria-expanded="false">
-                      <i data-feather="tag" class="feather-icon"></i>
-                      <span class="hide-menu">Documento</span>
-                    </a>
-                    <ul aria-expanded="false" class="collapse  first-level">
-                      <li class="sidebar-item">
-                          <a href="{{ path('app_dashboard') }}" class="sidebar-link">
-                              <i class="mdi mdi-database-plus"></i>
-                              <span class="hide-menu">Proyectos</span>
-                          </a>
-                      </li>    
-                      <li class="sidebar-item">
-                          <a href="{{ path('admin_comercial_presupuestos') }}" class="sidebar-link">
-                              <i class="mdi mdi-database-plus"></i>
-                              <span class="hide-menu">Presupuestos</span>
-                          </a>
-                      </li>                                        
-                      <li class="sidebar-item">
-                          <a href="{{ path('app_documento_nuevo') }}" class="sidebar-link">
-                              <i class="mdi mdi-database-plus"></i>
-                              <span class="hide-menu">Nuevo</span>
-                          </a>
-                      </li>
-                      <li class="sidebar-item">
-                          <a href="{{ path('documento_index') }}" class="sidebar-link">
-                              <i class="mdi mdi-database-plus"></i>
-                              <span class="hide-menu">Consultar Documentos</span>
-                          </a>
-                      </li>     
-                      <li class="sidebar-item">
-                          <a href="{{ path('admin_ticket_index') }}" class="sidebar-link">
-                              <i class="mdi mdi-database-plus"></i>
-                              <span class="hide-menu">Consultar Tickets</span>
-                          </a>
-                      </li>
-                      <li class="sidebar-item">
-                          <a href="{{ path('admin_factura_index') }}" class="sidebar-link">
-                              <i class="mdi mdi-database-plus"></i>
-                              <span class="hide-menu">Consultar Facturas</span>
-                          </a>
-                      </li>
-
-                      
-                    </ul>
-
-
-                </li>
             </ul>
           </nav>
           <!-- End Sidebar navigation -->

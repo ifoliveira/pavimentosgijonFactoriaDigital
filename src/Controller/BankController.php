@@ -14,6 +14,7 @@ use App\Form\ExcelType; // Asegúrate de incluir tu nuevo formulario
 use App\Entity\Tiposmovimiento;
 use PhpOffice\PhpSpreadsheet\Calculation\DateTimeExcel\DateValue;
 use App\Repository\BancoRepository;
+use App\Repository\TiposmovimientoRepository;
 
 class BankController extends AbstractController
 {
@@ -24,7 +25,7 @@ class BankController extends AbstractController
     ) {}
     
     #[Route('/admin/upload', name: 'uploadBank')]
-    public function uploadBankData(Request $request, CategoriaMovimientoService $categoriaMovimientoService, BancoRepository $bancoRepository): Response
+    public function uploadBankData(Request $request, CategoriaMovimientoService $categoriaMovimientoService, BancoRepository $bancoRepository, TiposmovimientoRepository $tiposmovimientoRepository): Response
     {
         $form = $this->createForm(ExcelType::class);
         $form->handleRequest($request);
@@ -163,6 +164,7 @@ class BankController extends AbstractController
         return $this->render('banco/excel.html.twig', [
             'form' => $form->createView(),
             'bancos' => $bancos,
+            'categorias' => $tiposmovimientoRepository->findBy([], ['descripcionTm' => 'ASC']),
         ]);
     }
 }

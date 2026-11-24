@@ -152,6 +152,10 @@ class ProyectoCobro
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Efectivo $efectivo = null;
 
+    #[ORM\OneToOne(targetEntity: Documento::class, inversedBy: 'cobroAnticipo')]
+    #[ORM\JoinColumn(name: 'factura_anticipo_id', nullable: true, unique: true, onDelete: 'RESTRICT')]
+    private ?Documento $facturaAnticipo = null;
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $notas = null;
 
@@ -293,6 +297,30 @@ class ProyectoCobro
     public function setEfectivo(?Efectivo $efectivo): static
     {
         $this->efectivo = $efectivo;
+
+        return $this;
+    }
+
+    public function getFacturaAnticipo(): ?Documento
+    {
+        return $this->facturaAnticipo;
+    }
+
+    public function setFacturaAnticipo(?Documento $facturaAnticipo): static
+    {
+        if ($this->facturaAnticipo === $facturaAnticipo) {
+            return $this;
+        }
+
+        if ($this->facturaAnticipo !== null) {
+            $this->facturaAnticipo->asignarCobroAnticipo(null);
+        }
+
+        $this->facturaAnticipo = $facturaAnticipo;
+
+        if ($facturaAnticipo !== null) {
+            $facturaAnticipo->asignarCobroAnticipo($this);
+        }
 
         return $this;
     }

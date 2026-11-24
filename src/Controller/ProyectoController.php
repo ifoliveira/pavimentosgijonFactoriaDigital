@@ -3,12 +3,14 @@
 namespace App\Controller;
 
 use App\Repository\ProyectoRepository;
+use App\Repository\ClientesRepository;
 use App\Repository\DocumentoRepository;
 use App\Repository\ProyectoGastoRepository;
 use App\Entity\Clientes;
 use App\Entity\Proyecto;
 use App\Entity\ProyectoGasto;
 use App\Form\ProyectoGastoType;
+use App\Form\ProyectoInformacionType;
 use App\Service\CestaUserService;
 use App\Form\ProyectoType;
 use App\Entity\Documento;
@@ -44,13 +46,17 @@ class ProyectoController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $tipoObra = $request->request->get('tipo_obra');
             $resultado = $proyectoPresupuestoFactory->crearDesdeProyecto(
                 $proyecto,
-                is_string($tipoObra) ? $tipoObra : null
+                $proyecto->getTipoObra()
             );
 
-            $this->addFlash('success', 'Proyecto y presupuesto inicial creados correctamente.');
+            $this->addFlash(
+                'success',
+                $proyecto->getCliente() === null
+                    ? 'Proyecto y presupuesto inicial creados sin cliente. Ya puedes editarlo, usar BudgetFlow y generar el PDF; asigna el cliente antes de aceptarlo.'
+                    : 'Proyecto y presupuesto inicial creados correctamente.'
+            );
 
             return $this->redirectToRoute('app_proyecto_show', [
                 'id' => $resultado['proyecto']->getId(),
@@ -311,16 +317,145 @@ class ProyectoController extends AbstractController
         ]);
     }
 
+    #[Route('/{id<\d+>}/editar', name: 'app_proyecto_edit', methods: ['GET', 'POST'])]
+    public function editarProyecto(
+        Proyecto $proyecto,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $form = $this->createForm(ProyectoInformacionType::class, $proyecto);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+
+            $this->addFlash('success', 'Descripción y notas del proyecto actualizadas correctamente.');
+
+            return $this->redirectToRoute('app_proyecto_show', ['id' => $proyecto->getId()]);
+        }
+
+        return $this->render('proyecto/edit.html.twig', [
+            'proyecto' => $proyecto,
+            'form' => $form->createView(),
+        ]);
+    }
+
     #[Route('/{id<\d+>}', name: 'app_proyecto_show', methods: ['GET'])]
     public function show(
         Proyecto $proyecto,
-        \App\Service\Dashboard\DashboardProyectoService $dashboardProyectoService
+        \App\Service\Dashboard\DashboardProyectoService $dashboardProyectoService,
+        DocumentoRepository $documentoRepository,
+        ClientesRepository $clientesRepository
     ): Response
     {
+        $presupuestoInicial = $documentoRepository->findPresupuestoInicialDeProyecto($proyecto);
+
         return $this->render('proyecto/show.html.twig', [
             'proyecto' => $proyecto,
             'economico' => $dashboardProyectoService->getResumenProyecto($proyecto),
+            'facturaFinal' => $documentoRepository->findFacturaCompletaDeProyecto($proyecto),
+            'presupuestoInicialId' => $presupuestoInicial?->getId(),
+            'hayPresupuestoInicialAceptado' => $presupuestoInicial !== null
+                && in_array($presupuestoInicial->getEstadoComercial(), ['aceptado', 'convertido'], true),
+            'clientesDisponibles' => $proyecto->getCliente() === null
+                ? $clientesRepository->findBy([], ['apellidosCl' => 'ASC', 'nombreCl' => 'ASC'])
+                : [],
         ]);
+    }
+
+    #[Route('/{id<\d+>}/asignar-cliente', name: 'app_proyecto_asignar_cliente', methods: ['POST'])]
+    public function asignarCliente(
+        Proyecto $proyecto,
+        Request $request,
+        ClientesRepository $clientesRepository,
+        EntityManagerInterface $em
+    ): Response {
+        if (!$this->isCsrfTokenValid('asignar_cliente_proyecto_'.$proyecto->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF no válido.');
+        }
+
+        $clienteId = $request->request->getInt('cliente_id');
+        $cliente = $clienteId > 0 ? $clientesRepository->find($clienteId) : null;
+
+        if (!$cliente instanceof Clientes) {
+            $this->addFlash('warning', 'Selecciona un cliente válido para poder asociarlo al proyecto.');
+
+            return $this->redirectToRoute('app_proyecto_show', ['id' => $proyecto->getId()]);
+        }
+
+        $proyecto->setCliente($cliente);
+
+        foreach ($proyecto->getDocumentos() as $documento) {
+            if ($documento->getTipoDocumento() === 'presupuesto' && $documento->getCliente() === null) {
+                $documento->setCliente($cliente);
+            }
+        }
+
+        $em->flush();
+
+        $this->addFlash('success', 'Cliente asignado al proyecto y a sus presupuestos pendientes. Ya puedes aceptar el presupuesto cuando esté listo.');
+
+        return $this->redirectToRoute('app_proyecto_show', ['id' => $proyecto->getId()]);
+    }
+
+    #[Route('/{id<\d+>}/finalizar', name: 'app_proyecto_finalizar', methods: ['POST'])]
+    public function finalizar(
+        Proyecto $proyecto,
+        Request $request,
+        EntityManagerInterface $em,
+        DocumentoRepository $documentoRepository
+    ): Response {
+        if (!$this->isCsrfTokenValid('finalizar_proyecto_'.$proyecto->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF no válido.');
+        }
+
+        $presupuestoInicial = $documentoRepository->findPresupuestoInicialDeProyecto($proyecto);
+        $tienePresupuestoAceptado = $presupuestoInicial !== null
+            && in_array($presupuestoInicial->getEstadoComercial(), ['aceptado', 'convertido'], true);
+
+        if (!$tienePresupuestoAceptado) {
+            $this->addFlash('warning', 'No se puede finalizar la obra hasta que el presupuesto inicial esté aceptado.');
+
+            if ($request->request->get('volver') === 'panel') {
+                return $this->redirectToRoute('admin_pro');
+            }
+
+            return $this->redirectToRoute('app_proyecto_show', ['id' => $proyecto->getId()]);
+        }
+
+        $proyecto->finalizarObra();
+        $em->flush();
+        $this->addFlash('success', 'Obra marcada como finalizada. Los importes pendientes de cobro se mantienen.');
+
+        if ($request->request->get('volver') === 'panel') {
+            return $this->redirectToRoute('admin_pro');
+        }
+        return $this->redirectToRoute('app_proyecto_show', ['id' => $proyecto->getId()]);
+    }
+
+    #[Route('/{id<\d+>}/factura-final', name: 'app_proyecto_factura_final', methods: ['POST'])]
+    public function facturaFinal(
+        Proyecto $proyecto,
+        Request $request,
+        \App\Service\Proyecto\FacturaFinalService $service
+    ): Response {
+        if (!$this->isCsrfTokenValid('factura_final_'.$proyecto->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF no válido.');
+        }
+        try {
+            $factura = $service->emitir($proyecto);
+            if ($request->request->get('volver') === 'panel') {
+                $this->addFlash('success', 'Factura final emitida.');
+                return $this->redirectToRoute('admin_pro');
+            }
+            return $this->redirectToRoute('app_documento_show', ['id' => $factura->getId()]);
+        } catch (\RuntimeException $e) {
+            $this->addFlash('warning', $e->getMessage());
+            if ($request->request->get('volver') === 'panel') {
+                return $this->redirectToRoute('admin_pro');
+            }
+            return $this->redirectToRoute('app_proyecto_show', ['id' => $proyecto->getId()]);
+        }
     }
 
     #[Route('/{id<\d+>}/fecha-fin-prevista', name: 'app_proyecto_fecha_fin_prevista', methods: ['POST'])]
@@ -451,34 +586,64 @@ class ProyectoController extends AbstractController
     }
 
     #[Route('/{id<\d+>}/crear-presupuesto-inicial', name: 'app_proyecto_crear_presupuesto_inicial', methods: ['POST'])]
-        public function crearPresupuestoInicial(
-            Proyecto $proyecto,
-            DocumentoCrearService $documentoCrearService,
-            EntityManagerInterface $em
-        ): Response {
-            foreach ($proyecto->getDocumentos() as $documentoExistente) {
-                if ($documentoExistente->getTipoDocumento() === 'presupuesto') {
-                    $this->addFlash('warning', 'Este proyecto ya tiene un presupuesto creado.');
-                    return $this->redirectToRoute('app_proyecto_show', [
-                        'id' => $proyecto->getId(),
-                    ]);
-                }
+    public function crearPresupuestoInicial(
+        Proyecto $proyecto,
+        DocumentoCrearService $documentoCrearService,
+        EntityManagerInterface $em
+    ): Response {
+        foreach ($proyecto->getDocumentos() as $documentoExistente) {
+            if ($documentoExistente->getTipoDocumento() === 'presupuesto') {
+                $this->addFlash('warning', 'Este proyecto ya tiene un presupuesto creado.');
+                return $this->redirectToRoute('app_proyecto_show', [
+                    'id' => $proyecto->getId(),
+                ]);
             }
-
-            $clienteId = $proyecto->getCliente()?->getId();
-
-            $documento = $documentoCrearService->crearDocumento('presupuesto', $clienteId);
-
-            $documento->setProyecto($proyecto);
-
-            $em->flush();
-
-            $this->addFlash('success', 'Presupuesto inicial creado correctamente.');
-
-            return $this->redirectToRoute('app_documento_show', [
-                'id' => $documento->getId(),
-            ]);
         }
+
+        $documento = $documentoCrearService->crearDocumento('presupuesto', $proyecto->getCliente()?->getId());
+
+        $documento->setProyecto($proyecto);
+
+        $em->flush();
+
+        $this->addFlash('success', 'Presupuesto inicial creado correctamente.');
+
+        return $this->redirectToRoute('app_documento_show', [
+            'id' => $documento->getId(),
+        ]);
+    }
+
+    #[Route('/{id<\d+>}/crear-presupuesto-complementario', name: 'app_proyecto_crear_presupuesto_complementario', methods: ['POST'])]
+    public function crearPresupuestoComplementario(
+        Proyecto $proyecto,
+        DocumentoRepository $documentoRepository,
+        DocumentoCrearService $documentoCrearService,
+        EntityManagerInterface $em
+    ): Response {
+        $cliente = $proyecto->getCliente();
+
+        if (!$cliente instanceof Clientes) {
+            $this->addFlash('warning', 'Antes de crear un presupuesto complementario, asigna un cliente al proyecto.');
+
+            return $this->redirectToRoute('app_proyecto_show', ['id' => $proyecto->getId()]);
+        }
+
+        $presupuestoInicial = $documentoRepository->findPresupuestoInicialDeProyecto($proyecto);
+
+        if (!$presupuestoInicial || !in_array($presupuestoInicial->getEstadoComercial(), ['aceptado', 'convertido'], true)) {
+            $this->addFlash('warning', 'Primero debes aceptar el presupuesto inicial del proyecto.');
+
+            return $this->redirectToRoute('app_proyecto_show', ['id' => $proyecto->getId()]);
+        }
+
+        $documento = $documentoCrearService->crearDocumento('presupuesto', $cliente->getId());
+        $documento->setProyecto($proyecto);
+        $em->flush();
+
+        $this->addFlash('success', 'Presupuesto complementario creado correctamente.');
+
+        return $this->redirectToRoute('app_documento_show', ['id' => $documento->getId()]);
+    }
 
     #[Route('/proyectoGasto/{id}/nuevo', name: 'app_proyecto_gasto_new', methods: ['GET', 'POST'])]
     public function newGasto(

@@ -1,14 +1,25 @@
 <header class="topbar">
-    <nav class="navbar top-navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar top-navbar navbar-expand-lg navbar-dark app-top-navbar">
 
         <div class="navbar-header">
 
             <a class="navbar-brand" href="{{ path('admin_pro') }}">
 
-                <img src="{{ asset('img/logo2.png') }}" class="dark-logo">
+                <img src="{{ asset('img/logo2.png') }}" class="dark-logo" alt="Pavimentos Gijón">
 
             </a>
 
+        </div>
+
+        <div class="app-header-actions">
+            <a href="{{ path('efectivo_index') }}#salida-caja" class="btn btn-warning app-header-button app-caja" title="Abrir caja y registrar una salida">
+                <i class="ti-wallet" aria-hidden="true"></i>
+                <span>Caja</span>
+            </a>
+            <a href="{{ path('app_proyecto_new') }}" class="btn btn-primary app-header-button app-new-project">
+                <i class="ti-plus" aria-hidden="true"></i>
+                <span>Nuevo Proyecto</span>
+            </a>
         </div>
 
     </nav>

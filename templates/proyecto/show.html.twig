@@ -4,6 +4,27 @@
 
 {% block body %}
 <div class="container py-4">
+    {% set estadoComercialColores = {
+        'borrador': 'secondary',
+        'enviado': 'info',
+        'aceptado': 'success',
+        'rechazado': 'danger',
+        'convertido': 'primary',
+        'aplicado': 'warning'
+    } %}
+    {% set estadoCobroColores = {
+        'pendiente': 'warning',
+        'parcial': 'info',
+        'cobrado': 'success',
+        'devuelto': 'danger'
+    } %}
+    {% set estadoEjecucionColores = {
+        'pendiente': 'warning',
+        'en_curso': 'info',
+        'completada': 'success',
+        'pausada': 'secondary'
+    } %}
+
     {% for message in app.flashes('success') %}
         <div class="alert alert-success">{{ message }}</div>
     {% endfor %}
@@ -11,36 +32,50 @@
         <div class="alert alert-warning">{{ message }}</div>
     {% endfor %}
 
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white">
-            <h2 class="h5 mb-0">Resumen económico de la obra</h2>
-            <div class="small text-muted">Importes sin IVA. El margen estimado combina costes confirmados y previsiones aún pendientes.</div>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4 col-xl-2"><div class="small text-muted">Ingresos sin IVA</div><div class="fw-bold">{{ economico.ingresoSinIva|number_format(2, ',', '.') }} €</div></div>
-                <div class="col-md-4 col-xl-2"><div class="small text-muted">Coste confirmado</div><div class="fw-bold">{{ economico.costeConfirmado|number_format(2, ',', '.') }} €</div></div>
-                <div class="col-md-4 col-xl-2"><div class="small text-muted">Pendiente de confirmar</div><div class="fw-bold text-warning">{{ economico.costePrevistoPendiente|number_format(2, ',', '.') }} €</div></div>
-                <div class="col-md-4 col-xl-2"><div class="small text-muted">Coste total estimado</div><div class="fw-bold">{{ economico.costeTotalEstimado|number_format(2, ',', '.') }} €</div></div>
-                <div class="col-md-4 col-xl-2"><div class="small text-muted">Margen estimado</div><div class="fw-bold {{ economico.margenEstimado >= 0 ? 'text-success' : 'text-danger' }}">{{ economico.margenEstimado|number_format(2, ',', '.') }} €</div></div>
-                <div class="col-md-4 col-xl-2"><div class="small text-muted">Margen sobre ventas</div><div class="fw-bold {{ economico.margenSobreVentas >= 0 ? 'text-success' : 'text-danger' }}">{{ economico.margenSobreVentas|number_format(1, ',', '.') }} %</div></div>
-            </div>
-        </div>
-    </div>
+    {% if proyecto.rechazado %}
+        <div class="alert alert-secondary" role="status"><strong>Proyecto rechazado.</strong> Todos sus presupuestos están rechazados.</div>
+    {% endif %}
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">{{ proyecto.nombre }}</h1>
+            {% if proyecto.obraFinalizada %}
+                <div class="mb-2"><span class="badge bg-success">Obra finalizada · {{ proyecto.fechaFinReal|date('d/m/Y') }}</span></div>
+            {% endif %}
+            {% if proyecto.tipoObraEtiqueta %}
+                <div class="mb-2"><span class="badge bg-info text-dark">{{ proyecto.tipoObraEtiqueta }}</span></div>
+            {% endif %}
             <p class="text-muted mb-0">
-                Cliente:
-                {{ proyecto.cliente.nombreCl }}
-                {% if proyecto.cliente.apellidosCl %}
-                    {{ proyecto.cliente.apellidosCl }}
+                {% if proyecto.cliente %}
+                    Cliente:
+                    {{ proyecto.cliente.nombreCl }}
+                    {% if proyecto.cliente.apellidosCl %}
+                        {{ proyecto.cliente.apellidosCl }}
+                    {% endif %}
+                {% else %}
+                    <span class="text-warning">Pendiente de asignar cliente</span>
                 {% endif %}
             </p>
         </div>
 
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary" href="{{ path('app_proyecto_edit', {id: proyecto.id}) }}">Editar proyecto</a>
+            {% if not proyecto.obraFinalizada and hayPresupuestoInicialAceptado %}
+                <form method="post" action="{{ path('app_proyecto_finalizar', {id: proyecto.id}) }}"
+                      onsubmit="return confirm('¿Has terminado esta obra? Se marcará como finalizada. Los cobros pendientes se mantienen.');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('finalizar_proyecto_' ~ proyecto.id) }}">
+                    <button class="btn btn-outline-success" type="submit">Finalizar obra</button>
+                </form>
+            {% endif %}
+            {% if facturaFinal|default(null) %}
+                <a class="btn btn-outline-success" href="{{ path('app_documento_show', {id: facturaFinal.id}) }}">Ver factura final</a>
+            {% elseif hayPresupuestoInicialAceptado %}
+                <form method="post" action="{{ path('app_proyecto_factura_final', {id: proyecto.id}) }}"
+                      onsubmit="return confirm('Se emitirá la factura final con todos los presupuestos aceptados y el descuento de los anticipos. ¿Continuar?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('factura_final_' ~ proyecto.id) }}">
+                    <button class="btn btn-success" type="submit">Emitir factura final</button>
+                </form>
+            {% endif %}
             <button type="button"
                     class="btn btn-outline-primary btnNuevoGasto"
                     data-url="{{ path('app_proyecto_gasto_new', {id: proyecto.id}) }}">
@@ -57,6 +92,70 @@
         </div>
     </div>
 
+    <section class="card border-0 shadow-sm mb-3" aria-labelledby="datos-proyecto-titulo">
+        <div class="card-body py-3">
+            <h2 id="datos-proyecto-titulo" class="h6 mb-2">Datos del proyecto</h2>
+            <div class="d-flex flex-wrap align-items-center gap-2 gap-md-4">
+                <div class="small">
+                    <span class="text-muted">Inicio:</span>
+                    <span>{{ proyecto.fechaInicio ? proyecto.fechaInicio|date('d/m/Y') : '—' }}</span>
+                </div>
+
+                <form method="post" action="{{ path('app_proyecto_fecha_fin_prevista', {id: proyecto.id}) }}" class="d-flex flex-wrap gap-2 align-items-center">
+                    <input type="hidden" name="_token" value="{{ csrf_token('proyecto_fecha_fin_prevista_' ~ proyecto.id) }}">
+                    <label for="proyecto-fecha-fin-prevista" class="small fw-semibold mb-0">Fin prevista:</label>
+                    <input id="proyecto-fecha-fin-prevista" type="date" name="fecha_fin_prevista" class="form-control form-control-sm w-auto" value="{{ proyecto.fechaFinPrevista ? proyecto.fechaFinPrevista|date('Y-m-d') : '' }}" aria-describedby="fecha-fin-ayuda">
+                    <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">Guardar</button>
+                </form>
+
+                <div class="small">
+                    <span class="text-muted">Creado:</span>
+                    <span>{{ proyecto.creadoEn ? proyecto.creadoEn|date('d/m/Y H:i') : '—' }}</span>
+                </div>
+            </div>
+            <div id="fecha-fin-ayuda" class="small text-muted mt-1">Cambiar la fecha fin actualiza los gastos previstos y sus previsiones asociadas.</div>
+
+            {% if proyecto.notas %}
+                <div class="small mt-2"><span class="text-muted">Notas:</span> {{ proyecto.notas|nl2br }}</div>
+            {% endif %}
+
+            <div class="d-flex flex-wrap align-items-center gap-2 gap-md-3 border-top pt-2 mt-2">
+                <a href="#documentos-proyecto" class="btn btn-sm btn-outline-primary">Ver documentos</a>
+                <a href="#cobros-proyecto" class="btn btn-sm btn-outline-primary">Ver cobros</a>
+                <div class="small">Cobrado: <strong class="text-success">{{ proyecto.totalCobrado|number_format(2, ',', '.') }} €</strong></div>
+                <div class="small">Pendiente de cobro: <strong class="{{ proyecto.pendienteCobro > 0 ? 'text-danger' : 'text-success' }}">{{ proyecto.pendienteCobro|number_format(2, ',', '.') }} €</strong></div>
+            </div>
+        </div>
+    </section>
+
+    {% if not proyecto.cliente %}
+        <div class="alert alert-warning border-warning" role="alert">
+            <h2 class="h6 alert-heading">Este proyecto todavía no tiene cliente</h2>
+            <p class="mb-3">
+                Se ha guardado con el nombre <strong>{{ proyecto.nombre }}</strong> para que no se pierda.
+                Su presupuesto inicial ya está disponible: puedes editarlo, usar BudgetFlow y generar el PDF.
+                Selecciona el cliente antes de aceptar el presupuesto.
+            </p>
+            <form method="post" action="{{ path('app_proyecto_asignar_cliente', {id: proyecto.id}) }}" class="row g-2 align-items-end">
+                <input type="hidden" name="_token" value="{{ csrf_token('asignar_cliente_proyecto_' ~ proyecto.id) }}">
+                <div class="col-md-8 col-lg-6">
+                    <label for="cliente-proyecto-{{ proyecto.id }}" class="form-label">Cliente del proyecto</label>
+                    <select id="cliente-proyecto-{{ proyecto.id }}" name="cliente_id" class="form-select" required>
+                        <option value="">Selecciona un cliente para continuar</option>
+                        {% for cliente in clientesDisponibles %}
+                            <option value="{{ cliente.id }}">
+                                {{ cliente.nombreCl }}{% if cliente.apellidosCl %} {{ cliente.apellidosCl }}{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-auto">
+                    <button class="btn btn-primary" type="submit">Asignar cliente</button>
+                </div>
+            </form>
+        </div>
+    {% endif %}
+
 
     {% set tienePresupuesto = false %}
     {% for documento in proyecto.documentos %}
@@ -65,11 +164,18 @@
         {% endif %}
     {% endfor %}
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
-            <span>Documentos del proyecto</span>
+    <div id="documentos-proyecto" class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white fw-semibold d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            <h2 class="h5 mb-0">Documentos del proyecto</h2>
 
-            {% if not tienePresupuesto %}
+            {% if hayPresupuestoInicialAceptado %}
+                <form method="post"
+                      action="{{ path('app_proyecto_crear_presupuesto_complementario', {id: proyecto.id}) }}">
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        Nuevo presupuesto complementario
+                    </button>
+                </form>
+            {% elseif not tienePresupuesto %}
                 <form method="post"
                       action="{{ path('app_proyecto_crear_presupuesto_inicial', {id: proyecto.id}) }}"
                       onsubmit="return confirm('Se creará un presupuesto inicial para este proyecto. ¿Continuar?');">
@@ -79,19 +185,22 @@
                 </form>
             {% else %}
                 <button class="btn btn-sm btn-outline-secondary" disabled>
-                    Presupuesto inicial ya creado
+                    Presupuesto inicial pendiente de aceptación
                 </button>
             {% endif %}
         </div>
 
         <div class="card-body">
             {% if proyecto.documentos|length > 0 %}
+                <div class="table-responsive">
                 <table class="table align-middle mb-0">
                     <thead>
                         <tr>
                             <th>Número</th>
                             <th>Tipo</th>
+                            <th>Clasificación</th>
                             <th>Fecha</th>
+                            <th>Estado</th>
                             <th class="text-end">Total</th>
                             <th class="text-end">Acciones</th>
                         </tr>
@@ -104,6 +213,16 @@
                                        class="text-decoration-none fw-semibold">
                                         {{ documento.numero ?? ('Documento #' ~ documento.id) }}
                                     </a>
+                                </td>
+
+                                <td>
+                                    {% if documento.tipoDocumento == 'presupuesto' %}
+                                        <span class="badge {{ documento.id == presupuestoInicialId ? 'bg-primary' : 'bg-secondary' }}">
+                                            {{ documento.id == presupuestoInicialId ? 'Inicial' : 'Complementario' }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
                                 </td>
 
                                 <td>
@@ -124,6 +243,26 @@
                                     {% endif %}
                                 </td>
 
+                                <td>
+                                    <div class="d-flex flex-column align-items-start gap-1">
+                                        <span class="badge bg-{{ estadoComercialColores[documento.estadoComercial] ?? 'secondary' }}">
+                                            {{ documento.estadoComercial|replace({'_': ' '})|capitalize }}
+                                        </span>
+
+                                        {% if documento.tipoDocumento in ['factura', 'ticket', 'ticket_rectificativo'] %}
+                                            <span class="badge bg-{{ estadoCobroColores[documento.estadoCobro] ?? 'secondary' }}">
+                                                Cobro: {{ documento.estadoCobro|replace({'_': ' '})|capitalize }}
+                                            </span>
+                                        {% endif %}
+
+                                        {% if documento.tipoDocumento == 'factura' and documento.estadoEjecucion != 'no_aplica' %}
+                                            <span class="badge bg-{{ estadoEjecucionColores[documento.estadoEjecucion] ?? 'secondary' }}">
+                                                Obra: {{ documento.estadoEjecucion|replace({'_': ' '})|capitalize }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+
                                 <td class="text-end">{{ documento.total|number_format(2, ',', '.') }} €</td>
 
                                 <td class="text-end">
@@ -136,6 +275,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
             {% else %}
                 <p class="text-muted mb-0">Todavía no hay documentos asociados a este proyecto.</p>
             {% endif %}
@@ -143,89 +283,15 @@
     </div>
 
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="text-muted small">Total presupuestado</div>
-                    <div class="fs-5 fw-bold">{{ proyecto.totalPresupuestado|number_format(2, ',', '.') }} €</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="text-muted small">Total facturado</div>
-                    <div class="fs-5 fw-bold">{{ proyecto.totalFacturado|number_format(2, ',', '.') }} €</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="text-muted small">Total cobrado</div>
-                    <div class="fs-5 fw-bold">{{ proyecto.totalCobrado|number_format(2, ',', '.') }} €</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="text-muted small">Pendiente</div>
-                    <div class="fs-5 fw-bold">
-                        {{ (proyecto.totalFacturado - proyecto.totalCobrado)|number_format(2, ',', '.') }} €
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white fw-semibold">Datos del proyecto</div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="text-muted small">Fecha inicio</div>
-                    <div>{{ proyecto.fechaInicio ? proyecto.fechaInicio|date('d/m/Y') : '—' }}</div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="text-muted small">Fecha fin prevista</div>
-                    <form method="post" action="{{ path('app_proyecto_fecha_fin_prevista', {id: proyecto.id}) }}" class="d-flex gap-2 align-items-center mt-1">
-                        <input type="hidden" name="_token" value="{{ csrf_token('proyecto_fecha_fin_prevista_' ~ proyecto.id) }}">
-                        <input type="date" name="fecha_fin_prevista" class="form-control form-control-sm" value="{{ proyecto.fechaFinPrevista ? proyecto.fechaFinPrevista|date('Y-m-d') : '' }}">
-                        <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">Guardar</button>
-                    </form>
-                    <div class="form-text">Al cambiarla, se moverán los gastos aún previstos y sus forecasts asociados.</div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="text-muted small">Creado</div>
-                    <div>{{ proyecto.creadoEn ? proyecto.creadoEn|date('d/m/Y H:i') : '—' }}</div>
-                </div>
-
-                <div class="col-12">
-                    <div class="text-muted small">Notas</div>
-                    <div>{{ proyecto.notas ?: 'Sin notas' }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-
     {# COBROS DEL PROYECTO #}
-    <div class="row mt-4">
+    <div id="cobros-proyecto" class="row mb-4">
         <div class="col-12">
             <div class="card shadow-sm border-0">
                 <div class="card-body">
 
                     <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
                         <div>
-                            <h4 class="mb-0">Cobros del proyecto</h4>
+                            <h2 class="h5 mb-0">Cobros del proyecto</h2>
                             <div class="text-muted small">
                                 Pagos recibidos del cliente para esta operación completa
                             </div>
@@ -243,7 +309,7 @@
                         <div class="col-md-4">
                             <div class="text-muted small">Total proyecto</div>
                             <div class="fw-bold">
-                                {{ proyecto.totalFacturado|format_currency('EUR', locale='es') }}
+                                {{ proyecto.totalOperacion|format_currency('EUR', locale='es') }}
                             </div>
                         </div>
 
@@ -341,7 +407,7 @@
     <div class="modal fade" id="modalNuevoCobroProyecto" tabindex="-1" aria-labelledby="modalNuevoCobroProyectoLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form method="post" action="{{ path('proyecto_cobro_nuevo', {id: proyecto.id}) }}">
+                <form id="formNuevoCobroProyecto" method="post" action="{{ path('proyecto_cobro_nuevo', {id: proyecto.id}) }}">
                     <div class="modal-header">
                         <h5 class="modal-title" id="modalNuevoCobroProyectoLabel">Registrar cobro del proyecto</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -376,6 +442,7 @@
                                     class="form-control"
                                     step="0.01"
                                     min="0.01"
+                                    max="{{ proyecto.pendienteCobro }}"
                                     required
                                     placeholder="{{ proyecto.pendienteCobro|number_format(2, '.', '') }}">
                                 <span class="input-group-text">€</span>
@@ -429,6 +496,63 @@
             </div>
         </div>
     </div>    
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h2 class="h5 mb-0">Resumen económico de la obra</h2>
+            <div class="small text-muted">Importes sin IVA. El margen estimado combina costes confirmados y previsiones aún pendientes.</div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Ingresos sin IVA</div><div class="fw-bold">{{ economico.ingresoSinIva|number_format(2, ',', '.') }} €</div></div>
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Coste confirmado</div><div class="fw-bold">{{ economico.costeConfirmado|number_format(2, ',', '.') }} €</div></div>
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Pendiente de confirmar</div><div class="fw-bold text-warning">{{ economico.costePrevistoPendiente|number_format(2, ',', '.') }} €</div></div>
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Coste total estimado</div><div class="fw-bold">{{ economico.costeTotalEstimado|number_format(2, ',', '.') }} €</div></div>
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Margen estimado</div><div class="fw-bold {{ economico.margenEstimado >= 0 ? 'text-success' : 'text-danger' }}">{{ economico.margenEstimado|number_format(2, ',', '.') }} €</div></div>
+                <div class="col-md-4 col-xl-2"><div class="small text-muted">Margen sobre ventas</div><div class="fw-bold {{ economico.margenSobreVentas >= 0 ? 'text-success' : 'text-danger' }}">{{ economico.margenSobreVentas|number_format(1, ',', '.') }} %</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Total presupuestado</div>
+                    <div class="fs-5 fw-bold">{{ proyecto.totalPresupuestado|number_format(2, ',', '.') }} €</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Total facturado</div>
+                    <div class="fs-5 fw-bold">{{ proyecto.totalFacturado|number_format(2, ',', '.') }} €</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Total cobrado</div>
+                    <div class="fs-5 fw-bold">{{ proyecto.totalCobrado|number_format(2, ',', '.') }} €</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Pendiente</div>
+                    <div class="fs-5 fw-bold">
+                        {{ proyecto.pendienteCobro|number_format(2, ',', '.') }} €
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {# GASTOS DEL PROYECTO #}
     <div class="card border-0 shadow-sm mb-4">
@@ -676,6 +800,7 @@
     {{ parent() }}
 
     <script src="{{ asset('assets/js/proyecto/proyecto-gasto.js') }}"></script>
+    <script src="{{ asset('assets/js/proyecto/proyecto-cobro.js') }}"></script>
 
 
 {% endblock %}

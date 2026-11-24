@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Documento;
+use App\Service\Stock\StockReservaService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -23,11 +24,9 @@ class ComercialPresupuestoController extends AbstractController
             ->leftJoin('d.proyecto', 'p')->addSelect('p')
             ->leftJoin('d.cliente', 'c')->addSelect('c')
             ->where('d.tipoDocumento = :tipo')
-            ->andWhere('d.estadoComercial <> :estadoConvertido')
-            ->andWhere('d.estadoComercial <> :estadoRechazado')
+            ->andWhere('d.estadoComercial IN (:estadosPendientes)')
             ->setParameter('tipo', 'presupuesto')
-            ->setParameter('estadoConvertido', 'convertido')
-            ->setParameter('estadoRechazado', 'rechazado')
+            ->setParameter('estadosPendientes', ['borrador', 'entregado'])
             ->orderBy('d.id', 'DESC')
             ->setMaxResults(100)
             ->getQuery()
@@ -36,9 +35,6 @@ class ComercialPresupuestoController extends AbstractController
         $resumen = [
             'borrador' => 0,
             'entregado' => 0,
-            'aceptado' => 0,
-            'convertido' => 0,
-            'rechazado' => 0,
             'totalImporte' => 0,
         ];
 
@@ -64,42 +60,60 @@ class ComercialPresupuestoController extends AbstractController
     public function cambiarEstado(
         Documento $presupuesto,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        StockReservaService $stockReservaService
     ): RedirectResponse {
         if ($presupuesto->getTipoDocumento() !== 'presupuesto') {
             throw $this->createNotFoundException();
         }
 
-        $estado = $request->request->get('estado');
-        $motivo = $request->request->get('motivo_perdida');
-        $notaComercial = $request->request->get('nota_comercial');
+        if (!$this->isCsrfTokenValid('comercial_presupuesto_'.$presupuesto->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token de seguridad no válido.');
+        }
 
-        $estadosPermitidos = [
-            'borrador',
-            'entregado',
-            'aceptado',
-            'rechazado',
+        $estado = $request->request->getString('estado');
+        $estadoActual = $presupuesto->getEstadoComercial();
+        $transiciones = [
+            'borrador' => ['seguimiento', 'entregado', 'rechazado'],
+            'entregado' => ['seguimiento', 'rechazado'],
+            'rechazado' => ['entregado'],
         ];
 
-        if (!in_array($estado, $estadosPermitidos, true)) {
-            $this->addFlash('danger', 'Estado comercial no válido.');
+        if (!in_array($estado, $transiciones[$estadoActual] ?? [], true)) {
+            $this->addFlash('error', 'Este presupuesto ya no admite esa acción comercial. Actualiza el listado.');
             return $this->redirectToRoute('admin_comercial_presupuestos');
         }
 
-        $presupuesto->setEstadoComercial($estado);
+        $nota = trim($request->request->getString('nota_comercial'));
+        $motivo = $request->request->getString('motivo_perdida');
+        if ($estado === 'seguimiento' && $nota === '') {
+            $this->addFlash('error', 'Indica la acción comercial realizada en la nota de seguimiento.');
+            return $this->redirectToRoute('admin_comercial_presupuestos');
+        }
+        if ($estado === 'rechazado' && !in_array($motivo, ['precio_alto', 'sin_respuesta', 'lo_hace_otro', 'aplazado', 'otro'], true)) {
+            $this->addFlash('error', 'Selecciona un motivo de rechazo válido.');
+            return $this->redirectToRoute('admin_comercial_presupuestos');
+        }
 
-        if ($estado === 'rechazado' && method_exists($presupuesto, 'setMotivoPerdida')) {
+        $fecha = new \DateTimeImmutable();
+        if ($estado !== 'seguimiento') {
+            $presupuesto->setEstadoComercial($estado);
+        }
+        if ($estado === 'rechazado') {
             $presupuesto->setMotivoPerdida($motivo);
-            $presupuesto->setNotaComercial($notaComercial);
+            $stockReservaService->liberarReservasDocumento($presupuesto);
+        } elseif ($estadoActual === 'rechazado') {
+            $presupuesto->setMotivoPerdida(null);
         }
-
-        if (method_exists($presupuesto, 'setFechaUltimoSeguimiento')) {
-            $presupuesto->setFechaUltimoSeguimiento(new \DateTimeImmutable());
+        if ($nota !== '') {
+            $entrada = $fecha->format('d/m/Y H:i').' — '.$nota;
+            $presupuesto->setNotaComercial(trim(($presupuesto->getNotaComercial() ?? '')."\n".$entrada));
         }
+        $presupuesto->setFechaUltimoSeguimiento($fecha);
 
         $em->flush();
 
-        $this->addFlash('success', 'Estado del presupuesto actualizado.');
+        $this->addFlash('success', 'Acción comercial registrada.');
 
         return $this->redirectToRoute('admin_comercial_presupuestos');
     }    

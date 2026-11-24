@@ -60,10 +60,10 @@ class DocumentoAceptacionGastosTest extends TestCase
             $this->createMock(StockReservaService::class),
         );
 
-        $factura = $service->aceptarYGenerarFactura(42);
+        $aceptado = $service->aceptarPresupuesto(42);
 
-        self::assertSame('factura', $factura->getTipoDocumento());
-        self::assertSame('convertido', $presupuesto->getEstadoComercial());
+        self::assertSame($presupuesto, $aceptado);
+        self::assertSame('aceptado', $presupuesto->getEstadoComercial());
         self::assertCount(3, $persistidos);
         self::assertCount(3, $proyecto->getGastos());
         self::assertSame(['30.85', '60.00', '-10.00'], array_map(static fn ($g) => $g->getBasePrevista(), $persistidos));
@@ -81,7 +81,7 @@ class DocumentoAceptacionGastosTest extends TestCase
         }
 
         try {
-            $service->aceptarYGenerarFactura(42);
+            $service->aceptarPresupuesto(42);
             self::fail('Un presupuesto convertido no debe aceptarse de nuevo.');
         } catch (\RuntimeException $exception) {
             self::assertSame('Solo se puede aceptar un documento entregado.', $exception->getMessage());
