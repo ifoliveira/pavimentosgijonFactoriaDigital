@@ -507,7 +507,9 @@
         <table class="header-table">
             <tr>
                 <td class="header-logo-cell">
-                    <img src="{{ logoPath }}" alt="Logo">
+                    {% if logoPath %}
+                        <img src="{{ logoPath }}" alt="Logo">
+                    {% endif %}
                 </td>
                 <td class="header-empresa-cell">
                     <div class="empresa-nombre">Pavimentos Gijón</div>

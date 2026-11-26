@@ -372,7 +372,9 @@
         <table class="header-table">
             <tr>
                 <td class="header-logo">
-                    <img src="{{ logoPath }}" alt="Logo">
+                    {% if logoPath %}
+                        <img src="{{ logoPath }}" alt="Logo">
+                    {% endif %}
                 </td>
                 <td class="header-right">
                     <div class="header-title">Propuesta económica</div>

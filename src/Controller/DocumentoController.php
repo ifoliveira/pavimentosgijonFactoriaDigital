@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Documento;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\DocumentoLinea;
+use App\Service\Pdf\LocalImageDataUri;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Repository\TipoManoObraRepository;
@@ -506,7 +507,8 @@ class DocumentoController extends AbstractController
     public function pdf(
         int $id,
         Request $request,
-        DocumentoVerService $documentoVerService
+        DocumentoVerService $documentoVerService,
+        LocalImageDataUri $pdfImages
     ): Response {
         $documento = $documentoVerService->obtenerPorId($id);
 
@@ -532,7 +534,8 @@ class DocumentoController extends AbstractController
             'documento' => $documento,
             'iva' => $iva,
             'mostrarImportesLineas' => $mostrarImportesLineas,
-            'logoPath'  => $this->getParameter('kernel.project_dir') . '/public/img/logo.png',
+            // Keep the template variable, but pass image bytes instead of a file URI.
+            'logoPath' => $pdfImages->convert('public/img/logo.png'),
         ]);
 
         $options = new Options();
