@@ -26,7 +26,10 @@ class BolsaGastosConfiguracion
     private int $plazoObraDias = 60;
 
     /** @var list<string> */
-    #[ORM\Column(type: 'json')]
+    #[ORM\Column(
+        type: 'json',
+        options: ['collation' => 'utf8mb4_bin']
+    )]
     private array $proveedoresExcluidos = [];
 
     public function getId(): int
