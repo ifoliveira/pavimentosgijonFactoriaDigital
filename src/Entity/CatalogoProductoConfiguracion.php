@@ -80,7 +80,11 @@ class CatalogoProductoConfiguracion
      * Condiciones adicionales flexibles.
      * Ejemplo: {"color": "blanco", "reversible": true, "instalacion": "entre_paredes"}
      */
-    #[ORM\Column(type: 'json', nullable: true)]
+    #[ORM\Column(
+        type: 'json',
+        nullable: true,
+        options: ['collation' => 'utf8mb4_bin']
+    )]
     private ?array $condiciones = null;
 
     #[ORM\Column(type: 'datetime_immutable')]

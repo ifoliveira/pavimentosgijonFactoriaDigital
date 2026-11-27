@@ -121,7 +121,11 @@ class Proyecto
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $direccionObraExtraida = null;
 
-    #[ORM\Column(type: 'json', nullable: true)]
+    #[ORM\Column(
+        type: 'json',
+        nullable: true,
+        options: ['collation' => 'utf8mb4_bin']
+    )]
     private ?array $fichaDatosExtraidos = null;
 
     // -------------------------------------------------------------------------

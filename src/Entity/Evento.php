@@ -24,7 +24,11 @@ class Evento
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $tipo = null;
 
-    #[ORM\Column(type: 'json', nullable: true)]
+    #[ORM\Column(
+        type: 'json',
+        nullable: true,
+        options: ['collation' => 'utf8mb4_bin']
+    )]
     private ?array $datos = [];
 
     #[ORM\Column(type: 'datetime_immutable')]
