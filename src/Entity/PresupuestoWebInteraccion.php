@@ -28,7 +28,11 @@ class PresupuestoWebInteraccion
     #[ORM\Column(type: 'string', length: 32)]
     private string $tipo;
 
-    #[ORM\Column(type: 'json', nullable: true)]
+    #[ORM\Column(
+        type: 'json',
+        nullable: true,
+        options: ['collation' => 'utf8mb4_bin']
+    )]
     private ?array $datos;
 
     #[ORM\Column(type: 'datetime_immutable')]

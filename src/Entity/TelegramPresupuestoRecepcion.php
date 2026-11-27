@@ -47,10 +47,18 @@ class TelegramPresupuestoRecepcion
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imagenPath = null;
 
-    #[ORM\Column(type: 'json', nullable: true)]
+    #[ORM\Column(
+        type: 'json',
+        nullable: true,
+        options: ['collation' => 'utf8mb4_bin']
+    )]
     private ?array $datosExtraidos = null;
 
-    #[ORM\Column(type: 'json', nullable: true)]
+    #[ORM\Column(
+        type: 'json',
+        nullable: true,
+        options: ['collation' => 'utf8mb4_bin']
+    )]
     private ?array $adaptacion = null;
 
     #[ORM\ManyToOne(targetEntity: Proyecto::class)]
